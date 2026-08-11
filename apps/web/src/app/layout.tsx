@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 // latin-ext, Türkçe'nin ğ/ş/ı/İ karakterlerini içerir; yalnız "latin" ile
 // bu harfler fallback fonta düşer.
@@ -29,7 +30,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
