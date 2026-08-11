@@ -3,6 +3,29 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+
+  experimental: {
+    // ⚠️ ÖLÇÜLMÜŞ DAVRANIŞ, dokümantasyondan SAPIYOR.
+    //
+    // proxyClientMaxBodySize dokümanı "yalnızca proxy kullanıldığında
+    // geçerlidir" diyor. Projede proxy.ts YOK, yine de Next 16.3.0 harici
+    // rewrite'larda da gövdeyi belleğe klonluyor ve 10 MB'ta kesiyor.
+    // 30 MB'lık bir upload denendiğinde web logunda görülen:
+    //   "Request body exceeded 10MB for /api/v1/uploads"
+    //   "Failed to proxy http://api:8000/api/v1/uploads Error: socket hang up"
+    // ve istemciye HTTP 500 döndü.
+    //
+    // Bu yüzden sınır backend'in kendi upload sınırının (150 MB) ÜSTÜNE
+    // çekildi; aksi hâlde büyük dosyalar arayüzden hiç geçmezdi.
+    //
+    // BEDELİ: Next eşzamanlı her upload için gövdeyi BELLEĞE alır. Tek
+    // kullanıcılı geliştirme ortamı için kabul edilebilir, üretim için
+    // DEĞİL — orada /api/v1'i FastAPI'ye ileten gerçek bir reverse proxy
+    // (nginx/caddy) Next'in önüne konmalı; ADR §2 zaten "aynı origin
+    // altındaki /api reverse proxy" diyor, Next'in rewrite'ını şart
+    // koşmuyor. Faz 2'ye devredilen açık iş.
+    proxyClientMaxBodySize: "160mb",
+  },
   // npm workspaces hoists node_modules to the repo root. Without this, the
   // standalone trace starts at apps/web and misses the hoisted dependencies.
   outputFileTracingRoot: path.join(__dirname, "../.."),
