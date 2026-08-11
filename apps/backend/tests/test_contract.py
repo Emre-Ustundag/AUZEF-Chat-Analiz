@@ -122,9 +122,7 @@ def test_retry_after_yoksa_alan_hic_gonderilmez() -> None:
 
 
 def test_retry_after_varsa_gonderilir() -> None:
-    payload = build_problem(
-        "PROVIDER_RATE_LIMITED", "Sınır aşıldı.", retry_after=60
-    ).to_payload()
+    payload = build_problem("PROVIDER_RATE_LIMITED", "Sınır aşıldı.", retry_after=60).to_payload()
     assert payload["retry_after"] == 60
 
 
@@ -166,7 +164,7 @@ def test_hata_govdesinde_stack_trace_veya_sir_yok() -> None:
     payload = build_problem("INTERNAL_ERROR", "Beklenmeyen bir hata oluştu.").to_payload()
     serialized = json.dumps(payload)
 
-    for leak in ("Traceback", "File \"", "sk-", "postgresql://", "minioadmin"):
+    for leak in ("Traceback", 'File "', "sk-", "postgresql://", "minioadmin"):
         assert leak not in serialized
 
 

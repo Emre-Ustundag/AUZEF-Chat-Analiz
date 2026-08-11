@@ -22,9 +22,7 @@ from app.schemas.upload import UploadStatus
 class Upload(Base):
     __tablename__ = "uploads"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     status: Mapped[UploadStatus] = mapped_column(
         # `values_callable` olmadan SQLAlchemy Python enum ADLARINI ("QUEUED")

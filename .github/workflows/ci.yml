@@ -56,3 +56,85 @@ jobs:
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+
+  backend:
+    name: Backend lint, typecheck and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: apps/backend
+
+    services:
+      # Entegrasyon testleri Postgres, Redis ve MinIO ister; yoksa
+      # tests/conftest.py onları açık bir mesajla atlar. Servisleri burada
+      # ayağa kaldırmak, uçtan uca upload akışının da CI'da koşması demek.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: auzef
+          POSTGRES_PASSWORD: auzef
+          POSTGRES_DB: auzef
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U auzef -d auzef"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        # --frozen: uv.lock'a birebir uyulur; CI'ın sürüm sürüklemesiyle
+        # yeşil/kırmızı olması engellenir.
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Typecheck
+        run: uv run mypy app tests
+
+      - name: Migrations
+        run: uv run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef
+
+      - name: Test
+        run: uv run pytest
+        env:
+          DATABASE_URL: postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef
+          REDIS_URL: redis://127.0.0.1:6379/0
+          S3_ENDPOINT_URL: http://127.0.0.1:9000
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
+          S3_BUCKET: auzef-test

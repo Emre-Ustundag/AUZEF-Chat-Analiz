@@ -22,9 +22,7 @@ import pytest
 
 # Ayarlar lru_cache'li olduğu için uygulama modülleri import EDİLMEDEN ÖNCE
 # yazılmalı; sonrasında yazmak hiçbir şeyi değiştirmez.
-os.environ.setdefault(
-    "DATABASE_URL", "postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef"
-)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef")
 os.environ.setdefault("REDIS_URL", "redis://127.0.0.1:6379/0")
 os.environ.setdefault("CELERY_BROKER_URL", "redis://127.0.0.1:6379/1")
 os.environ.setdefault("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/2")
@@ -47,10 +45,10 @@ REQUIRED_SERVICES = {
 }
 
 
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
-) -> None:
-    missing = [name for name, port in REQUIRED_SERVICES.items() if not _port_open("127.0.0.1", port)]
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    missing = [
+        name for name, port in REQUIRED_SERVICES.items() if not _port_open("127.0.0.1", port)
+    ]
     if not missing:
         return
 

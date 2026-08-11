@@ -108,7 +108,7 @@ def build_macro_enabled(path: Path) -> Path:
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, content in _minimal_ooxml_members().items():
             archive.writestr(name, content)
-        archive.writestr("xl/vbaProject.bin", b"\x00\x01\x02CMG=\"macro payload\"")
+        archive.writestr("xl/vbaProject.bin", b'\x00\x01\x02CMG="macro payload"')
     return path
 
 
