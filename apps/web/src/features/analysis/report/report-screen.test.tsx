@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "@/lib/api/client";
 import { createQueryClient } from "@/lib/api/query-client";
 import type { AnalysisReport, Theme } from "@/lib/api/schemas";
 
@@ -10,10 +12,16 @@ import { ReportScreen } from "./report-screen";
 import { foldThemes } from "./theme-distribution";
 
 const getAnalysisReport = vi.fn();
+const downloadAnalysisExport = vi.fn();
 vi.mock("@/lib/api/endpoints", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api/endpoints")>()),
   getAnalysisReport: (...a: unknown[]) => getAnalysisReport(...a),
+  downloadAnalysisExport: (...a: unknown[]) => downloadAnalysisExport(...a),
 }));
+
+// jsdom object URL'i uygulamıyor; indirme yolunun kendisi burada test
+// edilmiyor, önemli olan doğru formatın istenmesi ve hatanın gösterilmesi.
+vi.mock("@/lib/download", () => ({ saveBlob: vi.fn() }));
 
 const ID = "8c2a1b40-1111-4222-8333-044455556666";
 
@@ -81,6 +89,7 @@ function renderScreen() {
 beforeEach(() => {
   getAnalysisReport.mockReset();
   getAnalysisReport.mockResolvedValue(report);
+  downloadAnalysisExport.mockReset();
 });
 
 describe("ReportScreen", () => {
@@ -113,15 +122,43 @@ describe("ReportScreen", () => {
     expect(screen.getByText("sha256:2f8a1c9e4b7d")).toBeInTheDocument();
   });
 
-  it("dışa aktarma bağlantıları verir", async () => {
+  it("dışa aktarmayı istenen formatla çalıştırır", async () => {
+    downloadAnalysisExport.mockResolvedValue({
+      blob: new Blob(["{}"], { type: "application/json" }),
+      filename: "analiz.json",
+    });
     renderScreen();
 
-    const xlsx = await screen.findByRole("link", { name: /Excel/ });
-    expect(xlsx).toHaveAttribute("href", expect.stringContaining("format=xlsx"));
-    expect(screen.getByRole("link", { name: /JSON/ })).toHaveAttribute(
-      "href",
-      expect.stringContaining("format=json"),
+    await userEvent.click(await screen.findByRole("button", { name: /JSON/ }));
+
+    await waitFor(() =>
+      expect(downloadAnalysisExport).toHaveBeenCalledWith(ID, "json"),
     );
+  });
+
+  it("dışa aktarma hatasını ham JSON yerine Türkçe mesajla gösterir", async () => {
+    // Düz bir <a href> ile indirilseydi tarayıcı problem-details gövdesini
+    // ham haliyle ekrana basardı.
+    downloadAnalysisExport.mockRejectedValue(
+      new ApiError({
+        type: "/errors/job-conflict",
+        title: "Rapor hazır değil",
+        status: 409,
+        code: "JOB_CONFLICT",
+        detail: "Export only available for completed analyses.",
+        trace_id: "t-1",
+        errors: [],
+      }),
+    );
+    renderScreen();
+
+    await userEvent.click(await screen.findByRole("button", { name: /Excel/ }));
+
+    expect(await screen.findByText("Dosya indirilemedi")).toBeInTheDocument();
+    expect(
+      screen.getByText(/zaten devam eden bir analiz var/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/completed analyses/)).not.toBeInTheDocument();
   });
 
   it("düşük güven skorunu sayıyla birlikte gösterir", async () => {

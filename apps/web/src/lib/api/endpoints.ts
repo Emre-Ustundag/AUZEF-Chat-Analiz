@@ -4,6 +4,7 @@ import {
   API_BASE_URL,
   apiRequest,
   openRouterKeyHeader,
+  toApiError,
   unknownApiError,
 } from "./client";
 import { ApiError } from "./client";
@@ -78,15 +79,61 @@ export function cancelAnalysis(analysisId: string): Promise<void> {
   return apiRequest(`/analyses/${analysisId}`, z.void(), { method: "DELETE" });
 }
 
-/**
- * Export bağlantısı. Dosya indirmesi tarayıcıya bırakılır; gövdeyi belleğe
- * almanın anlamı yok.
- */
 export function analysisExportUrl(
   analysisId: string,
   format: ExportFormat,
 ): string {
   return `${API_BASE_URL}/analyses/${analysisId}/export?format=${format}`;
+}
+
+export interface ExportedFile {
+  blob: Blob;
+  filename: string;
+}
+
+/**
+ * Rapor dosyasını indirir.
+ *
+ * Gövde şemadan geçmiyor — xlsx ikili, JSON'ın içeriği de zaten rapor
+ * ekranında doğrulanmış durumda. Buradaki asıl iş HATA yolunu düzgün
+ * kurmak: doğrudan bir <a href> ile indirilseydi 409/500 cevabında tarayıcı
+ * problem JSON'unu ham haliyle gösterirdi.
+ */
+export async function downloadAnalysisExport(
+  analysisId: string,
+  format: ExportFormat,
+): Promise<ExportedFile> {
+  let response: Response;
+  try {
+    response = await fetch(analysisExportUrl(analysisId, format));
+  } catch {
+    throw unknownApiError(0, "Sunucuya ulaşılamadı.");
+  }
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return {
+    blob: await response.blob(),
+    filename:
+      filenameFromContentDisposition(
+        response.headers.get("Content-Disposition"),
+      ) ?? `analiz-${analysisId}.${format}`,
+  };
+}
+
+/**
+ * Content-Disposition başlığındaki dosya adını okur.
+ *
+ * Yalnızca düz `filename="..."` biçimi destekleniyor; backend dosya adını
+ * kendisi üretiyor ve ASCII tutuyor (ADR §6), RFC 5987'nin `filename*`
+ * kodlamasına ihtiyaç duyulmuyor. Okunamazsa çağıran taraf kendi adını üretir.
+ */
+function filenameFromContentDisposition(header: string | null): string | null {
+  if (!header) return null;
+  const match = /filename="([^"]+)"/.exec(header);
+  return match ? match[1] : null;
 }
 
 export interface UploadProgress {

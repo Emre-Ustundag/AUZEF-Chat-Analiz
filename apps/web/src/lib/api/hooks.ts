@@ -1,12 +1,16 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+
+import { saveBlob } from "@/lib/download";
 
 import {
   cancelAnalysis,
   createAnalysis,
   createUpload,
+  deleteUpload,
+  downloadAnalysisExport,
   getAnalysisJob,
   getAnalysisReport,
   getModels,
@@ -19,7 +23,7 @@ import {
   isAnalysisSettled,
   isUploadSettled,
 } from "./schemas";
-import type { AnalysisRequest } from "./schemas";
+import type { AnalysisRequest, ExportFormat } from "./schemas";
 
 /**
  * Sunucu durumu hook'ları.
@@ -43,6 +47,12 @@ export function useUploadStatus(uploadId: string | null) {
     queryFn: ({ signal }) => getUpload(uploadId!, signal),
     enabled: uploadId !== null,
     refetchInterval: (query) => {
+      // Hata durumunda polling DURUR. Yalnızca `data`ya bakılırsa, istek hata
+      // verdiğinde veri hiç oluşmadığı için durum "henüz başlamadı" sanılır ve
+      // poll sonsuza kadar sürer: ekran hata gösterirken arkada 2,5 saniyede
+      // bir istek atılır. Geçici hataları `retry` politikası zaten ayrı ele
+      // alıyor; buraya düşen hata kalıcıdır.
+      if (query.state.status === "error") return false;
       const status = query.state.data?.status;
       if (!status) return LIMITS.POLL_INTERVAL_MS;
       return isUploadSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
@@ -59,6 +69,8 @@ export function useAnalysisJob(analysisId: string | null) {
     queryFn: ({ signal }) => getAnalysisJob(analysisId!, signal),
     enabled: analysisId !== null,
     refetchInterval: (query) => {
+      // useUploadStatus'taki ile aynı kural: hata kalıcıdır, poll durur.
+      if (query.state.status === "error") return false;
       const status = query.state.data?.status;
       if (!status) return LIMITS.POLL_INTERVAL_MS;
       return isAnalysisSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
@@ -90,26 +102,83 @@ export function useAnalysisReport(analysisId: string | null, enabled: boolean) {
 }
 
 /**
- * Dosya yükleme mutation'ı, yükleme ilerlemesiyle birlikte.
+ * Dosya yükleme mutation'ı, yükleme ilerlemesi ve iptal ile birlikte.
  *
  * İlerleme TanStack Query'nin dışında ayrı bir state'te tutulur; mutation
  * state'i yalnızca başlangıç/bitiş biliyor, ara ilerlemeyi taşıyamaz.
+ *
+ * `cancel` zorunlu: gerçek dosyalar ~130 MB ve yükleme dakikalar sürüyor.
+ * İptal edilemeyen bir yüklemede yanlış dosya seçen kullanıcının tek çıkışı
+ * sekmeyi kapatmak olurdu.
  */
 export function useCreateUpload() {
   const [progress, setProgress] = useState<UploadProgress | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (file: File) =>
-      createUpload(file, { onProgress: setProgress }),
+    mutationFn: (file: File) => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      return createUpload(file, {
+        onProgress: setProgress,
+        signal: controller.signal,
+      });
+    },
     onMutate: () => setProgress(null),
+    onSettled: () => {
+      abortRef.current = null;
+    },
   });
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    setProgress(null);
+  }, []);
 
   const reset = useCallback(() => {
     setProgress(null);
     mutation.reset();
   }, [mutation]);
 
-  return { ...mutation, progress, reset };
+  return { ...mutation, progress, cancel, reset };
+}
+
+/**
+ * Yüklemeyi iptal eder (ADR §6: DELETE /uploads/{id} — iptal ve cleanup).
+ *
+ * Profilleme sürerken vazgeçen kullanıcı için: kayıt silinmezse yüklenen
+ * dosya sunucuda lifecycle süresi dolana kadar durur.
+ */
+export function useDeleteUpload() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (uploadId: string) => deleteUpload(uploadId),
+    onSuccess: (_data, uploadId) => {
+      queryClient.removeQueries({ queryKey: queryKeys.upload(uploadId) });
+    },
+  });
+}
+
+/**
+ * Rapor dışa aktarma.
+ *
+ * Dosya bilerek `<a href>` ile değil fetch ile indiriliyor: doğrudan bağlantıda
+ * export hata dönerse tarayıcı RFC 9457 problem JSON'unu ham haliyle ekrana
+ * basar. Gövdeyi kendimiz alınca hata, arayüzün geri kalanıyla aynı Türkçe
+ * mesaj tablosundan gösterilebiliyor.
+ */
+export function useExportAnalysis() {
+  return useMutation({
+    mutationFn: ({
+      analysisId,
+      format,
+    }: {
+      analysisId: string;
+      format: ExportFormat;
+    }) => downloadAnalysisExport(analysisId, format),
+    onSuccess: (file) => saveBlob(file.blob, file.filename),
+  });
 }
 
 export function useCreateAnalysis() {

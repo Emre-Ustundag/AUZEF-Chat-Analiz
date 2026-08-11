@@ -193,6 +193,46 @@ describe("UploadScreen", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  it("süren yükleme iptal edilebilir ve iptal hata olarak gösterilmez", async () => {
+    // Gerçek dosyalar ~130 MB; iptal edilemeyen bir yüklemede yanlış dosyayı
+    // başlatan kullanıcının tek çıkışı sekmeyi kapatmak olurdu.
+    // Gerçek createUpload'ın davranışı: istek signal abort edilene kadar
+    // sürer, abort edilince AbortError ile reddeder.
+    createUpload.mockImplementation(
+      (_file: File, options: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          options.signal?.addEventListener("abort", () => {
+            reject(new DOMException("Yükleme iptal edildi.", "AbortError"));
+          });
+        }),
+    );
+
+    const user = userEvent.setup();
+    const { container } = renderScreen();
+
+    await user.upload(fileInput(container), xlsxFile());
+    await user.click(screen.getByRole("button", { name: /Yükle ve devam et/ }));
+
+    const cancelButton = await screen.findByRole("button", {
+      name: /Yüklemeyi iptal et/,
+    });
+    expect(createUpload).toHaveBeenCalled();
+    expect(createUpload.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+
+    await user.click(cancelButton);
+
+    // İptal kullanıcının kendi kararı: hata kutusu çıkmamalı, dosya seçili
+    // kalmalı ki tekrar denemek isterse baştan seçmesin.
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /Yükle ve devam et/ }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Yükleme başarısız")).not.toBeInTheDocument();
+    expect(screen.getByText("veri.xlsx")).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it("veri gizliliği bilgisini yükleme öncesi gösterir", () => {
     renderScreen();
 

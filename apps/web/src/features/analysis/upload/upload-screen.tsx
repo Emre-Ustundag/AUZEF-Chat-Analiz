@@ -56,6 +56,11 @@ export function UploadScreen() {
         router.push(`/yuklemeler/${created.upload_id}`);
       },
       onError: (caught) => {
+        // İptal kullanıcının kendi kararı, hata değil: dosya seçili kalıyor ki
+        // tekrar denemek isterse baştan seçmek zorunda kalmasın.
+        if (caught instanceof DOMException && caught.name === "AbortError") {
+          return;
+        }
         if (caught instanceof ApiError) {
           setError({ title: "Yükleme başarısız", message: caught.userMessage });
           return;
@@ -147,20 +152,23 @@ export function UploadScreen() {
                 </div>
               )}
 
-              <Button
-                onClick={handleUpload}
-                disabled={isUploading}
-                className="w-full"
-              >
-                {isUploading ? (
-                  <>
+              {isUploading ? (
+                <div className="flex gap-2">
+                  <Button disabled className="flex-1">
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     Yükleniyor
-                  </>
-                ) : (
-                  "Yükle ve devam et"
-                )}
-              </Button>
+                  </Button>
+                  {/* 130 MB'lık bir yükleme dakikalar sürüyor; yanlış dosyayı
+                      başlatan kullanıcı sekmeyi kapatmak zorunda kalmamalı. */}
+                  <Button variant="outline" onClick={upload.cancel}>
+                    Yüklemeyi iptal et
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={handleUpload} className="w-full">
+                  Yükle ve devam et
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

@@ -142,6 +142,21 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
           <StageStepper status={job.status} />
 
           <div className="border-t pt-4">
+            {/* İptal isteği başarısız olabilir: iş bu sırada bittiyse backend
+                409 döner. Gösterilmezse düğme normale döner ve kullanıcı
+                iptalin geçtiğini sanır. */}
+            {cancel.isError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="size-4" aria-hidden="true" />
+                <AlertTitle>Analiz iptal edilemedi</AlertTitle>
+                <AlertDescription>
+                  {cancel.error instanceof ApiError
+                    ? cancel.error.userMessage
+                    : "İptal isteği gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin."}
+                </AlertDescription>
+              </Alert>
+            )}
+
             {confirmingCancel ? (
               <div className="flex flex-wrap items-center gap-3">
                 <p className="text-sm">

@@ -2,13 +2,14 @@
 
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfigureScreen } from "@/features/analysis/configure/configure-screen";
 import { ApiError } from "@/lib/api/client";
-import { useUploadStatus } from "@/lib/api/hooks";
+import { useDeleteUpload, useUploadStatus } from "@/lib/api/hooks";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,6 +20,8 @@ import { cn } from "@/lib/utils";
  */
 export function UploadStatusScreen({ uploadId }: { uploadId: string }) {
   const { data: upload, error, isPending } = useUploadStatus(uploadId);
+  const remove = useDeleteUpload();
+  const router = useRouter();
 
   if (isPending) {
     return <CenteredCard title="Dosya bilgileri alınıyor" />;
@@ -57,7 +60,27 @@ export function UploadStatusScreen({ uploadId }: { uploadId: string }) {
       <CenteredCard
         title="Dosya doğrulanıyor"
         description="Sayfalar, kolonlar ve satır sayısı çıkarılıyor. Bu işlem dosya boyutuna göre biraz sürebilir."
-      />
+      >
+        {/* ADR §6: DELETE /uploads/{id} iptal ve cleanup içindir. Vazgeçen
+            kullanıcı için kayıt silinmezse yüklenen dosya sunucuda lifecycle
+            süresi dolana kadar bekler. */}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={remove.isPending}
+          onClick={() =>
+            remove.mutate(uploadId, { onSuccess: () => router.push("/") })
+          }
+        >
+          {remove.isPending ? "Vazgeçiliyor" : "Vazgeç"}
+        </Button>
+        {remove.isError && (
+          <p className="text-sm text-destructive" role="alert">
+            Yükleme iptal edilemedi. Bu adresten ayrılabilir veya tekrar
+            deneyebilirsiniz.
+          </p>
+        )}
+      </CenteredCard>
     );
   }
 
@@ -67,9 +90,11 @@ export function UploadStatusScreen({ uploadId }: { uploadId: string }) {
 function CenteredCard({
   title,
   description,
+  children,
 }: {
   title: string;
   description?: string;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
@@ -87,6 +112,7 @@ function CenteredCard({
               {description}
             </p>
           )}
+          {children}
         </CardContent>
       </Card>
     </div>

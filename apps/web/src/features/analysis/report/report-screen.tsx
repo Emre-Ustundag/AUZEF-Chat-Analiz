@@ -1,9 +1,10 @@
 "use client";
 
 import { AlertCircle, Download, FileJson, Loader2 } from "lucide-react";
+import { useCallback } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,8 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ApiError } from "@/lib/api/client";
-import { analysisExportUrl } from "@/lib/api/endpoints";
-import { useAnalysisReport } from "@/lib/api/hooks";
+import { useAnalysisReport, useExportAnalysis } from "@/lib/api/hooks";
+import type { ExportFormat } from "@/lib/api/schemas";
 import {
   formatCount,
   formatDateTime,
@@ -35,6 +36,18 @@ import { TopQuestionsChart } from "./top-questions-chart";
  */
 export function ReportScreen({ analysisId }: { analysisId: string }) {
   const { data: report, error, isPending } = useAnalysisReport(analysisId, true);
+  const exportMutation = useExportAnalysis();
+
+  const runExport = useCallback(
+    (format: ExportFormat) => exportMutation.mutate({ analysisId, format }),
+    [analysisId, exportMutation],
+  );
+
+  // Hangi düğmenin beklediği: iki format tek mutation'ı paylaşıyor, ayrımı
+  // çalışan isteğin kendi değişkeni veriyor.
+  const exportPending = exportMutation.isPending
+    ? exportMutation.variables.format
+    : null;
 
   if (isPending) {
     return (
@@ -87,22 +100,46 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
         </div>
 
         <div className="flex gap-2">
-          <a
-            href={analysisExportUrl(analysisId, "xlsx")}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportPending === "xlsx"}
+            onClick={() => runExport("xlsx")}
           >
-            <Download className="size-4" aria-hidden="true" />
+            {exportPending === "xlsx" ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Download className="size-4" aria-hidden="true" />
+            )}
             Excel
-          </a>
-          <a
-            href={analysisExportUrl(analysisId, "json")}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exportPending === "json"}
+            onClick={() => runExport("json")}
           >
-            <FileJson className="size-4" aria-hidden="true" />
+            {exportPending === "json" ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <FileJson className="size-4" aria-hidden="true" />
+            )}
             JSON
-          </a>
+          </Button>
         </div>
       </div>
+
+      {exportMutation.isError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="size-4" aria-hidden="true" />
+          <AlertTitle>Dosya indirilemedi</AlertTitle>
+          <AlertDescription>
+            {exportMutation.error instanceof ApiError
+              ? exportMutation.error.userMessage
+              : "Dışa aktarma sırasında beklenmeyen bir sorun oluştu."}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {report.warnings.length > 0 && (
         <Alert className="mb-6">

@@ -66,7 +66,11 @@ export function unknownApiError(status: number, detail: string): ApiError {
   });
 }
 
-async function toApiError(response: Response): Promise<ApiError> {
+/**
+ * Hata cevabını ApiError'a çevirir. `apiRequest` dışında, gövdesi JSON
+ * olmayan cevaplarda da (export indirmesi) kullanılıyor.
+ */
+export async function toApiError(response: Response): Promise<ApiError> {
   let body: unknown;
   try {
     body = await response.json();

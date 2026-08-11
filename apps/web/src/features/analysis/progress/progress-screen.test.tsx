@@ -4,6 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "@/lib/api/client";
 import { createQueryClient } from "@/lib/api/query-client";
 import type { AnalysisJob, ProblemDetails } from "@/lib/api/schemas";
 
@@ -102,6 +103,34 @@ describe("ProgressScreen — devam eden iş", () => {
 
     await user.click(screen.getByRole("button", { name: /Evet, iptal et/ }));
     await waitFor(() => expect(cancelAnalysis).toHaveBeenCalledWith(ID));
+  });
+
+  it("iptal isteği başarısız olursa sessiz kalmaz", async () => {
+    // İş bu sırada bittiyse backend 409 döner. Gösterilmezse düğme normale
+    // döner ve kullanıcı iptalin geçtiğini sanır.
+    getAnalysisJob.mockResolvedValue(job());
+    cancelAnalysis.mockRejectedValue(
+      new ApiError(
+        problem({
+          code: "JOB_CONFLICT",
+          status: 409,
+          title: "İş zaten bitti",
+          detail: "job already completed",
+        }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(
+      await screen.findByRole("button", { name: /Analizi iptal et/ }),
+    );
+    await user.click(screen.getByRole("button", { name: /Evet, iptal et/ }));
+
+    expect(
+      await screen.findByText("Analiz iptal edilemedi"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/job already completed/)).not.toBeInTheDocument();
   });
 
   it("iptalden vazgeçilebilir", async () => {
