@@ -21,8 +21,7 @@ export const metadata: Metadata = {
     default: "AUZEF Chat Analiz",
     template: "%s · AUZEF Chat Analiz",
   },
-  description:
-    "Chatbot mesajlarından sık sorulan soruları ve ana temaları çıkaran analiz aracı.",
+  description: "Chatbot mesajlarından sık sorulan soruları ve ana temaları çıkaran analiz aracı.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

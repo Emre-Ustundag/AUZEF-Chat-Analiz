@@ -21,13 +21,8 @@ export function Logo({
 }) {
   return (
     <span className={cn("flex items-center gap-2", className)}>
-      <MessagesSquare
-        className="size-5 shrink-0 text-primary"
-        aria-hidden="true"
-      />
-      {showWordmark && (
-        <span className="font-semibold tracking-tight">AUZEF Chat Analiz</span>
-      )}
+      <MessagesSquare className="size-5 shrink-0 text-primary" aria-hidden="true" />
+      {showWordmark && <span className="font-semibold tracking-tight">AUZEF Chat Analiz</span>}
     </span>
   );
 }

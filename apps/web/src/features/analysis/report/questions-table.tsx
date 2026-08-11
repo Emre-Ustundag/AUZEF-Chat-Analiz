@@ -19,11 +19,7 @@ import type { TopQuestion } from "@/lib/api/schemas";
  * Örnek mesajlar backend'de PII redaksiyonundan geçmiş ve kırpılmış olarak
  * geliyor (ADR §5); arayüz ham kullanıcı metni göstermiyor.
  */
-export function QuestionsTable({
-  questions,
-}: {
-  questions: readonly TopQuestion[];
-}) {
+export function QuestionsTable({ questions }: { questions: readonly TopQuestion[] }) {
   return (
     <div className="overflow-x-auto rounded-lg border">
       <Table>
@@ -39,9 +35,7 @@ export function QuestionsTable({
         <TableBody>
           {questions.map((question) => (
             <TableRow key={question.id}>
-              <TableCell className="font-medium">
-                {question.canonical_question}
-              </TableCell>
+              <TableCell className="font-medium">{question.canonical_question}</TableCell>
               <TableCell className="text-right tabular-nums">
                 {formatCount(question.count)}
               </TableCell>

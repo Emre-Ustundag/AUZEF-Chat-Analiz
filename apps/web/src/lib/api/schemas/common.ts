@@ -65,20 +65,17 @@ export type ProblemDetails = z.infer<typeof problemDetailsSchema>;
 export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
   UPLOAD_TOO_LARGE:
     "Dosya boyutu sınırı aşıldı. En fazla 150 MB büyüklüğünde bir .xlsx dosyası yükleyebilirsiniz.",
-  UPLOAD_INVALID_TYPE:
-    "Bu dosya türü desteklenmiyor. Yalnızca .xlsx dosyaları analiz edilebilir.",
+  UPLOAD_INVALID_TYPE: "Bu dosya türü desteklenmiyor. Yalnızca .xlsx dosyaları analiz edilebilir.",
   UPLOAD_CORRUPT_OR_ENCRYPTED:
     "Dosya okunamadı. Bozuk, şifrelenmiş veya makro içeren dosyalar desteklenmez.",
   SHEET_OR_COLUMN_NOT_FOUND:
     "Seçilen sayfa veya kolon dosyada bulunamadı. Lütfen seçiminizi güncelleyin.",
   PROVIDER_AUTH_FAILED:
     "OpenRouter API anahtarı doğrulanamadı. Anahtarı kontrol edip tekrar deneyin.",
-  PROVIDER_RATE_LIMITED:
-    "OpenRouter istek sınırına ulaşıldı. Bir süre bekleyip tekrar deneyin.",
+  PROVIDER_RATE_LIMITED: "OpenRouter istek sınırına ulaşıldı. Bir süre bekleyip tekrar deneyin.",
   PROVIDER_BAD_RESPONSE:
     "Dil modelinden geçerli bir yanıt alınamadı. Analizi tekrar başlatmayı deneyin.",
-  PROVIDER_TIMEOUT:
-    "Dil modeli zaman aşımına uğradı. Analizi tekrar başlatmayı deneyin.",
+  PROVIDER_TIMEOUT: "Dil modeli zaman aşımına uğradı. Analizi tekrar başlatmayı deneyin.",
   JOB_NOT_FOUND: "İşlem bulunamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.",
   JOB_CONFLICT: "Bu işlem için zaten devam eden bir analiz var.",
   INTERNAL_ERROR: "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
@@ -104,8 +101,7 @@ export const LIMITS = {
   /** Sıkıştırılmış upload sınırı: 150 MB */
   MAX_UPLOAD_BYTES: 150 * 1024 * 1024,
   MAX_ROWS: 100_000,
-  ACCEPTED_MIME_TYPE:
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ACCEPTED_MIME_TYPE: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ACCEPTED_EXTENSION: ".xlsx",
   /** ADR §2: durum sorgulama aralığı 2-3 saniye. */
   POLL_INTERVAL_MS: 2500,

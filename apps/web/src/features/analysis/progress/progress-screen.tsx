@@ -6,13 +6,7 @@ import { useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ApiError } from "@/lib/api/client";
 import { useAnalysisJob, useCancelAnalysis } from "@/lib/api/hooks";
@@ -42,10 +36,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
       <Shell>
         <Card>
           <CardContent className="flex items-center justify-center gap-3 py-12">
-            <Loader2
-              className="size-5 animate-spin text-muted-foreground"
-              aria-hidden="true"
-            />
+            <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
             <p role="status" aria-live="polite">
               Analiz durumu alınıyor…
             </p>
@@ -60,11 +51,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
       <Shell>
         <ErrorState
           title="Analize ulaşılamadı"
-          message={
-            error instanceof ApiError
-              ? error.userMessage
-              : "Analiz durumu alınamadı."
-          }
+          message={error instanceof ApiError ? error.userMessage : "Analiz durumu alınamadı."}
         />
       </Shell>
     );
@@ -91,8 +78,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
           <Ban className="size-4" aria-hidden="true" />
           <AlertTitle>Analiz iptal edildi</AlertTitle>
           <AlertDescription>
-            Bu analiz siz iptal ettiğiniz için durduruldu. Yeni bir analiz
-            başlatabilirsiniz.
+            Bu analiz siz iptal ettiğiniz için durduruldu. Yeni bir analiz başlatabilirsiniz.
           </AlertDescription>
         </Alert>
         <Link href="/" className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
@@ -114,17 +100,15 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
         <CardHeader>
           <CardTitle>Analiz sürüyor</CardTitle>
           <CardDescription>
-            Bu işlem veri boyutuna göre 45 dakikaya kadar sürebilir. Sekmeyi
-            kapatabilirsiniz; bu adrese geri dönerek duruma bakabilirsiniz.
+            Bu işlem veri boyutuna göre 45 dakikaya kadar sürebilir. Sekmeyi kapatabilirsiniz; bu
+            adrese geri dönerek duruma bakabilirsiniz.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <div className="flex items-baseline justify-between gap-4">
-              <span className="font-medium">
-                {ANALYSIS_STAGE_LABELS_TR[job.status]}
-              </span>
+              <span className="font-medium">{ANALYSIS_STAGE_LABELS_TR[job.status]}</span>
               <span className="tabular-nums text-sm text-muted-foreground">
                 {formatPercentage(job.progress)}
               </span>
@@ -159,9 +143,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
 
             {confirmingCancel ? (
               <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm">
-                  Analiz iptal edilsin mi? Bu işlem geri alınamaz.
-                </p>
+                <p className="text-sm">Analiz iptal edilsin mi? Bu işlem geri alınamaz.</p>
                 <div className="flex gap-2">
                   <Button
                     variant="destructive"
@@ -171,21 +153,13 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
                   >
                     {cancel.isPending ? "İptal ediliyor" : "Evet, iptal et"}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setConfirmingCancel(false)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmingCancel(false)}>
                     Vazgeç
                   </Button>
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setConfirmingCancel(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setConfirmingCancel(true)}>
                 <Ban className="size-4" aria-hidden="true" />
                 Analizi iptal et
               </Button>
@@ -198,11 +172,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
-      {children}
-    </div>
-  );
+  return <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">{children}</div>;
 }
 
 function ErrorState({
@@ -224,10 +194,7 @@ function ErrorState({
         <AlertDescription>
           {message}
           {retryAfterSeconds !== undefined && (
-            <>
-              {" "}
-              {formatDuration(retryAfterSeconds)} sonra tekrar deneyebilirsiniz.
-            </>
+            <> {formatDuration(retryAfterSeconds)} sonra tekrar deneyebilirsiniz.</>
           )}
         </AlertDescription>
       </Alert>
@@ -241,10 +208,7 @@ function ErrorState({
             Tekrar dene
           </Link>
         )}
-        <Link
-          href="/"
-          className={buttonVariants({ variant: canRetry ? "ghost" : "outline" })}
-        >
+        <Link href="/" className={buttonVariants({ variant: canRetry ? "ghost" : "outline" })}>
           Yeni dosya yükle
         </Link>
       </div>

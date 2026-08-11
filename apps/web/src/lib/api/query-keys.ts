@@ -8,6 +8,5 @@ export const queryKeys = {
   models: () => ["models"] as const,
   upload: (uploadId: string) => ["uploads", uploadId] as const,
   analysisJob: (analysisId: string) => ["analyses", analysisId] as const,
-  analysisReport: (analysisId: string) =>
-    ["analyses", analysisId, "result"] as const,
+  analysisReport: (analysisId: string) => ["analyses", analysisId, "result"] as const,
 } as const;

@@ -62,7 +62,13 @@ const report: AnalysisReport = {
     },
   ],
   themes: [
-    { id: "t1", name: "Sınav takvimi", count: 11_680, percentage: 24.8, related_question_ids: ["q1"] },
+    {
+      id: "t1",
+      name: "Sınav takvimi",
+      count: 11_680,
+      percentage: 24.8,
+      related_question_ids: ["q1"],
+    },
     { id: "t2", name: "Materyaller", count: 8_102, percentage: 17.2, related_question_ids: ["q2"] },
   ],
   executive_summary: "Mesajların dörtte biri sınav takvimiyle ilgili.",
@@ -106,9 +112,7 @@ describe("ReportScreen", () => {
     renderScreen();
 
     // Grafik ve tabloda ikişer kez geçiyor.
-    expect(
-      await screen.findAllByText("Sınav tarihleri ne zaman açıklanacak?"),
-    ).toHaveLength(2);
+    expect(await screen.findAllByText("Sınav tarihleri ne zaman açıklanacak?")).toHaveLength(2);
     expect(screen.getAllByText(/%24,8/).length).toBeGreaterThan(0);
   });
 
@@ -131,9 +135,7 @@ describe("ReportScreen", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: /JSON/ }));
 
-    await waitFor(() =>
-      expect(downloadAnalysisExport).toHaveBeenCalledWith(ID, "json"),
-    );
+    await waitFor(() => expect(downloadAnalysisExport).toHaveBeenCalledWith(ID, "json"));
   });
 
   it("dışa aktarma hatasını ham JSON yerine Türkçe mesajla gösterir", async () => {
@@ -155,9 +157,7 @@ describe("ReportScreen", () => {
     await userEvent.click(await screen.findByRole("button", { name: /Excel/ }));
 
     expect(await screen.findByText("Dosya indirilemedi")).toBeInTheDocument();
-    expect(
-      screen.getByText(/zaten devam eden bir analiz var/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/zaten devam eden bir analiz var/)).toBeInTheDocument();
     expect(screen.queryByText(/completed analyses/)).not.toBeInTheDocument();
   });
 
@@ -187,11 +187,7 @@ describe("foldThemes — renk slotu ataması", () => {
 
   it("altı ve altındaki temaya kendi slotunu verir", () => {
     const result = foldThemes([1, 2, 3].map(theme));
-    expect(result.map((s) => s.className)).toEqual([
-      "bg-chart-1",
-      "bg-chart-2",
-      "bg-chart-3",
-    ]);
+    expect(result.map((s) => s.className)).toEqual(["bg-chart-1", "bg-chart-2", "bg-chart-3"]);
   });
 
   it("altıdan fazlasını 'Diğer'e katlar, yeni renk ÜRETMEZ", () => {

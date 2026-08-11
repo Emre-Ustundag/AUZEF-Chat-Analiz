@@ -1,9 +1,6 @@
 import { Check, Loader2 } from "lucide-react";
 
-import {
-  ANALYSIS_ACTIVE_STAGES,
-  ANALYSIS_STAGE_LABELS_TR,
-} from "@/lib/api/schemas";
+import { ANALYSIS_ACTIVE_STAGES, ANALYSIS_STAGE_LABELS_TR } from "@/lib/api/schemas";
 import type { AnalysisStatus } from "@/lib/api/schemas";
 import { cn } from "@/lib/utils";
 

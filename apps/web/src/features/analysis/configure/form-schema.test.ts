@@ -22,24 +22,17 @@ describe("configureFormSchema", () => {
   });
 
   it("API anahtarını zorunlu tutar", () => {
-    expect(
-      configureFormSchema.safeParse({ ...validValues, openrouter_api_key: "" })
-        .success,
-    ).toBe(false);
+    expect(configureFormSchema.safeParse({ ...validValues, openrouter_api_key: "" }).success).toBe(
+      false,
+    );
   });
 
   it("istek şemasının kısıtlarını devralır", () => {
     // top_n ve maliyet sınırı analysisRequestSchema'da tanımlı; formda
     // yeniden yazılmadıkları için burada da geçerli olmaları gerekir.
-    expect(
-      configureFormSchema.safeParse({ ...validValues, top_n: 0 }).success,
-    ).toBe(false);
-    expect(
-      configureFormSchema.safeParse({ ...validValues, max_cost_usd: 0 }).success,
-    ).toBe(false);
-    expect(
-      configureFormSchema.safeParse({ ...validValues, text_column: "" }).success,
-    ).toBe(false);
+    expect(configureFormSchema.safeParse({ ...validValues, top_n: 0 }).success).toBe(false);
+    expect(configureFormSchema.safeParse({ ...validValues, max_cost_usd: 0 }).success).toBe(false);
+    expect(configureFormSchema.safeParse({ ...validValues, text_column: "" }).success).toBe(false);
   });
 
   it("upload_id istemez", () => {

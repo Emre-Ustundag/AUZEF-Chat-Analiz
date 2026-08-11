@@ -21,11 +21,7 @@ import type { TopQuestion } from "@/lib/api/schemas";
  * Değerler her çubukta yazılı: bu liste aynı zamanda tablo görünümü görevi
  * görüyor, yani renk tek başına hiçbir bilgiyi taşımıyor.
  */
-export function TopQuestionsChart({
-  questions,
-}: {
-  questions: readonly TopQuestion[];
-}) {
+export function TopQuestionsChart({ questions }: { questions: readonly TopQuestion[] }) {
   if (questions.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
@@ -44,9 +40,7 @@ export function TopQuestionsChart({
         <li key={question.id} className="space-y-1.5">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-sm">
-              <span className="mr-2 tabular-nums text-muted-foreground">
-                {index + 1}.
-              </span>
+              <span className="mr-2 tabular-nums text-muted-foreground">{index + 1}.</span>
               {question.canonical_question}
             </span>
             <span className="shrink-0 tabular-nums text-sm text-muted-foreground">

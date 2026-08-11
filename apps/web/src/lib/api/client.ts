@@ -15,8 +15,7 @@ import type { ErrorCode, ProblemDetails } from "./schemas";
  * rewrite'lardan önce eşleşir, yani aynı yolu paylaşsalardı mock dosyaları
  * repoda kaldığı sürece gerçek backend'i sessizce gölgelerdi.
  */
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/mock/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/mock/v1";
 
 /**
  * Backend'in RFC 9457 hata cevabını taşıyan hata sınıfı.
@@ -75,10 +74,7 @@ export async function toApiError(response: Response): Promise<ApiError> {
   try {
     body = await response.json();
   } catch {
-    return unknownApiError(
-      response.status,
-      `Sunucu yanıtı okunamadı (HTTP ${response.status}).`,
-    );
+    return unknownApiError(response.status, `Sunucu yanıtı okunamadı (HTTP ${response.status}).`);
   }
 
   const parsed = problemDetailsSchema.safeParse(body);

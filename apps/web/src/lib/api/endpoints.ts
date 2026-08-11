@@ -30,10 +30,7 @@ import type {
 
 /** ADR §6'daki endpoint'lerin tiplendirilmiş karşılıkları. */
 
-export function getUpload(
-  uploadId: string,
-  signal?: AbortSignal,
-): Promise<Upload> {
+export function getUpload(uploadId: string, signal?: AbortSignal): Promise<Upload> {
   return apiRequest(`/uploads/${uploadId}`, uploadSchema, { signal });
 }
 
@@ -59,10 +56,7 @@ export function createAnalysis(
   });
 }
 
-export function getAnalysisJob(
-  analysisId: string,
-  signal?: AbortSignal,
-): Promise<AnalysisJob> {
+export function getAnalysisJob(analysisId: string, signal?: AbortSignal): Promise<AnalysisJob> {
   return apiRequest(`/analyses/${analysisId}`, analysisJobSchema, { signal });
 }
 
@@ -79,10 +73,7 @@ export function cancelAnalysis(analysisId: string): Promise<void> {
   return apiRequest(`/analyses/${analysisId}`, z.void(), { method: "DELETE" });
 }
 
-export function analysisExportUrl(
-  analysisId: string,
-  format: ExportFormat,
-): string {
+export function analysisExportUrl(analysisId: string, format: ExportFormat): string {
   return `${API_BASE_URL}/analyses/${analysisId}/export?format=${format}`;
 }
 
@@ -117,9 +108,8 @@ export async function downloadAnalysisExport(
   return {
     blob: await response.blob(),
     filename:
-      filenameFromContentDisposition(
-        response.headers.get("Content-Disposition"),
-      ) ?? `analiz-${analysisId}.${format}`,
+      filenameFromContentDisposition(response.headers.get("Content-Disposition")) ??
+      `analiz-${analysisId}.${format}`,
   };
 }
 
@@ -210,10 +200,7 @@ export function createUpload(
         reject(
           problem.success
             ? new ApiError(problem.data)
-            : unknownApiError(
-                xhr.status,
-                `Yükleme başarısız (HTTP ${xhr.status}).`,
-              ),
+            : unknownApiError(xhr.status, `Yükleme başarısız (HTTP ${xhr.status}).`),
         );
         return;
       }

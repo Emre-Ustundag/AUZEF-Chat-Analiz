@@ -10,13 +10,9 @@ import type { AnalysisRequest } from "@/lib/api/schemas";
  * sınırı, boş kolon reddi) tek yerde tanımlı kalsın. `upload_id` formda yok;
  * URL'den geliyor.
  */
-export const configureFormSchema = analysisRequestSchema
-  .omit({ upload_id: true })
-  .extend({
-    openrouter_api_key: z
-      .string()
-      .min(1, "OpenRouter API anahtarı gereklidir."),
-  });
+export const configureFormSchema = analysisRequestSchema.omit({ upload_id: true }).extend({
+  openrouter_api_key: z.string().min(1, "OpenRouter API anahtarı gereklidir."),
+});
 
 export type ConfigureFormValues = z.infer<typeof configureFormSchema>;
 
@@ -28,10 +24,7 @@ export type ConfigureFormValues = z.infer<typeof configureFormSchema>;
  * kazara istek gövdesine sızamasın diye. ADR §6/§9: anahtar yalnızca
  * X-OpenRouter-Key header'ında taşınır.
  */
-export function toAnalysisRequest(
-  uploadId: string,
-  values: ConfigureFormValues,
-): AnalysisRequest {
+export function toAnalysisRequest(uploadId: string, values: ConfigureFormValues): AnalysisRequest {
   return {
     upload_id: uploadId,
     sheet_name: values.sheet_name,

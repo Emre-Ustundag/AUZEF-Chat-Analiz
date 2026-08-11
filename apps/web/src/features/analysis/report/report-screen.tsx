@@ -5,22 +5,11 @@ import { useCallback } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api/client";
 import { useAnalysisReport, useExportAnalysis } from "@/lib/api/hooks";
 import type { ExportFormat } from "@/lib/api/schemas";
-import {
-  formatCount,
-  formatDateTime,
-  formatPercentage,
-  formatUsd,
-} from "@/lib/format";
+import { formatCount, formatDateTime, formatPercentage, formatUsd } from "@/lib/format";
 
 import { QuestionsTable } from "./questions-table";
 import { StatTiles } from "./stat-tiles";
@@ -45,19 +34,14 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
 
   // Hangi düğmenin beklediği: iki format tek mutation'ı paylaşıyor, ayrımı
   // çalışan isteğin kendi değişkeni veriyor.
-  const exportPending = exportMutation.isPending
-    ? exportMutation.variables.format
-    : null;
+  const exportPending = exportMutation.isPending ? exportMutation.variables.format : null;
 
   if (isPending) {
     return (
       <Shell>
         <Card>
           <CardContent className="flex items-center justify-center gap-3 py-16">
-            <Loader2
-              className="size-5 animate-spin text-muted-foreground"
-              aria-hidden="true"
-            />
+            <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
             <p role="status" aria-live="polite">
               Rapor hazırlanıyor…
             </p>
@@ -74,9 +58,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
           <AlertCircle className="size-4" aria-hidden="true" />
           <AlertTitle>Rapor alınamadı</AlertTitle>
           <AlertDescription>
-            {error instanceof ApiError
-              ? error.userMessage
-              : "Analiz raporu yüklenemedi."}
+            {error instanceof ApiError ? error.userMessage : "Analiz raporu yüklenemedi."}
           </AlertDescription>
         </Alert>
       </Shell>
@@ -90,9 +72,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
     <Shell>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Analiz sonuçları
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Analiz sonuçları</h1>
           <p className="text-sm text-muted-foreground">
             {src.filename} · {src.sheet_name} · {src.text_column} kolonu ·{" "}
             {formatDateTime(report.generated_at)}
@@ -194,8 +174,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
           <CardHeader>
             <CardTitle>En sık sorulan sorular</CardTitle>
             <CardDescription>
-              Oranlar analiz edilen {formatCount(pre.analyzed_count)} kayda
-              göre hesaplandı.
+              Oranlar analiz edilen {formatCount(pre.analyzed_count)} kayda göre hesaplandı.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -206,9 +185,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Tema dağılımı</CardTitle>
-            <CardDescription>
-              Sorular ana temalara göre gruplandı.
-            </CardDescription>
+            <CardDescription>Sorular ana temalara göre gruplandı.</CardDescription>
           </CardHeader>
           <CardContent>
             <ThemeDistribution themes={report.themes} />
@@ -218,9 +195,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Soru ayrıntıları</CardTitle>
-            <CardDescription>
-              Örnek mesajlarda kişisel veriler maskelenmiştir.
-            </CardDescription>
+            <CardDescription>Örnek mesajlarda kişisel veriler maskelenmiştir.</CardDescription>
           </CardHeader>
           <CardContent>
             <QuestionsTable questions={report.top_questions} />
@@ -241,9 +216,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
               <Meta
                 label="Maskelenen kayıt"
                 value={`${formatCount(pre.redacted_count)} (${formatPercentage(
-                  pre.analyzed_count > 0
-                    ? (pre.redacted_count / pre.analyzed_count) * 100
-                    : 0,
+                  pre.analyzed_count > 0 ? (pre.redacted_count / pre.analyzed_count) * 100 : 0,
                 )})`}
               />
               <Meta label="Şema sürümü" value={report.schema_version} />
@@ -261,15 +234,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
   );
 }
 
-function Meta({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function Meta({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="min-w-0">
       <dt className="text-muted-foreground">{label}</dt>
@@ -279,9 +244,5 @@ function Meta({
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
-      {children}
-    </div>
-  );
+  return <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-12">{children}</div>;
 }

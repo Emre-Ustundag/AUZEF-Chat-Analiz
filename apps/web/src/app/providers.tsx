@@ -21,12 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
     // yerine `.dark` sınıf varyantı koyuyor. Sınıfı <html>'e ekleyen bir
     // mekanizma olmadan koyu tema sessizce çalışmaz. defaultTheme="system"
     // ile önceki davranış korunuyor, üstüne elle seçim de mümkün oluyor.
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ThemeProvider>
   );

@@ -6,9 +6,7 @@ export const metadata: Metadata = {
   title: "Analiz",
 };
 
-export default async function AnalysisPage(
-  props: PageProps<"/analizler/[analysisId]">,
-) {
+export default async function AnalysisPage(props: PageProps<"/analizler/[analysisId]">) {
   // Next 16'da params bir Promise; senkron erişim kaldırıldı.
   const { analysisId } = await props.params;
 

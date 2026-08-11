@@ -33,11 +33,7 @@ function notFound(): ApiError {
 }
 
 function wrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <QueryClientProvider client={createQueryClient()}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={createQueryClient()}>{children}</QueryClientProvider>;
 }
 
 /**

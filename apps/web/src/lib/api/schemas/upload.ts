@@ -10,12 +10,7 @@ import { problemDetailsSchema } from "./common";
  */
 
 /** ADR §6: queued/validating/ready/failed */
-export const uploadStatusSchema = z.enum([
-  "queued",
-  "validating",
-  "ready",
-  "failed",
-]);
+export const uploadStatusSchema = z.enum(["queued", "validating", "ready", "failed"]);
 
 export type UploadStatus = z.infer<typeof uploadStatusSchema>;
 

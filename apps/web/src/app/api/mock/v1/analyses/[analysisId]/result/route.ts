@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 
-import {
-  analysisExists,
-  getAnalysisReportRecord,
-  problem,
-} from "@/mocks/store";
+import { analysisExists, getAnalysisReportRecord, problem } from "@/mocks/store";
 
 /**
  * GET /api/mock/v1/analyses/{analysisId}/result

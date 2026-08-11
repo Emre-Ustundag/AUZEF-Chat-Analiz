@@ -7,13 +7,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -57,8 +51,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
       sheet_name: firstSheet?.name ?? "",
       // Backend'in metin tahmini varsayılan seçim olarak kullanılıyor;
       // kullanıcı yine de değiştirebilir.
-      text_column:
-        firstSheet?.columns.find((column) => column.is_likely_text)?.name ?? "",
+      text_column: firstSheet?.columns.find((column) => column.is_likely_text)?.name ?? "",
       model: models.default_model,
       prompt_version: models.default_prompt_version,
       top_n: 20,
@@ -73,8 +66,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
   // tabanlı ve yalnızca ilgili alan değiştiğinde yeniden render ediyor.
   const selectedSheetName = useWatch({ control, name: "sheet_name" });
   const selectedColumn = useWatch({ control, name: "text_column" });
-  const selectedSheet =
-    sheets.find((sheet) => sheet.name === selectedSheetName) ?? firstSheet;
+  const selectedSheet = sheets.find((sheet) => sheet.name === selectedSheetName) ?? firstSheet;
 
   const onSubmit = handleSubmit((values) => {
     createAnalysis.mutate(
@@ -83,8 +75,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
         openRouterApiKey: values.openrouter_api_key,
       },
       {
-        onSuccess: (created) =>
-          router.push(`/analizler/${created.analysis_id}`),
+        onSuccess: (created) => router.push(`/analizler/${created.analysis_id}`),
       },
     );
   });
@@ -106,9 +97,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Analiz edilecek veri</CardTitle>
-          <CardDescription>
-            Mesaj metinlerini içeren sayfayı ve kolonu seçin.
-          </CardDescription>
+          <CardDescription>Mesaj metinlerini içeren sayfayı ve kolonu seçin.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -129,8 +118,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                       const sheet = sheets.find((s) => s.name === next);
                       setValue(
                         "text_column",
-                        sheet?.columns.find((c) => c.is_likely_text)?.name ??
-                          "",
+                        sheet?.columns.find((c) => c.is_likely_text)?.name ?? "",
                         { shouldValidate: true },
                       );
                     }}
@@ -160,14 +148,10 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
             <ColumnPicker
               columns={selectedSheet?.columns ?? []}
               value={selectedColumn || null}
-              onChange={(name) =>
-                setValue("text_column", name, { shouldValidate: true })
-              }
+              onChange={(name) => setValue("text_column", name, { shouldValidate: true })}
             />
             {errors.text_column && (
-              <p className="text-sm text-destructive">
-                {errors.text_column.message}
-              </p>
+              <p className="text-sm text-destructive">{errors.text_column.message}</p>
             )}
           </div>
         </CardContent>
@@ -176,9 +160,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Analiz ayarları</CardTitle>
-          <CardDescription>
-            Model ve sonuç sınırlarını belirleyin.
-          </CardDescription>
+          <CardDescription>Model ve sonuç sınırlarını belirleyin.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -213,8 +195,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                 )}
               />
               <p className="text-xs text-muted-foreground">
-                Yalnızca yapılandırılmış çıktı desteği doğrulanmış modeller
-                listelenir.
+                Yalnızca yapılandırılmış çıktı desteği doğrulanmış modeller listelenir.
               </p>
             </div>
 
@@ -227,11 +208,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                 max={100}
                 {...register("top_n", { valueAsNumber: true })}
               />
-              {errors.top_n && (
-                <p className="text-sm text-destructive">
-                  {errors.top_n.message}
-                </p>
-              )}
+              {errors.top_n && <p className="text-sm text-destructive">{errors.top_n.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -246,13 +223,10 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                 {...register("max_cost_usd", { valueAsNumber: true })}
               />
               {errors.max_cost_usd ? (
-                <p className="text-sm text-destructive">
-                  {errors.max_cost_usd.message}
-                </p>
+                <p className="text-sm text-destructive">{errors.max_cost_usd.message}</p>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Tahmini maliyet bu sınırı aşarsa iş, model çağrıları
-                  başlamadan durdurulur.
+                  Tahmini maliyet bu sınırı aşarsa iş, model çağrıları başlamadan durdurulur.
                 </p>
               )}
             </div>
@@ -276,13 +250,11 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
               {...register("openrouter_api_key")}
             />
             {errors.openrouter_api_key ? (
-              <p className="text-sm text-destructive">
-                {errors.openrouter_api_key.message}
-              </p>
+              <p className="text-sm text-destructive">{errors.openrouter_api_key.message}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                Anahtar yalnızca bu analiz için kullanılır, veritabanına
-                yazılmaz ve işlem bitince silinir.
+                Anahtar yalnızca bu analiz için kullanılır, veritabanına yazılmaz ve işlem bitince
+                silinir.
               </p>
             )}
           </div>
@@ -297,12 +269,7 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
         </Alert>
       )}
 
-      <Button
-        type="submit"
-        disabled={createAnalysis.isPending}
-        className="w-full"
-        size="lg"
-      >
+      <Button type="submit" disabled={createAnalysis.isPending} className="w-full" size="lg">
         {createAnalysis.isPending ? (
           <>
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />

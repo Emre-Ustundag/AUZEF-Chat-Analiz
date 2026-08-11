@@ -31,11 +31,7 @@ export function UploadStatusScreen({ uploadId }: { uploadId: string }) {
     return (
       <ErrorCard
         title="Dosyaya ulaşılamadı"
-        message={
-          error instanceof ApiError
-            ? error.userMessage
-            : "Dosya durumu alınamadı."
-        }
+        message={error instanceof ApiError ? error.userMessage : "Dosya durumu alınamadı."}
       />
     );
   }
@@ -68,16 +64,13 @@ export function UploadStatusScreen({ uploadId }: { uploadId: string }) {
           variant="outline"
           size="sm"
           disabled={remove.isPending}
-          onClick={() =>
-            remove.mutate(uploadId, { onSuccess: () => router.push("/") })
-          }
+          onClick={() => remove.mutate(uploadId, { onSuccess: () => router.push("/") })}
         >
           {remove.isPending ? "Vazgeçiliyor" : "Vazgeç"}
         </Button>
         {remove.isError && (
           <p className="text-sm text-destructive" role="alert">
-            Yükleme iptal edilemedi. Bu adresten ayrılabilir veya tekrar
-            deneyebilirsiniz.
+            Yükleme iptal edilemedi. Bu adresten ayrılabilir veya tekrar deneyebilirsiniz.
           </p>
         )}
       </CenteredCard>
@@ -100,18 +93,11 @@ function CenteredCard({
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-          <Loader2
-            className="size-6 animate-spin text-muted-foreground"
-            aria-hidden="true"
-          />
+          <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
           <p className="font-medium" role="status" aria-live="polite">
             {title}
           </p>
-          {description && (
-            <p className="max-w-sm text-sm text-muted-foreground">
-              {description}
-            </p>
-          )}
+          {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
           {children}
         </CardContent>
       </Card>

@@ -18,11 +18,7 @@ import {
 } from "./endpoints";
 import type { UploadProgress } from "./endpoints";
 import { queryKeys } from "./query-keys";
-import {
-  LIMITS,
-  isAnalysisSettled,
-  isUploadSettled,
-} from "./schemas";
+import { LIMITS, isAnalysisSettled, isUploadSettled } from "./schemas";
 import type { AnalysisRequest, ExportFormat } from "./schemas";
 
 /**
@@ -170,13 +166,8 @@ export function useDeleteUpload() {
  */
 export function useExportAnalysis() {
   return useMutation({
-    mutationFn: ({
-      analysisId,
-      format,
-    }: {
-      analysisId: string;
-      format: ExportFormat;
-    }) => downloadAnalysisExport(analysisId, format),
+    mutationFn: ({ analysisId, format }: { analysisId: string; format: ExportFormat }) =>
+      downloadAnalysisExport(analysisId, format),
     onSuccess: (file) => saveBlob(file.blob, file.filename),
   });
 }

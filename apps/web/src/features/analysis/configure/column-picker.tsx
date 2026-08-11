@@ -71,9 +71,7 @@ export function ColumnPicker({ columns, value, onChange }: ColumnPickerProps) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{column.name}</span>
-                      {column.is_likely_text && (
-                        <Badge variant="secondary">metin</Badge>
-                      )}
+                      {column.is_likely_text && <Badge variant="secondary">metin</Badge>}
                     </div>
                   </TableCell>
 

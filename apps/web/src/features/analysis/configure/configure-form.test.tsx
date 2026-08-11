@@ -114,10 +114,7 @@ describe("ConfigureForm", () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(
-      screen.getByLabelText(/OpenRouter API anahtarı/),
-      API_KEY,
-    );
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
     await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
@@ -131,10 +128,7 @@ describe("ConfigureForm", () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(
-      screen.getByLabelText(/OpenRouter API anahtarı/),
-      API_KEY,
-    );
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
     await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
@@ -153,9 +147,7 @@ describe("ConfigureForm", () => {
 
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
-    expect(
-      await screen.findByText("OpenRouter API anahtarı gereklidir."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("OpenRouter API anahtarı gereklidir.")).toBeInTheDocument();
     expect(createAnalysis).not.toHaveBeenCalled();
   });
 
@@ -174,15 +166,10 @@ describe("ConfigureForm", () => {
     const topN = screen.getByLabelText("Gösterilecek soru sayısı");
     await user.clear(topN);
     await user.type(topN, "0");
-    await user.type(
-      screen.getByLabelText(/OpenRouter API anahtarı/),
-      API_KEY,
-    );
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/En az 1 sonuç istenmelidir/)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/En az 1 sonuç istenmelidir/)).toBeInTheDocument());
     expect(createAnalysis).not.toHaveBeenCalled();
   });
 
@@ -190,16 +177,11 @@ describe("ConfigureForm", () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(
-      screen.getByLabelText(/OpenRouter API anahtarı/),
-      API_KEY,
-    );
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith(
-        "/analizler/8c2a1b40-1111-4222-8333-044455556666",
-      ),
+      expect(push).toHaveBeenCalledWith("/analizler/8c2a1b40-1111-4222-8333-044455556666"),
     );
   });
 });

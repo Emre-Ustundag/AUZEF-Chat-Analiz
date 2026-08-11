@@ -27,12 +27,7 @@ import type {
  */
 
 /** Dosya adına gömülen anahtar kelimelerle hata yolları tetiklenir. */
-export type Scenario =
-  | "success"
-  | "upload-failed"
-  | "analysis-failed"
-  | "rate-limited"
-  | "slow";
+export type Scenario = "success" | "upload-failed" | "analysis-failed" | "rate-limited" | "slow";
 
 export function scenarioFromFilename(filename: string): Scenario {
   const name = filename.toLocaleLowerCase("tr");
@@ -108,10 +103,7 @@ export function problem(
 
 // ---------------------------------------------------------------- uploads
 
-export function createUploadRecord(
-  filename: string,
-  sizeBytes: number,
-): UploadRecord {
+export function createUploadRecord(filename: string, sizeBytes: number): UploadRecord {
   const record: UploadRecord = {
     uploadId: randomUUID(),
     filename,
@@ -258,9 +250,7 @@ function buildProfile() {
 
 // --------------------------------------------------------------- analyses
 
-export function createAnalysisRecord(
-  request: AnalysisRequest,
-): AnalysisRecord {
+export function createAnalysisRecord(request: AnalysisRequest): AnalysisRecord {
   const upload = uploads.get(request.upload_id);
   const record: AnalysisRecord = {
     analysisId: randomUUID(),
@@ -274,9 +264,7 @@ export function createAnalysisRecord(
 }
 
 function totalDurationOf(record: AnalysisRecord): number {
-  return record.scenario === "slow"
-    ? ANALYSIS_TOTAL_MS * SLOW_MULTIPLIER
-    : ANALYSIS_TOTAL_MS;
+  return record.scenario === "slow" ? ANALYSIS_TOTAL_MS * SLOW_MULTIPLIER : ANALYSIS_TOTAL_MS;
 }
 
 function stageOf(record: AnalysisRecord): {
@@ -313,10 +301,7 @@ export function getAnalysisJobRecord(analysisId: string): AnalysisJob | null {
   if (!record) return null;
 
   const { status, progress } = stageOf(record);
-  const remainingMs = Math.max(
-    0,
-    totalDurationOf(record) - (Date.now() - record.createdAt),
-  );
+  const remainingMs = Math.max(0, totalDurationOf(record) - (Date.now() - record.createdAt));
 
   return {
     analysis_id: record.analysisId,
@@ -359,9 +344,7 @@ export function analysisExists(analysisId: string): boolean {
   return analyses.has(analysisId);
 }
 
-export function getAnalysisReportRecord(
-  analysisId: string,
-): AnalysisReport | null {
+export function getAnalysisReportRecord(analysisId: string): AnalysisReport | null {
   const record = analyses.get(analysisId);
   if (!record) return null;
   if (stageOf(record).status !== "completed") return null;
@@ -372,14 +355,62 @@ export function getAnalysisReportRecord(
   // sayımdan hesaplayacak (ADR §4), sabit yazılmış yüzdeler sözleşmeyi
   // yanlış temsil ederdi.
   const questions = [
-    { id: "q1", canonical_question: "Sınav tarihleri ne zaman açıklanacak?", count: 11_680, confidence: 0.94, examples: ["sınav tarihleri belli mi", "vize ne zaman"] },
-    { id: "q2", canonical_question: "Ders materyallerine nereden ulaşabilirim?", count: 8_102, confidence: 0.91, examples: ["ders kitabı nerede", "pdf'leri bulamıyorum"] },
-    { id: "q3", canonical_question: "Harç ödemesini nasıl yaparım?", count: 5_748, confidence: 0.89, examples: ["harç yatırma", "ödeme yapamıyorum"] },
-    { id: "q4", canonical_question: "Kayıt yenileme işlemi nasıl yapılır?", count: 4_523, confidence: 0.87, examples: ["kayıt yenilemedim ne olur"] },
-    { id: "q5", canonical_question: "Sınav yerimi nereden öğrenebilirim?", count: 3_311, confidence: 0.85, examples: ["sınav yeri", "hangi binada"] },
-    { id: "q6", canonical_question: "Mazeret sınavına nasıl başvurulur?", count: 2_204, confidence: 0.82, examples: ["mazeret sınavı başvuru"] },
-    { id: "q7", canonical_question: "Not itirazı nasıl yapılır?", count: 1_640, confidence: 0.78, examples: ["notuma itiraz etmek istiyorum"] },
-    { id: "q8", canonical_question: "Öğrenci belgesi nasıl alınır?", count: 1_129, confidence: 0.76, examples: ["öğrenci belgesi lazım"] },
+    {
+      id: "q1",
+      canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
+      count: 11_680,
+      confidence: 0.94,
+      examples: ["sınav tarihleri belli mi", "vize ne zaman"],
+    },
+    {
+      id: "q2",
+      canonical_question: "Ders materyallerine nereden ulaşabilirim?",
+      count: 8_102,
+      confidence: 0.91,
+      examples: ["ders kitabı nerede", "pdf'leri bulamıyorum"],
+    },
+    {
+      id: "q3",
+      canonical_question: "Harç ödemesini nasıl yaparım?",
+      count: 5_748,
+      confidence: 0.89,
+      examples: ["harç yatırma", "ödeme yapamıyorum"],
+    },
+    {
+      id: "q4",
+      canonical_question: "Kayıt yenileme işlemi nasıl yapılır?",
+      count: 4_523,
+      confidence: 0.87,
+      examples: ["kayıt yenilemedim ne olur"],
+    },
+    {
+      id: "q5",
+      canonical_question: "Sınav yerimi nereden öğrenebilirim?",
+      count: 3_311,
+      confidence: 0.85,
+      examples: ["sınav yeri", "hangi binada"],
+    },
+    {
+      id: "q6",
+      canonical_question: "Mazeret sınavına nasıl başvurulur?",
+      count: 2_204,
+      confidence: 0.82,
+      examples: ["mazeret sınavı başvuru"],
+    },
+    {
+      id: "q7",
+      canonical_question: "Not itirazı nasıl yapılır?",
+      count: 1_640,
+      confidence: 0.78,
+      examples: ["notuma itiraz etmek istiyorum"],
+    },
+    {
+      id: "q8",
+      canonical_question: "Öğrenci belgesi nasıl alınır?",
+      count: 1_129,
+      confidence: 0.76,
+      examples: ["öğrenci belgesi lazım"],
+    },
   ];
 
   const themes = [
@@ -430,18 +461,14 @@ export function getAnalysisReportRecord(
       // yer alan sorulara bağlanıyor; aksi halde arayüz çözemeyeceği bir
       // kimliğe bağlantı vermiş olurdu. Backend'in aynı davranışı seçmesi
       // gerekiyor, teyit edilmeli.
-      const includedIds = new Set(
-        questions.slice(0, record.request.top_n).map((q) => q.id),
-      );
+      const includedIds = new Set(questions.slice(0, record.request.top_n).map((q) => q.id));
 
       return {
         id: theme.id,
         name: theme.name,
         count,
         percentage: pct(count),
-        related_question_ids: theme.questionIds.filter((id) =>
-          includedIds.has(id),
-        ),
+        related_question_ids: theme.questionIds.filter((id) => includedIds.has(id)),
       };
     }),
     executive_summary:

@@ -18,12 +18,8 @@ export function StatTiles({
           <CardContent className="space-y-1 py-4">
             <p className="text-sm text-muted-foreground">{item.label}</p>
             {/* tabular-nums: kartlar yan yana dururken rakamlar hizalansın. */}
-            <p className="text-2xl font-semibold tabular-nums tracking-tight">
-              {item.value}
-            </p>
-            {item.hint && (
-              <p className="text-xs text-muted-foreground">{item.hint}</p>
-            )}
+            <p className="text-2xl font-semibold tabular-nums tracking-tight">{item.value}</p>
+            {item.hint && <p className="text-xs text-muted-foreground">{item.hint}</p>}
           </CardContent>
         </Card>
       ))}

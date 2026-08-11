@@ -45,11 +45,7 @@ export const ANALYSIS_ACTIVE_STAGES = [
   "aggregating",
 ] as const satisfies readonly AnalysisStatus[];
 
-const TERMINAL_STATUSES: readonly AnalysisStatus[] = [
-  "completed",
-  "failed",
-  "cancelled",
-];
+const TERMINAL_STATUSES: readonly AnalysisStatus[] = ["completed", "failed", "cancelled"];
 
 /**
  * Terminal durumlar polling'i durdurur. TanStack Query'nin refetchInterval'ı
@@ -73,10 +69,7 @@ export const analysisRequestSchema = z.object({
   text_column: z.string().min(1, "Analiz edilecek metin kolonu seçilmelidir."),
   model: z.string().min(1, "Model seçilmelidir."),
   prompt_version: z.string().min(1),
-  top_n: z
-    .int()
-    .min(1, "En az 1 sonuç istenmelidir.")
-    .max(100, "En fazla 100 sonuç istenebilir."),
+  top_n: z.int().min(1, "En az 1 sonuç istenmelidir.").max(100, "En fazla 100 sonuç istenebilir."),
   max_cost_usd: z
     .number()
     .positive("Maliyet sınırı sıfırdan büyük olmalıdır.")

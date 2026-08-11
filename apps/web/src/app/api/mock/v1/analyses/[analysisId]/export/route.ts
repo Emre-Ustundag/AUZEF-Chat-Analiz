@@ -15,9 +15,7 @@ export async function GET(
   context: RouteContext<"/api/mock/v1/analyses/[analysisId]/export">,
 ) {
   const { analysisId } = await context.params;
-  const format = exportFormatSchema
-    .catch("json")
-    .parse(request.nextUrl.searchParams.get("format"));
+  const format = exportFormatSchema.catch("json").parse(request.nextUrl.searchParams.get("format"));
 
   const report = getAnalysisReportRecord(analysisId);
   if (!report) {

@@ -86,21 +86,15 @@ describe("analysisRequestSchema", () => {
   });
 
   it("top_n sıfır olamaz", () => {
-    expect(
-      analysisRequestSchema.safeParse({ ...valid, top_n: 0 }).success,
-    ).toBe(false);
+    expect(analysisRequestSchema.safeParse({ ...valid, top_n: 0 }).success).toBe(false);
   });
 
   it("maliyet sınırı pozitif olmalıdır", () => {
-    expect(
-      analysisRequestSchema.safeParse({ ...valid, max_cost_usd: 0 }).success,
-    ).toBe(false);
+    expect(analysisRequestSchema.safeParse({ ...valid, max_cost_usd: 0 }).success).toBe(false);
   });
 
   it("boş kolon adını reddeder", () => {
-    expect(
-      analysisRequestSchema.safeParse({ ...valid, text_column: "" }).success,
-    ).toBe(false);
+    expect(analysisRequestSchema.safeParse({ ...valid, text_column: "" }).success).toBe(false);
   });
 
   it("OpenRouter anahtarını gövdede taşımaz", () => {

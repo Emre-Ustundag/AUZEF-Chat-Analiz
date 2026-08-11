@@ -53,12 +53,12 @@ Dashboard üzerinde aşağıdaki bilgilerin sunulması planlanmaktadır:
 
 Örnek sonuç:
 
-| Soru / tema | Adet | Oran |
-| --- | ---: | ---: |
-| Sınav tarihleri | 1.240 | %24,8 |
-| Ders materyallerine erişim | 860 | %17,2 |
-| Harç ve ödeme işlemleri | 610 | %12,2 |
-| Kayıt yenileme | 480 | %9,6 |
+| Soru / tema                |  Adet |  Oran |
+| -------------------------- | ----: | ----: |
+| Sınav tarihleri            | 1.240 | %24,8 |
+| Ders materyallerine erişim |   860 | %17,2 |
+| Harç ve ödeme işlemleri    |   610 | %12,2 |
+| Kayıt yenileme             |   480 |  %9,6 |
 
 ## Analiz yaklaşımı
 
@@ -92,14 +92,14 @@ flowchart LR
 
 ### Bileşenler
 
-| Bileşen | Sorumluluk |
-| --- | --- |
-| Next.js web | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard |
-| FastAPI | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
-| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı |
-| PostgreSQL | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu |
-| Redis | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı |
-| S3 / MinIO | Ham upload ve Parquet ara dosyaları için geçici object storage |
+| Bileşen       | Sorumluluk                                                                    |
+| ------------- | ----------------------------------------------------------------------------- |
+| Next.js web   | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard               |
+| FastAPI       | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
+| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı         |
+| PostgreSQL    | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu     |
+| Redis         | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı    |
+| S3 / MinIO    | Ham upload ve Parquet ara dosyaları için geçici object storage                |
 
 ### İki aşamalı işlem modeli
 
@@ -244,16 +244,18 @@ Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresind
 
 ### Kullanılabilir komutlar
 
-| Komut | Açıklama |
-| --- | --- |
-| `npm run dev` | Geliştirme sunucusunu başlatır |
-| `npm run build` | Üretim derlemesi oluşturur |
-| `npm run start` | Üretim sunucusunu başlatır |
-| `npm run lint` | ESLint kontrollerini çalıştırır |
-| `npm run typecheck` | Yol tiplerini üretip TypeScript kontrolü yapar |
-| `npm test` | Vitest test paketini çalıştırır |
+| Komut                  | Açıklama                                            |
+| ---------------------- | --------------------------------------------------- |
+| `npm run dev`          | Geliştirme sunucusunu başlatır                      |
+| `npm run build`        | Üretim derlemesi oluşturur                          |
+| `npm run start`        | Üretim sunucusunu başlatır                          |
+| `npm run lint`         | ESLint kontrollerini çalıştırır                     |
+| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir    |
+| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder |
+| `npm run typecheck`    | Yol tiplerini üretip TypeScript kontrolü yapar      |
+| `npm test`             | Vitest test paketini çalıştırır                     |
 
-Bu dört komutun tamamı her push ve pull request'te GitHub Actions üzerinde de
+Bu komutların tamamı her push ve pull request'te GitHub Actions üzerinde de
 çalışır (`.github/workflows/ci.yml`).
 
 > `npm run typecheck` önce `next typegen` çalıştırır. `PageProps` ve
@@ -298,8 +300,8 @@ Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutul
 
 Web uygulamasının bugün kullandığı tek değişken:
 
-| Değişken | Varsayılan | Açıklama |
-| --- | --- | --- |
+| Değişken                   | Varsayılan     | Açıklama                                                            |
+| -------------------------- | -------------- | ------------------------------------------------------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | `/api/mock/v1` | Backend'in taban adresi. FastAPI devreye girince `/api/v1` yapılır. |
 
 `NEXT_PUBLIC_` ile başlayan değişkenler istemci paketine **build zamanında**
@@ -343,8 +345,11 @@ imaj gerçek veri değil, çalışan bir demo sunar.
 - [ ] Tema eğilimleri ve dönemsel değişim analizi
 - [ ] Kayıtlı analiz geçmişi ve rapor karşılaştırma
 
-
 Hata bildirimleri ve özellik önerileri için [GitHub Issues](https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz/issues) kullanılabilir.
+
+## Katkıda bulunma
+
+Branch adlandırma, kalite kontrolleri, pull request ve reviewer kuralları için [katkı rehberini](CONTRIBUTING.md) inceleyin. Pull request açıldığında standart kontrol listesi otomatik olarak gösterilir.
 
 ## Proje bağlantısı
 

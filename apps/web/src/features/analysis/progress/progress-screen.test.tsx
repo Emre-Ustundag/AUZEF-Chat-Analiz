@@ -70,9 +70,7 @@ describe("ProgressScreen — devam eden iş", () => {
     renderScreen();
 
     // Aşama adı kasıtlı olarak iki yerde: başlıkta ve adım listesinde.
-    expect(
-      await screen.findAllByText("Mesajlar analiz ediliyor"),
-    ).toHaveLength(2);
+    expect(await screen.findAllByText("Mesajlar analiz ediliyor")).toHaveLength(2);
     expect(screen.getByText("%42,5")).toBeInTheDocument();
     expect(screen.getByText(/10 dk/)).toBeInTheDocument();
   });
@@ -82,9 +80,7 @@ describe("ProgressScreen — devam eden iş", () => {
     getAnalysisJob.mockResolvedValue(job());
     renderScreen();
 
-    expect(
-      await screen.findByText(/Sekmeyi\s+kapatabilirsiniz/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Sekmeyi\s+kapatabilirsiniz/)).toBeInTheDocument();
   });
 
   it("iptal onay ister ve onaylanınca isteği gönderir", async () => {
@@ -93,9 +89,7 @@ describe("ProgressScreen — devam eden iş", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(
-      await screen.findByRole("button", { name: /Analizi iptal et/ }),
-    );
+    await user.click(await screen.findByRole("button", { name: /Analizi iptal et/ }));
 
     // Tek tıkla iptal olmamalı; geri alınamaz bir işlem.
     expect(cancelAnalysis).not.toHaveBeenCalled();
@@ -122,14 +116,10 @@ describe("ProgressScreen — devam eden iş", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(
-      await screen.findByRole("button", { name: /Analizi iptal et/ }),
-    );
+    await user.click(await screen.findByRole("button", { name: /Analizi iptal et/ }));
     await user.click(screen.getByRole("button", { name: /Evet, iptal et/ }));
 
-    expect(
-      await screen.findByText("Analiz iptal edilemedi"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Analiz iptal edilemedi")).toBeInTheDocument();
     expect(screen.queryByText(/job already completed/)).not.toBeInTheDocument();
   });
 
@@ -138,15 +128,11 @@ describe("ProgressScreen — devam eden iş", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(
-      await screen.findByRole("button", { name: /Analizi iptal et/ }),
-    );
+    await user.click(await screen.findByRole("button", { name: /Analizi iptal et/ }));
     await user.click(screen.getByRole("button", { name: "Vazgeç" }));
 
     expect(cancelAnalysis).not.toHaveBeenCalled();
-    expect(
-      screen.getByRole("button", { name: /Analizi iptal et/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Analizi iptal et/ })).toBeInTheDocument();
   });
 });
 
@@ -168,23 +154,15 @@ describe("ProgressScreen — terminal durumlar", () => {
     renderScreen();
 
     expect(await screen.findByText("Rapor hazırlanıyor…")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Analizi iptal et/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Analizi iptal et/ })).not.toBeInTheDocument();
   });
 
   it("hatada backend'in ham detayını DEĞİL Türkçe metni gösterir", async () => {
-    getAnalysisJob.mockResolvedValue(
-      job({ status: "failed", error: problem() }),
-    );
+    getAnalysisJob.mockResolvedValue(job({ status: "failed", error: problem() }));
     renderScreen();
 
-    expect(
-      await screen.findByText("Analiz tamamlanamadı"),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText(/raw provider payload/),
-    ).not.toBeInTheDocument();
+    expect(await screen.findByText("Analiz tamamlanamadı")).toBeInTheDocument();
+    expect(screen.queryByText(/raw provider payload/)).not.toBeInTheDocument();
   });
 
   it("geçici sağlayıcı hatasında tekrar denemeyi önerir", async () => {
@@ -198,9 +176,7 @@ describe("ProgressScreen — terminal durumlar", () => {
 
     // Base UI dokümanı link'i Button'a sarmayı yasakladığı için bu bir <a>;
     // rolü de link olmalı, button değil.
-    expect(
-      await screen.findByRole("link", { name: /Tekrar dene/ }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /Tekrar dene/ })).toBeInTheDocument();
     // retry_after kullanıcıya süre olarak aktarılmalı.
     expect(screen.getByText(/1 dk sonra/)).toBeInTheDocument();
   });
@@ -219,11 +195,7 @@ describe("ProgressScreen — terminal durumlar", () => {
     );
     renderScreen();
 
-    expect(
-      await screen.findByText("Analiz tamamlanamadı"),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: /Tekrar dene/ }),
-    ).not.toBeInTheDocument();
+    expect(await screen.findByText("Analiz tamamlanamadı")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Tekrar dene/ })).not.toBeInTheDocument();
   });
 });

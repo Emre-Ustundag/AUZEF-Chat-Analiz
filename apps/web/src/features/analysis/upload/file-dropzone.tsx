@@ -66,12 +66,8 @@ export function FileDropzone({ onFileSelected, disabled }: FileDropzoneProps) {
         </span>
 
         <span className="space-y-1">
-          <span className="block font-medium">
-            Excel dosyasını buraya sürükleyin
-          </span>
-          <span className="block text-sm text-muted-foreground">
-            veya seçmek için tıklayın
-          </span>
+          <span className="block font-medium">Excel dosyasını buraya sürükleyin</span>
+          <span className="block text-sm text-muted-foreground">veya seçmek için tıklayın</span>
         </span>
 
         <span className="text-xs text-muted-foreground">

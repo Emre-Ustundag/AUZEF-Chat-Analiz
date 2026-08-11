@@ -6,13 +6,7 @@ import { useCallback, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ApiError } from "@/lib/api/client";
 import { useCreateUpload } from "@/lib/api/hooks";
@@ -78,12 +72,10 @@ export function UploadScreen() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
       <div className="mb-8 space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Chatbot mesajlarını analiz edin
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Chatbot mesajlarını analiz edin</h1>
         <p className="text-muted-foreground">
-          Excel dosyanızı yükleyin; sık sorulan sorular ve ana temalar adet ve
-          oranlarıyla çıkarılsın.
+          Excel dosyanızı yükleyin; sık sorulan sorular ve ana temalar adet ve oranlarıyla
+          çıkarılsın.
         </p>
       </div>
 
@@ -91,8 +83,8 @@ export function UploadScreen() {
         <CardHeader>
           <CardTitle>Veri dosyası</CardTitle>
           <CardDescription>
-            Analiz edilecek mesajları içeren .xlsx dosyasını seçin. Sayfa ve
-            kolon seçimini bir sonraki adımda yapacaksınız.
+            Analiz edilecek mesajları içeren .xlsx dosyasını seçin. Sayfa ve kolon seçimini bir
+            sonraki adımda yapacaksınız.
           </CardDescription>
         </CardHeader>
 
@@ -106,10 +98,7 @@ export function UploadScreen() {
           )}
 
           {file === null ? (
-            <FileDropzone
-              onFileSelected={handleFileSelected}
-              disabled={isUploading}
-            />
+            <FileDropzone onFileSelected={handleFileSelected} disabled={isUploading} />
           ) : (
             <div className="space-y-4">
               <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -120,9 +109,7 @@ export function UploadScreen() {
                 <div className="min-w-0 flex-1">
                   {/* break-all: uzun dosya adları kartı taşırmasın. */}
                   <p className="truncate font-medium">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatFileSize(file.size)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
                 </div>
                 {!isUploading && (
                   <Button
@@ -137,12 +124,7 @@ export function UploadScreen() {
               </div>
 
               {isUploading && (
-                <div
-                  className="space-y-2"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
+                <div className="space-y-2" role="status" aria-live="polite" aria-atomic="true">
                   <Progress value={upload.progress?.percentage ?? 0} />
                   <p className="text-sm text-muted-foreground">
                     {upload.progress
@@ -177,16 +159,13 @@ export function UploadScreen() {
       {/* Kullanıcı gerçek öğrenci mesajlarını yüklüyor; verinin ne olacağını
           yüklemeden ÖNCE bilmeli (ADR §9). */}
       <div className="mt-6 flex gap-3 rounded-lg border bg-muted/40 p-4">
-        <ShieldCheck
-          className="size-5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
+        <ShieldCheck className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="space-y-1 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">Veriniz nasıl işleniyor?</p>
           <p>
-            Telefon, e-posta, T.C. ve öğrenci numarası gibi kişisel veriler dil
-            modeline gönderilmeden önce maskelenir. Yüklenen dosya işlem
-            bitiminde silinir; OpenRouter anahtarınız kalıcı olarak saklanmaz.
+            Telefon, e-posta, T.C. ve öğrenci numarası gibi kişisel veriler dil modeline
+            gönderilmeden önce maskelenir. Yüklenen dosya işlem bitiminde silinir; OpenRouter
+            anahtarınız kalıcı olarak saklanmaz.
           </p>
         </div>
       </div>

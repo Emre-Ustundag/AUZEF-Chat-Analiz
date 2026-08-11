@@ -2,42 +2,57 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-# Aynı dal için üst üste gelen çalıştırmalarda yalnızca sonuncusu tamamlanır.
+permissions:
+  contents: read
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   web:
-    name: apps/web
+    name: Lint, typecheck, test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
         with:
-          # Sürüm .nvmrc'den okunuyor: CI ile geliştiricilerin makineleri
-          # tek yerden aynı Node'a bağlansın.
+          # Sürüm .nvmrc'den okunuyor: CI ile geliştiricilerin makineleri tek
+          # yerden aynı Node'a bağlansın. Next.js 16, 22.22.2'den eski 22.x
+          # sürümlerini desteklemiyor.
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Bağımlılıkları kur
+      - name: Install dependencies
         run: npm ci
 
       - name: Lint
         run: npm run lint
 
-      # typecheck önce `next typegen` çalıştırıyor: PageProps/RouteContext gibi
-      # yol tipleri Next tarafından üretiliyor ve build almadan var olmuyorlar.
-      - name: Tip kontrolü
+      - name: Check formatting
+        run: npm run format:check
+
+      # `next typegen` önce çalışıyor: PageProps ve RouteContext gibi yol
+      # tiplerini Next üretiyor ve build almamış bir kopyada var olmuyorlar.
+      - name: Typecheck
         run: npm run typecheck
 
-      - name: Testler
+      - name: Test
         run: npm test
 
       - name: Build
         run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"

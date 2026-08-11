@@ -56,8 +56,5 @@ export async function POST(request: NextRequest) {
 
   const record = createAnalysisRecord(parsed.data);
 
-  return NextResponse.json(
-    { analysis_id: record.analysisId, status: "queued" },
-    { status: 202 },
-  );
+  return NextResponse.json({ analysis_id: record.analysisId, status: "queued" }, { status: 202 });
 }

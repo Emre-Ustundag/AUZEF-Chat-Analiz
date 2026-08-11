@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  analysisJobSchema,
-  analysisReportSchema,
-  uploadSchema,
-} from "@/lib/api/schemas";
+import { analysisJobSchema, analysisReportSchema, uploadSchema } from "@/lib/api/schemas";
 import type { AnalysisRequest } from "@/lib/api/schemas";
 
 import {
@@ -243,26 +239,21 @@ describe("analiz raporu mock'u", () => {
     const report = completedReport()!;
     const themeTotal = report.themes.reduce((sum, t) => sum + t.count, 0);
 
-    expect(themeTotal).toBeLessThanOrEqual(
-      report.preprocessing_summary.analyzed_count,
-    );
+    expect(themeTotal).toBeLessThanOrEqual(report.preprocessing_summary.analyzed_count);
   });
 
-  it.each([3, 5, 8])(
-    "top_n=%i olduğunda tema bağlantıları çözülebilir kalır",
-    (topN) => {
-      // Dashboard tema -> soru bağlantısını kuracak. top_n kırpması sonrası
-      // raporda olmayan bir kimliğe bağlanmak arayüzde kırık bağlantı demek.
-      const report = completedReport(topN)!;
-      const questionIds = new Set(report.top_questions.map((q) => q.id));
+  it.each([3, 5, 8])("top_n=%i olduğunda tema bağlantıları çözülebilir kalır", (topN) => {
+    // Dashboard tema -> soru bağlantısını kuracak. top_n kırpması sonrası
+    // raporda olmayan bir kimliğe bağlanmak arayüzde kırık bağlantı demek.
+    const report = completedReport(topN)!;
+    const questionIds = new Set(report.top_questions.map((q) => q.id));
 
-      for (const theme of report.themes) {
-        for (const id of theme.related_question_ids) {
-          expect(questionIds.has(id), `${theme.name} -> ${id}`).toBe(true);
-        }
+    for (const theme of report.themes) {
+      for (const id of theme.related_question_ids) {
+        expect(questionIds.has(id), `${theme.name} -> ${id}`).toBe(true);
       }
-    },
-  );
+    }
+  });
 
   it("tema adedi top_n kırpmasından etkilenmez", () => {
     // Tema büyüklüğü gerçek mesaj sayısıdır; kaç soru gösterildiğine bağlı
@@ -270,8 +261,6 @@ describe("analiz raporu mock'u", () => {
     const withThree = completedReport(3)!;
     const withEight = completedReport(8)!;
 
-    expect(withThree.themes.map((t) => t.count)).toEqual(
-      withEight.themes.map((t) => t.count),
-    );
+    expect(withThree.themes.map((t) => t.count)).toEqual(withEight.themes.map((t) => t.count));
   });
 });

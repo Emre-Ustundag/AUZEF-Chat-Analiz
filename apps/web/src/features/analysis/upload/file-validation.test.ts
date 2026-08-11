@@ -55,9 +55,10 @@ describe("validateFile", () => {
   });
 
   it("sınırı bir bayt aşan dosyayı reddeder", () => {
-    expect(
-      validateFile(fileOf("veri.xlsx", LIMITS.MAX_UPLOAD_BYTES + 1)),
-    ).toMatchObject({ ok: false, code: "UPLOAD_TOO_LARGE" });
+    expect(validateFile(fileOf("veri.xlsx", LIMITS.MAX_UPLOAD_BYTES + 1))).toMatchObject({
+      ok: false,
+      code: "UPLOAD_TOO_LARGE",
+    });
   });
 
   it("hata mesajları backend'in Türkçe metinleriyle aynı kümeden gelir", () => {

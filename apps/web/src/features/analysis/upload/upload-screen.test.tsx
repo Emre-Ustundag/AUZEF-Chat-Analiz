@@ -69,9 +69,7 @@ describe("UploadScreen", () => {
   it("başlangıçta sürükle-bırak alanını gösterir", () => {
     renderScreen();
 
-    expect(
-      screen.getByText("Excel dosyasını buraya sürükleyin"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Excel dosyasını buraya sürükleyin")).toBeInTheDocument();
   });
 
   it("sınırları kullanıcıya yükleme öncesi gösterir", () => {
@@ -108,14 +106,9 @@ describe("UploadScreen", () => {
     const user = userEvent.setup();
     const { container } = renderScreen();
 
-    await user.upload(
-      fileInput(container),
-      xlsxFile("buyuk.xlsx", LIMITS.MAX_UPLOAD_BYTES + 1),
-    );
+    await user.upload(fileInput(container), xlsxFile("buyuk.xlsx", LIMITS.MAX_UPLOAD_BYTES + 1));
 
-    expect(
-      await screen.findByText(/Dosya boyutu sınırı aşıldı/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Dosya boyutu sınırı aşıldı/)).toBeInTheDocument();
     expect(createUpload).not.toHaveBeenCalled();
   });
 
@@ -134,13 +127,9 @@ describe("UploadScreen", () => {
     const { container } = renderScreen();
 
     await user.upload(fileInput(container), xlsxFile());
-    await user.click(
-      screen.getByRole("button", { name: "Seçilen dosyayı kaldır" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Seçilen dosyayı kaldır" }));
 
-    expect(
-      screen.getByText("Excel dosyasını buraya sürükleyin"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Excel dosyasını buraya sürükleyin")).toBeInTheDocument();
   });
 
   it("yükleme başarılı olunca profil sayfasına yönlendirir", async () => {
@@ -156,9 +145,7 @@ describe("UploadScreen", () => {
     await user.click(screen.getByRole("button", { name: /Yükle ve devam et/ }));
 
     await waitFor(() => {
-      expect(push).toHaveBeenCalledWith(
-        "/yuklemeler/3f2504e0-4f89-41d3-9a0c-0305e82c3301",
-      );
+      expect(push).toHaveBeenCalledWith("/yuklemeler/3f2504e0-4f89-41d3-9a0c-0305e82c3301");
     });
   });
 
@@ -187,9 +174,7 @@ describe("UploadScreen", () => {
     });
 
     // Backend'in teknik İngilizce detayı kullanıcıya gösterilmemeli.
-    expect(
-      screen.queryByText("technical detail from backend"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("technical detail from backend")).not.toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -224,9 +209,7 @@ describe("UploadScreen", () => {
     // İptal kullanıcının kendi kararı: hata kutusu çıkmamalı, dosya seçili
     // kalmalı ki tekrar denemek isterse baştan seçmesin.
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: /Yükle ve devam et/ }),
-      ).toBeInTheDocument(),
+      expect(screen.getByRole("button", { name: /Yükle ve devam et/ })).toBeInTheDocument(),
     );
     expect(screen.queryByText("Yükleme başarısız")).not.toBeInTheDocument();
     expect(screen.getByText("veri.xlsx")).toBeInTheDocument();

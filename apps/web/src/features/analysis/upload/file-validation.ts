@@ -12,9 +12,7 @@ import type { ErrorCode } from "@/lib/api/schemas";
  * Hata kodları backend'in kodlarıyla aynı kümeden seçilir ki kullanıcı
  * istemci ve sunucu reddi arasında farklı metinler görmesin.
  */
-export type FileValidationResult =
-  | { ok: true }
-  | { ok: false; code: ErrorCode; message: string };
+export type FileValidationResult = { ok: true } | { ok: false; code: ErrorCode; message: string };
 
 const EMPTY_FILE_MESSAGE = "Seçilen dosya boş. Lütfen geçerli bir .xlsx dosyası seçin.";
 
