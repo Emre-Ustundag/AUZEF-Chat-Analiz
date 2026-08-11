@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { ProgressScreen } from "@/features/analysis/progress/progress-screen";
+
 export const metadata: Metadata = {
   title: "Analiz",
 };
@@ -7,17 +9,8 @@ export const metadata: Metadata = {
 export default async function AnalysisPage(
   props: PageProps<"/analizler/[analysisId]">,
 ) {
+  // Next 16'da params bir Promise; senkron erişim kaldırıldı.
   const { analysisId } = await props.params;
 
-  // İlerleme ve dashboard ekranları sıradaki adımda.
-  return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-16 text-center sm:px-6">
-      <p className="text-muted-foreground">
-        Analiz başlatıldı. İlerleme ekranı sıradaki adımda eklenecek.
-      </p>
-      <p className="mt-2 font-mono text-xs text-muted-foreground">
-        {analysisId}
-      </p>
-    </div>
-  );
+  return <ProgressScreen analysisId={analysisId} />;
 }

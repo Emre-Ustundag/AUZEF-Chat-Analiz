@@ -4,11 +4,12 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfigureScreen } from "@/features/analysis/configure/configure-screen";
 import { ApiError } from "@/lib/api/client";
 import { useUploadStatus } from "@/lib/api/hooks";
+import { cn } from "@/lib/utils";
 
 /**
  * Yükleme sonrası profilleme durumu (ADR §5 Aşama A).
@@ -100,10 +101,12 @@ function ErrorCard({ title, message }: { title: string; message: string }) {
         <AlertTitle>{title}</AlertTitle>
         <AlertDescription>{message}</AlertDescription>
       </Alert>
-      {/* Base UI, Radix'in asChild deseni yerine `render` prop'u kullanıyor. */}
-      <Button variant="outline" className="mt-4" render={<Link href="/" />}>
+      {/* Base UI dokümanı: link'ler render prop'uyla Button'a sarılmamalı —
+          Button buton semantiği dayatıyor ve <a> kendi semantiğini kaybediyor.
+          Doğrusu <a>'yı doğrudan buttonVariants ile biçimlendirmek. */}
+      <Link href="/" className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
         Yeni dosya yükle
-      </Button>
+      </Link>
     </div>
   );
 }
