@@ -233,15 +233,69 @@ kodu paylaşır, ayrı kod tabanı yok).
 
 ## 4. Sonraki fazların ana hatları
 
-### Faz 2 — Analiz job'ı
+### Faz 2 — Analiz job'ı, ön işleme ve deterministik toplama
+
+**Kapsam kararı (11 Ağustos 2026'da revize edildi).** İlk taslakta Faz 2
+yalnızca durum makinesiydi ve LLM Faz 3'e bırakılmıştı. Bu yanlıştı: LLM
+olmadan iş `analyzing` aşamasında sonsuza kadar takılırdı, yani ilerleme
+ekranı "gerçeğe geçmiş" sayılmazdı ve faz kendi tanımını (çalışan dikey
+dilim) karşılamazdı.
+
+Doğru kesim şu: **LLM'in yaptığı iş yalnızca "kayıt kimliğini kategoriye
+eşlemek"** (ADR §4). Bu, arkasında bir arayüz olan tek bir bileşendir. Faz 2
+o bileşenin yerine **deterministik bir vekil sınıflandırıcı** koyar
+(normalize edilmiş metne göre gruplama) ve pipeline'ın geri kalanını —
+ön işleme, PII redaksiyonu, tekilleştirme, **adet/oran toplama**, rapor
+üretimi — GERÇEK yazar.
+
+Kazancı iki katlı:
+- Frontend'in tamamı (ilerleme + sonuç ekranı) gerçeğe geçer
+- ADR'nin en kritik kararı — **sayıları backend'in deterministik hesaplaması**
+  — LLM'in belirsizliği devreye girmeden, tek başına test edilebilir olur
+
+Faz 3 yalnızca sınıflandırıcıyı değiştirir; toplama matematiği o zaman
+zaten kanıtlanmış olur.
+
+**Yapılacaklar**
 
 - `POST /api/v1/analyses` + `X-OpenRouter-Key`
 - Anahtar AES-GCM ile şifrelenip Redis'e TTL ile yazılır (TTL = hard timeout +
-  5 dk, varsayılan 50 dk). PostgreSQL'e **yazılmaz**, loglarda redakte edilir
-- Job durum makinesi: `queued → validating/preprocessing → analyzing →
-  aggregating → completed`; terminal: `failed`, `cancelled`
+  5 dk, varsayılan 50 dk). PostgreSQL'e **yazılmaz**, loglarda redakte edilir.
+  Faz 2'de anahtar henüz KULLANILMIYOR ama saklama/silme yolu tam kurulur ve
+  test edilir; Faz 3'te yalnızca okuyan taraf eklenir
+- `analyses` tablosu + migration; job durum makinesi
+  `queued → validating → preprocessing → analyzing → aggregating → completed`,
+  terminal: `failed`, `cancelled`
 - Progress her satırda değil, aşama veya anlamlı yüzde değişiminde yazılır
-- `GET /api/v1/analyses/{id}` ve `DELETE` (iptal)
+  (ADR §2) — her satırda yazmak PostgreSQL'i gereksiz yere döver
+- İptal: `DELETE /api/v1/analyses/{id}`. Worker iptal bayrağını aşama
+  sınırlarında kontrol eder; iş bitmişse `JOB_CONFLICT` (409)
+- Ön işleme: seçilen kolon satır satır okunur, boş/sistem kayıtları elenir,
+  **PII maskelenir** (Faz 1'deki `services/redaction.py` yeniden kullanılır),
+  normalize edilip exact hash ile tekilleştirilir, **gerçek frekanslar
+  korunur**
+- Vekil sınıflandırıcı: `pipeline/classifier.py` arkasında bir arayüz.
+  Faz 2 uygulaması deterministik (normalize metin → kanonik soru). Faz 3'te
+  OpenRouter uygulaması aynı arayüzü sağlayacak
+- **Deterministik toplama:** adet, oran, Top N, tema grupları. Sayılar
+  yalnızca gerçek mesaj frekanslarından hesaplanır
+- `related_question_ids` §1.2'deki karara göre filtrelenir; tema `count`'u
+  kırpmadan etkilenmez
+- `GET /api/v1/analyses/{id}` ve `GET /api/v1/analyses/{id}/result`
+- Maliyet tavanı kontrolü iskeleti (Faz 2'de gerçek token yok, `0` raporlanır)
+
+**Tamamlanma ölçütü**
+
+1. Tarayıcıdan dosya yükleyip analiz başlatılabiliyor, ilerleme ekranı
+   aşamaları GERÇEKTEN ilerletiyor, sonuç ekranı gerçek raporu gösteriyor
+2. İptal çalışıyor; iptal edilen iş `cancelled` kalıyor
+3. Rapor gövdesi frontend'in `analysisReportSchema`'sından geçiyor
+4. Toplama testleri: oranların adetlerden türetildiği, tema toplamının
+   analiz edilen kaydı aşmadığı, `top_n` kırpmasının tema `count`'unu
+   değiştirmediği
+5. Anahtarın Redis'te şifreli durduğu, TTL'inin doğru olduğu ve iş bitince
+   silindiği test ediliyor; PostgreSQL'de ve loglarda anahtar YOK
+6. `pytest`, `ruff`, `mypy`, `npm test` yeşil
 
 ### Faz 3 — LLM pipeline
 
