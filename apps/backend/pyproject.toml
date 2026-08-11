@@ -18,6 +18,7 @@ dependencies = [
     "polars>=1.17",
     "pyarrow>=18.1",
     "python-multipart>=0.0.20",
+    "cryptography>=50.0.0",
 ]
 
 [dependency-groups]

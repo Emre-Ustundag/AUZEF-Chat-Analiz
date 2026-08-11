@@ -70,9 +70,45 @@ class Settings(BaseSettings):
     sample_values_per_column: int = 3
     sample_value_max_length: int = 80
 
+    # ---------------------------------------------------- analiz sınırları
+    # ADR §2: varsayılan analiz hard timeout'u 45 dakikadır ve environment ile
+    # değiştirilebilir. Celery'nin `task_time_limit`'i de buradan beslenir.
+    analysis_hard_timeout_seconds: int = 45 * 60
+
+    #: Soft limit hard limitin altında kalmalı: worker önce SoftTimeLimitExceeded
+    #: alıp işi sözleşmeye uygun bir hata ile kapatabilsin, sonra sert kesim gelsin.
+    analysis_soft_timeout_seconds: int = 44 * 60
+
+    # ADR §9: BYOK anahtarının Redis TTL'i HER ZAMAN hard timeout + 5 dakikadır
+    # (varsayılan 50 dk). Bu bir türetilmiş değerdir, ayrı bir ayar DEĞİL —
+    # ikisini bağımsız yapmak, TTL'in timeout'un altına düşüp işi ortada
+    # bırakmasına izin verirdi.
+    openrouter_key_ttl_margin_seconds: int = 5 * 60
+
+    #: AES-GCM master key. ADR §9: yalnızca secret manager/environment içinde
+    #: bulunur. Geliştirme varsayılanı bilinçli olarak açıkça "dev" etiketli:
+    #: üretimde bu değerin değiştirilmemesi gözden kaçmasın.
+    secret_encryption_key: str = "auzef-dev-master-key-degistirilmeli"
+
+    #: Analizde her aşamada değil, yalnızca bu kadar puanlık ilerleme
+    #: değişiminde PostgreSQL'e yazılır (ADR §2).
+    analysis_progress_write_threshold: float = 5.0
+
+    #: Ön işlemede bir kaydın anlamlı sayılması için gereken asgari uzunluk.
+    #: Bunun altındakiler ("ok", "??", "sa") elenir.
+    preprocess_min_message_length: int = 3
+
+    #: Rapora eklenecek örnek mesaj sayısı (redakte + kırpılmış).
+    report_examples_per_question: int = 3
+
     # ----------------------------------------------------------- worker
     upload_profile_soft_time_limit_seconds: int = 900
     upload_profile_time_limit_seconds: int = 1200
+
+    @property
+    def openrouter_key_ttl_seconds(self) -> int:
+        """ADR §9: TTL = job hard timeout + 5 dakika. Türetilir, ayarlanmaz."""
+        return self.analysis_hard_timeout_seconds + self.openrouter_key_ttl_margin_seconds
 
     @property
     def sync_database_url(self) -> str:

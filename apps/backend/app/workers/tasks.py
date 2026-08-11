@@ -1,7 +1,10 @@
-"""Celery task'ları — Faz 1: upload doğrulama ve profilleme.
+"""Celery task'ları.
 
-ADR §5 "Aşama A". İş mantığı asenkron bir fonksiyonda (`run_upload_profiling`)
-tutulur; Celery task'ı yalnızca ince bir sarmalayıcıdır. Bunun iki sebebi var:
+* Faz 1 — `run_upload_profiling`: upload doğrulama ve profilleme (ADR §5 A).
+* Faz 2 — `run_analysis`: analiz job'ı (ADR §5 B).
+
+İş mantığı asenkron fonksiyonlarda tutulur; Celery task'ları yalnızca ince
+sarmalayıcılardır. Bunun iki sebebi var:
 
 * Test edilebilirlik — testler task'ı doğrudan `await` edebilir, Celery
   broker'ı veya `task_always_eager` gerekmez.
@@ -16,18 +19,34 @@ from __future__ import annotations
 import asyncio
 import tempfile
 import uuid
+from itertools import islice
 from pathlib import Path
+from typing import Any, cast
 
-from sqlalchemy import select
+from sqlalchemy import CursorResult, Executable, func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.db import session_scope
-from app.core.errors import build_problem
+from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
+from app.models.analysis import Analysis
 from app.models.upload import Upload
+from app.pipeline.aggregate import AggregationError, aggregate
+from app.pipeline.classifier import DeterministicClassifier, RecordClassifier
+from app.pipeline.cost import estimate_cost
+from app.pipeline.preprocess import Preprocessor, PreprocessResult
+from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
+from app.schemas.report import AnalysisWarning
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import storage
-from app.services.xlsx import XlsxRejectedError, validate_and_profile
+from app.services import secret_store, storage
+from app.services.xlsx import (
+    SheetOrColumnNotFoundError,
+    XlsxRejectedError,
+    iter_column_values,
+    validate_and_profile,
+    validate_xlsx,
+)
 from app.workers.celery_app import celery_app
 
 logger = get_logger(__name__)
@@ -120,3 +139,434 @@ def profile_upload(upload_id: str) -> str:
     plan bağımlılık listesinde senkron bir Postgres sürücüsü yok.
     """
     return asyncio.run(run_upload_profiling(uuid.UUID(upload_id)))
+
+
+# =====================================================================
+# Faz 2 — analiz job'ı
+# =====================================================================
+#
+# Durum makinesi (ADR §6):
+#   queued → validating → preprocessing → analyzing → aggregating → completed
+#   terminal: failed, cancelled
+#
+# İKİ TASARIM KARARI burada yaşıyor:
+#
+# 1. İPTAL AŞAMA SINIRINDA kontrol edilir. Durum yazımlarının HEPSİ koşullu
+#    bir UPDATE'tir: `cancel_requested = false` VE durum terminal değil.
+#    Etkilenen satır sayısı 0 ise iş iptal edilmiş demektir ve worker geri
+#    döner. Böylece DELETE'in yazdığı `cancelled`, worker'ın bir sonraki
+#    yazımıyla EZİLEMEZ. Bayrak yerine yalnızca duruma bakmak yetmezdi:
+#    worker aşamanın ortasındayken DELETE gelirse, aşama bitiminde yazılan
+#    durum iptali sessizce geri alırdı.
+#
+# 2. PROGRESS HER SATIRDA YAZILMAZ (ADR §2). Yalnızca aşama değişiminde ve
+#    aşama içinde `analysis_progress_write_threshold` puanlık anlamlı bir
+#    sıçrama olduğunda yazılır. Her satırda yazmak 100.000 satırlık bir
+#    dosyada 100.000 UPDATE demekti.
+
+
+class _AnalysisCancelledError(Exception):
+    """İş aşama/parti sınırında iptal edilmiş olarak bulundu."""
+
+
+#: Ön işlemede bir seferde okunacak satır sayısı. Hem iptal kontrolünün hem
+#: de ilerleme yazımının granülaritesi budur. Çok küçük olursa thread'e geçiş
+#: maliyeti artar, çok büyük olursa iptal geç fark edilir.
+PREPROCESS_BATCH_ROWS = 2_000
+
+
+def build_classifier() -> RecordClassifier:
+    """Faz 2'nin sınıflandırıcısı.
+
+    Faz 3'te BURASI OpenRouter uygulamasını döndürecek; `run_analysis`'in
+    geri kalanı ve `pipeline/aggregate.py` DEĞİŞMEYECEK. Değişim noktasının
+    tek bir fonksiyon olması bilinçlidir.
+    """
+    return DeterministicClassifier()
+
+
+async def _guarded_update(session: AsyncSession, statement: Executable) -> int:
+    """Koşullu UPDATE çalıştırır ve etkilenen satır sayısını döndürür."""
+    result = cast("CursorResult[Any]", await session.execute(statement))
+    await session.commit()
+    return int(result.rowcount)
+
+
+def _live_analysis_filter(analysis_id: uuid.UUID) -> tuple[Any, ...]:
+    """İptal edilmemiş ve sonlanmamış kaydı seçen WHERE koşulları."""
+    return (
+        Analysis.id == analysis_id,
+        Analysis.cancel_requested.is_(False),
+        Analysis.status.not_in(TERMINAL_STATUSES),
+    )
+
+
+async def _advance_stage(
+    session: AsyncSession,
+    analysis_id: uuid.UUID,
+    stage: AnalysisStatus,
+) -> bool:
+    """Aşamayı ilerletir. İş iptal edilmiş/sonlanmışsa `False` döner."""
+    affected = await _guarded_update(
+        session,
+        update(Analysis)
+        .where(*_live_analysis_filter(analysis_id))
+        .values(status=stage, progress=STAGE_PROGRESS[stage], updated_at=func.now()),
+    )
+    if affected != 1:
+        logger.info(
+            "analysis_stage_skipped_cancelled_or_settled",
+            extra={"analysis_id": str(analysis_id), "stage": stage.value},
+        )
+    return affected == 1
+
+
+async def _write_progress(
+    session: AsyncSession,
+    analysis_id: uuid.UUID,
+    progress: float,
+) -> bool:
+    """Aşama içi ilerleme yazar. İptal edilmişse `False`."""
+    affected = await _guarded_update(
+        session,
+        update(Analysis)
+        .where(*_live_analysis_filter(analysis_id))
+        .values(progress=progress, updated_at=func.now()),
+    )
+    return affected == 1
+
+
+async def _fail(analysis_id: uuid.UUID, code: ErrorCode, detail: str) -> str:
+    """İşi sözleşmeye uygun bir hata gövdesiyle sonlandırır.
+
+    İptal edilmiş bir işi `failed` YAPMAZ: kullanıcı iptal ettiyse gördüğü
+    şey "iptal edildi" olmalı, "başarısız" değil.
+    """
+    problem = build_problem(code, detail).to_payload()
+    async with session_scope() as session:
+        affected = await _guarded_update(
+            session,
+            update(Analysis)
+            .where(*_live_analysis_filter(analysis_id))
+            .values(
+                status=AnalysisStatus.FAILED,
+                error=problem,
+                report=None,
+                progress=100.0,
+                updated_at=func.now(),
+            ),
+        )
+    if affected != 1:
+        return AnalysisStatus.CANCELLED.value
+    logger.info(
+        "analysis_failed",
+        extra={"analysis_id": str(analysis_id), "code": code},
+    )
+    return AnalysisStatus.FAILED.value
+
+
+async def _preprocess_in_batches(
+    *,
+    analysis_id: uuid.UUID,
+    local_path: Path,
+    sheet_name: str,
+    text_column: str,
+    expected_rows: int,
+    settings: Settings,
+) -> PreprocessResult:
+    """Kolonu parti parti okuyup ön işlemeden geçirir.
+
+    ADR §2'nin iki kuralı burada uygulanıyor:
+
+    * İlerleme HER SATIRDA YAZILMAZ. Yalnızca
+      `analysis_progress_write_threshold` puanlık anlamlı bir değişimde bir
+      UPDATE atılır: 100.000 satırlık bir dosyada 100.000 yerine en fazla
+      birkaç yazım.
+    * İptal parti sınırında kontrol edilir; kullanıcı iptal ettiğinde worker
+      dosyanın sonunu beklemez.
+
+    openpyxl senkron ve CPU yoğun olduğu için hem okuma hem işleme thread'e
+    taşınıyor; aksi hâlde event loop dakikalarca bloklanırdı.
+    """
+    preprocessor = Preprocessor(settings)
+    values = iter_column_values(local_path, sheet_name, text_column)
+
+    start = STAGE_PROGRESS[AnalysisStatus.PREPROCESSING]
+    end = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
+    last_written = start
+
+    while True:
+        batch = await asyncio.to_thread(lambda: list(islice(values, PREPROCESS_BATCH_ROWS)))
+        if not batch:
+            break
+
+        await asyncio.to_thread(preprocessor.consume, batch)
+
+        if expected_rows > 0:
+            fraction = min(1.0, preprocessor.rows_seen / expected_rows)
+            progress = start + (end - start) * fraction
+            if progress - last_written < settings.analysis_progress_write_threshold:
+                continue
+            last_written = progress
+        else:
+            # Payda bilinmiyor (profil yok): ilerleme aşama sınırında kalır,
+            # yalnızca iptal kontrolü yapılır.
+            progress = start
+
+        async with session_scope() as session:
+            if not await _write_progress(session, analysis_id, round(progress, 1)):
+                raise _AnalysisCancelledError
+
+    return preprocessor.finish()
+
+
+async def run_analysis(analysis_id: uuid.UUID) -> str:
+    """Bir analizi baştan sona yürütür ve son durumu döndürür.
+
+    İstisna FIRLATMAZ: kullanıcıya görünen hata, kayıttaki `error` sütunudur
+    (istek çoktan 202 ile kapandı, HTTP hatası dönemeyiz).
+
+    Dönen değerler: `completed`, `failed`, `cancelled`, `missing`.
+    """
+    settings = get_settings()
+    try:
+        return await _run_analysis_inner(analysis_id, settings)
+    finally:
+        # ADR §9: iş bitince BAŞARI/HATA/İPTAL fark etmeksizin anahtar silinir.
+        # `finally` bilinçli: beklenmeyen bir istisnada bile anahtar kalmamalı.
+        await asyncio.to_thread(secret_store.delete_key, analysis_id, settings)
+
+
+async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str:
+    # ---------------------------------------------------- kaydı yükle
+    async with session_scope() as session:
+        analysis = await session.scalar(select(Analysis).where(Analysis.id == analysis_id))
+        if analysis is None:
+            # Kullanıcı iş kuyrukta beklerken upload'ı silmiş olabilir
+            # (analiz kaydı CASCADE ile gider).
+            logger.info("analysis_missing", extra={"analysis_id": str(analysis_id)})
+            return "missing"
+
+        if analysis.status in TERMINAL_STATUSES:
+            # acks_late + yeniden dağıtım aynı işi iki kez gönderebilir.
+            logger.info("analysis_already_settled", extra={"analysis_id": str(analysis_id)})
+            return str(analysis.status.value)
+
+        upload = await session.scalar(select(Upload).where(Upload.id == analysis.upload_id))
+
+        sheet_name = analysis.sheet_name
+        text_column = analysis.text_column
+        model = analysis.model
+        prompt_version = analysis.prompt_version
+        top_n = analysis.top_n
+        max_cost_usd = analysis.max_cost_usd
+        storage_key = upload.storage_key if upload else None
+        filename = upload.filename if upload else ""
+        upload_profile = upload.profile if upload else None
+
+    if storage_key is None:
+        return await _fail(analysis_id, "JOB_NOT_FOUND", "Analiz edilecek yükleme bulunamadı.")
+
+    warnings: list[AnalysisWarning] = []
+    #: İlerleme yüzdesinin paydası. Profilden gelir; profil yoksa 0 kalır ve
+    #: aşama içi ilerleme yazılmaz (aşama sınırları yine yazılır).
+    expected_rows = 0
+    if upload_profile is not None:
+        profile = UploadProfile.model_validate(upload_profile)
+        selected = next((s for s in profile.sheets if s.name == sheet_name), None)
+        if selected is not None:
+            expected_rows = selected.row_count
+        if profile.exceeds_row_limit:
+            # Plan §3.2 (g): satır sınırı aşımı işi DURDURMAZ, uyarı olur.
+            warnings.append(
+                AnalysisWarning(
+                    code="ROW_LIMIT_EXCEEDED",
+                    message=(
+                        f"Dosya {settings.max_rows} satır sınırının üstünde; "
+                        "analiz tüm satırlar üzerinde çalıştı."
+                    ),
+                )
+            )
+
+    # Geçici dizin `with` ile yönetiliyor: hata yolunda da kaynak dosya
+    # diskte kalmasın (ADR §9 retention).
+    with tempfile.TemporaryDirectory(prefix="auzef-analysis-") as tmpdir:
+        local_path = Path(tmpdir) / "source.xlsx"
+
+        # ------------------------------------------------------ validating
+        async with session_scope() as session:
+            if not await _advance_stage(session, analysis_id, AnalysisStatus.VALIDATING):
+                return AnalysisStatus.CANCELLED.value
+
+        try:
+            await asyncio.to_thread(storage.download_to_path, storage_key, local_path, settings)
+            # Dosya Faz 1'de doğrulandı ama ARADA DEĞİŞMİŞ olabilir. Güvenlik
+            # kontrolünü atlamak, doğrulanmamış bir zip'i açmak demek (ADR §9).
+            await asyncio.to_thread(validate_xlsx, local_path, settings)
+        except XlsxRejectedError as exc:
+            logger.warning(
+                "analysis_source_rejected",
+                extra={"analysis_id": str(analysis_id), "reason": exc.reason},
+            )
+            return await _fail(
+                analysis_id, "UPLOAD_CORRUPT_OR_ENCRYPTED", "Kaynak dosya okunamadı."
+            )
+        except Exception:
+            # ADR §9: hata cevabına dosya içeriği veya iz sızmaz.
+            logger.exception("analysis_download_failed", extra={"analysis_id": str(analysis_id)})
+            return await _fail(analysis_id, "INTERNAL_ERROR", "Kaynak dosya alınamadı.")
+
+        # --------------------------------------------------- preprocessing
+        async with session_scope() as session:
+            if not await _advance_stage(session, analysis_id, AnalysisStatus.PREPROCESSING):
+                return AnalysisStatus.CANCELLED.value
+
+        try:
+            preprocess_result = await _preprocess_in_batches(
+                analysis_id=analysis_id,
+                local_path=local_path,
+                sheet_name=sheet_name,
+                text_column=text_column,
+                expected_rows=expected_rows,
+                settings=settings,
+            )
+        except _AnalysisCancelledError:
+            return AnalysisStatus.CANCELLED.value
+        except SheetOrColumnNotFoundError as exc:
+            logger.warning(
+                "analysis_selection_not_found",
+                extra={"analysis_id": str(analysis_id), "reason": exc.reason},
+            )
+            return await _fail(
+                analysis_id,
+                "SHEET_OR_COLUMN_NOT_FOUND",
+                "Seçilen sayfa veya kolon dosyada bulunamadı.",
+            )
+        except XlsxRejectedError:
+            return await _fail(
+                analysis_id, "UPLOAD_CORRUPT_OR_ENCRYPTED", "Kaynak dosya okunamadı."
+            )
+        except Exception:
+            logger.exception("analysis_preprocess_failed", extra={"analysis_id": str(analysis_id)})
+            return await _fail(analysis_id, "INTERNAL_ERROR", "Veri hazırlanırken hata oluştu.")
+
+    # Log satırında MESAJ İÇERİĞİ YOK; yalnızca sayaçlar (ADR §9).
+    logger.info(
+        "analysis_preprocessed",
+        extra={
+            "analysis_id": str(analysis_id),
+            "total_rows": preprocess_result.total_rows,
+            "analyzed": preprocess_result.analyzed_count,
+            "unique": preprocess_result.unique_count,
+            "redacted": preprocess_result.redacted_count,
+        },
+    )
+
+    # ---- maliyet tavanı (ADR §9, plan §4 "iskelet") ----
+    decision = estimate_cost(preprocess_result.groups, model, max_cost_usd)
+    logger.info(
+        "analysis_cost_estimated",
+        extra={
+            "analysis_id": str(analysis_id),
+            "estimated_cost_usd": decision.estimated_cost_usd,
+            "max_cost_usd": decision.max_cost_usd,
+        },
+    )
+    if decision.exceeds:
+        # FAZ 2: OpenRouter'a çağrı YAPILMADIĞI için durdurulacak bir maliyet
+        # yok; aşım yalnızca uyarı olur. Faz 3'te bu dal işi `failed` yapacak
+        # (ADR §9: "LLM çağrısı başlamadan iş güvenli biçimde durur").
+        warnings.append(
+            AnalysisWarning(
+                code="COST_CEILING_EXCEEDED",
+                message=(
+                    f"Tahmini maliyet ({decision.estimated_cost_usd} USD) "
+                    f"{decision.max_cost_usd} USD sınırının üstünde. Faz 2'de gerçek "
+                    "model çağrısı yapılmadığı için analiz durdurulmadı."
+                ),
+            )
+        )
+
+    # -------------------------------------------------------- analyzing
+    async with session_scope() as session:
+        if not await _advance_stage(session, analysis_id, AnalysisStatus.ANALYZING):
+            return AnalysisStatus.CANCELLED.value
+
+    classifier = build_classifier()
+    try:
+        classification = await asyncio.to_thread(classifier.classify, preprocess_result.groups)
+    except Exception:
+        logger.exception("analysis_classify_failed", extra={"analysis_id": str(analysis_id)})
+        return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sınıflandırma tamamlanamadı.")
+
+    # ------------------------------------------------------- aggregating
+    async with session_scope() as session:
+        if not await _advance_stage(session, analysis_id, AnalysisStatus.AGGREGATING):
+            return AnalysisStatus.CANCELLED.value
+
+    try:
+        report = aggregate(
+            analysis_id=analysis_id,
+            preprocess_result=preprocess_result,
+            classification=classification,
+            filename=filename,
+            sheet_name=sheet_name,
+            text_column=text_column,
+            model=model,
+            prompt_version=prompt_version,
+            classifier_id=classifier.identifier,
+            top_n=top_n,
+            settings=settings,
+            extra_warnings=warnings,
+        )
+    except AggregationError:
+        # Değişmez ihlali: sınıflandırıcı aynı kaydı iki kez eşlemiş olabilir.
+        # Yanlış sayı göstermektense işi başarısız saymak doğrudur (ADR §4).
+        logger.exception("analysis_aggregation_invalid", extra={"analysis_id": str(analysis_id)})
+        return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sonuç doğrulanamadı.")
+    except Exception:
+        logger.exception("analysis_aggregate_failed", extra={"analysis_id": str(analysis_id)})
+        return await _fail(analysis_id, "INTERNAL_ERROR", "Sonuç üretilirken hata oluştu.")
+
+    # --------------------------------------------------------- completed
+    payload = report.model_dump(mode="json")
+    async with session_scope() as session:
+        affected = await _guarded_update(
+            session,
+            update(Analysis)
+            .where(*_live_analysis_filter(analysis_id))
+            .values(
+                status=AnalysisStatus.COMPLETED,
+                progress=STAGE_PROGRESS[AnalysisStatus.COMPLETED],
+                report=payload,
+                error=None,
+                updated_at=func.now(),
+            ),
+        )
+    if affected != 1:
+        return AnalysisStatus.CANCELLED.value
+
+    logger.info(
+        "analysis_completed",
+        extra={
+            "analysis_id": str(analysis_id),
+            "questions": len(report.top_questions),
+            "themes": len(report.themes),
+        },
+    )
+    return AnalysisStatus.COMPLETED.value
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="app.workers.tasks.run_analysis",
+    soft_time_limit=get_settings().analysis_soft_timeout_seconds,
+    time_limit=get_settings().analysis_hard_timeout_seconds,
+)
+def run_analysis_task(analysis_id: str) -> str:
+    """Celery giriş noktası.
+
+    Payload'da YALNIZCA kimlik var (ADR §10 risk 7): OpenRouter anahtarı
+    kuyruğa düz metin olarak GİRMEZ; worker gerektiğinde şifreli Redis
+    kaydından okur.
+    """
+    return asyncio.run(run_analysis(uuid.UUID(analysis_id)))

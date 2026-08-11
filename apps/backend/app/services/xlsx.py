@@ -24,6 +24,7 @@ Tehdit modeli — buraya gelen dosya GÜVENİLMEYEN kullanıcı girdisidir:
 from __future__ import annotations
 
 import zipfile
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -379,6 +380,82 @@ def _profile_sheet(worksheet: Any, settings: Settings) -> tuple[dict[str, Any], 
         },
         row_count,
     )
+
+
+class SheetOrColumnNotFoundError(Exception):
+    """Seçilen sayfa veya kolon dosyada yok.
+
+    Çağıran bunu `SHEET_OR_COLUMN_NOT_FOUND` (422) hatasına çevirir. Kullanıcı
+    kolon seçimini yaptıktan sonra dosya değişmiş olabilir ya da istek elle
+    hazırlanmış olabilir; her iki durumda da iş burada durur.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
+def iter_column_values(
+    path: Path,
+    sheet_name: str,
+    text_column: str,
+) -> Iterator[str | None]:
+    """Seçilen sayfanın seçilen kolonundaki hücreleri SATIR SATIR üretir.
+
+    ADR §5 Aşama B madde 1. Faz 1'in profilleme kodu gibi
+    `read_only=True, data_only=True` kullanır: 130 MB'lık bir dosyanın tamamı
+    belleğe ALINMAZ, üstelik burada tek bir kolon gerekiyor.
+
+    Kolon, profil çıkarılırken kullanılan mantığın AYNISIYLA bulunur
+    (`_column_name`): ilk satır başlıktır ve boş başlıklar `Kolon N` olur.
+    İki yerde farklı isimlendirme kullanmak, kullanıcının arayüzde seçtiği
+    kolon adının burada bulunamamasına yol açardı.
+
+    Boş hücreler `None` olarak ÜRETİLİR, atlanmaz: `discarded_count` ve
+    `total_rows` sayımlarının doğru olması için toplam satır sayısı gerekli.
+    """
+    try:
+        workbook = load_workbook(path, read_only=True, data_only=True, keep_links=False)
+    except Exception as exc:
+        raise XlsxRejectedError("workbook_parse_failed") from exc
+
+    try:
+        if sheet_name not in workbook.sheetnames:
+            raise SheetOrColumnNotFoundError("sheet_not_found")
+
+        worksheet = workbook[sheet_name]
+        column_index = -1
+
+        for row_number, row in enumerate(worksheet.iter_rows(values_only=True)):
+            if row_number == 0:
+                for index, value in enumerate(row):
+                    if _column_name(value, index) == text_column:
+                        column_index = index
+                        break
+                if column_index < 0:
+                    raise SheetOrColumnNotFoundError("column_not_found")
+                continue
+
+            # Profillemeyle aynı kural: tamamen boş satırlar Excel'in
+            # "kullanılmış aralık" şişmesidir, satır sayılmaz.
+            if all(
+                value is None or (isinstance(value, str) and not value.strip()) for value in row
+            ):
+                continue
+
+            if column_index >= len(row):
+                yield None
+                continue
+
+            cell = row[column_index]
+            if cell is None:
+                yield None
+            elif isinstance(cell, str):
+                yield cell
+            else:
+                yield str(cell)
+    finally:
+        workbook.close()
 
 
 def validate_and_profile(path: Path, settings: Settings) -> dict[str, Any]:

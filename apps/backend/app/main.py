@@ -16,6 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
+from app.api.v1 import analyses as analyses_router
 from app.api.v1 import models as models_router
 from app.api.v1 import uploads as uploads_router
 from app.core.config import get_settings
@@ -85,6 +86,7 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(uploads_router.router, prefix="/api/v1")
+    app.include_router(analyses_router.router, prefix="/api/v1")
     app.include_router(models_router.router, prefix="/api/v1")
 
     @app.get("/health", tags=["health"], summary="Compose healthcheck")

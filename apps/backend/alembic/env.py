@@ -19,6 +19,7 @@ from app.core.config import get_settings
 
 # Modeller import EDİLMELİ: Base.metadata ancak sınıflar yüklendikten sonra
 # tabloları içerir, aksi hâlde autogenerate boş migration üretir.
+from app.models.analysis import Analysis
 from app.models.base import Base
 from app.models.upload import Upload
 
