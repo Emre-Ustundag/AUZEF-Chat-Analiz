@@ -4,7 +4,7 @@ AUZEF Chat Analiz, büyük hacimli kullanıcı mesajlarında tekrar eden sorular
 
 Projenin ilk kullanım senaryosu, AUZEF chatbot mesajlarından gerçek kullanıcı ifadelerine dayalı sık sorulan sorular (SSS/FAQ) çıkarmaktır. Uygulama; Excel dosyasındaki mesajları temizlemeyi, benzer soruları gruplamayı, konu dağılımlarını hesaplamayı ve sonuçları anlaşılır bir dashboard üzerinde sunmayı hedefler.
 
-> **Proje durumu:** Erken geliştirme aşamasındadır. Repoda şu anda Next.js tabanlı uygulama ve Docker çalışma ortamı bulunmaktadır. Dosya yükleme, Excel işleme, OpenRouter entegrasyonu ve analiz dashboard'u henüz geliştirme planındadır.
+> **Proje durumu:** Erken geliştirme aşamasındadır. Repoda şu anda Next.js tabanlı web uygulaması ve temel Docker çalışma ortamı bulunmaktadır. MVP mimarisi kararlaştırılmıştır; FastAPI backend, asenkron worker, veri katmanı ve analiz pipeline'ı henüz geliştirme planındadır.
 
 ## Neden bu proje?
 
@@ -20,7 +20,7 @@ Binlerce chatbot mesajını manuel olarak incelemek hem zaman alır hem de tekra
 
 1. Kullanıcı `.xlsx` formatındaki veri dosyasını yükler.
 2. Dosyadaki kolonlar algılanır ve analiz edilecek metin kolonu seçilir.
-3. OpenRouter API anahtarı ile sistem promptu güvenli biçimde backend'e iletilir.
+3. OpenRouter API anahtarı güvenli biçimde backend'e iletilir; sürümlü sistem promptu backend tarafından yönetilir.
 4. Boş, geçersiz veya analiz dışı kayıtlar temizlenir.
 5. Büyük veri kümeleri modelin bağlam sınırlarına uygun parçalara ayrılır.
 6. Mesajlar OpenRouter üzerinden seçilen dil modeline gönderilir.
@@ -62,31 +62,151 @@ Dashboard üzerinde aşağıdaki bilgilerin sunulması planlanmaktadır:
 
 ## Analiz yaklaşımı
 
-LLM; mesajların anlamını yorumlamak, benzer ifadeleri eşleştirmek ve temaları adlandırmak için kullanılacaktır. Adet, oran ve kayıt istatistikleri ise tutarlı ve doğrulanabilir sonuçlar elde etmek amacıyla backend tarafında programatik olarak hesaplanacaktır.
+LLM doğrudan toplam sayı üretmez. Her temizlenmiş veya benzersiz mesaj kimliğini kanonik bir SSS ya da tema kimliğine eşler. Adet, oran ve kayıt istatistikleri gerçek mesaj frekanslarından backend tarafından deterministik olarak hesaplanır. Böylece modelin sayı uydurma riski azaltılır ve sonuçlar izlenebilir kalır.
 
-Büyük veri kümelerinde analiz şu iki aşamalı yaklaşımla yürütülebilir:
+Analiz iki aşamalı bir map/reduce yaklaşımı izler:
 
-1. Her veri parçasından soru ve tema adaylarının çıkarılması
-2. Parça sonuçlarının ortak bir sınıflandırma altında birleştirilmesi
+1. Normalize edilen mesajlar exact hash ile tekilleştirilir; gerçek frekansları korunur.
+2. Benzersiz kayıtlar token bütçesine göre parçalara ayrılır.
+3. LLM, her kayıt kimliğini bir SSS veya tema kimliğine eşler.
+4. Reduce aşaması farklı parçalardaki benzer kategorileri birleştirir.
+5. Backend; adet, oran, Top N, özet ve uyarıları hesaplar.
+6. Yapılandırılmış sonuç Pydantic/JSON Schema ile doğrulanır.
 
-Bu yaklaşım, modelin bağlam sınırlarını aşmadan yüksek hacimli verilerin işlenebilmesini sağlar.
+## Mimari
+
+Yaklaşık 130 MB büyüklüğündeki gerçek Excel dosyalarının tek bir HTTP isteğinde güvenilir biçimde işlenemeyeceği kabul edilmiştir. Bu nedenle MVP, asenkron job/worker mimarisi kullanır. API uzun işlemi kuyruğa alarak `202 Accepted` döndürür; web arayüzü işlem durumunu 2–3 saniyede bir sorgular. İlk sürümde WebSocket veya SSE kullanılmaz.
+
+```mermaid
+flowchart LR
+    U["Next.js web"] -->|"/api reverse proxy"| A["FastAPI"]
+    A -->|"dosyayı stream et"| S["S3 / MinIO"]
+    A -->|"job oluştur"| P[("PostgreSQL")]
+    A -->|"kuyruğa al"| R[("Redis")]
+    R --> W["Celery worker"]
+    W --> S
+    W --> O["OpenRouter"]
+    W -->|"durum ve rapor"| P
+    U -->|"polling"| A
+```
+
+### Bileşenler
+
+| Bileşen | Sorumluluk |
+| --- | --- |
+| Next.js web | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard |
+| FastAPI | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
+| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı |
+| PostgreSQL | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu |
+| Redis | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı |
+| S3 / MinIO | Ham upload ve Parquet ara dosyaları için geçici object storage |
+
+### İki aşamalı işlem modeli
+
+**Upload ve profil:** Dosya object storage'a stream edilir; dosya türü ve OOXML yapısı doğrulanır. Sheet, kolon, satır, boş kayıt ve tekrar bilgileri çıkarılarak kullanıcıya seçim yaptırılır.
+
+**Analiz:** Seçilen kolon satır satır okunur. PII maskelenir, mesajlar tekilleştirilir ve LLM ile sınıflandırılır. Sonuçlar backend'de birleştirilip doğrulandıktan sonra PostgreSQL'e rapor olarak kaydedilir.
+
+Planlanan temel job akışı:
+
+```text
+queued → validating/preprocessing → analyzing → aggregating → completed
+```
+
+Terminal durumlar `failed` ve `cancelled` olarak tanımlanmıştır. Varsayılan analiz hard timeout'u 45 dakikadır ve ortam ayarıyla değiştirilebilir.
+
+### Monorepo klasör yapısı
+
+```text
+AUZEF-Chat-Analiz/
+├── apps/
+│   ├── web/
+│   │   ├── src/app/
+│   │   ├── src/components/
+│   │   ├── src/features/analysis/
+│   │   └── src/lib/api/
+│   └── backend/
+│       ├── app/api/v1/
+│       ├── app/core/
+│       ├── app/domain/
+│       ├── app/models/
+│       ├── app/schemas/
+│       ├── app/services/
+│       ├── app/pipeline/
+│       ├── app/workers/
+│       └── app/prompts/faq_analysis/
+├── tests/
+│   ├── fixtures/
+│   ├── integration/
+│   └── e2e/
+├── infra/
+│   ├── docker/
+│   └── scripts/
+├── docs/
+│   └── adr/0001-mvp-architecture.md
+├── docker-compose.yml
+├── Makefile
+└── README.md
+```
+
+Backend API ve Celery worker aynı Python domain/pipeline kodunu paylaşır; ayrı mikroservis kod tabanları oluşturulmaz.
+
+### Kesin veri akışı
+
+```text
+Browser
+  → POST /uploads
+  → FastAPI dosyayı stream ederek object storage'a yazar
+  → Celery validate/profile job
+  → güvenli .xlsx kontrolü + sheet/kolon/veri profili
+  → kullanıcı sheet ve message_text kolonunu seçer
+  → POST /analyses + X-OpenRouter-Key
+  → API anahtarı AES-GCM ile şifrelenip Redis'e kısa TTL ile yazılır
+  → Celery analysis job
+  → preprocess + PII redaksiyonu + exact dedupe/frequency
+  → token sınırına göre chunk
+  → OpenRouter map çağrıları
+  → kategori eşleme/reduce
+  → backend deterministik adet/oran aggregation
+  → Pydantic result validation
+  → PostgreSQL JSONB report
+  → GET /analyses/{id} polling
+  → dashboard + export
+```
+
+#### Önemli analiz kararı
+
+LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj kimliğini bir kanonik SSS ya da tema kimliğine eşler. Nihai adet ve oranları backend, mesajların gerçek frekanslarından deterministik olarak hesaplar. Böylece LLM'in sayı uydurması engellenir.
 
 ## Teknoloji yığını
 
-Mevcut proje altyapısı:
+### Frontend
 
-- [Next.js 16](https://nextjs.org/) — web uygulaması ve backend uçları
-- [React 19](https://react.dev/) — kullanıcı arayüzü
-- [TypeScript](https://www.typescriptlang.org/) — tip güvenli geliştirme
-- [Tailwind CSS 4](https://tailwindcss.com/) — arayüz stilleri
-- [Docker](https://www.docker.com/) — üretim ortamı ve dağıtım
+- Next.js App Router, React ve strict TypeScript
+- Tailwind CSS ve shadcn/ui
+- TanStack Query
+- React Hook Form ve Zod
+- Recharts
 
-MVP kapsamında eklenmesi planlanan temel entegrasyonlar:
+### Backend ve veri işleme
 
-- Excel (`.xlsx`) okuma ve doğrulama
-- OpenRouter API üzerinden LLM erişimi
-- Yapılandırılmış analiz çıktıları
-- Dashboard grafikleri ve rapor dışa aktarma
+- Python ve FastAPI
+- Pydantic v2
+- SQLAlchemy 2 ve Alembic
+- Celery ve Redis
+- PostgreSQL
+- `openpyxl` (`read_only/data_only`), Polars ve PyArrow
+- `httpx` ile OpenRouter entegrasyonu
+- S3 uyumlu object storage; geliştirmede MinIO
+- `uv` ile Python bağımlılık yönetimi
+
+### Test ve kalite
+
+- pytest ve pytest-asyncio
+- Vitest ve React Testing Library
+- Playwright
+- Ruff, mypy, ESLint ve Prettier
+- GitHub Actions
 
 ## Yerel geliştirme
 
@@ -94,6 +214,7 @@ MVP kapsamında eklenmesi planlanan temel entegrasyonlar:
 
 - Node.js 22 (önerilen)
 - npm
+- Tam MVP altyapısı eklendiğinde Docker ve Docker Compose
 
 ### Kurulum
 
@@ -129,7 +250,7 @@ Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresind
 
 ## Docker ile çalıştırma
 
-Uygulamayı production modunda derleyip başlatmak için:
+Mevcut Next.js uygulamasını production modunda derleyip başlatmak için:
 
 ```bash
 docker compose up --build
@@ -143,17 +264,22 @@ Servisi durdurmak için:
 docker compose down
 ```
 
+Hedef MVP Docker Compose ortamı `web`, `api`, `worker`, `postgres`, `redis` ve `minio` servislerinden oluşacaktır. Bu servislerin tamamı henüz mevcut repo iskeletine eklenmemiştir.
+
 ## Güvenlik ve veri gizliliği
 
-Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağı için aşağıdaki ilkeler MVP'nin parçası olarak ele alınmalıdır:
+Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağı için aşağıdaki ilkeler MVP mimarisinin parçasıdır:
 
-- OpenRouter API anahtarı yalnızca backend tarafında kullanılmalıdır.
-- API anahtarı tarayıcıya geri gönderilmemeli, loglanmamalı veya repoya kaydedilmemelidir.
-- Yüklenen dosyalar yalnızca analiz için gereken süre boyunca tutulmalıdır.
-- Kişisel veriler mümkün olduğunda LLM'e gönderilmeden önce maskelenmeli veya anonimleştirilmelidir.
-- Dosya tipi, boyutu, kolon yapısı ve kayıt sayısı backend tarafında doğrulanmalıdır.
-- LLM çıktıları güvenilir bir şema ile doğrulanmalı; sayısal sonuçlar model çıktısından doğrudan kabul edilmemelidir.
-- Kullanılan model ve veri işleme politikaları kurumun KVKK gereksinimleriyle uyumlu olmalıdır.
+- Yalnızca `.xlsx` desteklenir; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosyalar reddedilir.
+- Varsayılan upload sınırı 150 MB, açılmış OOXML sınırı 1 GB ve satır sınırı 100.000'dir; bu değerler ortam ayarıdır.
+- OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır ve loglarda redakte edilir.
+- Anahtar PostgreSQL'e yazılmaz; AES-GCM ile şifrelenmiş, kısa ömürlü bir Redis kaydında tutulur ve işlem sonunda silinir.
+- Telefon, e-posta, T.C. ve öğrenci numarası gibi bilinen PII desenleri LLM çağrısından önce maskelenir.
+- Ham upload ve Parquet ara dosyaları işlem sonunda silinir; kaçak dosyalar için azami 24 saat lifecycle uygulanır.
+- Model yalnızca backend whitelist'indeki structured-output destekli seçeneklerden seçilebilir.
+- LLM çıktıları Pydantic/JSON Schema ile doğrulanır; sayısal sonuçlar modelden doğrudan kabul edilmez.
+- Job başına maliyet sınırı LLM çağrıları başlamadan kontrol edilir.
+- Gerçek kurum verisi kullanılmadan önce SSO/erişim kontrolü ve AUZEF veri işleme onayı zorunludur.
 
 Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutulmalı ve Git'e eklenmemelidir. Gerekli ortam değişkenleri entegrasyon geliştirildiğinde bu bölümde ayrıca belgelenecektir.
 
@@ -172,6 +298,10 @@ Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutul
 - [ ] Analiz dashboard'u
 - [ ] FAQ ve özet rapor dışa aktarma
 - [ ] Hata yönetimi ve işlem durumu takibi
+- [ ] FastAPI, Celery ve Redis job altyapısı
+- [ ] PostgreSQL ve object storage entegrasyonu
+- [ ] PII redaksiyonu ve veri saklama politikaları
+- [ ] Backend, frontend ve uçtan uca test altyapısı
 
 ### Sonraki faz
 
