@@ -20,6 +20,8 @@ import { ANALYSIS_STAGE_LABELS_TR } from "@/lib/api/schemas";
 import { formatDuration, formatPercentage } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { ReportScreen } from "@/features/analysis/report/report-screen";
+
 import { StageStepper } from "./stage-stepper";
 
 /**
@@ -101,19 +103,7 @@ export function ProgressScreen({ analysisId }: { analysisId: string }) {
   }
 
   if (job.status === "completed") {
-    // Sonuç ekranı bir sonraki adımda; şimdilik tamamlandığı bildiriliyor.
-    return (
-      <Shell>
-        <Card>
-          <CardHeader>
-            <CardTitle>Analiz tamamlandı</CardTitle>
-            <CardDescription>
-              Sonuç ekranı sıradaki adımda eklenecek.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </Shell>
-    );
+    return <ReportScreen analysisId={analysisId} />;
   }
 
   const remaining = job.estimated_seconds_remaining;

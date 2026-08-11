@@ -13,10 +13,12 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const getAnalysisJob = vi.fn();
 const cancelAnalysis = vi.fn();
+const getAnalysisReport = vi.fn();
 vi.mock("@/lib/api/endpoints", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api/endpoints")>()),
   getAnalysisJob: (...a: unknown[]) => getAnalysisJob(...a),
   cancelAnalysis: (...a: unknown[]) => cancelAnalysis(...a),
+  getAnalysisReport: (...a: unknown[]) => getAnalysisReport(...a),
 }));
 
 const ID = "8c2a1b40-1111-4222-8333-044455556666";
@@ -58,6 +60,7 @@ function renderScreen() {
 beforeEach(() => {
   getAnalysisJob.mockReset();
   cancelAnalysis.mockReset();
+  getAnalysisReport.mockReset();
 });
 
 describe("ProgressScreen — devam eden iş", () => {
@@ -126,14 +129,19 @@ describe("ProgressScreen — terminal durumlar", () => {
     expect(await screen.findByText("Analiz iptal edildi")).toBeInTheDocument();
   });
 
-  it("tamamlanmış işte ilerleme çubuğu göstermez", async () => {
+  it("tamamlanmış işte rapor ekranına devreder", async () => {
     getAnalysisJob.mockResolvedValue(
       job({ status: "completed", progress: 100, estimated_seconds_remaining: null }),
     );
+    // Rapor isteği askıda bırakılıyor; burada test edilen şey raporun içeriği
+    // değil, ilerleme arayüzünün yerini rapora bırakması.
+    getAnalysisReport.mockReturnValue(new Promise(() => {}));
     renderScreen();
 
-    expect(await screen.findByText("Analiz tamamlandı")).toBeInTheDocument();
-    expect(screen.queryByText("Analizi iptal et")).not.toBeInTheDocument();
+    expect(await screen.findByText("Rapor hazırlanıyor…")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Analizi iptal et/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("hatada backend'in ham detayını DEĞİL Türkçe metni gösterir", async () => {
