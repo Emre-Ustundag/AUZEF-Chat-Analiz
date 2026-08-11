@@ -21,6 +21,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-chart-6: var(--chart-6);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -55,6 +56,43 @@ body {
   font-family: var(--font-sans);
 }
 
+/* ============================================================================
+   MARKA VE GRAFİK PALETİ — TEK DEĞİŞTİRME NOKTASI
+   ============================================================================
+   Bileşenler hiçbir yerde doğrudan renk yazmaz; yalnızca aşağıdaki semantik
+   token'ları kullanır. Kurum paleti değişirse yalnızca bu dosya değişir.
+
+   Marka çapaları
+   --------------
+   Yeşil #006e35 (Pantone 349 C) ve sarı #ffd600 (Pantone Yellow 012 C),
+   İstanbul Üniversitesi-Cerrahpaşa Kurumsal Kimlik Kılavuzu 2019'dan birebir
+   alındı.
+
+   ⚠️ KAYNAK UYARISI: O kılavuz Cerrahpaşa'ya ait. AUZEF, 2018'de ayrılan
+   İstanbul Üniversitesi'ne bağlı. İki kurum aynı görsel kimlikten ayrıldığı
+   için koyu yeşil + sarı şeması ortak, ancak AUZEF'in resmî değerleri
+   doğrulanamadı. Resmî değerler elde edilince buradaki çapalar güncellenip
+   grafik paleti yeniden üretilmelidir.
+
+   Grafik paleti nasıl üretildi
+   ----------------------------
+   Ham marka renkleri grafik serisi rengi olarak KULLANILAMAZ:
+   #ffd600'ün OKLCH açıklığı 0.885, kategorik bandın (0.43–0.77) çok üstünde;
+   beyaz üzerinde okunmaz. Bu yüzden marka tonları (yeşil h=152, sarı h=95)
+   korunup açıklık/kroma değerleri banda oturtuldu, kalan dört ton renk
+   körlüğü ayrımı için tekerlek üzerinde arandı.
+
+   Her iki set de doğrulayıcıdan uyarısız geçti (açıklık bandı, kroma tabanı,
+   protanopi/deuteranopi ayrımı, normal görüş tabanı, yüzey kontrastı):
+     açık  → yüzey #ffffff, en kötü komşu ΔE 9.3 (deutan)
+     koyu  → yüzey #171717, en kötü komşu ΔE 9.3 (deutan)
+   Koyu mod otomatik çevrim DEĞİL, kendi adımlarıyla ayrıca doğrulandı;
+   turuncu slot koyu yüzeyde 3:1'i tutturmak için açıldı.
+
+   Palet değiştirilirse doğrulayıcı YENİDEN çalıştırılmalıdır — sırayla
+   bakmak yeterli değil, renk körlüğü çökmesi gözle görülmez.
+   ============================================================================ */
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -62,8 +100,9 @@ body {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Marka yeşili birebir; beyaz metinle 6.40:1. */
+  --primary: #006e35;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -73,12 +112,17 @@ body {
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --ring: #006e35;
+
+  /* Kategorik grafik slotları — sabit sırada atanır, ASLA döndürülmez.
+     Sıra renk körlüğü güvenliğinin mekanizmasıdır; değiştirilirse doğrulayıcı
+     yeniden çalıştırılmalıdır. 7. seri yoktur: "Diğer"e katlanır. */
+  --chart-1: #007a31; /* marka yeşili (banda oturtulmuş) */
+  --chart-2: #ab8d00; /* marka sarısı (banda oturtulmuş) */
+  --chart-3: #0064b9;
+  --chart-4: #ad70d7;
+  --chart-5: #009595;
+  --chart-6: #aa3700;
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -97,8 +141,10 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Koyu modda marka yeşili doğrudan kullanılamaz: koyu yüzeyde 2.80:1 ile
+     görünmez kalıyor. Aynı tonun açılmış adımı, beyaz metinle 4.59:1. */
+  --primary: #238649;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -108,12 +154,16 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --ring: #48a566;
+
+  /* Koyu mod otomatik çevrim değil, ayrıca doğrulanmış kendi adımları.
+     Yalnızca turuncu farklı: #aa3700 koyu yüzeyde 2.78:1 ile kalıyordu. */
+  --chart-1: #007a31;
+  --chart-2: #ab8d00;
+  --chart-3: #0064b9;
+  --chart-4: #ad70d7;
+  --chart-5: #009595;
+  --chart-6: #cc572a;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
