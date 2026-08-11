@@ -76,7 +76,7 @@ def test_hata_kodlari_frontend_ile_birebir() -> None:
 )
 def test_http_durumlari_adr_ile_uyumlu(code: str, status: int) -> None:
     """ADR §7'deki tablo. Sapma frontend'de yanlış hata ekranı demektir."""
-    assert ERROR_STATUS[code] == status  # type: ignore[literal-required]
+    assert ERROR_STATUS[code] == status  # type: ignore[index]
 
 
 def test_type_uri_mock_ile_ayni_bicimde() -> None:
