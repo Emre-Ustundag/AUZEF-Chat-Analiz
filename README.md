@@ -316,6 +316,10 @@ Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutul
 
 Hata bildirimleri ve özellik önerileri için [GitHub Issues](https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz/issues) kullanılabilir.
 
+## Katkıda bulunma
+
+Branch adlandırma, kalite kontrolleri, pull request ve reviewer kuralları için [katkı rehberini](CONTRIBUTING.md) inceleyin. Pull request açıldığında standart kontrol listesi otomatik olarak gösterilir.
+
 ## Proje bağlantısı
 
 [github.com/Emre-Ustundag/AUZEF-Chat-Analiz](https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz)
