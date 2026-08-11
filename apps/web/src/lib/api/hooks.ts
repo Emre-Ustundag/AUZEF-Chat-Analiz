@@ -43,12 +43,20 @@ export function useUploadStatus(uploadId: string | null) {
     queryFn: ({ signal }) => getUpload(uploadId!, signal),
     enabled: uploadId !== null,
     refetchInterval: (query) => {
-      // Hata durumunda polling DURUR. Yalnızca `data`ya bakılırsa, istek hata
-      // verdiğinde veri hiç oluşmadığı için durum "henüz başlamadı" sanılır ve
-      // poll sonsuza kadar sürer: ekran hata gösterirken arkada 2,5 saniyede
-      // bir istek atılır. Geçici hataları `retry` politikası zaten ayrı ele
-      // alıyor; buraya düşen hata kalıcıdır.
-      if (query.state.status === "error") return false;
+      // VERİ HİÇ OLUŞMAMIŞKEN hata gelirse polling DURUR. Yalnızca `data`ya
+      // bakılırsa, istek hata verdiğinde veri yok olduğu için durum "henüz
+      // başlamadı" sanılır ve poll sonsuza kadar sürer: ekran hata gösterirken
+      // arkada 2,5 saniyede bir istek atılır.
+      //
+      // `data === undefined` koşulu şart: TanStack, ARKA PLAN hatasında da
+      // status'ü "error" yapıyor ama `data`yı koruyor (query-core reducer,
+      // "flag existing data as invalidated if we get a background error").
+      // Koşul yalnızca status'e bakarsa, iş sürerken üst üste birkaç poll
+      // başarısız olunca polling kalıcı olarak durur ve bir daha başlamaz —
+      // oysa kullanıcının işi sunucuda çalışmaya devam ediyordur.
+      if (query.state.status === "error" && query.state.data === undefined) {
+        return false;
+      }
       const status = query.state.data?.status;
       if (!status) return LIMITS.POLL_INTERVAL_MS;
       return isUploadSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
@@ -65,8 +73,13 @@ export function useAnalysisJob(analysisId: string | null) {
     queryFn: ({ signal }) => getAnalysisJob(analysisId!, signal),
     enabled: analysisId !== null,
     refetchInterval: (query) => {
-      // useUploadStatus'taki ile aynı kural: hata kalıcıdır, poll durur.
-      if (query.state.status === "error") return false;
+      // useUploadStatus'taki ile aynı kural: veri hiç oluşmamışken gelen hata
+      // kalıcı sayılır ve poll durur; iş sürerken gelen geçici hata durdurmaz.
+      // Analizde bu ayrım daha da kritik: iş 45 dakika sürebiliyor ve o süre
+      // boyunca tek bir sunucu hıçkırığı polling'i kalıcı öldürmemeli.
+      if (query.state.status === "error" && query.state.data === undefined) {
+        return false;
+      }
       const status = query.state.data?.status;
       if (!status) return LIMITS.POLL_INTERVAL_MS;
       return isAnalysisSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;

@@ -166,3 +166,85 @@ describe("polling durma koşulları", () => {
     expect(getUpload.mock.calls.length).toBe(afterSettle);
   });
 });
+
+/**
+ * Polling'in DEVAM ETMESİ gereken yer: iş sürerken gelen GEÇİCİ hata.
+ *
+ * Bu testlerin varlık sebebi de somut bir regresyon. Durma koşulu yalnızca
+ * `query.state.status === "error"` diye yazıldığında, TanStack arka plan
+ * hatasında da status'ü "error" yaptığı için (query-core reducer: "flag
+ * existing data as invalidated if we get a background error") çalışan bir
+ * işin polling'i kalıcı olarak ölüyordu. Kullanıcı sayfayı yenilemeden
+ * duruma bir daha ulaşamıyordu; oysa iş sunucuda devam ediyordu.
+ */
+describe("polling geçici hatadan sonra devam eder", () => {
+  const running: AnalysisJob = {
+    analysis_id: ID,
+    status: "analyzing",
+    progress: 40,
+    created_at: "2026-08-11T10:00:00Z",
+    updated_at: "2026-08-11T10:05:00Z",
+    estimated_seconds_remaining: 600,
+    error: null,
+  };
+
+  const readyUpload: Upload = {
+    upload_id: ID,
+    status: "validating",
+    filename: "veri.xlsx",
+    size_bytes: 2048,
+    created_at: "2026-08-11T10:00:00Z",
+    profile: null,
+    error: null,
+  };
+
+  it("iş sürerken hata gelirse polling durmaz", async () => {
+    // Önce başarılı bir cevap (veri oluşur), sonra hatalar.
+    getAnalysisJob.mockResolvedValueOnce(running).mockRejectedValue(notFound());
+
+    renderHook(() => useAnalysisJob(ID), { wrapper });
+
+    await settleFirstRequest(getAnalysisJob);
+
+    // Hatanın YERLEŞMESİNİ bekle. Ölçümü buradan sonra almak şart: hata
+    // yerleşmeden sayarsak, hatalı isteğin kendisi sayacı artırır ve test
+    // polling durmuş olsa bile geçer.
+    await advanceIntervals(2);
+    const afterErrorSettled = getAnalysisJob.mock.calls.length;
+
+    await advanceIntervals(4);
+
+    expect(getAnalysisJob.mock.calls.length).toBeGreaterThan(afterErrorSettled);
+  });
+
+  it("hata geçtikten sonra taze durum yeniden okunur", async () => {
+    const aggregating: AnalysisJob = { ...running, status: "aggregating", progress: 90 };
+    getAnalysisJob
+      .mockResolvedValueOnce(running)
+      .mockRejectedValueOnce(notFound())
+      .mockResolvedValue(aggregating);
+
+    const { result } = renderHook(() => useAnalysisJob(ID), { wrapper });
+
+    await settleFirstRequest(getAnalysisJob);
+    await advanceIntervals(5);
+
+    // Polling kendini onardığı için arayüz ilerlemiş durumu görebilmeli.
+    expect(result.current.data?.status).toBe("aggregating");
+  });
+
+  it("upload doğrulanırken hata gelirse polling durmaz", async () => {
+    getUpload.mockResolvedValueOnce(readyUpload).mockRejectedValue(notFound());
+
+    renderHook(() => useUploadStatus(ID), { wrapper });
+
+    await settleFirstRequest(getUpload);
+
+    await advanceIntervals(2);
+    const afterErrorSettled = getUpload.mock.calls.length;
+
+    await advanceIntervals(4);
+
+    expect(getUpload.mock.calls.length).toBeGreaterThan(afterErrorSettled);
+  });
+});
