@@ -29,7 +29,14 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 from app.core.config import Settings
-from app.services.redaction import redact_pii
+from app.services.redaction import (
+    EMAIL_MASK,
+    ID_MASK,
+    NUMBER_MASK,
+    PHONE_MASK,
+    URL_MASK,
+    redact_pii,
+)
 
 #: Analiz dışı bırakılan sistem/otomasyon kayıtları. Chatbot dökümlerinde
 #: sık görülen, kullanıcı sorusu OLMAYAN satırlar.
@@ -84,6 +91,21 @@ def normalize(text: str) -> str:
 
 def is_system_message(text: str) -> bool:
     return any(pattern.search(text) for pattern in SYSTEM_MESSAGE_PATTERNS)
+
+
+#: Maskelerin normalize edilmiş hâlleri: `[TELEFON]` → `telefon`.
+#: `normalize` köşeli parantezleri sildiği için maske sıradan bir sözcüğe
+#: dönüşüyor; bu liste olmadan yalnızca bir telefon numarasından ibaret bir
+#: satır "telefon" adlı sahte bir SSS kategorisi üretirdi.
+_MASK_TOKENS = frozenset(
+    normalize(mask) for mask in (EMAIL_MASK, PHONE_MASK, ID_MASK, NUMBER_MASK, URL_MASK)
+)
+
+
+def is_only_masks(normalized: str) -> bool:
+    """Kayıt maskelendikten sonra geriye anlamlı içerik kalmış mı?"""
+    tokens = normalized.split()
+    return bool(tokens) and all(token in _MASK_TOKENS for token in tokens)
 
 
 @dataclass
@@ -183,9 +205,11 @@ class Preprocessor:
             was_redacted = redacted != text
 
             normalized = normalize(redacted)
-            if not normalized:
+            if not normalized or is_only_masks(normalized):
                 # Kayıt tamamen PII'dan ibaretmiş (örn. yalnız bir telefon
-                # numarası). Maskelendikten sonra soru olarak anlamı kalmıyor.
+                # numarası). Maskelendikten sonra soru olarak anlamı kalmıyor
+                # ve analize girseydi "telefon" adlı sahte bir kategori
+                # üretirdi.
                 result.discarded_count += 1
                 continue
 

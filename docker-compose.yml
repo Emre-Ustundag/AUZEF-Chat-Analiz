@@ -100,6 +100,14 @@ services:
       MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-157286400}
       MAX_UNCOMPRESSED_BYTES: ${MAX_UNCOMPRESSED_BYTES:-1073741824}
       MAX_ROWS: ${MAX_ROWS:-100000}
+      # ADR §2: analiz hard timeout'u 45 dk, environment ile değiştirilebilir.
+      # BYOK anahtarının Redis TTL'i bundan TÜRETİLİR (+5 dk), ayrı ayarlanmaz.
+      ANALYSIS_HARD_TIMEOUT_SECONDS: ${ANALYSIS_HARD_TIMEOUT_SECONDS:-2700}
+      ANALYSIS_SOFT_TIMEOUT_SECONDS: ${ANALYSIS_SOFT_TIMEOUT_SECONDS:-2640}
+      # ADR §9: master encryption key yalnızca secret manager/environment'ta
+      # bulunur. Buradaki değer GELİŞTİRME içindir; üretimde MUTLAKA
+      # değiştirilmelidir.
+      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:-auzef-dev-master-key-degistirilmeli}
       CORS_ORIGINS: '["http://localhost:3000"]'
     ports:
       - "8000:8000"
