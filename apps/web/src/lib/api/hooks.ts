@@ -63,6 +63,12 @@ export function useAnalysisJob(analysisId: string | null) {
       if (!status) return LIMITS.POLL_INTERVAL_MS;
       return isAnalysisSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
     },
+    // Bilinçli karar: refetchIntervalInBackground açılmadı. İş 45 dakika
+    // sürebildiği için kullanıcı sekmeyi arka plana alacak; varsayılan
+    // davranışta polling orada duruyor ve sekmeye dönünce kaldığı yerden
+    // devam ediyor. Bakılmayan bir sekme için 45 dakika boyunca 2,5 saniyede
+    // bir istek atmanın karşılığı yok; kullanıcı geri döndüğünde en fazla
+    // bir aralık kadar bayat veri görür.
     staleTime: 0,
   });
 }
