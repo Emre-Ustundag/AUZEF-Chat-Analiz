@@ -66,7 +66,7 @@ _CHUNK_SIZE = 1024 * 1024
 _UNIQUE_TRACKING_LIMIT = 200_000
 
 
-class XlsxRejected(Exception):
+class XlsxRejectedError(Exception):
     """Dosya güvenlik veya biçim kontrolünden geçemedi.
 
     Çağıran bunu `UPLOAD_CORRUPT_OR_ENCRYPTED` (422) hatasına çevirir.
@@ -160,13 +160,13 @@ def _detect_signature(path: Path) -> None:
     if header.startswith(OLE2_MAGIC):
         # Parola korumalı xlsx dosyaları OOXML zip'i bir OLE2 kabına sarar.
         # Eski `.xls` de aynı imzayı taşır; ikisi de reddedilir (ADR §9).
-        raise XlsxRejected("encrypted_or_legacy_ole2_container")
+        raise XlsxRejectedError("encrypted_or_legacy_ole2_container")
 
     if header.startswith(ZIP_EMPTY_MAGIC):
-        raise XlsxRejected("empty_zip_archive")
+        raise XlsxRejectedError("empty_zip_archive")
 
     if not header.startswith(ZIP_MAGIC):
-        raise XlsxRejected("not_a_zip_archive")
+        raise XlsxRejectedError("not_a_zip_archive")
 
 
 def _check_members(archive: zipfile.ZipFile) -> None:
@@ -175,25 +175,25 @@ def _check_members(archive: zipfile.ZipFile) -> None:
 
     for member in ENCRYPTED_MEMBERS:
         if member in names:
-            raise XlsxRejected("encrypted_ooxml_package")
+            raise XlsxRejectedError("encrypted_ooxml_package")
 
     for member in MACRO_MEMBERS:
         if member in names:
             # Uzantı `.xlsx` olsa bile içerik makrolu bir çalışma kitabıdır.
-            raise XlsxRejected("macro_enabled_workbook")
+            raise XlsxRejectedError("macro_enabled_workbook")
 
     for member in REQUIRED_MEMBERS:
         if member not in names:
-            raise XlsxRejected("missing_ooxml_content_types")
+            raise XlsxRejectedError("missing_ooxml_content_types")
 
     if not any(member in names for member in WORKBOOK_MEMBERS):
-        raise XlsxRejected("missing_workbook_part")
+        raise XlsxRejectedError("missing_workbook_part")
 
     for name in names:
         # Zip slip savunması: bu modül üyeleri diske açmıyor ama kontrolü
         # burada tutmak, ileride açan bir kodun güvenli başlamasını sağlar.
         if name.startswith("/") or ".." in Path(name).parts:
-            raise XlsxRejected("unsafe_member_path")
+            raise XlsxRejectedError("unsafe_member_path")
 
 
 def _check_declared_sizes(archive: zipfile.ZipFile, settings: Settings) -> None:
@@ -206,12 +206,12 @@ def _check_declared_sizes(archive: zipfile.ZipFile, settings: Settings) -> None:
     for info in archive.infolist():
         total_declared += info.file_size
         if total_declared > settings.max_uncompressed_bytes:
-            raise XlsxRejected("declared_uncompressed_size_exceeds_limit")
+            raise XlsxRejectedError("declared_uncompressed_size_exceeds_limit")
 
         if info.file_size >= RATIO_CHECK_MIN_BYTES and info.compress_size > 0:
             ratio = info.file_size / info.compress_size
             if ratio > settings.max_compression_ratio:
-                raise XlsxRejected("compression_ratio_exceeds_limit")
+                raise XlsxRejectedError("compression_ratio_exceeds_limit")
 
 
 def _check_actual_sizes(archive: zipfile.ZipFile, settings: Settings) -> int:
@@ -234,9 +234,9 @@ def _check_actual_sizes(archive: zipfile.ZipFile, settings: Settings) -> int:
                 while chunk := member.read(_CHUNK_SIZE):
                     total_actual += len(chunk)
                     if total_actual > settings.max_uncompressed_bytes:
-                        raise XlsxRejected("actual_uncompressed_size_exceeds_limit")
+                        raise XlsxRejectedError("actual_uncompressed_size_exceeds_limit")
         except (zipfile.BadZipFile, EOFError, OSError) as exc:
-            raise XlsxRejected("member_decompression_failed") from exc
+            raise XlsxRejectedError("member_decompression_failed") from exc
     return total_actual
 
 
@@ -244,10 +244,10 @@ def validate_xlsx(path: Path, settings: Settings) -> int:
     """Dosyayı güvenlik ve biçim açısından doğrular.
 
     Başarılıysa açılmış toplam bayt sayısını döndürür; aksi hâlde
-    `XlsxRejected` fırlatır. Profil çıkarmadan ÖNCE çağrılmalıdır.
+    `XlsxRejectedError` fırlatır. Profil çıkarmadan ÖNCE çağrılmalıdır.
     """
     if not path.exists() or path.stat().st_size == 0:
-        raise XlsxRejected("empty_file")
+        raise XlsxRejectedError("empty_file")
 
     _detect_signature(path)
 
@@ -261,13 +261,13 @@ def validate_xlsx(path: Path, settings: Settings) -> int:
 
             corrupt_member = archive.testzip()
             if corrupt_member is not None:
-                raise XlsxRejected("crc_mismatch")
+                raise XlsxRejectedError("crc_mismatch")
     except zipfile.BadZipFile as exc:
-        raise XlsxRejected("corrupt_zip_archive") from exc
-    except XlsxRejected:
+        raise XlsxRejectedError("corrupt_zip_archive") from exc
+    except XlsxRejectedError:
         raise
     except OSError as exc:
-        raise XlsxRejected("unreadable_file") from exc
+        raise XlsxRejectedError("unreadable_file") from exc
 
     return uncompressed
 
@@ -300,10 +300,10 @@ def profile_xlsx(path: Path, settings: Settings) -> dict[str, Any]:
             data_only=True,
             keep_links=False,
         )
-    except XlsxRejected:
+    except XlsxRejectedError:
         raise
     except Exception as exc:  # openpyxl çok çeşitli istisna tipleri atıyor
-        raise XlsxRejected("workbook_parse_failed") from exc
+        raise XlsxRejectedError("workbook_parse_failed") from exc
 
     sheets: list[dict[str, Any]] = []
     total_row_count = 0

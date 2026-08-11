@@ -117,7 +117,7 @@ class ProblemDetails(BaseModel):
         değil: `null` gönderilirse `problemDetailsSchema.safeParse` başarısız
         olur ve kullanıcı hata mesajı yerine "beklenmeyen hata biçimi" görür.
         """
-        data = handler(self)
+        data: dict[str, Any] = handler(self)
         if data.get("retry_after") is None:
             data.pop("retry_after", None)
         return data

@@ -49,6 +49,13 @@ select = ["E", "F", "I", "UP", "B", "SIM", "N", "RUF"]
 ignore = [
     # Türkçe yorum ve metinler satır uzunluğunu formatter'a bırakıyoruz.
     "E501",
+    # RUF001/002/003: "ambiguous unicode character". Bu kurallar Türkçe
+    # harfleri (ı, ş, ğ, İ) Latin harflerinin kafa karıştırıcı ikizleri
+    # sanıyor ve yorumların tamamını işaretliyor (1134 uyarı). Proje dili
+    # Türkçe; kuralın koruduğu senaryo (homoglif saldırısı) burada yok.
+    "RUF001",
+    "RUF002",
+    "RUF003",
 ]
 
 [tool.ruff.lint.per-file-ignores]
