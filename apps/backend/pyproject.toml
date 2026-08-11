@@ -1,0 +1,86 @@
+[project]
+name = "auzef-backend"
+version = "0.1.0"
+description = "AUZEF Chat Analiz — FastAPI backend (ADR-0001)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "alembic>=1.14",
+    "asyncpg>=0.30",
+    "celery[redis]>=5.4",
+    "redis>=5.2",
+    "boto3>=1.35",
+    "openpyxl>=3.1",
+    "polars>=1.17",
+    "pyarrow>=18.1",
+    "python-multipart>=0.0.20",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "httpx>=0.28",
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "boto3-stubs[s3]>=1.35",
+    "types-openpyxl>=3.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+# ------------------------------------------------------------------ ruff
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "N", "RUF"]
+ignore = [
+    # Türkçe yorum ve metinler satır uzunluğunu formatter'a bırakıyoruz.
+    "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic şablonu ve migration'lar kendi adlandırma kurallarını kullanır.
+"alembic/*" = ["N999", "F401"]
+
+# ------------------------------------------------------------------ mypy
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+exclude = ["^alembic/versions/"]
+
+[[tool.mypy.overrides]]
+# Celery ve kombu tam tipli değil; boto3 için stub'lar dev grubunda.
+module = ["celery.*", "kombu.*", "polars.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Alembic migration'ları otomatik üretilir, tip kontrolü dışında.
+module = ["alembic.*"]
+ignore_missing_imports = true
+
+# ------------------------------------------------------------------ pytest
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
+markers = [
+    "integration: Postgres/Redis/MinIO gerektiren uçtan uca testler",
+]
