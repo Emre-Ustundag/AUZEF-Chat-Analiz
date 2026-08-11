@@ -10,6 +10,10 @@
     "build": "npm run build --workspace apps/web",
     "start": "npm run start --workspace apps/web",
     "lint": "npm run lint --workspace apps/web",
+    "typecheck": "npm run typecheck --workspace apps/web",
     "test": "npm run test --workspace apps/web"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   }
 }

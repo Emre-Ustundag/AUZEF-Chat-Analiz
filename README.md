@@ -186,7 +186,9 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 - Tailwind CSS ve shadcn/ui
 - TanStack Query
 - React Hook Form ve Zod
-- Recharts
+- Grafik kütüphanesi yok: mevcut rapor grafikleri eksen gerektirmeyen orantılı
+  çubuklar ve düz HTML ile çiziliyor. Yol haritasındaki zaman serisi grafikleri
+  eklenirken bir kütüphane (ör. Recharts) devreye girecek.
 
 ### Backend ve veri işleme
 
@@ -212,7 +214,8 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 
 ### Gereksinimler
 
-- Node.js 22 (önerilen)
+- Node.js 22.22.2 veya üstü (`.nvmrc` ile sabitlendi; `nvm use` yeterli).
+  Next.js 16 daha eski 22.x sürümlerini desteklemiyor.
 - npm
 - Tam MVP altyapısı eklendiğinde Docker ve Docker Compose
 
@@ -247,6 +250,16 @@ Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresind
 | `npm run build` | Üretim derlemesi oluşturur |
 | `npm run start` | Üretim sunucusunu başlatır |
 | `npm run lint` | ESLint kontrollerini çalıştırır |
+| `npm run typecheck` | Yol tiplerini üretip TypeScript kontrolü yapar |
+| `npm test` | Vitest test paketini çalıştırır |
+
+Bu dört komutun tamamı her push ve pull request'te GitHub Actions üzerinde de
+çalışır (`.github/workflows/ci.yml`).
+
+> `npm run typecheck` önce `next typegen` çalıştırır. `PageProps` ve
+> `RouteContext` gibi yol tiplerini Next üretir; `next dev`, `next build` veya
+> `next typegen` çalıştırılmamış temiz bir kopyada TypeScript bu tipleri
+> bulamaz ve editörde hata gösterir.
 
 ## Docker ile çalıştırma
 
@@ -281,7 +294,24 @@ Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağ
 - Job başına maliyet sınırı LLM çağrıları başlamadan kontrol edilir.
 - Gerçek kurum verisi kullanılmadan önce SSO/erişim kontrolü ve AUZEF veri işleme onayı zorunludur.
 
-Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutulmalı ve Git'e eklenmemelidir. Gerekli ortam değişkenleri entegrasyon geliştirildiğinde bu bölümde ayrıca belgelenecektir.
+Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutulmalı ve Git'e eklenmemelidir. Örnek değerler için `apps/web/.env.example` dosyasına bakın.
+
+Web uygulamasının bugün kullandığı tek değişken:
+
+| Değişken | Varsayılan | Açıklama |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | `/api/mock/v1` | Backend'in taban adresi. FastAPI devreye girince `/api/v1` yapılır. |
+
+`NEXT_PUBLIC_` ile başlayan değişkenler istemci paketine **build zamanında**
+gömülür; imaj üretildikten sonra runtime'da değiştirilemezler. Docker ile
+gerçek bir backend'e bağlanırken değer build arg olarak verilmelidir:
+
+```bash
+docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/v1
+```
+
+Varsayılan değer mock backend'i gösterir; `docker compose up` ile ayağa kalkan
+imaj gerçek veri değil, çalışan bir demo sunar.
 
 ## Yol haritası
 

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Aynı dal için üst üste gelen çalıştırmalarda yalnızca sonuncusu tamamlanır.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: apps/web
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Sürüm .nvmrc'den okunuyor: CI ile geliştiricilerin makineleri
+          # tek yerden aynı Node'a bağlansın.
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # typecheck önce `next typegen` çalıştırıyor: PageProps/RouteContext gibi
+      # yol tipleri Next tarafından üretiliyor ve build almadan var olmuyorlar.
+      - name: Tip kontrolü
+        run: npm run typecheck
+
+      - name: Testler
+        run: npm test
+
+      - name: Build
+        run: npm run build

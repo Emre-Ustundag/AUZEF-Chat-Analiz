@@ -3,6 +3,11 @@ services:
     build:
       context: .
       dockerfile: infra/docker/web.Dockerfile
+      args:
+        # Backend'in taban adresi istemci paketine build zamanında gömülür,
+        # runtime'da okunmaz. Varsayılan mock backend'i gösterir: bu imaj
+        # bugün gerçek veri değil, çalışan bir demo üretir.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/mock/v1}
     container_name: auzef-web
     ports:
       - "3000:3000"

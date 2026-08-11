@@ -30,6 +30,17 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_* değişkenleri istemci paketine BUILD ZAMANINDA gömülür; imaj
+# oluştuktan sonra runtime'da ayarlamak hiçbir şeyi değiştirmez. Bu yüzden
+# build arg olarak alınıyor.
+#
+# Varsayılan bilinçli olarak mock backend: repoda henüz FastAPI yok ve sessizce
+# boş bir adrese gitmektense çalışan bir demo üretmek daha yararlı. Gerçek
+# ortama çıkarken bu değer MUTLAKA verilmeli:
+#   docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/v1
+ARG NEXT_PUBLIC_API_BASE_URL=/api/mock/v1
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
 RUN npm run build
 
 # ============================================
@@ -57,5 +68,9 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+
+# curl imajda yok; wget busybox ile birlikte geliyor.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget --quiet --spider http://127.0.0.1:3000/ || exit 1
 
 CMD ["node", "apps/web/server.js"]

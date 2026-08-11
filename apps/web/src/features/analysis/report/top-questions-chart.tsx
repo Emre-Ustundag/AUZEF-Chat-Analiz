@@ -14,8 +14,9 @@ import type { TopQuestion } from "@/lib/api/schemas";
  *
  * 3. Grafik kütüphanesi kullanılmadı. Bunlar eksen gerektirmeyen orantılı
  *    çubuklar; düz HTML hem erişilebilir hem de metin akışıyla birlikte
- *    doğru sarılıyor. Recharts, yol haritasındaki zaman serisi grafikleri
- *    için duruyor.
+ *    doğru sarılıyor. Yol haritasındaki zaman serisi grafikleri gerçekten
+ *    eksen isteyecek; kütüphane o iş başlarken eklenmeli, şimdiden
+ *    kurulu tutmanın karşılığı yok.
  *
  * Değerler her çubukta yazılı: bu liste aynı zamanda tablo görünümü görevi
  * görüyor, yani renk tek başına hiçbir bilgiyi taşımıyor.
