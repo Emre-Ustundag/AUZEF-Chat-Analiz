@@ -241,8 +241,12 @@ def build_executive_summary(
 
     if len(top_questions) >= 3:
         top3 = sum(question.count for question in top_questions[:3])
+        # Ek yerine "kadarını": Türkçe'de sayıya göre değişen ekleri
+        # (%23.6'sını / %8'ini) doğru üretmek ayrı bir iş; yanlış ek yazmaktansa
+        # eksiz bir kalıp kullanılıyor.
         parts.append(
-            f"İlk üç soru toplam mesajların %{_percentage(top3, analyzed)}'ini oluşturuyor."
+            f"İlk üç soru analiz edilen mesajların %{_percentage(top3, analyzed)} kadarını "
+            "oluşturuyor."
         )
 
     if themes:

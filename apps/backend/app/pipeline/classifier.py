@@ -24,7 +24,7 @@ matematiği LLM devreye girdiğinde tek satır değişmeden çalışmaya devam e
 from __future__ import annotations
 
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
@@ -223,8 +223,10 @@ class DeterministicClassifier:
     2. Aynı imzalı gruplar tek bir kanonik soruda birleşir.
     3. Kanonik soru metni, grup içindeki EN SIK kaydın redakte edilmiş
        hâlidir — uydurulmuş bir cümle değil, gerçekten görülmüş bir mesaj.
-    4. Tema, imzanın ilk sözcüğüdür: aynı ana sözcüğü paylaşan sorular
-       ("sınav tarih", "sınav yer") tek temada toplanır.
+    4. Tema, imzanın KORPUSTA EN SIK GEÇEN sözcüğüdür. Alfabetik olarak ilk
+       sözcüğü almak "adresime", "alınır" gibi anlamsız tema adları üretiyordu;
+       korpus frekansı ise doğal olarak konu sözcüklerini ("sınav", "harç",
+       "ders") öne çıkarır ve aynı konudaki soruları tek temada toplar.
 
     Bunun bir LLM kadar iyi olmadığı AÇIKTIR ve olması da gerekmiyor. İşlevi,
     toplama matematiğini LLM belirsizliği olmadan test edilebilir kılmak.
@@ -237,11 +239,17 @@ class DeterministicClassifier:
     def classify(self, groups: Sequence[RecordGroup]) -> Classification:
         buckets: dict[tuple[str, ...], list[RecordGroup]] = defaultdict(list)
         unmatched: list[RecordGroup] = []
+        #: Tema sözcüğü seçimi için korpus frekansı. Ağırlık `count`'tur:
+        #: bir sözcüğün kaç MESAJDA geçtiği, kaç benzersiz kayıtta geçtiğinden
+        #: daha iyi bir konu sinyali.
+        corpus: Counter[str] = Counter()
 
         for group in groups:
             signature = _signature_tokens(group.normalized)
             if signature:
                 buckets[signature].append(group)
+                for token in signature:
+                    corpus[token] += group.count
             else:
                 # İmza çıkmayan kayıt (yalnızca dolgu sözcükler). Kayıp
                 # OLMAMALI: toplam adet analiz edilen kayda eşit kalmalı.
@@ -260,7 +268,10 @@ class DeterministicClassifier:
         for position, (signature, members) in enumerate(ordered, start=1):
             question_id = f"q{position}"
             dominant = max(members, key=lambda g: (g.count, g.record_id))
-            theme_id = _theme_id(signature[0])
+            # Eşitlikte sözcüğün kendisi karar verir: sıralama deterministik
+            # olmalı, sözlük ekleme sırasına bağlı kalmamalı.
+            theme_token = max(signature, key=lambda token: (corpus[token], token))
+            theme_id = _theme_id(theme_token)
 
             questions.append(
                 QuestionAssignment(
@@ -271,7 +282,7 @@ class DeterministicClassifier:
                 )
             )
             theme_members[theme_id].append(question_id)
-            theme_names.setdefault(theme_id, signature[0].capitalize())
+            theme_names.setdefault(theme_id, theme_token.capitalize())
 
         if unmatched:
             question_id = f"q{len(questions) + 1}"
