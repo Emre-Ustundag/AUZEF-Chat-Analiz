@@ -13,7 +13,7 @@ import pytest
 
 from app.core.config import Settings
 from app.services.xlsx import (
-    XlsxRejected,
+    XlsxRejectedError,
     profile_xlsx,
     validate_and_profile,
     validate_xlsx,
@@ -32,27 +32,27 @@ def settings() -> Settings:
 
 
 def test_bos_dosya_reddedilir(settings: Settings) -> None:
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(FIXTURES / "empty.xlsx", settings)
     assert exc.value.reason == "empty_file"
 
 
 def test_sifreli_dosya_reddedilir(settings: Settings) -> None:
     """OLE2 kabı — parola korumalı xlsx ve eski .xls bu imzayı taşır."""
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(FIXTURES / "encrypted.xlsx", settings)
     assert exc.value.reason == "encrypted_or_legacy_ole2_container"
 
 
 def test_bozuk_zip_reddedilir(settings: Settings) -> None:
     """Magic bytes'ı GEÇEN ama zip dizini okunamayan dosya."""
-    with pytest.raises(XlsxRejected):
+    with pytest.raises(XlsxRejectedError):
         validate_xlsx(FIXTURES / "corrupt.xlsx", settings)
 
 
 def test_makrolu_dosya_reddedilir(settings: Settings) -> None:
     """Uzantı .xlsx olsa bile xl/vbaProject.bin varsa reddedilir (ADR §9)."""
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(FIXTURES / "macro_enabled.xlsx", settings)
     assert exc.value.reason == "macro_enabled_workbook"
 
@@ -65,7 +65,7 @@ def test_ooxml_olmayan_zip_reddedilir(tmp_path: Path, settings: Settings) -> Non
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("hello.txt", "merhaba")
 
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(path, settings)
     assert exc.value.reason == "missing_ooxml_content_types"
 
@@ -82,7 +82,7 @@ def test_zip_bombasi_reddedilir(tmp_path: Path) -> None:
     settings = Settings(max_uncompressed_bytes=8 * 1024 * 1024)
     bomb = factories.build_zip_bomb(tmp_path / "bomb.xlsx", uncompressed_bytes=64 * 1024 * 1024)
 
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(bomb, settings)
     assert "uncompressed_size_exceeds_limit" in exc.value.reason
 
@@ -97,7 +97,7 @@ def test_yalan_boyut_beyan_eden_zip_reddedilir(tmp_path: Path) -> None:
     settings = Settings(max_uncompressed_bytes=8 * 1024 * 1024)
     lying = factories.build_lying_zip(tmp_path / "lying.xlsx")
 
-    with pytest.raises(XlsxRejected):
+    with pytest.raises(XlsxRejectedError):
         validate_xlsx(lying, settings)
 
 
@@ -106,7 +106,7 @@ def test_sikistirma_orani_sinirlanir(tmp_path: Path) -> None:
     settings = Settings(max_uncompressed_bytes=1024 * 1024 * 1024, max_compression_ratio=5.0)
     bomb = factories.build_zip_bomb(tmp_path / "ratio.xlsx", uncompressed_bytes=16 * 1024 * 1024)
 
-    with pytest.raises(XlsxRejected) as exc:
+    with pytest.raises(XlsxRejectedError) as exc:
         validate_xlsx(bomb, settings)
     assert exc.value.reason == "compression_ratio_exceeds_limit"
 
