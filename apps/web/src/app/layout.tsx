@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AppHeader } from "@/components/app-header";
 import { Providers } from "./providers";
 
 // latin-ext, Türkçe'nin ğ/ş/ı/İ karakterlerini içerir; yalnız "latin" ile
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <AppHeader />
+          <main className="flex-1">{children}</main>
+        </Providers>
       </body>
     </html>
   );
