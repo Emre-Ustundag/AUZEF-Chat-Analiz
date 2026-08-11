@@ -26,9 +26,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning zorunlu: next-themes .dark sınıfını sunucu
+    // render'ından sonra istemcide ekliyor, aksi halde her yüklemede
+    // hydration uyuşmazlığı uyarısı çıkar.
     <html
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
