@@ -1,0 +1,28 @@
+# Dependencies and generated output
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Generated and binary files
+package-lock.json
+next-env.d.ts
+public/*.ico
+public/*.svg
+*.parquet
+*.arrow
+
+# Local data and infrastructure volumes
+data/
+uploads/
+storage/
+tmp/
+.docker-data/
+.minio/
+postgres-data/
+redis-data/
+minio-data/

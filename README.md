@@ -53,12 +53,12 @@ Dashboard üzerinde aşağıdaki bilgilerin sunulması planlanmaktadır:
 
 Örnek sonuç:
 
-| Soru / tema | Adet | Oran |
-| --- | ---: | ---: |
-| Sınav tarihleri | 1.240 | %24,8 |
-| Ders materyallerine erişim | 860 | %17,2 |
-| Harç ve ödeme işlemleri | 610 | %12,2 |
-| Kayıt yenileme | 480 | %9,6 |
+| Soru / tema                |  Adet |  Oran |
+| -------------------------- | ----: | ----: |
+| Sınav tarihleri            | 1.240 | %24,8 |
+| Ders materyallerine erişim |   860 | %17,2 |
+| Harç ve ödeme işlemleri    |   610 | %12,2 |
+| Kayıt yenileme             |   480 |  %9,6 |
 
 ## Analiz yaklaşımı
 
@@ -92,14 +92,14 @@ flowchart LR
 
 ### Bileşenler
 
-| Bileşen | Sorumluluk |
-| --- | --- |
-| Next.js web | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard |
-| FastAPI | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
-| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı |
-| PostgreSQL | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu |
-| Redis | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı |
-| S3 / MinIO | Ham upload ve Parquet ara dosyaları için geçici object storage |
+| Bileşen       | Sorumluluk                                                                    |
+| ------------- | ----------------------------------------------------------------------------- |
+| Next.js web   | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard               |
+| FastAPI       | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
+| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı         |
+| PostgreSQL    | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu     |
+| Redis         | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı    |
+| S3 / MinIO    | Ham upload ve Parquet ara dosyaları için geçici object storage                |
 
 ### İki aşamalı işlem modeli
 
@@ -241,12 +241,14 @@ Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresind
 
 ### Kullanılabilir komutlar
 
-| Komut | Açıklama |
-| --- | --- |
-| `npm run dev` | Geliştirme sunucusunu başlatır |
-| `npm run build` | Üretim derlemesi oluşturur |
-| `npm run start` | Üretim sunucusunu başlatır |
-| `npm run lint` | ESLint kontrollerini çalıştırır |
+| Komut                  | Açıklama                                            |
+| ---------------------- | --------------------------------------------------- |
+| `npm run dev`          | Geliştirme sunucusunu başlatır                      |
+| `npm run build`        | Üretim derlemesi oluşturur                          |
+| `npm run start`        | Üretim sunucusunu başlatır                          |
+| `npm run lint`         | ESLint kontrollerini çalıştırır                     |
+| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir    |
+| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder |
 
 ## Docker ile çalıştırma
 
@@ -312,7 +314,6 @@ Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutul
 - [ ] Tarih aralığına göre karşılaştırma
 - [ ] Tema eğilimleri ve dönemsel değişim analizi
 - [ ] Kayıtlı analiz geçmişi ve rapor karşılaştırma
-
 
 Hata bildirimleri ve özellik önerileri için [GitHub Issues](https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz/issues) kullanılabilir.
 

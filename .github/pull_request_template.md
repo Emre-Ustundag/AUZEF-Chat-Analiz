@@ -24,6 +24,7 @@
 <!-- Çalıştırdığınız komutları ve manuel kontrol adımlarını yazın. -->
 
 - [ ] `npm run lint`
+- [ ] `npm run format:check`
 - [ ] `npm run build`
 - [ ] İlgili testler çalıştırıldı veya test gerekmeme nedeni açıklandı
 

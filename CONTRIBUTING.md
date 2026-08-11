@@ -49,13 +49,14 @@ git switch -c feature/excel-upload
 PR açmadan önce mevcut kontrolleri çalıştırın:
 
 ```bash
+npm run format:check
 npm run lint
 npm run build
 ```
 
 Test altyapısı henüz eklenmediği için şu anda zorunlu bir `npm run test` komutu yoktur. İlk test edilebilir özellik veya hata düzeltmesiyle birlikte uygun test altyapısı ve test komutu eklenmelidir. Test komutları eklendikten sonra ilgili tüm testler PR öncesinde çalıştırılmalıdır.
 
-Her push ve pull request'te GitHub Actions üzerinden lint, production build ve Gitleaks secret taraması çalışır. Bu kontroller başarılı olmadan PR merge edilmemelidir.
+Her push ve pull request'te GitHub Actions üzerinden format kontrolü, lint, production build ve Gitleaks secret taraması çalışır. Bu kontroller başarılı olmadan PR merge edilmemelidir.
 
 ## Pull request süreci
 
