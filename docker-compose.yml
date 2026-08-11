@@ -1,9 +1,9 @@
 services:
-  app:
+  web:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: auzef-chat-analiz
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: auzef-web
     ports:
       - "3000:3000"
     environment:
