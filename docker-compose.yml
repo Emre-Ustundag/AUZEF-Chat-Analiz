@@ -1,16 +1,163 @@
+# AUZEF Chat Analiz — geliştirme ortamı (ADR §2).
+#
+# Uzun ömürlü ALTI servis: web, api, worker, postgres, redis, minio.
+# Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
+# çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
+# Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
+# fazla API replikası aynı anda `alembic upgrade` çalıştırdığında yarışa
+# yol açardı.
+
 services:
+  # ------------------------------------------------------------- altyapı
+  postgres:
+    image: postgres:17-alpine
+    container_name: auzef-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-auzef}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auzef}
+      POSTGRES_DB: ${POSTGRES_DB:-auzef}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # `-d` olmadan pg_isready varsayılan veritabanına bakar ve asıl
+      # veritabanı hazır olmadan "sağlıklı" der.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-auzef} -d ${POSTGRES_DB:-auzef}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: auzef-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: auzef-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ------------------------------------------------- migration (tek seferlik)
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: api
+    image: auzef-backend:latest
+    container_name: auzef-migrate
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://auzef:auzef@postgres:5432/auzef}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ------------------------------------------------------------- backend
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: api
+    image: auzef-backend:latest
+    container_name: auzef-api
+    environment: &backend-env
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://auzef:auzef@postgres:5432/auzef}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-http://minio:9000}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      S3_BUCKET: ${S3_BUCKET:-auzef-uploads}
+      # ADR §9: sınırlar environment config'tir, sabit kodlanmaz.
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-157286400}
+      MAX_UNCOMPRESSED_BYTES: ${MAX_UNCOMPRESSED_BYTES:-1073741824}
+      MAX_ROWS: ${MAX_ROWS:-100000}
+      CORS_ORIGINS: '["http://localhost:3000"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: worker
+    image: auzef-worker:latest
+    container_name: auzef-worker
+    # API ile birebir aynı ortam: worker aynı bucket'ı ve aynı veritabanını
+    # kullanır (ADR §3, tek kod tabanı).
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ------------------------------------------------------------- frontend
   web:
     build:
       context: .
       dockerfile: infra/docker/web.Dockerfile
       args:
-        # Backend'in taban adresi istemci paketine build zamanında gömülür,
-        # runtime'da okunmaz. Varsayılan mock backend'i gösterir: bu imaj
-        # bugün gerçek veri değil, çalışan bir demo üretir.
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/mock/v1}
+        # NEXT_PUBLIC_* istemci paketine BUILD ZAMANINDA gömülür, runtime'da
+        # okunmaz. Mock'a dönmek için: /api/mock/v1 verip yeniden build alın.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
+        # next.config.ts'teki rewrite hedefi. rewrites() `next build`
+        # sırasında değerlendirilir; bu arg olmadan hedef "undefined/api/v1"
+        # olarak imaja gömülürdü.
+        API_ORIGIN: ${API_ORIGIN:-http://api:8000}
     container_name: auzef-web
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    depends_on:
+      - api
     restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:

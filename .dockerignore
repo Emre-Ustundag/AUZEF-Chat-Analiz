@@ -36,6 +36,22 @@ docs
 **/AGENTS.md
 **/CLAUDE.md
 
+# Python ortamları ve önbellekleri
+#
+# `**/.venv` KRİTİK: apps/backend/.venv yerel makinede var ve build context'e
+# dahil edilirse hem imajı yüzlerce MB şişirir hem de içindeki mutlak yollar
+# ve derlenmiş uzantılar container mimarisiyle uyuşmaz — `uv sync` ile kurulan
+# doğru ortamın üstüne kopyalanıp çalışma zamanında bozuk import'lara yol açar.
+**/.venv
+**/venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+**/htmlcov
+
 # Tests
 tests
 **/coverage
