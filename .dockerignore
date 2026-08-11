@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js build output
+.next
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs
+README.md
+AGENTS.md
+CLAUDE.md
+
+# Agents
+.agents
