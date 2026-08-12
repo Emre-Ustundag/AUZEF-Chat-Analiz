@@ -42,4 +42,24 @@ celery_app.conf.update(
     # kalıcı gerçek kaynağıdır"); Redis'teki result backend yalnızca hata
     # ayıklama içindir, uzun süre saklanmasına gerek yok.
     result_expires=3600,
+    # ---- Faz 4: retention süpürücüsü (ADR §9) ----
+    # Faz 1'den beri açık olan boşluk: temizlik YALNIZCA DELETE uçlarında
+    # yapılıyordu, yani kullanıcı düğmeye basarsa. Basmazsa rapor da ham
+    # dosya da süresiz duruyordu. "Varsayılan 24 saat tutulur" bir üst
+    # sınırdır; kimsenin tetiklemediği bir yol onu uygulayamaz.
+    #
+    # `beat_schedule` burada tanımlı ama zamanlayıcıyı AYRI bir process
+    # çalıştırır (`celery beat`, compose'da `beat` servisi). Worker'a
+    # `--beat` vermek tek worker varsayardı; iki worker replikası aynı anda
+    # zamanlayıcı koştursa her süpürme iki kez kuyruğa girerdi.
+    beat_schedule={
+        "retention-sweep": {
+            "task": "app.workers.tasks.sweep_retention",
+            "schedule": float(settings.retention_sweep_interval_seconds),
+            # Beat kapalı kaldıysa birikmiş tetiklemeler tek koşuya
+            # indirgenir; süpürme idempotent olduğu için kuyruğu doldurmanın
+            # anlamı yok.
+            "options": {"expires": float(settings.retention_sweep_interval_seconds)},
+        }
+    },
 )

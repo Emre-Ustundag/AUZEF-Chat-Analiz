@@ -133,6 +133,36 @@ class Settings(BaseSettings):
     llm_chunk_max_records: int = 120
     llm_chunk_max_prompt_tokens: int = 12_000
 
+    # ------------------------------------------------- retention (ADR §9)
+    #: "Toplu ve redakte rapor varsayılan 24 saat tutulur; kullanıcı elle
+    #: silebilir ve gerçek kurum politikası onaylanınca config değiştirilir."
+    #: Süre dolan analiz KAYDI (raporuyla birlikte) silinir; raporu `NULL`
+    #: yapıp satırı bırakmak, `status="completed"` ama raporu olmayan bir
+    #: kayıt üretirdi — `/result` o kayıt için 409 döner ve gerçekten bitmiş
+    #: bir işe "henüz tamamlanmadı" demiş oluruz.
+    report_retention_hours: int = 24
+
+    #: Ham upload kaydının ve nesnesinin azami ömrü. Normalde nesne iş
+    #: bitiminde zaten siliniyor (ADR §9); bu, hiç analiz edilmemiş veya
+    #: silme adımı düşmüş dosyalar için tavandır.
+    upload_retention_hours: int = 24
+
+    #: ADR §9: "kaçak dosyalar için azami 24 saat lifecycle". Veritabanında
+    #: karşılığı olmayan nesneler bu süreden sonra süpürülür.
+    orphan_object_retention_hours: int = 24
+
+    #: Bucket lifecycle kuralının gün cinsinden süresi. S3'ün en küçük
+    #: birimi GÜN olduğu için bu kural tek başına "azami 24 saat"i
+    #: karşılayamaz (gerçek silinme 24-48 saat arasına düşer); asıl
+    #: uygulayıcı `sweep_retention`, bu yalnızca ağdır. Ayrıntı:
+    #: `services/storage.py::ensure_lifecycle_policy`.
+    storage_lifecycle_expiration_days: int = 1
+
+    #: Süpürücünün çalışma sıklığı (Celery beat). Retention penceresinin
+    #: çok altında olmalı: saatte bir koşan bir süpürücü 24 saatlik kuralı
+    #: en fazla bir saat gecikmeyle uygular.
+    retention_sweep_interval_seconds: int = 3600
+
     # ----------------------------------------------------------- worker
     upload_profile_soft_time_limit_seconds: int = 900
     upload_profile_time_limit_seconds: int = 1200

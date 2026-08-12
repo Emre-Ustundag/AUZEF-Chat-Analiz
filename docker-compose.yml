@@ -1,6 +1,13 @@
 # AUZEF Chat Analiz — geliştirme ortamı (ADR §2).
 #
-# Uzun ömürlü ALTI servis: web, api, worker, postgres, redis, minio.
+# Uzun ömürlü YEDİ servis: web, api, worker, beat, postgres, redis, minio.
+#
+# `beat` Faz 4'te eklendi (ADR §9 retention). ADR §2 altı servis sayıyor;
+# yedincisi bir mimari sapma DEĞİL, aynı worker imajının farklı komutla
+# koşan ikinci bir örneği — "API ve worker aynı kodu paylaşır" kuralı
+# bozulmuyor. Ayrı process olmasının sebebi `workers/celery_app.py`'de:
+# worker'a `--beat` vermek tek replika varsayardı ve iki worker aynı anda
+# zamanlayıcı koşturursa her süpürme iki kez kuyruğa girerdi.
 # Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
 # çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
 # Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
@@ -108,6 +115,13 @@ services:
       # bulunur. Buradaki değer GELİŞTİRME içindir; üretimde MUTLAKA
       # değiştirilmelidir.
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:-auzef-dev-master-key-degistirilmeli}
+      # ADR §9 retention: "rapor varsayılan 24 saat tutulur", "kaçak dosyalar
+      # için azami 24 saat". Kurum politikası onaylanınca burası değişir —
+      # kod değil (ADR §9 değişmez 7).
+      REPORT_RETENTION_HOURS: ${REPORT_RETENTION_HOURS:-24}
+      UPLOAD_RETENTION_HOURS: ${UPLOAD_RETENTION_HOURS:-24}
+      ORPHAN_OBJECT_RETENTION_HOURS: ${ORPHAN_OBJECT_RETENTION_HOURS:-24}
+      RETENTION_SWEEP_INTERVAL_SECONDS: ${RETENTION_SWEEP_INTERVAL_SECONDS:-3600}
       CORS_ORIGINS: '["http://localhost:3000"]'
     ports:
       - "8000:8000"
@@ -138,6 +152,40 @@ services:
       redis:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  beat:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: worker
+    image: auzef-worker:latest
+    container_name: auzef-beat
+    # Aynı worker imajı, farklı komut: zamanlayıcı iş ÇALIŞTIRMAZ, yalnızca
+    # kuyruğa koyar. İşi yapan `worker` servisidir.
+    command:
+      [
+        "celery",
+        "-A",
+        "app.workers.celery_app.celery_app",
+        "beat",
+        "--loglevel=info",
+        # Zamanlayıcı durumu /tmp'de: imaj katmanı salt okunur değil ama
+        # kalıcı da değil, ve süpürme idempotent olduğu için yeniden
+        # başlatmada durumu kaybetmek zararsız.
+        "--schedule=/tmp/celerybeat-schedule",
+      ]
+    # Worker imajının healthcheck'i `celery inspect ping` kullanıyor; beat
+    # o protokole cevap VERMEZ, dolayısıyla devralınan kontrol container'ı
+    # sonsuza kadar "unhealthy" gösterirdi.
+    healthcheck:
+      disable: true
+    environment: *backend-env
+    depends_on:
+      redis:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully

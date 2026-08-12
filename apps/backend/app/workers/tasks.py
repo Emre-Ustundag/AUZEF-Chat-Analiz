@@ -2,6 +2,7 @@
 
 * Faz 1 — `run_upload_profiling`: upload doğrulama ve profilleme (ADR §5 A).
 * Faz 2 — `run_analysis`: analiz job'ı (ADR §5 B).
+* Faz 4 — `run_retention_sweep`: periyodik retention süpürücüsü (ADR §9).
 
 İş mantığı asenkron fonksiyonlarda tutulur; Celery task'ları yalnızca ince
 sarmalayıcılardır. Bunun iki sebebi var:
@@ -46,7 +47,7 @@ from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
 from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import secret_store, storage
+from app.services import retention, secret_store, storage
 from app.services.openrouter import OpenRouterClient, OpenRouterError
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
@@ -442,6 +443,37 @@ async def run_analysis(analysis_id: uuid.UUID) -> str:
         # ADR §9: iş bitince BAŞARI/HATA/İPTAL fark etmeksizin anahtar silinir.
         # `finally` bilinçli: beklenmeyen bir istisnada bile anahtar kalmamalı.
         await asyncio.to_thread(secret_store.delete_key, analysis_id, settings)
+        # ADR §9: "Ham upload ve Parquet ara dosya işlem sonunda silinir."
+        # Aynı `finally` gerekçesi: hata veya iptal yolunda 130 MB'lık
+        # öğrenci verisi storage'da kalmamalı. Ara dosyalar zaten
+        # `tempfile.TemporaryDirectory` ile yönetiliyor.
+        await _delete_source_object(analysis_id, settings)
+
+
+async def _delete_source_object(analysis_id: uuid.UUID, settings: Settings) -> None:
+    """Analizin kaynak dosyasını object storage'dan siler.
+
+    İstisna YUTULUR: buradaki bir arıza işin sonucunu değiştirmemeli —
+    kullanıcının raporu hazırsa hazırdır. Silinemeyen nesneyi retention
+    süpürücüsü ve bucket lifecycle kuralı yine toplar.
+
+    Upload SATIRI silinmez, yalnızca nesne. Satır profili taşıyor ve
+    frontend rapor ekranındayken hâlâ `GET /uploads/{id}` çağırabilir;
+    satırı burada silmek 404'e yol açardı.
+    """
+    try:
+        async with session_scope() as session:
+            storage_key = await session.scalar(
+                select(Upload.storage_key)
+                .join(Analysis, Analysis.upload_id == Upload.id)
+                .where(Analysis.id == analysis_id)
+            )
+        if storage_key is None:
+            return
+        await asyncio.to_thread(storage.delete_object, storage_key, settings)
+        logger.info("analysis_source_deleted", extra={"analysis_id": str(analysis_id)})
+    except Exception:
+        logger.exception("analysis_source_delete_failed", extra={"analysis_id": str(analysis_id)})
 
 
 async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str:
@@ -510,6 +542,18 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             # Dosya Faz 1'de doğrulandı ama ARADA DEĞİŞMİŞ olabilir. Güvenlik
             # kontrolünü atlamak, doğrulanmamış bir zip'i açmak demek (ADR §9).
             await asyncio.to_thread(validate_xlsx, local_path, settings)
+        except storage.StorageObjectMissingError:
+            # BEKLENEN yol, arıza değil: ADR §9 ham dosyayı iş bitiminde
+            # siliyor, dolayısıyla aynı upload üzerinde ikinci kez analiz
+            # başlatan kullanıcı buraya düşer. `INTERNAL_ERROR` demek
+            # ("beklenmeyen bir hata") kullanıcıyı yanıltır ve gereksiz bir
+            # traceback üretirdi; olan biten, kaynağın artık saklanmaması.
+            logger.info("analysis_source_gone", extra={"analysis_id": str(analysis_id)})
+            return await _fail(
+                analysis_id,
+                "JOB_NOT_FOUND",
+                "Kaynak dosya saklama süresi dolduğu için silinmiş. Dosyayı yeniden yükleyin.",
+            )
         except XlsxRejectedError as exc:
             logger.warning(
                 "analysis_source_rejected",
@@ -791,3 +835,36 @@ def run_analysis_task(analysis_id: str) -> str:
     kaydından okur.
     """
     return asyncio.run(run_analysis(uuid.UUID(analysis_id)))
+
+
+# =====================================================================
+# Faz 4 — retention süpürücüsü
+# =====================================================================
+
+
+async def run_retention_sweep() -> dict[str, int]:
+    """Süresi dolmuş rapor, upload ve kaçak nesneleri temizler (ADR §9).
+
+    İstisna FIRLATMAZ ve fırlatmamalı: beat her saat bunu tetikliyor,
+    tek bir arızalı koşunun kuyruğa traceback yığması ve retry döngüsüne
+    girmesi işe yaramaz. Sayaçlar loglanır.
+    """
+    settings = get_settings()
+    try:
+        async with session_scope() as session:
+            result = await retention.sweep(session, settings)
+    except Exception:
+        logger.exception("retention_sweep_failed")
+        return {"expired_analyses": 0, "expired_uploads": 0, "orphan_objects": 0}
+
+    return {
+        "expired_analyses": result.expired_analyses,
+        "expired_uploads": result.expired_uploads,
+        "orphan_objects": result.orphan_objects,
+    }
+
+
+@celery_app.task(name="app.workers.tasks.sweep_retention")  # type: ignore[untyped-decorator]
+def sweep_retention() -> dict[str, int]:
+    """Celery beat giriş noktası (zamanlama `workers/celery_app.py`'de)."""
+    return asyncio.run(run_retention_sweep())
