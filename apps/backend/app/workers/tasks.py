@@ -30,12 +30,12 @@ from app.core.config import Settings, get_settings
 from app.core.db import session_scope
 from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
-from app.domain.model_catalog import MODEL_WHITELIST, is_allowed_model
+from app.domain.model_catalog import is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.aggregate import AggregationError, aggregate
 from app.pipeline.classifier import RecordClassifier
-from app.pipeline.cost import estimate_cost
+from app.pipeline.cost import cost_for_tokens, estimate_cost
 from app.pipeline.llm_classifier import (
     ClassificationCancelledError,
     OpenRouterClassifier,
@@ -230,15 +230,13 @@ def _actual_cost(usage: TokenUsage, model_id: str) -> float:
     BAŞLAMADAN ÖNCE tavan kontrolü için bir tahmin üretir. Bu ise iş bitince,
     sağlayıcının bildirdiği gerçek token sayısından hesaplanır. İkisini aynı
     alana yazmak raporu yalancı yapardı.
+
+    AYRIMI TAŞIYAN ŞEY TOKEN SAYISI, FİYAT ARİTMETİĞİ DEĞİL: çarpma ve
+    yuvarlama `cost_for_tokens`'ta tek yerde duruyor (Faz 4). Faz 3'te aynı
+    hesap burada bir kez daha yazılıydı ve iki kopyanın ayrışması, tavan
+    kontrolü ile raporlanan tutarı sessizce birbirinden koparabilirdi.
     """
-    option = next((m for m in MODEL_WHITELIST if m.id == model_id), None)
-    if option is None:
-        return 0.0
-    cost = (
-        usage.prompt_tokens / 1_000_000 * option.input_cost_per_million
-        + usage.completion_tokens / 1_000_000 * option.output_cost_per_million
-    )
-    return round(cost, 6)
+    return cost_for_tokens(usage.prompt_tokens, usage.completion_tokens, model_id)
 
 
 def _chunk_progress_callback(

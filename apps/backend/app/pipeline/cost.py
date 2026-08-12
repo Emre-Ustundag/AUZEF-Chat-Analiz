@@ -41,6 +41,29 @@ OVERHEAD_TOKENS_PER_RECORD = 12
 OUTPUT_TOKENS_PER_RECORD = 8
 
 
+def cost_for_tokens(prompt_tokens: int, completion_tokens: int, model_id: str) -> float:
+    """Token sayılarını whitelist fiyatıyla USD tutara çevirir.
+
+    FİYAT ARİTMETİĞİNİN TEK YERİ. Faz 3'te aynı çarpma iki yerde yapılıyordu
+    (`estimate_cost` burada, `workers/tasks.py::_actual_cost` orada) ve iki
+    kopyanın ayrışması sessiz bir hataydı: birinde milyon böleni ya da
+    yuvarlama değişse tavan kontrolü ile raporlanan tutar birbirini tutmaz,
+    kullanıcı "sınırın altındaydı ama fazla ödedim" derdi.
+
+    Whitelist dışı model için 0.0 döner. Buraya düşmek bir programlama
+    hatasıdır — API katmanı ve worker modeli zaten iki kez doğruluyor — ama
+    fiyat bilinmediğinde uydurma bir sayı üretmek daha kötü olurdu.
+    """
+    option = next((m for m in MODEL_WHITELIST if m.id == model_id), None)
+    if option is None:
+        return 0.0
+    cost = (
+        prompt_tokens / 1_000_000 * option.input_cost_per_million
+        + completion_tokens / 1_000_000 * option.output_cost_per_million
+    )
+    return round(cost, 6)
+
+
 @dataclass(frozen=True)
 class CostDecision:
     estimated_prompt_tokens: int
@@ -64,26 +87,13 @@ def estimate_cost(
     (ADR §10 risk 3) burada doğrudan görünür — 100.000 satırlık bir dosyada
     30.000 benzersiz kayıt varsa tahmin de o oranda düşer.
     """
-    option = next((m for m in MODEL_WHITELIST if m.id == model_id), None)
-
     characters = sum(len(group.normalized) for group in groups)
     prompt_tokens = int(characters / CHARS_PER_TOKEN) + OVERHEAD_TOKENS_PER_RECORD * len(groups)
     completion_tokens = OUTPUT_TOKENS_PER_RECORD * len(groups)
 
-    if option is None:
-        # Whitelist dışı model API katmanında zaten reddediliyor; buraya
-        # düşmek bir programlama hatasıdır, maliyeti 0 saymak yerine
-        # tahmini sıfırlamıyoruz ama fiyat bilinmediği için 0 döndürüyoruz.
-        cost = 0.0
-    else:
-        cost = (
-            prompt_tokens / 1_000_000 * option.input_cost_per_million
-            + completion_tokens / 1_000_000 * option.output_cost_per_million
-        )
-
     return CostDecision(
         estimated_prompt_tokens=prompt_tokens,
         estimated_completion_tokens=completion_tokens,
-        estimated_cost_usd=round(cost, 6),
+        estimated_cost_usd=cost_for_tokens(prompt_tokens, completion_tokens, model_id),
         max_cost_usd=max_cost_usd,
     )
