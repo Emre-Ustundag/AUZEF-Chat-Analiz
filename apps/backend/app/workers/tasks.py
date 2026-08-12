@@ -30,7 +30,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import session_scope
 from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
-from app.domain.model_catalog import MODEL_WHITELIST
+from app.domain.model_catalog import MODEL_WHITELIST, is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.aggregate import AggregationError, aggregate
@@ -570,6 +570,24 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "redacted": preprocess_result.redacted_count,
         },
     )
+
+    # ---- modeli BURADA da doğrula (ADR §9 değişmez 4) ----
+    # `POST /analyses` bunu zaten kontrol etti, ama bu KOPYA BİR KONTROL
+    # DEĞİL: iş kuyrukta beklerken whitelist değişip deploy edilebilir ve
+    # `estimate_cost` whitelist dışı bir model için fiyat bulamayınca 0.0
+    # döndürür — yani maliyet tavanı SESSİZCE devre dışı kalır ve iş
+    # fiyatı bilinmeyen bir modele gider. Güvenlik kontrolünün hemen
+    # altındaki bu tuzağı kapatıyoruz.
+    if not is_allowed_model(model):
+        logger.warning(
+            "analysis_model_not_allowed",
+            extra={"analysis_id": str(analysis_id), "model": model},
+        )
+        return await _fail(
+            analysis_id,
+            "SHEET_OR_COLUMN_NOT_FOUND",
+            "Seçilen model artık kullanılabilir modeller listesinde değil.",
+        )
 
     # ---- maliyet tavanı: LLM ÇAĞRILARI BAŞLAMADAN (ADR §9) ----
     decision = estimate_cost(preprocess_result.groups, model, max_cost_usd)

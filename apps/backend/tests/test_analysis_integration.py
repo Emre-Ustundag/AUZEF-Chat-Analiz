@@ -66,6 +66,15 @@ def provider(monkeypatch: pytest.MonkeyPatch) -> FakeOpenRouter:
 
 
 def install_fake_provider(monkeypatch: pytest.MonkeyPatch, **kwargs: Any) -> FakeOpenRouter:
+    """Sahte sağlayıcıyı kurar ve handler'ı döndürür.
+
+    `provider` fixture'ı autouse olduğu için bu fonksiyon her testte EN AZ
+    bir kez çalışır. Kendi senaryosunu kuran testler (bozuk JSON, rate
+    limit ...) onu tekrar çağırır; aynı `monkeypatch` aynı özniteliği
+    yeniden yamadığı için SON kurulum geçerli olur. Autouse olanı
+    "gereksiz" diye kaldırmayın: senaryo kurmayan testlerin gerçek ağa
+    çıkmasını o engelliyor.
+    """
     fake = FakeOpenRouter(**kwargs)
     real_build = tasks.build_classifier
 
