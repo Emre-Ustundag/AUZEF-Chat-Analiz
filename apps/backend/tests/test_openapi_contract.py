@@ -17,11 +17,14 @@ from app.schemas.analysis import (
     ModelList,
 )
 from app.schemas.common import ProblemDetails
+from app.schemas.health import LivenessResponse, ReadinessResponse
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import Upload, UploadCreated, UploadStatus
 from scripts.export_openapi import main as export_openapi_main
 
 EXPECTED_ENDPOINTS = {
+    ("get", "/api/v1/health/live"),
+    ("get", "/api/v1/health/ready"),
     ("post", "/api/v1/uploads"),
     ("get", "/api/v1/uploads/{upload_id}"),
     ("delete", "/api/v1/uploads/{upload_id}"),
@@ -34,6 +37,8 @@ EXPECTED_ENDPOINTS = {
 }
 
 EXPECTED_STATUSES = {
+    ("get", "/api/v1/health/live"): {200},
+    ("get", "/api/v1/health/ready"): {200, 503},
     ("post", "/api/v1/uploads"): {202, 409, 413, 415, 422, 500},
     ("get", "/api/v1/uploads/{upload_id}"): {200, 404, 422, 500},
     ("delete", "/api/v1/uploads/{upload_id}"): {204, 404, 422, 500},
@@ -210,6 +215,8 @@ def test_request_and_success_examples_are_documented(openapi: Any) -> None:
     AnalysisRequest.model_validate(next(iter(analysis_examples.values()))["value"])
 
     response_models: dict[tuple[str, str], type[BaseModel]] = {
+        ("get", "/api/v1/health/live"): LivenessResponse,
+        ("get", "/api/v1/health/ready"): ReadinessResponse,
         ("post", "/api/v1/uploads"): UploadCreated,
         ("get", "/api/v1/uploads/{upload_id}"): Upload,
         ("get", "/api/v1/models"): ModelList,

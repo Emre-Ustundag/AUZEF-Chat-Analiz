@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:contract": "vitest run src/lib/api/schemas/contract-*.test.ts"
+    "test:contract": "vitest run src/lib/api/schemas/contract-constraints.test.ts src/lib/api/schemas/contract-datetime.test.ts src/lib/api/schemas/contract-fixtures.test.ts src/lib/api/schemas/contract-openapi.test.ts src/lib/api/schemas/contract-state-invariants.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

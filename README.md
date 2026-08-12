@@ -4,7 +4,7 @@ AUZEF Chat Analiz, büyük hacimli kullanıcı mesajlarında tekrar eden sorular
 
 Projenin ilk kullanım senaryosu, AUZEF chatbot mesajlarından gerçek kullanıcı ifadelerine dayalı sık sorulan sorular (SSS/FAQ) çıkarmaktır. Uygulama; Excel dosyasındaki mesajları temizlemeyi, benzer soruları gruplamayı, konu dağılımlarını hesaplamayı ve sonuçları anlaşılır bir dashboard üzerinde sunmayı hedefler.
 
-> **Proje durumu:** Erken geliştirme aşamasındadır. Repoda şu anda Next.js tabanlı web uygulaması ve temel Docker çalışma ortamı bulunmaktadır. MVP mimarisi kararlaştırılmıştır; FastAPI backend, asenkron worker, veri katmanı ve analiz pipeline'ı henüz geliştirme planındadır.
+> **Proje durumu:** Erken geliştirme aşamasındadır. Next.js web uygulamasına ek olarak FastAPI uygulama temeli, API sözleşmesi, RFC 9457 hata yönetimi, güvenli loglama ve health endpoint'leri çalışır durumdadır. Asenkron worker, veri katmanı ve analiz pipeline'ı sonraki kartlardadır.
 
 ## Neden bu proje?
 
@@ -149,6 +149,7 @@ AUZEF-Chat-Analiz/
 ├── docs/
 │   ├── mimari.md                   # ADR-0001
 │   ├── adr/0002-api-contract-freeze.md
+│   ├── adr/0003-fastapi-production-foundation.md
 │   └── api/openapi.json            # üretilmiş sözleşme artefaktı
 ├── docker-compose.yml
 ├── Makefile
@@ -253,6 +254,20 @@ npm run dev
 ```
 
 Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresinden açabilirsiniz.
+
+Backend'i ayrı bir terminalde başlatmak için:
+
+```bash
+cd apps/backend
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+API dokümanı development/test ortamında [http://localhost:8000/docs](http://localhost:8000/docs),
+liveness ve readiness kontrolleri sırasıyla `/api/v1/health/live` ve
+`/api/v1/health/ready` adreslerindedir. Readiness, hiç bağımlılık kontrolü
+kayıtlı değilse güvenli `503 SERVICE_NOT_READY` döndürür. Backend ortam
+değişkenleri ve kalite komutları için [backend README](apps/backend/README.md)
+dosyasına bakın.
 
 ### Kullanılabilir komutlar
 
@@ -363,8 +378,9 @@ imaj gerçek veri değil, çalışan bir demo sunar.
 - [ ] Adet ve oran hesaplama
 - [ ] Analiz dashboard'u
 - [ ] FAQ ve özet rapor dışa aktarma
-- [ ] Hata yönetimi ve işlem durumu takibi
-- [ ] FastAPI, Celery ve Redis job altyapısı
+- [x] FastAPI temeli, RFC 9457 hata yönetimi ve health endpoint'leri
+- [ ] İşlem durumu takibi
+- [ ] Celery ve Redis job altyapısı
 - [ ] PostgreSQL ve object storage entegrasyonu
 - [ ] PII redaksiyonu ve veri saklama politikaları
 - [ ] Backend, frontend ve uçtan uca test altyapısı

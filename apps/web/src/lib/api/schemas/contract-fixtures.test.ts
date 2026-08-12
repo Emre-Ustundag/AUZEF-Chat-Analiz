@@ -6,8 +6,10 @@ import {
   analysisJobSchema,
   analysisReportSchema,
   analysisRequestSchema,
+  livenessResponseSchema,
   modelListSchema,
   problemDetailsSchema,
+  readinessResponseSchema,
   uploadCreatedSchema,
   uploadSchema,
 } from "./index";
@@ -35,6 +37,8 @@ const SCHEMAS: Record<string, z.ZodType> = {
   AnalysisCreated: analysisCreatedSchema,
   AnalysisJob: analysisJobSchema,
   AnalysisReport: analysisReportSchema,
+  LivenessResponse: livenessResponseSchema,
+  ReadinessResponse: readinessResponseSchema,
   ProblemDetails: problemDetailsSchema,
 };
 

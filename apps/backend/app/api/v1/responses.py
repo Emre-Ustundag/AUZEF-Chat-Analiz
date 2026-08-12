@@ -70,6 +70,9 @@ UPLOAD_DELETE = error_responses(
 MODELS_LIST = error_responses(ErrorCode.INTERNAL_ERROR)
 """Statik whitelist; parametresi yok, dolayısıyla 422 bile üretemez."""
 
+HEALTH_LIVE: dict[int | str, dict[str, Any]] = {}
+HEALTH_READY = error_responses(ErrorCode.SERVICE_NOT_READY)
+
 ANALYSIS_CREATE = error_responses(
     ErrorCode.JOB_NOT_FOUND,
     ErrorCode.JOB_CONFLICT,
@@ -120,6 +123,8 @@ __all__ = [
     "ANALYSIS_EXPORT",
     "ANALYSIS_READ",
     "ANALYSIS_RESULT",
+    "HEALTH_LIVE",
+    "HEALTH_READY",
     "MODELS_LIST",
     "PROBLEM_MEDIA_TYPE",
     "UPLOAD_CREATE",

@@ -3,6 +3,30 @@
   "contract_version": "1.0.0",
   "cases": [
     {
+      "id": "health.live.200",
+      "method": "GET",
+      "path": "/api/v1/health/live",
+      "status": 200,
+      "model": "LivenessResponse",
+      "file": "health.live.200.json"
+    },
+    {
+      "id": "health.ready.200",
+      "method": "GET",
+      "path": "/api/v1/health/ready",
+      "status": 200,
+      "model": "ReadinessResponse",
+      "file": "health.ready.200.json"
+    },
+    {
+      "id": "health.ready.503",
+      "method": "GET",
+      "path": "/api/v1/health/ready",
+      "status": 503,
+      "model": "ProblemDetails",
+      "file": "health.ready.503.json"
+    },
+    {
       "id": "uploads.create.202",
       "method": "POST",
       "path": "/api/v1/uploads",
@@ -233,6 +257,14 @@
       "status": 409,
       "model": "ProblemDetails",
       "file": "errors.job-conflict.409.json"
+    },
+    {
+      "id": "errors.service-not-ready.503",
+      "method": "ANY",
+      "path": "*",
+      "status": 503,
+      "model": "ProblemDetails",
+      "file": "errors.service-not-ready.503.json"
     },
     {
       "id": "errors.internal-error.500",

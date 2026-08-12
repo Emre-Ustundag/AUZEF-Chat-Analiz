@@ -1,0 +1,9 @@
+{
+  "type": "/errors/service-not-ready",
+  "title": "Servis hazır değil",
+  "status": 503,
+  "code": "SERVICE_NOT_READY",
+  "detail": "Servis hazır değil (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

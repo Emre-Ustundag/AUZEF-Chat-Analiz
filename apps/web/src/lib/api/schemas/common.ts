@@ -36,6 +36,7 @@ export const errorCodeSchema = z.enum([
   "PROVIDER_TIMEOUT",
   "JOB_NOT_FOUND",
   "JOB_CONFLICT",
+  "SERVICE_NOT_READY",
   "INTERNAL_ERROR",
 ]);
 
@@ -95,6 +96,7 @@ export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
   PROVIDER_TIMEOUT: "Dil modeli zaman aşımına uğradı. Analizi tekrar başlatmayı deneyin.",
   JOB_NOT_FOUND: "İşlem bulunamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.",
   JOB_CONFLICT: "Bu işlem için zaten devam eden bir analiz var.",
+  SERVICE_NOT_READY: "Servis henüz trafiğe hazır değil. Lütfen kısa bir süre sonra tekrar deneyin.",
   INTERNAL_ERROR: "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
 };
 
@@ -111,6 +113,7 @@ export const RETRYABLE_ERROR_CODES: readonly ErrorCode[] = [
   "PROVIDER_RATE_LIMITED",
   "PROVIDER_BAD_RESPONSE",
   "PROVIDER_TIMEOUT",
+  "SERVICE_NOT_READY",
   "INTERNAL_ERROR",
 ];
 

@@ -119,7 +119,7 @@ def test_invalid_uuid_in_path_reports_path_field(client: TestClient) -> None:
 def test_valid_body_reaches_the_stub(client: TestClient) -> None:
     """Doğrulama stub'tan ÖNCE çalışır.
 
-    Bu yüzden bozuk gövde 422, geçerli gövde 501 verir — ve BE-02 gövdeleri
+    Bu yüzden bozuk gövde 422, geçerli gövde 501 verir — route gövdeleri
     doldurunca yukarıdaki 422 iddiaları aynen geçerli kalır.
     """
     status, body = _post(client)

@@ -5,10 +5,10 @@ kurmaz; böylece `type/title/status/code/detail/trace_id` alanlarının her zama
 dolu olduğu tek yerden garanti edilir (ADR-0002 #6).
 """
 
-import logging
 from collections.abc import Sequence
 from typing import Any
 
+import structlog
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import JSONResponse
@@ -26,7 +26,7 @@ from app.core.errors import (
 from app.core.tracing import TRACE_ID_HEADER, current_trace_id, new_trace_id, set_trace_id
 from app.schemas.common import ErrorItem, ProblemDetails
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 #: RFC 9457 zorunlu media type.
 PROBLEM_MEDIA_TYPE = "application/problem+json"
@@ -45,7 +45,7 @@ _STATUS_TO_CODE: dict[int, ErrorCode] = {
 #: Kullanıcıya/istemciye giden sabit metinler. ADR-0001 §7 ham provider
 #: yanıtını, anahtarı ve mesaj içeriğini hata gövdesinde yasaklıyor.
 _UNEXPECTED_DETAIL = "Beklenmeyen bir sunucu hatası oluştu."
-_NOT_IMPLEMENTED_DETAIL = "Bu uç nokta henüz uygulanmadı (BE-02)."
+_NOT_IMPLEMENTED_DETAIL = "Bu uç noktanın iş mantığı henüz uygulanmadı."
 _RESPONSE_INVALID_DETAIL = "Sunucu cevabı iç sözleşmeye uymadı."
 
 
@@ -131,7 +131,11 @@ async def request_validation_handler(_request: Request, exc: Exception) -> Respo
 async def response_validation_handler(_request: Request, exc: Exception) -> Response:
     assert isinstance(exc, ResponseValidationError)
     # Kendi modelimize uymayan bir cevap ASLA sızdırılmaz; yalnızca loglanır.
-    logger.exception("Cevap doğrulaması başarısız", extra={"trace_id": current_trace_id()})
+    logger.error(
+        "response_validation_failed",
+        exception_type=type(exc).__name__,
+        trace_id=current_trace_id(),
+    )
     return problem_response(ErrorCode.INTERNAL_ERROR, _RESPONSE_INVALID_DETAIL)
 
 
@@ -158,7 +162,11 @@ async def not_implemented_handler(_request: Request, exc: Exception) -> Response
 async def unhandled_exception_handler(_request: Request, exc: Exception) -> Response:
     # ASLA str(exc) kullanma: ADR-0001 §7 ham provider yanıtını ve anahtarı
     # yasaklıyor, httpx hatalarının str()'i rutin olarak istek URL'ini içerir.
-    logger.exception("Yakalanmamış hata", extra={"trace_id": current_trace_id()})
+    logger.error(
+        "unhandled_exception",
+        exception_type=type(exc).__name__,
+        trace_id=current_trace_id(),
+    )
     return problem_response(ErrorCode.INTERNAL_ERROR, _UNEXPECTED_DETAIL)
 
 

@@ -1,7 +1,7 @@
 [project]
 name = "auzef-backend"
 version = "0.1.0"
-description = "AUZEF Chat Analiz — API sözleşme katmanı (BE-01, contract-only)"
+description = "AUZEF Chat Analiz FastAPI backend"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
@@ -10,20 +10,20 @@ dependencies = [
   "pydantic-settings>=2.8",
   # POST /uploads multipart; FastAPI multipart form desteği için zorunlu kılar.
   "python-multipart>=0.0.20",
+  "structlog>=25.5",
   "uvicorn[standard]>=0.38",
 ]
 
-# BE-01 contract-only: SQLAlchemy, Celery, openpyxl ve Polars BİLEREK yok.
-# Sözleşme katmanının bir DB driver'ı import etmesi, birinin onu bağlamasına
-# davetiyedir. Bunlar BE-02 (FastAPI iskeleti) ile gelir.
+# PostgreSQL, Celery, openpyxl ve Polars ilgili uygulama kartlarına kadar
+# bilinçli olarak eklenmez; bu paket yalnızca üretim FastAPI temelidir.
 
 [dependency-groups]
 dev = [
   "pytest>=8.4",
   "pytest-asyncio>=1.0",
   # Starlette 1.6 TestClient httpx2 istiyor; httpx'i kullanmak
-  # StarletteDeprecationWarning üretiyor. BE-02'de OpenRouter çağrıları için
-  # bir HTTP istemcisi runtime bağımlılığına terfi edecek.
+  # StarletteDeprecationWarning üretiyor. OpenRouter adapter'ı geldiğinde
+  # uygun istemci ayrıca runtime bağımlılığına alınacak.
   "httpx2>=2.10",
   "ruff>=0.14",
   "mypy>=1.18",

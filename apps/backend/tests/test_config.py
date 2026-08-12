@@ -1,17 +1,14 @@
-"""Ayar kaynakları — ADR-0001 §9 "tüm sınırlar environment config'tir"."""
+"""Ayar kaynakları, ortam ayrımı ve fail-fast doğrulama."""
+
+import base64
 
 import pytest
+from pydantic import ValidationError
 
-from app.core.config import _REPO_ROOT, Settings
+from app.core.config import _REPO_ROOT, Environment, Settings
 
 
 def test_repo_root_resolves_to_the_actual_repo_root() -> None:
-    """Yol hesabı sessizce kayarsa .env hiç okunmaz, varsayılanlar kullanılır.
-
-    Yanlış bir `parents[n]` hata vermez — yalnızca var olmayan bir dosyaya
-    bakar ve her şey çalışıyormuş gibi görünür. Bu yüzden ankraj olarak
-    repoda kesin bulunan iki yol kullanılıyor.
-    """
     assert (_REPO_ROOT / "docs" / "mimari.md").is_file()
     assert (_REPO_ROOT / "apps" / "backend" / "pyproject.toml").is_file()
 
@@ -19,6 +16,10 @@ def test_repo_root_resolves_to_the_actual_repo_root() -> None:
 def test_defaults_match_adr_limits() -> None:
     settings = Settings(_env_file=None)
 
+    assert settings.environment is Environment.DEVELOPMENT
+    assert settings.log_level == "INFO"
+    assert settings.cors_origins == ["http://localhost:3000"]
+    assert settings.backend_master_key is None
     assert settings.max_rows == 100_000
     assert settings.max_upload_bytes == 150 * 1024 * 1024
     assert settings.max_uncompressed_bytes == 1024 * 1024 * 1024
@@ -32,5 +33,60 @@ def test_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_contract_version_is_independent_of_package_version() -> None:
-    # ADR-0002 #12: bir bağımlılık yükseltmesi openapi.json'ı değiştirmemeli.
     assert Settings(_env_file=None).contract_version == "1.0.0"
+
+
+@pytest.mark.parametrize("environment", [Environment.TEST, Environment.PRODUCTION])
+def test_non_development_cors_defaults_to_empty(environment: Environment) -> None:
+    if environment is Environment.PRODUCTION:
+        settings = Settings(
+            _env_file=None,
+            environment=environment,
+            backend_master_key=base64.b64encode(b"k" * 32).decode(),
+        )
+    else:
+        settings = Settings(_env_file=None, environment=environment)
+    assert settings.cors_origins == []
+
+
+@pytest.mark.parametrize(
+    ("variable", "value"),
+    [
+        ("AUZEF_ENVIRONMENT", "staging"),
+        ("AUZEF_LOG_LEVEL", "VERBOSE"),
+        ("AUZEF_CORS_ORIGINS", '["*"]'),
+        ("AUZEF_CORS_ORIGINS", '["https://*.example.com"]'),
+    ],
+)
+def test_invalid_runtime_configuration_fails_fast(
+    monkeypatch: pytest.MonkeyPatch, variable: str, value: str
+) -> None:
+    monkeypatch.setenv(variable, value)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
+
+
+@pytest.mark.parametrize(
+    "master_key",
+    [None, "base64-degil!", base64.b64encode(b"too-short").decode()],
+)
+def test_production_requires_base64_encoded_32_byte_key(master_key: str | None) -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            environment=Environment.PRODUCTION,
+            backend_master_key=master_key,
+        )
+
+
+def test_production_accepts_valid_master_key() -> None:
+    settings = Settings(
+        _env_file=None,
+        environment=Environment.PRODUCTION,
+        backend_master_key=base64.b64encode(b"k" * 32).decode(),
+    )
+    assert settings.environment is Environment.PRODUCTION
+
+
+def test_log_level_is_case_insensitive() -> None:
+    assert Settings(_env_file=None, log_level="warning").log_level == "WARNING"

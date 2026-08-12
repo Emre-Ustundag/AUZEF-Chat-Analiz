@@ -7,10 +7,11 @@ paylaşmak, `GET /models`'in `UPLOAD_TOO_LARGE` (413) veya `PROVIDER_TIMEOUT`
 
 from fastapi import APIRouter
 
-from app.api.v1 import analyses, models, uploads
+from app.api.v1 import analyses, health, models, uploads
 from app.core.errors import ERROR_STATUS, ErrorCode
 
 api_router = APIRouter(prefix="/api/v1")
+api_router.include_router(health.router)
 api_router.include_router(uploads.router)
 api_router.include_router(models.router)
 api_router.include_router(analyses.router)

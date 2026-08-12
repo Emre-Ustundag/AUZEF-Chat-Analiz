@@ -18,7 +18,7 @@ from app.main import create_app
 def repo_root() -> Path:
     """apps/backend/tests/conftest.py -> repo kökü.
 
-    `pyproject.toml` apps/backend altında olduğu için (BE-02'nin Docker
+    `pyproject.toml` apps/backend altında olduğu için (backend Docker
     context'ini node_modules'tan uzak tutmak adına) paylaşılan fixture
     dizinine ulaşmak bu helper'ı gerektiriyor.
     """

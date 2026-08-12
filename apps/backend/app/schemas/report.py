@@ -14,7 +14,7 @@ from uuid import UUID
 from pydantic import Field, model_validator
 
 from app.core.catalog import estimate_cost_usd, find_model
-from app.core.config import settings
+from app.core.config import get_settings
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -124,7 +124,7 @@ class AnalysisReport(ApiModel):
     @model_validator(mode="after")
     def _report_invariants(self) -> Self:
         prep = self.preprocessing_summary
-        considered = min(self.source_summary.total_rows, settings.max_rows)
+        considered = min(self.source_summary.total_rows, get_settings().max_rows)
         if prep.analyzed_count + prep.discarded_count != considered:
             raise ValueError(
                 "analyzed_count + discarded_count, işlenen satır sayısına eşit olmalı."
@@ -150,7 +150,7 @@ class AnalysisReport(ApiModel):
         if any(not set(theme.related_question_ids) <= present_ids for theme in self.themes):
             raise ValueError("related_question_ids yalnızca top_questions id'lerini içerebilir.")
 
-        truncated = self.source_summary.total_rows > settings.max_rows
+        truncated = self.source_summary.total_rows > get_settings().max_rows
         has_warning = any(
             warning.code == WarningCode.ROW_LIMIT_TRUNCATED for warning in self.warnings
         )

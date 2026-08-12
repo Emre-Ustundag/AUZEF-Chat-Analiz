@@ -1,6 +1,6 @@
 """Upload uçları — ADR-0001 §6.
 
-BE-01 contract-only: gövdeler `NotImplementedError` fırlatır ve 501 döner.
+Route iş mantıkları ilgili uygulama kartına kadar 501 döner.
 """
 
 from uuid import UUID
