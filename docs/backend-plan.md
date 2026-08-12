@@ -65,12 +65,12 @@ Referans uygulama: `apps/web/src/mocks/store.ts`, `getAnalysisReportRecord`.
 Her faz **çalışan bir dikey dilim**dir: sonunda frontend'in bir bölümü
 mock'tan gerçeğe geçer. Faz bitmeden sonrakine geçilmez.
 
-| Faz | Kapsam | Frontend'de karşılığı |
-| --- | --- | --- |
-| **1** | İskelet + upload + profilleme | Yükleme ve kolon seçimi ekranları gerçeğe geçer |
-| **2** | Analiz job'ı + durum + iptal | İlerleme ekranı gerçeğe geçer |
-| **3** | LLM pipeline (map/reduce) + rapor | Sonuç ekranı gerçeğe geçer |
-| **4** | Export (xlsx/json) + retention | Dışa aktarma gerçeğe geçer |
+| Faz   | Kapsam                            | Frontend'de karşılığı                           |
+| ----- | --------------------------------- | ----------------------------------------------- |
+| **1** | İskelet + upload + profilleme     | Yükleme ve kolon seçimi ekranları gerçeğe geçer |
+| **2** | Analiz job'ı + durum + iptal      | İlerleme ekranı gerçeğe geçer                   |
+| **3** | LLM pipeline (map/reduce) + rapor | Sonuç ekranı gerçeğe geçer                      |
+| **4** | Export (xlsx/json) + retention    | Dışa aktarma gerçeğe geçer                      |
 
 Faz 3 en riskli olan; ADR §10'daki tüm riskler (halüsinasyon, token maliyeti,
 rate limit, prompt injection) orada yoğunlaşıyor. Faz 1-2 onun altyapısı.
@@ -114,6 +114,7 @@ apps/backend/
 ### 3.2 Yapılacaklar
 
 **a) Proje kurulumu**
+
 - `uv` ile `pyproject.toml`; Python 3.12
 - Bağımlılıklar: `fastapi`, `uvicorn[standard]`, `pydantic`, `pydantic-settings`,
   `sqlalchemy[asyncio]`, `alembic`, `asyncpg`, `celery[redis]`, `redis`,
@@ -156,6 +157,7 @@ dosyalar ~130 MB.
 **f) Güvenli `.xlsx` doğrulama (ADR §5 Aşama A, §9)**
 
 Worker içinde, LLM'e hiç gitmeden önce:
+
 - Magic bytes (`PK\x03\x04`) ve OOXML ZIP yapısı
 - **ZIP bomba kontrolü:** açılmış toplam boyut sınırı 1 GB, sıkıştırma oranı
   kontrolü
@@ -239,7 +241,7 @@ kodu paylaşır, ayrı kod tabanı yok).
 - Anahtar AES-GCM ile şifrelenip Redis'e TTL ile yazılır (TTL = hard timeout +
   5 dk, varsayılan 50 dk). PostgreSQL'e **yazılmaz**, loglarda redakte edilir
 - Job durum makinesi: `queued → validating/preprocessing → analyzing →
-  aggregating → completed`; terminal: `failed`, `cancelled`
+aggregating → completed`; terminal: `failed`, `cancelled`
 - Progress her satırda değil, aşama veya anlamlı yüzde değişiminde yazılır
 - `GET /api/v1/analyses/{id}` ve `DELETE` (iptal)
 
