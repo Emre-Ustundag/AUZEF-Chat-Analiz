@@ -186,6 +186,16 @@ artefaktı, daha ilk gün yalan söyler.
 üretilir; elle yazılmaz. Böylece Pydantic ↔ OpenAPI parity'si tanım gereği
 sağlanır.
 
+**"Tanım gereği" bir muafiyet değil, bir yapılandırma sonucudur.** FastAPI
+cevap modelleri için Pydantic'in _serialization_ şemasını yayımlar ve default'u
+olan alanlar orada varsayılan olarak `required` DIŞINDA kalır — oysa
+`model_dump()` onları her cevapta yazar. Bu yüzden `ApiModel`
+`json_schema_serialization_defaults_required=True` taşır. Bayrak yalnızca
+`ProblemDetails`'te olduğu sürece artefakt `status`, `warnings`, `error`,
+`profile` ve `estimated_seconds_remaining`'i "opsiyonel" diye belgeliyordu;
+üretilmiş bir client'ta arayüzün dayandığı discriminator'lar buharlaşırdı.
+`contract-openapi.test.ts` beş cevap modelinin `required` listesini kilitler.
+
 Public OpenAPI hedef v1 sözleşmesini gösterir; contract-only stub'ların geçici
 `501` cevabı belgelenmez. Her uç yalnızca gerçekten üretebildiği status'ları,
 hatalarda yalnızca `application/problem+json` media type'ını ve Pydantic

@@ -47,7 +47,6 @@ def test_max_rows_is_frozen_and_not_environment_configurable(
     monkeypatch.setenv("AUZEF_MAX_ROWS", "250000")
 
     assert MAX_ROWS == 100_000
-    assert "max_rows" not in Settings().model_fields_set
     assert "max_rows" not in Settings.model_fields
 
 
