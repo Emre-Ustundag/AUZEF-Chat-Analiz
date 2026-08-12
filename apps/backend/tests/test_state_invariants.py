@@ -73,4 +73,7 @@ def test_report_numeric_invariants() -> None:
         AnalysisReport,
         report | {"token_usage": report["token_usage"] | {"total_tokens": 1}},
     )
-    _invalid(AnalysisReport, report | {"estimated_cost_usd": 0})
+    # `estimated_cost_usd` BİLEREK burada değil: katalog fiyatına bağlı bir
+    # cevap invariant'ı, fiyat değiştiğinde geçmiş raporları 500'e çevirirdi
+    # (report.py alan docstring'i). Yalnızca `ge=0` kısıtı doğrulanır.
+    _invalid(AnalysisReport, report | {"estimated_cost_usd": -1})

@@ -9,7 +9,7 @@ from uuid import UUID
 
 from pydantic import Field, model_validator
 
-from app.core.config import settings
+from app.core.config import MAX_ROWS
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import ProblemDetails
 
@@ -68,7 +68,7 @@ class UploadProfile(ApiModel):
     def _profile_invariants(self) -> Self:
         if self.total_row_count != sum(sheet.row_count for sheet in self.sheets):
             raise ValueError("total_row_count, tüm sheet satırlarının toplamı olmalı.")
-        exceeds = any(sheet.row_count > settings.max_rows for sheet in self.sheets)
+        exceeds = any(sheet.row_count > MAX_ROWS for sheet in self.sheets)
         if self.exceeds_row_limit is not exceeds:
             raise ValueError("exceeds_row_limit, sheet satır limitlerinden türetilmeli.")
         return self

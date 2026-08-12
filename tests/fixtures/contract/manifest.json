@@ -1,6 +1,9 @@
 {
   "$comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: apps/backend/scripts/export_fixtures.py",
   "contract_version": "1.0.0",
+  "limits": {
+    "max_rows": 100000
+  },
   "cases": [
     {
       "id": "uploads.create.202",

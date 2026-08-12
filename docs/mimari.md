@@ -264,7 +264,8 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 - MVP yalnızca `.xlsx` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir
 - Varsayılan sıkıştırılmış upload sınırı: 150 MB
 - OOXML açılmış toplam boyut sınırı: 1 GB
-- Varsayılan satır sınırı: 100.000; tüm sınırlar environment config'tir. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)
+- Boyut ve süre sınırları environment config'tir (`AUZEF_` öneki); satır sınırı DEĞİLDİR
+- Satır sınırı: 100.000, sözleşmede donmuştur (ADR-0002 #13) — hem Pydantic hem Zod cevap invariant'larında kullanıldığı için env ile oynatmak backend'in doğru ürettiği cevapları frontend'e reddettirirdi. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)
 - OpenRouter key PostgreSQL'e veya loglara yazılmaz
 - BYOK anahtarı AES-GCM ile şifreli Redis kaydı olarak tutulur; TTL her zaman job hard timeout + 5 dakikadır (varsayılan 50 dakika) ve işlem bitince başarı/hata fark etmeksizin silinir
 - Sunucu master encryption key yalnızca secret manager/environment içinde bulunur

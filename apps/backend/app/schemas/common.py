@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Any, Self
 from uuid import UUID
 
-from pydantic import ConfigDict, Field, GetJsonSchemaHandler, model_validator
+from pydantic import Field, GetJsonSchemaHandler, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import CoreSchema
 
@@ -45,13 +45,12 @@ class ProblemDetails(ApiModel):
 
     `type`, `title`, `status`, `code`, `detail` ve `trace_id` HER cevapta
     bulunur — frontend'in `problemDetailsSchema`'sı altısını da zorunlu tutar.
-    """
 
-    model_config = ConfigDict(
-        extra="ignore",
-        frozen=True,
-        json_schema_serialization_defaults_required=True,
-    )
+    Bu garantiyi veren `json_schema_serialization_defaults_required` artık
+    `ApiModel`'de; burada tekrarlanmıyor. Bayrağın YALNIZCA bu modelde olması,
+    diğer sekiz cevap modelinin openapi.json'da yanlış `required` listesiyle
+    yayımlanmasının sebebiydi.
+    """
 
     type: str
     title: str

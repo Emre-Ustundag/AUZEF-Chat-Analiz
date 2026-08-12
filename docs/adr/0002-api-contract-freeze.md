@@ -76,8 +76,9 @@ ve prompt değerleri sırasıyla `INVALID_MODEL` ve `INVALID_PROMPT` olur.
 ### #2 — Satır sınırı: uyar + kırp, reddetme
 
 Upload **her zaman** tam profillenir ve `profile.exceeds_row_limit` set
-edilir. Analiz ilk `MAX_ROWS` (varsayılan 100.000) satırı işler ve rapora
+edilir. Analiz ilk `MAX_ROWS` (100.000) satırı işler ve rapora
 `ROW_LIMIT_TRUNCATED` uyarısı ekler. Yeni bir hata kodu gerekmez.
+Sınırın kendisi env düğmesi değil, sözleşme sabitidir — bkz. #13.
 
 Uyarı sözlüğü (`WarningCode`) **üretici-kapalı, tüketici-açık**: backend
 yalnızca sözlükteki üyeleri yayabilir ama tel üstündeki alan `str` kalır. Zod
@@ -237,6 +238,48 @@ artırmaz; bir alanı kaldırmak veya yeniden adlandırmak ikisini de artırır.
 
 `openapi.info.version` paket sürümünden bilerek ayrıdır: bir bağımlılık
 yükseltmesi kayıt artefaktını değiştirmemelidir.
+
+### #13 — `MAX_ROWS` sözleşme sabitidir, environment ayarı değil
+
+Diğer tüm çalışma sınırları (`max_upload_bytes`, `max_uncompressed_bytes`,
+`analysis_timeout_seconds`, `idempotency_ttl_seconds`) `Settings` içinde ve
+`AUZEF_` önekiyle environment'tan değiştirilebilir. `MAX_ROWS` değildir:
+`app/core/config.py` içinde modül seviyesinde `Final` bir sabittir ve
+`.env.example`'da yer almaz.
+
+Gerekçe: bu sayı yalnızca bir limit değil, **iki dilde yazılmış cevap
+invariant'larının parçası** — `analyzed_count + discarded_count ==
+min(total_rows, MAX_ROWS)`, `profile.exceeds_row_limit` ve
+`ROW_LIMIT_TRUNCATED` uyarısının varlığı hepsi ona bağlı (#2). Frontend aynası
+`LIMITS.MAX_ROWS` bir derleme zamanı sabiti olduğu için, backend tarafını env
+ile oynatmak sunucunun **doğru** ürettiği cevapları Zod'a reddettirir;
+`apiRequest` bunu sentetik bir `INTERNAL_ERROR`'a çevirir ve kullanıcı upload
+ile rapor ekranlarında "Beklenmeyen bir hata" görür. Üstelik §4'teki dört
+katmanın hiçbiri kırmızıya dönmez, çünkü artefaktlar CI'da varsayılan env ile
+üretiliyor — yani drift üretime kadar görünmezdi.
+
+Sınır `manifest.json`'da `limits.max_rows` olarak yayımlanır ve
+`contract-fixtures.test.ts` frontend sabitini ona karşı doğrular; iki tarafın
+aynı sayıyı gördüğünü kanıtlayan tek yer burasıdır. Değeri değiştirmek bir
+sözleşme değişikliğidir: `config.py`'deki `MAX_ROWS` + `contract_version`
+bump + `make generate` + `LIMITS.MAX_ROWS`.
+
+### #14 — `estimated_cost_usd` cevap şemasında doğrulanmaz
+
+`AnalysisReport.estimated_cost_usd` alanı yalnızca `ge=0` kısıtı taşır. Değer,
+raporun üretildiği andaki katalog fiyatlarıyla hesaplanır ve rapora yazılır;
+doğruluğu **yazma yolunda** (BE-02) garanti edilir.
+
+Bunu bir `model_validator` içinde `catalog.estimate_cost_usd` ile yeniden
+hesaplayıp karşılaştırmak cazipti ama okuma yolunu dış dünyaya bağlardı:
+OpenRouter fiyatı değiştiği an `catalog.py` güncellenir ve daha önce üretilmiş
+**tüm** raporlar cevap doğrulamasında düşerek kalıcı 500 verirdi
+(`GET /analyses/{id}/result`). Aynı gerekçeyle raporun modelinin whitelist'te
+olma şartı da kaldırıldı — bir modeli kullanımdan kaldırmak, onunla üretilmiş
+raporları silmek anlamına gelmemeli.
+
+Kural: cevap şemaları **tel biçimini** ve gövde içi tutarlılığı doğrular;
+zamanla değişen dış tablolara bakan iş mantığı doğrulaması yazma yolunda kalır.
 
 ## 4. Drift kontrolü
 

@@ -171,6 +171,60 @@ describe("sözleşme detayları", () => {
     expect(schema.properties?.retry_after).not.toHaveProperty("anyOf");
   });
 
+  /**
+   * Sunucunun HER cevapta yazdığı alanlar `required` olarak belgelenmelidir.
+   *
+   * Pydantic'in serialization şeması default'u olan alanları varsayılan olarak
+   * required dışında bırakır; `ApiModel` bunu
+   * `json_schema_serialization_defaults_required` ile geri çeviriyor. Bayrak
+   * düşerse bu artefakttan üretilecek client'ta `status?: "completed"` ve
+   * `error?: ProblemDetails | null` çıkar — arayüzün dayandığı iki
+   * discriminator tip düzeyinde buharlaşır. Fixture'lar alanların gerçekten
+   * her zaman yazıldığının kanıtı (ör. uploads.get.200.queued.json →
+   * profile: null, error: null).
+   */
+  it.each([
+    ["AnalysisCreated", ["analysis_id", "status"]],
+    ["UploadCreated", ["upload_id", "status"]],
+    [
+      "AnalysisJob",
+      [
+        "analysis_id",
+        "status",
+        "progress",
+        "created_at",
+        "updated_at",
+        "estimated_seconds_remaining",
+        "error",
+      ],
+    ],
+    ["Upload", ["upload_id", "status", "filename", "size_bytes", "created_at", "profile", "error"]],
+    [
+      "AnalysisReport",
+      [
+        "schema_version",
+        "analysis_id",
+        "status",
+        "generated_at",
+        "source_summary",
+        "preprocessing_summary",
+        "top_questions",
+        "themes",
+        "executive_summary",
+        "warnings",
+        "model",
+        "prompt_version",
+        "prompt_hash",
+        "token_usage",
+        "estimated_cost_usd",
+      ],
+    ],
+  ])("%s cevap şemasında her alan required", (name, expected) => {
+    const schema = openapi.components.schemas[name];
+    expect(Object.keys(schema.properties ?? {}).sort()).toEqual([...expected].sort());
+    expect(schema.required?.sort()).toEqual([...expected].sort());
+  });
+
   it("hata cevapları yalnızca problem+json ve geçerli ProblemDetails örnekleri taşır", () => {
     for (const [path, operations] of Object.entries(openapi.paths)) {
       for (const [method, operation] of Object.entries(operations)) {

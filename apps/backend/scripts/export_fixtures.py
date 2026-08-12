@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pydantic import BaseModel
 
+from app.core.config import MAX_ROWS, settings
 from app.schemas.examples import CONSTRAINT_CASES, build_cases
 from scripts._io import dumps, repo_root, write_or_check
 
@@ -61,7 +62,13 @@ def main() -> int:
         )
 
     manifest = _HEADER | {
-        "contract_version": "1.0.0",
+        # `settings`'ten okunuyor, elle yazılmıyor: sürüm bump'ında
+        # manifest.json ile openapi.json'ın sessizce ayrışmasını engeller.
+        "contract_version": settings.contract_version,
+        # Sözleşmede donmuş sınırlar. Frontend `LIMITS` sabitleri buraya karşı
+        # doğrulanır (contract-fixtures.test.ts); iki dilin aynı sayıyı
+        # gördüğünü kanıtlayan tek yer burası.
+        "limits": {"max_rows": MAX_ROWS},
         "cases": manifest_cases,
     }
     ok &= write_or_check(OUTPUT_DIR / "manifest.json", dumps(manifest), check=args.check)

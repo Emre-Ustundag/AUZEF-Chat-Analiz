@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import type * as z from "zod";
 
 import {
@@ -6,6 +6,7 @@ import {
   analysisJobSchema,
   analysisReportSchema,
   analysisRequestSchema,
+  LIMITS,
   modelListSchema,
   problemDetailsSchema,
   uploadCreatedSchema,
@@ -58,6 +59,19 @@ describe("fixture envanteri", () => {
     const referenced = new Set(withPayload.map((c) => c.model));
     const orphans = Object.keys(SCHEMAS).filter((name) => !referenced.has(name));
     expect(orphans).toEqual([]);
+  });
+
+  /**
+   * MAX_ROWS iki dilde ayrı ayrı yazılı bir sabit ve ikisi de onu cevap
+   * invariant'ında kullanıyor (`analyzed_count + discarded_count ==
+   * min(total_rows, MAX_ROWS)`, `exceeds_row_limit`, `ROW_LIMIT_TRUNCATED`).
+   * Bu iddia olmadan taraflardan biri değiştiğinde hiçbir kontrol düşmez;
+   * backend'in DOĞRU ürettiği cevap Zod'da patlar ve kullanıcı sentetik bir
+   * INTERNAL_ERROR görür. Sınır sözleşmede donmuştur (apps/backend/app/core/
+   * config.py → MAX_ROWS); değiştirmek contract_version bump'ı gerektirir.
+   */
+  it("LIMITS sabitleri backend'in donmuş sınırlarıyla aynı", () => {
+    expect(LIMITS.MAX_ROWS).toBe(manifest.limits.max_rows);
   });
 
   it("204 cevapları gövdesiz kayıtlıdır", () => {
@@ -119,8 +133,16 @@ describe("ADR-0002 #5 — top_n kırpması ve related_question_ids", () => {
   const full = readFixture<Record<string, never>>("analyses.result.200.json");
   const truncated = readFixture<Record<string, never>>("analyses.result.200.truncated.json");
 
-  const parsedFull = analysisReportSchema.parse(full);
-  const parsedTruncated = analysisReportSchema.parse(truncated);
+  // `parse` describe gövdesinde DEĞİL burada: modül seviyesinde çağrılırsa
+  // bir sözleşme ayrışması suite'i yüklenirken çökertir ve vitest o dosyadaki
+  // diğer TÜM iddiaları — ayrışmanın sebebini açıklayan `LIMITS` kontrolü
+  // dahil — hiç çalıştırmadan atlar. Teşhis mesajı yanlış yeri gösterirdi.
+  let parsedFull: ReturnType<typeof analysisReportSchema.parse>;
+  let parsedTruncated: ReturnType<typeof analysisReportSchema.parse>;
+  beforeAll(() => {
+    parsedFull = analysisReportSchema.parse(full);
+    parsedTruncated = analysisReportSchema.parse(truncated);
+  });
 
   it("kırpılmış raporda daha az soru var", () => {
     expect(parsedTruncated.top_questions.length).toBeLessThan(parsedFull.top_questions.length);

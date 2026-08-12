@@ -9,6 +9,7 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
+import { LIMITS } from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -43,8 +44,12 @@ export function scenarioFromFilename(filename: string): Scenario {
   return "success";
 }
 
-/** ADR-0001 §9 / ADR-0002 #2: aşılırsa reddedilmez, kırpılır. */
-const MAX_ROWS = 100_000;
+/** ADR-0001 §9 / ADR-0002 #2: aşılırsa reddedilmez, kırpılır.
+ *
+ * Sözleşmedeki tek kaynaktan geliyor — kendi kopyasını tutsaydı, mock'un
+ * ürettiği gövdeler Zod invariant'larından sessizce ayrışabilirdi.
+ */
+const MAX_ROWS = LIMITS.MAX_ROWS;
 const ROW_LIMIT_TOTAL_ROWS = 250_000;
 
 interface UploadRecord {

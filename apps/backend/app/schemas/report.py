@@ -7,14 +7,12 @@ deterministik olarak hesaplanır (ADR-0001 §4). LLM yalnızca kayıt kimlikleri
 kategorilere eşler, sayı üretmez.
 """
 
-from math import isclose
 from typing import Literal, Self
 from uuid import UUID
 
 from pydantic import Field, model_validator
 
-from app.core.catalog import estimate_cost_usd, find_model
-from app.core.config import settings
+from app.core.config import MAX_ROWS
 from app.schemas.analysis import ModelId, PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
@@ -121,11 +119,21 @@ class AnalysisReport(ApiModel):
 
     token_usage: TokenUsage
     estimated_cost_usd: float = Field(ge=0)
+    """Analizi üreten çalışmanın maliyeti — BİLEREK katalogla doğrulanmıyor.
+
+    Değer, raporun üretildiği ANDAKİ fiyatlarla hesaplanır ve rapora yazılır
+    (BE-02, yazma yolu). Burada `catalog.estimate_cost_usd` ile yeniden
+    hesaplayıp karşılaştırmak, OpenRouter fiyatı her değiştiğinde geçmiş
+    raporların tamamını okunamaz hale getirirdi: cevap doğrulaması düşer,
+    `GET /analyses/{id}/result` kalıcı 500 döner. Aynı gerekçe modelin
+    whitelist'te olma şartı için de geçerli — bir modeli kullanımdan
+    kaldırmak, onunla üretilmiş raporları silmek anlamına gelmemeli.
+    """
 
     @model_validator(mode="after")
     def _report_invariants(self) -> Self:
         prep = self.preprocessing_summary
-        considered = min(self.source_summary.total_rows, settings.max_rows)
+        considered = min(self.source_summary.total_rows, MAX_ROWS)
         if prep.analyzed_count + prep.discarded_count != considered:
             raise ValueError(
                 "analyzed_count + discarded_count, işlenen satır sayısına eşit olmalı."
@@ -137,21 +145,11 @@ class AnalysisReport(ApiModel):
         if usage.total_tokens != usage.prompt_tokens + usage.completion_tokens:
             raise ValueError("total_tokens, prompt_tokens + completion_tokens olmalı.")
 
-        if find_model(self.model) is None:
-            raise ValueError("Rapor modeli backend whitelist'inde bulunmalı.")
-        expected_cost = estimate_cost_usd(
-            self.model,
-            usage.prompt_tokens,
-            usage.completion_tokens,
-        )
-        if not isclose(self.estimated_cost_usd, expected_cost, abs_tol=0.0001):
-            raise ValueError("estimated_cost_usd, katalog fiyatlarından hesaplanmalı.")
-
         present_ids = {question.id for question in self.top_questions}
         if any(not set(theme.related_question_ids) <= present_ids for theme in self.themes):
             raise ValueError("related_question_ids yalnızca top_questions id'lerini içerebilir.")
 
-        truncated = self.source_summary.total_rows > settings.max_rows
+        truncated = self.source_summary.total_rows > MAX_ROWS
         has_warning = any(
             warning.code == WarningCode.ROW_LIMIT_TRUNCATED for warning in self.warnings
         )

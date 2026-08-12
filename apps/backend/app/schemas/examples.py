@@ -32,7 +32,7 @@ from app.core.catalog import (
     MODEL_LIST,
     estimate_cost_usd,
 )
-from app.core.config import settings
+from app.core.config import MAX_ROWS
 from app.core.errors import ERROR_STATUS, ERROR_TITLES, ErrorCode, error_type_uri
 from app.schemas.analysis import (
     AnalysisCreated,
@@ -195,7 +195,7 @@ def build_profile(rows: int = SHEET_ROWS) -> UploadProfile:
         total_row_count=sum(sheet.row_count for sheet in sheets),
         # Analiz sınırı SEÇİLEN sheet'e uygulanır, dolayısıyla bayrak da
         # sheet bazında değerlendirilir.
-        exceeds_row_limit=any(sheet.row_count > settings.max_rows for sheet in sheets),
+        exceeds_row_limit=any(sheet.row_count > MAX_ROWS for sheet in sheets),
     )
 
 
@@ -299,7 +299,7 @@ def build_report(
     `related_question_ids` raporda gerçekten yer alan sorulara filtrelenir.
     """
     # ADR-0002 #2: sınır aşılırsa iş reddedilmez, ilk MAX_ROWS satır işlenir.
-    considered = min(sheet_rows, settings.max_rows)
+    considered = min(sheet_rows, MAX_ROWS)
     discarded = EMPTY_MESSAGE_ROWS
     analyzed = considered - discarded
     # Normal fixture'daki 31.540 / 47.106 oranı büyük korpusta korunur.
@@ -383,7 +383,7 @@ def row_limit_warning(sheet_rows: int) -> AnalysisWarning:
         # ADR-0002 #2: mesaj kullanıcıya hazır Türkçedir.
         message=(
             f"Sayfada {sheet_rows:,} satır bulundu; analiz ilk "
-            f"{settings.max_rows:,} satırla sınırlandırıldı. Sonuçlar bu alt "
+            f"{MAX_ROWS:,} satırla sınırlandırıldı. Sonuçlar bu alt "
             "küme üzerinden hesaplandı."
         ).replace(",", "."),
     )

@@ -2624,7 +2624,8 @@
         },
         "type": "object",
         "required": [
-          "analysis_id"
+          "analysis_id",
+          "status"
         ],
         "title": "AnalysisCreated",
         "description": "POST /api/v1/analyses — 202 Accepted."
@@ -2684,7 +2685,9 @@
           "status",
           "progress",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "estimated_seconds_remaining",
+          "error"
         ],
         "title": "AnalysisJob",
         "description": "GET /api/v1/analyses/{analysis_id} — durum sorgulaması.\n\nADR-0001 §2: ilerleme her satırda değil, yalnızca aşama veya anlamlı yüzde\ndeğişiminde yazılır; `progress` düzenli artmayabilir."
@@ -2765,12 +2768,14 @@
         "required": [
           "schema_version",
           "analysis_id",
+          "status",
           "generated_at",
           "source_summary",
           "preprocessing_summary",
           "top_questions",
           "themes",
           "executive_summary",
+          "warnings",
           "model",
           "prompt_version",
           "prompt_hash",
@@ -2936,7 +2941,8 @@
           "empty_count",
           "unique_count",
           "avg_length",
-          "is_likely_text"
+          "is_likely_text",
+          "sample_values"
         ],
         "title": "ColumnProfile"
       },
@@ -2982,6 +2988,7 @@
         },
         "type": "object",
         "required": [
+          "field",
           "message"
         ],
         "title": "ErrorItem",
@@ -3154,7 +3161,7 @@
           "errors"
         ],
         "title": "ProblemDetails",
-        "description": "ADR-0001 §7 / ADR-0002 #6.\n\n`type`, `title`, `status`, `code`, `detail` ve `trace_id` HER cevapta\nbulunur — frontend'in `problemDetailsSchema`'sı altısını da zorunlu tutar."
+        "description": "ADR-0001 §7 / ADR-0002 #6.\n\n`type`, `title`, `status`, `code`, `detail` ve `trace_id` HER cevapta\nbulunur — frontend'in `problemDetailsSchema`'sı altısını da zorunlu tutar.\n\nBu garantiyi veren `json_schema_serialization_defaults_required` artık\n`ApiModel`'de; burada tekrarlanmıyor. Bayrağın YALNIZCA bu modelde olması,\ndiğer sekiz cevap modelinin openapi.json'da yanlış `required` listesiyle\nyayımlanmasının sebebiydi."
       },
       "PromptVersion": {
         "type": "string",
@@ -3260,7 +3267,8 @@
           "id",
           "name",
           "count",
-          "percentage"
+          "percentage",
+          "related_question_ids"
         ],
         "title": "Theme"
       },
@@ -3331,7 +3339,8 @@
           "canonical_question",
           "count",
           "percentage",
-          "confidence"
+          "confidence",
+          "redacted_examples"
         ],
         "title": "TopQuestion"
       },
@@ -3386,7 +3395,9 @@
           "status",
           "filename",
           "size_bytes",
-          "created_at"
+          "created_at",
+          "profile",
+          "error"
         ],
         "title": "Upload",
         "description": "GET /api/v1/uploads/{upload_id}"
@@ -3407,7 +3418,8 @@
         },
         "type": "object",
         "required": [
-          "upload_id"
+          "upload_id",
+          "status"
         ],
         "title": "UploadCreated",
         "description": "POST /api/v1/uploads — 202 Accepted."
@@ -3435,7 +3447,8 @@
         "type": "object",
         "required": [
           "sheets",
-          "total_row_count"
+          "total_row_count",
+          "exceeds_row_limit"
         ],
         "title": "UploadProfile"
       },
