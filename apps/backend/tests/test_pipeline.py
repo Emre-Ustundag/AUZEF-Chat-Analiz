@@ -27,6 +27,7 @@ from app.pipeline.classifier import (
     DeterministicClassifier,
     QuestionAssignment,
     ThemeAssignment,
+    _signature_tokens,
 )
 from app.pipeline.cost import estimate_cost
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
@@ -145,6 +146,95 @@ def test_siniflandirici_hicbir_adet_dondurmez(settings: Settings) -> None:
         }
     for theme in classification.themes:
         assert set(vars(theme)) == {"theme_id", "name", "question_ids"}
+
+
+def test_imza_once_kirpar_sonra_siralar(settings: Settings) -> None:
+    """Regresyon: imza ÖNCE kırpılır, SONRA sıralanır.
+
+    Ters sırada (önce sırala, sonra kırp) alfabetik olarak ilk sözcükler
+    kalıyor ve konu sözcüğü atılıyordu: "sınav tarihleri ne zaman
+    açıklanacak" imzasında "sınav" yerine "açıklanacak" kalıyor, aynı
+    konudaki sorular ayrı temalara dağılıyordu.
+    """
+    signature = _signature_tokens(normalize("sınav tarihleri ne zaman açıklanacak"))
+
+    assert "sınav" in signature
+    # Sıralama yine de kelime sırasından bağımsız olmalı.
+    assert _signature_tokens(normalize("ne zaman sınav tarihleri açıklanacak")) == signature
+
+
+def test_ayni_konudaki_sorular_tek_temada_toplanir(settings: Settings) -> None:
+    """Tema, birden çok soruyu GERÇEKTEN gruplayabilmeli.
+
+    Her temada tek soru olsaydı plan §1.2'nin kırpma kuralı hiç sınanmamış
+    olurdu: kırpılan soru zaten temayı boşaltırdı.
+    """
+    values = (
+        ["sınav tarihleri ne zaman açıklanacak"] * 40
+        + ["sınav yerimi nereden öğrenebilirim"] * 30
+        + ["sınav sonuçları nereden görülür"] * 20
+        + ["harç ödemesini nasıl yaparım"] * 10
+    )
+    result = preprocess(values, settings)
+    classification = DeterministicClassifier().classify(result.groups)
+
+    sizes = sorted(len(theme.question_ids) for theme in classification.themes)
+    assert sizes[-1] >= 3, f"tema başına soru sayıları: {sizes}"
+
+
+def test_kirpilan_soru_temanin_countunda_kalir(settings: Settings) -> None:
+    """Plan §1.2'nin ASIL kritik hâli: kırpılan soru temada SAYILMAYA devam eder.
+
+    Tema `count`'u ile raporda görünen sorularının toplamı arasında
+    KESİN bir fark olmalı; aksi hâlde "kırpma tema count'unu değiştirmiyor"
+    iddiası boş bir eşitlik üzerinden doğrulanmış olur.
+    """
+    values = (
+        ["sınav tarihleri ne zaman açıklanacak"] * 40
+        + ["sınav yerimi nereden öğrenebilirim"] * 30
+        + ["sınav sonuçları nereden görülür"] * 20
+        + ["harç ödemesini nasıl yaparım"] * 10
+    )
+    result = preprocess(values, settings)
+    classifier = DeterministicClassifier()
+    classification = classifier.classify(result.groups)
+
+    def build(top_n: int):  # type: ignore[no-untyped-def]
+        return aggregate(
+            analysis_id=uuid.uuid4(),
+            preprocess_result=result,
+            classification=classification,
+            filename="veri.xlsx",
+            sheet_name="Mesajlar",
+            text_column="mesaj",
+            model="anthropic/claude-sonnet-4",
+            prompt_version="faq_analysis/v1",
+            classifier_id=classifier.identifier,
+            top_n=top_n,
+            settings=settings,
+        )
+
+    full = build(20)
+    trimmed = build(1)
+
+    assert len(trimmed.top_questions) == 1
+    assert len(full.top_questions) > 1
+
+    # Tema adetleri kırpmadan ETKİLENMEZ.
+    assert {t.id: t.count for t in full.themes} == {t.id: t.count for t in trimmed.themes}
+
+    shown = {q.id: q.count for q in trimmed.top_questions}
+    strict = [
+        theme
+        for theme in trimmed.themes
+        if theme.count > sum(shown.get(qid, 0) for qid in theme.related_question_ids)
+    ]
+    # En az bir temada KESİN eşitsizlik olmalı: kırpılan sorular hâlâ
+    # temanın büyüklüğüne katkı veriyor.
+    assert strict, "hiçbir temada kırpılmış soru kalmamış; test tautolojik"
+
+    for theme in trimmed.themes:
+        assert set(theme.related_question_ids) <= set(shown)
 
 
 def test_siniflandirici_her_kaydi_en_fazla_bir_soruya_esler(settings: Settings) -> None:

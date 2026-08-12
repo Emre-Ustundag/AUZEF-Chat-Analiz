@@ -199,8 +199,17 @@ class RecordClassifier(Protocol):
 def _signature_tokens(normalized: str) -> tuple[str, ...]:
     """Normalize metinden anahtar sözcük imzası üretir.
 
-    Sözcükler ALFABETİK sıraya sokulur: "sınav ne zaman" ile "ne zaman sınav"
-    aynı imzayı üretsin. Sıra korunsaydı aynı soru iki kategori olurdu.
+    İki adım, SIRASI ÖNEMLİ:
+
+    1. **Önce kırp:** mesajın BAŞTAKİ sözcükleri konuyu daha iyi taşır, bu
+       yüzden ilk N tanesi alınır.
+    2. **Sonra sırala:** "sınav ne zaman" ile "ne zaman sınav" aynı imzayı
+       üretsin. Sıra korunsaydı aynı soru iki kategori olurdu.
+
+    Adımlar TERS uygulanırsa (önce sırala, sonra kırp) imzada alfabetik
+    olarak ilk sözcükler kalır ve konu sözcüğü atılır: "sınav tarihleri ne
+    zaman açıklanacak" için "açıklanacak" kalıp "sınav" düşerdi. Bu, aynı
+    konudaki soruların ayrı temalara dağılmasına yol açar.
     """
     tokens = [
         token
@@ -209,9 +218,8 @@ def _signature_tokens(normalized: str) -> tuple[str, ...]:
     ]
     if not tokens:
         return ()
-    # Frekans değil, ilk görülme sırası önemli: mesajın baştaki sözcükleri
-    # konuyu daha iyi taşıyor. İlk N tanesi alınıp sıralanır.
-    return tuple(sorted(dict.fromkeys(tokens))[:SIGNATURE_TOKEN_LIMIT])
+    leading = list(dict.fromkeys(tokens))[:SIGNATURE_TOKEN_LIMIT]
+    return tuple(sorted(leading))
 
 
 class DeterministicClassifier:
