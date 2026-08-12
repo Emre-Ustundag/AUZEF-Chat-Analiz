@@ -79,7 +79,7 @@ def _request_body(upload_id: uuid.UUID, **overrides: Any) -> dict[str, Any]:
         "upload_id": str(upload_id),
         "sheet_name": "Mesajlar",
         "text_column": "mesaj",
-        "model": "anthropic/claude-sonnet-4",
+        "model": "anthropic/claude-sonnet-5",
         "prompt_version": "faq_analysis/v1",
         "top_n": 20,
         "max_cost_usd": 5.0,

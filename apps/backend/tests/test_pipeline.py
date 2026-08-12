@@ -207,7 +207,7 @@ def test_kirpilan_soru_temanin_countunda_kalir(settings: Settings) -> None:
             filename="veri.xlsx",
             sheet_name="Mesajlar",
             text_column="mesaj",
-            model="anthropic/claude-sonnet-4",
+            model="anthropic/claude-sonnet-5",
             prompt_version="faq_analysis/v1",
             classifier_id=classifier.identifier,
             top_n=top_n,
@@ -303,7 +303,7 @@ def _aggregate(top_n: int, settings: Settings):  # type: ignore[no-untyped-def]
         filename="veri.xlsx",
         sheet_name="Mesajlar",
         text_column="mesaj",
-        model="anthropic/claude-sonnet-4",
+        model="anthropic/claude-sonnet-5",
         prompt_version="faq_analysis/v1",
         classifier_id="deterministic-proxy/v1",
         top_n=top_n,
@@ -374,7 +374,7 @@ def test_ayni_kayit_iki_soruya_eslenirse_toplama_reddeder(settings: Settings) ->
             filename="veri.xlsx",
             sheet_name="S",
             text_column="m",
-            model="anthropic/claude-sonnet-4",
+            model="anthropic/claude-sonnet-5",
             prompt_version="v1",
             classifier_id="test",
             top_n=5,
@@ -395,7 +395,7 @@ def test_bilinmeyen_kayit_kimligi_reddedilir(settings: Settings) -> None:
             filename="veri.xlsx",
             sheet_name="S",
             text_column="m",
-            model="anthropic/claude-sonnet-4",
+            model="anthropic/claude-sonnet-5",
             prompt_version="v1",
             classifier_id="test",
             top_n=5,
@@ -425,7 +425,7 @@ def test_confidence_kume_tutarliligindan_turetilir(settings: Settings) -> None:
         filename="veri.xlsx",
         sheet_name="Mesajlar",
         text_column="mesaj",
-        model="anthropic/claude-sonnet-4",
+        model="anthropic/claude-sonnet-5",
         prompt_version="faq_analysis/v1",
         classifier_id=classifier.identifier,
         top_n=10,
@@ -468,7 +468,7 @@ def test_ucucu_ol_ucu_uctan_uca_gercek_veriyle(settings: Settings) -> None:
         filename="veri.xlsx",
         sheet_name="Mesajlar",
         text_column="mesaj",
-        model="anthropic/claude-sonnet-4",
+        model="anthropic/claude-sonnet-5",
         prompt_version="faq_analysis/v1",
         classifier_id=classifier.identifier,
         top_n=20,
@@ -489,7 +489,7 @@ def test_ucucu_ol_ucu_uctan_uca_gercek_veriyle(settings: Settings) -> None:
 
 def test_maliyet_tahmini_benzersiz_kayitlardan_hesaplanir(settings: Settings) -> None:
     result = preprocess(["sınav ne zaman acaba bilgi verir misiniz"] * 100, settings)
-    decision = estimate_cost(result.groups, "anthropic/claude-sonnet-4", max_cost_usd=5.0)
+    decision = estimate_cost(result.groups, "anthropic/claude-sonnet-5", max_cost_usd=5.0)
 
     # 100 satır ama TEK benzersiz kayıt: dedupe maliyeti düşürür (ADR §10/3).
     assert decision.estimated_prompt_tokens > 0
@@ -499,6 +499,6 @@ def test_maliyet_tahmini_benzersiz_kayitlardan_hesaplanir(settings: Settings) ->
 
 def test_maliyet_tavani_asimi_tespit_edilir(settings: Settings) -> None:
     result = preprocess([f"soru numarası {i} hakkında bilgi" for i in range(5_000)], settings)
-    decision = estimate_cost(result.groups, "anthropic/claude-sonnet-4", max_cost_usd=0.0001)
+    decision = estimate_cost(result.groups, "anthropic/claude-sonnet-5", max_cost_usd=0.0001)
 
     assert decision.exceeds is True

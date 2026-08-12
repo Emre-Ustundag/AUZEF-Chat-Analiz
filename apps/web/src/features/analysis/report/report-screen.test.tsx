@@ -73,7 +73,7 @@ const report: AnalysisReport = {
   ],
   executive_summary: "Mesajların dörtte biri sınav takvimiyle ilgili.",
   warnings: [],
-  model: "anthropic/claude-sonnet-4",
+  model: "anthropic/claude-sonnet-5",
   prompt_version: "faq_analysis/v1",
   prompt_hash: "sha256:2f8a1c9e4b7d",
   token_usage: {
@@ -121,7 +121,7 @@ describe("ReportScreen", () => {
     // hangi prompt sürümüyle üretildiği.
     renderScreen();
 
-    expect(await screen.findByText("anthropic/claude-sonnet-4")).toBeInTheDocument();
+    expect(await screen.findByText("anthropic/claude-sonnet-5")).toBeInTheDocument();
     expect(screen.getByText("faq_analysis/v1")).toBeInTheDocument();
     expect(screen.getByText("sha256:2f8a1c9e4b7d")).toBeInTheDocument();
   });

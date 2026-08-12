@@ -66,14 +66,14 @@ const upload: Upload = {
 const models: ModelList = {
   models: [
     {
-      id: "anthropic/claude-sonnet-4",
-      label: "Claude Sonnet 4",
+      id: "anthropic/claude-sonnet-5",
+      label: "Claude Sonnet 5",
       input_cost_per_million: 3,
       output_cost_per_million: 15,
       context_window: 200_000,
     },
   ],
-  default_model: "anthropic/claude-sonnet-4",
+  default_model: "anthropic/claude-sonnet-5",
   default_prompt_version: "faq_analysis/v1",
 };
 

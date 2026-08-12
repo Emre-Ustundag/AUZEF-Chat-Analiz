@@ -75,7 +75,7 @@ describe("analysisRequestSchema", () => {
     upload_id: ID,
     sheet_name: "Sayfa1",
     text_column: "mesaj",
-    model: "anthropic/claude-sonnet-4",
+    model: "anthropic/claude-sonnet-5",
     prompt_version: "v1",
     top_n: 20,
     max_cost_usd: 5,
@@ -184,7 +184,7 @@ describe("analysisReportSchema", () => {
     ],
     executive_summary: "Mesajların dörtte biri sınav takvimiyle ilgili.",
     warnings: [],
-    model: "anthropic/claude-sonnet-4",
+    model: "anthropic/claude-sonnet-5",
     prompt_version: "v1",
     prompt_hash: "abc123",
     token_usage: {
