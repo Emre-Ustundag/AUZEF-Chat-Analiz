@@ -30,7 +30,8 @@ raporun içindeki `generated_at` değil (o, rapor gövdesinden gelir ve
 1. **Süresi dolan analizler** — rapor retention'ı. Satır silinir,
    `report` sütunu `NULL`'lanmaz (gerekçe `core/config.py`'de).
 2. **Süresi dolan upload'lar** — önce storage nesnesi, sonra satır.
-   Analiz kayıtları FK CASCADE ile gider.
+   Analiz kayıtları FK CASCADE ile gider; tam bu yüzden DEVAM EDEN
+   analizi olan upload atlanır (ayrıntı fonksiyonun docstring'inde).
 3. **Kaçak nesneler** — hiçbir upload satırının işaret etmediği ve
    yeterince eskimiş nesneler.
 
@@ -111,9 +112,32 @@ async def sweep_expired_uploads(
     Nesne ÖNCE, satır SONRA silinir. Ters sırada bir çökme, storage
     anahtarını bilen tek kaydı yok eder ve dosya kaçak nesneye dönüşürdü —
     o zaman ancak (3). adım veya lifecycle yakalayabilirdi.
+
+    DEVAM EDEN ANALİZİ OLAN UPLOAD ATLANIR. `analyses.upload_id` FK'si
+    `ON DELETE CASCADE`; yani burada bir upload silmek, o upload'a bağlı
+    ÇALIŞAN bir analizin satırını da uçurur. Worker bir gün kapalı kalıp
+    kuyruk birikirse tam olarak bu olurdu: iş aşama ortasındayken kaydı yok
+    olur, kullanıcı 404 poll eder. `sweep_expired_analyses` aynı korumayı
+    (`status.in_(TERMINAL_STATUSES)`) zaten uyguluyor; asimetrik bırakmak,
+    analiz tarafında kapatılan deliği upload tarafından açık tutmaktı.
+
+    Hiç analizi olmayan (kullanıcının yükleyip bıraktığı) upload ASIL
+    hedeftir ve süpürülmeye devam eder.
     """
     cutoff = _cutoff(settings.upload_retention_hours, now)
-    uploads = list((await session.scalars(select(Upload).where(Upload.updated_at < cutoff))).all())
+    canli_analiz = (
+        select(Analysis.id)
+        .where(
+            Analysis.upload_id == Upload.id,
+            Analysis.status.not_in(TERMINAL_STATUSES),
+        )
+        .exists()
+    )
+    uploads = list(
+        (
+            await session.scalars(select(Upload).where(Upload.updated_at < cutoff, ~canli_analiz))
+        ).all()
+    )
 
     removed = 0
     for upload in uploads:

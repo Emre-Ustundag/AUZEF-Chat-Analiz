@@ -275,6 +275,50 @@ async def test_supurucu_suresi_dolan_uploadi_ve_dosyasini_siler(client: AsyncCli
     assert (await client.get(f"/api/v1/uploads/{upload_id}")).status_code == 404
 
 
+async def test_supurucu_devam_eden_analizi_olan_uploadi_silmez(client: AsyncClient) -> None:
+    """CASCADE tuzağı: upload silmek ÇALIŞAN analizin satırını da uçurur.
+
+    `analyses.upload_id` FK'si `ON DELETE CASCADE`. Worker bir gün kapalı
+    kalıp kuyruk birikirse, korumasız bir upload süpürmesi iş aşama
+    ortasındayken kaydı yok eder ve kullanıcı 404 poll etmeye başlar.
+    """
+    settings = get_settings()
+    upload_id, key = await ready_upload(client)
+    analysis_id = await start_analysis(client, upload_id)  # queued — terminal DEĞİL
+
+    await age_row("uploads", upload_id, settings.upload_retention_hours + 1)
+
+    async with session_scope() as session:
+        await retention.sweep_expired_uploads(session, settings)
+
+    assert (await client.get(f"/api/v1/uploads/{upload_id}")).status_code == 200
+    assert (await client.get(f"/api/v1/analyses/{analysis_id}")).status_code == 200
+    assert object_exists(key), "çalışan işin kaynak dosyası da durmalı"
+
+    # İş sonlandıktan sonra artık süpürülebilir olmalı — koruma kalıcı değil.
+    assert (await client.delete(f"/api/v1/analyses/{analysis_id}")).status_code == 204
+    await age_row("uploads", upload_id, settings.upload_retention_hours + 1)
+
+    async with session_scope() as session:
+        assert await retention.sweep_expired_uploads(session, settings) >= 1
+
+    assert (await client.get(f"/api/v1/uploads/{upload_id}")).status_code == 404
+
+
+async def test_supurucu_analizsiz_uploadi_siler(client: AsyncClient) -> None:
+    """Koruma fazla geniş olmamalı: hiç analiz edilmemiş dosya ASIL hedef."""
+    settings = get_settings()
+    upload_id, key = await ready_upload(client)
+
+    await age_row("uploads", upload_id, settings.upload_retention_hours + 1)
+
+    async with session_scope() as session:
+        assert await retention.sweep_expired_uploads(session, settings) >= 1
+
+    assert not object_exists(key)
+    assert (await client.get(f"/api/v1/uploads/{upload_id}")).status_code == 404
+
+
 async def test_supurucu_kacak_nesneyi_siler() -> None:
     """ADR §9: veritabanında karşılığı olmayan nesne.
 

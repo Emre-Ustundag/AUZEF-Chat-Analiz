@@ -36,6 +36,7 @@ from app.schemas.report import (
     TokenUsage,
     TopQuestion,
 )
+from app.services import report_export
 
 #: `analysis.ts` → `analysisStatusSchema`.
 FRONTEND_ANALYSIS_STATUSES = {
@@ -345,3 +346,29 @@ def test_raporda_stack_trace_veya_sir_yok() -> None:
     serialized = json.dumps(_report().model_dump(mode="json"))
     for leak in ("Traceback", 'File "', "sk-", "postgresql://", "minioadmin"):
         assert leak not in serialized
+
+
+# ------------------------------------------------------------------ export
+
+
+def test_export_bicimleri_frontend_ile_birebir() -> None:
+    """Frontend: `exportFormatSchema = z.enum(["xlsx", "json"])`.
+
+    Backend tarafında bu bir enum DEĞİL — bilinçli olarak serbest bir dize
+    okunup bilinmeyen değerler `json`'a düşürülüyor (mock'un
+    `.catch("json")` davranışı; gerekçe `api/v1/analyses.py::export_analysis`
+    docstring'inde). Ama üretilen dosya adı ve MIME türü yine yalnızca bu
+    iki değere karşılık gelmeli: üçüncü bir uzantı sözleşmede yok.
+    """
+    assert report_export.XLSX_MEDIA_TYPE == (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert report_export.JSON_MEDIA_TYPE == "application/json"
+
+    analysis_id = "11111111-2222-3333-4444-555555555555"
+    for extension in ("xlsx", "json"):
+        header = report_export.content_disposition(analysis_id, extension)
+        # Frontend yalnızca düz `filename="..."` ayrıştırıyor (RFC 5987 yok)
+        # ve başlığın ASCII kalması şart.
+        assert header == f'attachment; filename="analiz-{analysis_id}.{extension}"'
+        header.encode("ascii")
