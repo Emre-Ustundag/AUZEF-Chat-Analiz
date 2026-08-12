@@ -50,16 +50,27 @@ tanımlamıyordu; frontend o uç olmadan configure ekranını hiç render edemiy
 
 Whitelist ve varsayılanlar `app/core/catalog.py` içinde tek kaynaktır:
 
-| Model                       | Girdi / 1M token | Çıktı / 1M token | Context window |
-| --------------------------- | ---------------: | ---------------: | -------------: |
-| `anthropic/claude-sonnet-4` |            3 USD |           15 USD |        200.000 |
-| `openai/gpt-4.1-mini`       |          0,4 USD |          1,6 USD |        128.000 |
-| `google/gemini-2.5-flash`   |          0,3 USD |          2,5 USD |      1.048.576 |
+| Model                         | Girdi / 1M token | Çıktı / 1M token | Context window |
+| ----------------------------- | ---------------: | ---------------: | -------------: |
+| `anthropic/claude-sonnet-4.6` |            3 USD |           15 USD |      1.000.000 |
+| `openai/gpt-4.1-mini`         |          0,4 USD |          1,6 USD |      1.047.576 |
+| `google/gemini-2.5-flash`     |          0,3 USD |          2,5 USD |      1.048.576 |
 
-Varsayılan model `anthropic/claude-sonnet-4`, varsayılan ve bilinen prompt
-sürümü `faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan
-okur; TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da
-birebir karşılaştırılır.
+Bu değerler 12 Ağustos 2026 tarihinde
+[OpenRouter'ın resmi model kataloğuyla](https://openrouter.ai/api/v1/models)
+doğrulandı. Üç whitelist üyesinin de `structured_outputs` desteği zorunludur;
+bu nedenle bu kabiliyeti yayımlamayan eski `anthropic/claude-sonnet-4`
+yerine `anthropic/claude-sonnet-4.6` seçildi.
+
+Varsayılan model `anthropic/claude-sonnet-4.6`, varsayılan ve bilinen prompt
+sürümü `faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan okur;
+TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da birebir
+karşılaştırılır.
+
+Model ve prompt kimlikleri tel şemasında serbest `string` değildir:
+`ModelId` ve `PromptVersion` enum'ları `AnalysisRequest`, model listesi ve
+raporun tamamında aynı exact whitelist'i zorlar. Geçersiz, boş olmayan model
+ve prompt değerleri sırasıyla `INVALID_MODEL` ve `INVALID_PROMPT` olur.
 
 ### #2 — Satır sınırı: uyar + kırp, reddetme
 
@@ -211,6 +222,11 @@ Kaynak dosyalar `öğrenci mesajları.xlsx` gibi adlandırılacak; "ASCII kullan
 demek türetme kuralını backend'in uydurmasına bırakırdı. Sabit ad tanım gereği
 ASCII'dir, RFC 5987 `filename*` gerektirmez ve `endpoints.ts`'teki mevcut
 fallback ile birebir aynıdır.
+
+JSON export gövdesi telde gerçek `AnalysisReport` nesnesidir ve OpenAPI'de
+aynı bileşene referans verir. Yalnızca XLSX media type'ı binary şema taşır;
+JSON'u `string/binary` olarak belgelemek üretilmiş istemciyi yanlış tipe
+yönlendirir.
 
 ### #12 — Sürümleme
 

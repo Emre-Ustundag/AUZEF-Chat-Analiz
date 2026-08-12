@@ -11,16 +11,16 @@ Kararların tamamı için: [`docs/adr/0002-api-contract-freeze.md`](../../docs/a
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh   # uv yoksa
 cd apps/backend
-uv sync --dev
+uv sync --locked --dev
 ```
 
 ## Kalite kapıları
 
 ```bash
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-uv run pytest
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy
+uv run --locked pytest
 ```
 
 ## Sözleşme artefaktlarını yeniden üretme
@@ -29,21 +29,21 @@ uv run pytest
 elle düzenlenmezler. Pydantic modellerini değiştirdiyseniz yeniden üretin:
 
 ```bash
-uv run python scripts/export_openapi.py
-uv run python scripts/export_fixtures.py
+uv run --locked python scripts/export_openapi.py
+uv run --locked python scripts/export_fixtures.py
 ```
 
 CI aynı script'leri `--check` ile çalıştırır ve fark bulursa düşer:
 
 ```bash
-uv run python scripts/export_openapi.py --check
-uv run python scripts/export_fixtures.py --check
+uv run --locked python scripts/export_openapi.py --check
+uv run --locked python scripts/export_fixtures.py --check
 ```
 
 ## Çalıştırma
 
 ```bash
-uv run uvicorn app.main:app --reload --port 8000
+uv run --locked uvicorn app.main:app --reload --port 8000
 open http://localhost:8000/docs
 ```
 

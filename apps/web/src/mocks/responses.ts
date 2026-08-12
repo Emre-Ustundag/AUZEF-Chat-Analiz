@@ -7,7 +7,9 @@ export const PROBLEM_MEDIA_TYPE = "application/problem+json";
 
 function headersWithTrace(headers?: HeadersInit, traceId: string = randomUUID()): Headers {
   const result = new Headers(headers);
-  result.set(TRACE_ID_HEADER, traceId);
+  // Idempotency replay ilk 202'nin header metadata'sını aynen döndürür.
+  // Çağıran bir trace id verdiyse yeni UUID üretmek yerine onu koru.
+  result.set(TRACE_ID_HEADER, result.get(TRACE_ID_HEADER) ?? traceId);
   return result;
 }
 

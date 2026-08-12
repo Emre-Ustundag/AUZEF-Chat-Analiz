@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  analysisReportSchema,
   analysisStatusSchema,
   ERROR_MESSAGES_TR,
   errorCodeSchema,
   exportFormatSchema,
+  modelIdSchema,
   problemDetailsSchema,
+  promptVersionSchema,
   RETRYABLE_ERROR_CODES,
   uploadStatusSchema,
 } from "./index";
@@ -70,6 +73,8 @@ describe("enum parity — OpenAPI ↔ Zod", () => {
     ["UploadStatus", uploadStatusSchema.options],
     ["AnalysisStatus", analysisStatusSchema.options],
     ["ExportFormat", exportFormatSchema.options],
+    ["ModelId", modelIdSchema.options],
+    ["PromptVersion", promptVersionSchema.options],
   ])("%s aynı üyelere sahip", (schemaName, zodOptions) => {
     const openapiEnum = openapi.components.schemas[schemaName]?.enum;
     expect(openapiEnum, `${schemaName} openapi.json'da bulunamadı`).toBeDefined();
@@ -205,6 +210,18 @@ describe("sözleşme detayları", () => {
           expect(response.headers?.["X-Trace-Id"]?.example).toBeTruthy();
         }
       }
+    }
+  });
+
+  it("JSON export gerçek AnalysisReport şeması ve geçerli rapor örneği taşır", () => {
+    const response = openapi.paths["/api/v1/analyses/{analysis_id}/export"].get.responses["200"];
+    const jsonMedia = response.content?.["application/json"];
+
+    expect(jsonMedia?.schema?.$ref).toBe("#/components/schemas/AnalysisReport");
+    expect(Object.keys(jsonMedia?.examples ?? {})).not.toHaveLength(0);
+    for (const example of Object.values(jsonMedia?.examples ?? {})) {
+      const result = analysisReportSchema.safeParse(example.value);
+      expect(result.success ? null : result.error.issues).toBeNull();
     }
   });
 

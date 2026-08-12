@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { modelIdSchema, promptVersionSchema } from "./analysis";
 import { LIMITS } from "./common";
 
 /**
@@ -141,8 +142,8 @@ export const analysisReportSchema = z
     warnings: z.array(analysisWarningSchema).default([]),
 
     /** İzlenebilirlik: hangi model ve hangi prompt sürümü bu sonucu üretti. */
-    model: z.string(),
-    prompt_version: z.string(),
+    model: modelIdSchema,
+    prompt_version: promptVersionSchema,
     prompt_hash: z.string(),
 
     token_usage: tokenUsageSchema,

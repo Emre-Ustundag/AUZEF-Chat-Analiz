@@ -39,6 +39,20 @@ class ExportFormat(StrEnum):
     JSON = "json"
 
 
+class ModelId(StrEnum):
+    """BE-01'de dondurulmuş, structured-output destekli model whitelist'i."""
+
+    CLAUDE_SONNET_4_6 = "anthropic/claude-sonnet-4.6"
+    GPT_4_1_MINI = "openai/gpt-4.1-mini"
+    GEMINI_2_5_FLASH = "google/gemini-2.5-flash"
+
+
+class PromptVersion(StrEnum):
+    """Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."""
+
+    FAQ_ANALYSIS_V1 = "faq_analysis/v1"
+
+
 class AnalysisRequest(ApiRequestModel):
     """POST /api/v1/analyses gövdesi.
 
@@ -51,8 +65,8 @@ class AnalysisRequest(ApiRequestModel):
     upload_id: UUID
     sheet_name: str = Field(min_length=1)
     text_column: str = Field(min_length=1)
-    model: str = Field(min_length=1)
-    prompt_version: str = Field(min_length=1)
+    model: ModelId
+    prompt_version: PromptVersion
     top_n: int = Field(ge=1, le=100)
     #: gt, ge değil: Zod tarafı `.positive()`.
     max_cost_usd: float = Field(gt=0, le=100)
@@ -106,7 +120,7 @@ class ModelOption(ApiModel):
     `GET /api/v1/models` sözleşmeye dâhil edildi.
     """
 
-    id: str
+    id: ModelId
     label: str
     #: 1M girdi tokenı başına USD.
     input_cost_per_million: float = Field(ge=0)
@@ -118,16 +132,16 @@ class ModelList(ApiModel):
     """GET /api/v1/models"""
 
     models: list[ModelOption]
-    default_model: str
-    default_prompt_version: str
+    default_model: ModelId
+    default_prompt_version: PromptVersion
 
     @model_validator(mode="after")
     def _defaults_are_available(self) -> Self:
         ids = [model.id for model in self.models]
         if len(ids) != len(set(ids)):
             raise ValueError("Model whitelist'i tekrarlı id taşıyamaz.")
+        if set(ids) != set(ModelId):
+            raise ValueError("Model whitelist'i dondurulmuş ModelId kümesiyle aynı olmalı.")
         if self.default_model not in ids:
             raise ValueError("default_model whitelist içinde bulunmalı.")
-        if not self.default_prompt_version:
-            raise ValueError("default_prompt_version boş olamaz.")
         return self

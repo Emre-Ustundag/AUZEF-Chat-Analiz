@@ -16,7 +16,10 @@ import {
   getAnalysisJobRecord,
   getAnalysisReportRecord,
   getUploadRecord,
+  IDEMPOTENCY_TTL_MS,
+  lookupIdempotency,
   problem,
+  rememberIdempotency,
 } from "./store";
 
 /**
@@ -48,7 +51,7 @@ function analysisRequestFor(uploadId: string): AnalysisRequest {
     upload_id: uploadId,
     sheet_name: "Mesajlar",
     text_column: "mesaj",
-    model: "anthropic/claude-sonnet-4",
+    model: "anthropic/claude-sonnet-4.6",
     prompt_version: "faq_analysis/v1",
     top_n: 8,
     max_cost_usd: 10,
@@ -97,6 +100,20 @@ describe("upload mock'u", () => {
 
   it("bilinmeyen upload için null döner", () => {
     expect(getUploadRecord("yok-boyle-bir-kayit")).toBeNull();
+  });
+});
+
+describe("idempotency store", () => {
+  it("24 saat içinde replay eder, TTL dolduğu anda kaydı miss sayar", () => {
+    const key = `ttl-${crypto.randomUUID()}`;
+    rememberIdempotency("POST", "/api/v1/uploads/", key, "fingerprint", { id: "first" });
+
+    expect(lookupIdempotency("post", "//api/v1/uploads", key, "fingerprint").kind).toBe("replay");
+
+    vi.setSystemTime(new Date(START.getTime() + IDEMPOTENCY_TTL_MS));
+    expect(lookupIdempotency("POST", "/api/v1/uploads", key, "fingerprint")).toEqual({
+      kind: "miss",
+    });
   });
 });
 

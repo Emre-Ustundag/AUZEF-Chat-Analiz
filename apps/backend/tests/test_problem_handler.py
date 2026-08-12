@@ -1,5 +1,7 @@
 """Merkezi RFC 9457 üretimi — her hata cevabı bu handler'lardan çıkar."""
 
+import logging
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -14,6 +16,8 @@ from app.core.errors import (
 from app.core.handlers import PROBLEM_MEDIA_TYPE, register_exception_handlers
 from app.core.tracing import TRACE_ID_HEADER, TraceIdMiddleware
 from app.schemas.common import ProblemDetails
+
+SECRET_SENTINEL = "SENSITIVE_INPUT_SENTINEL_9472"
 
 
 @pytest.mark.parametrize("code", list(ErrorCode))
@@ -58,7 +62,9 @@ def test_stub_routes_return_501(client: TestClient) -> None:
     assert problem.trace_id
 
 
-def test_unhandled_exception_does_not_leak_internals() -> None:
+def test_unhandled_exception_does_not_leak_internals(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """ADR-0001 §7: ham hata metni gövdeye ve loglara yazılmaz.
 
     `str(exc)` kullanmak cazip ama httpx hatalarının str()'i rutin olarak
@@ -70,8 +76,9 @@ def test_unhandled_exception_does_not_leak_internals() -> None:
 
     @app.get("/bol")
     async def bol() -> None:
-        raise ZeroDivisionError("division by zero in secret_module")
+        raise ZeroDivisionError(f"division by zero in secret_module {SECRET_SENTINEL}")
 
+    caplog.set_level(logging.ERROR, logger="app.core.handlers")
     with TestClient(app, raise_server_exceptions=False) as local:
         response = local.get("/bol")
 
@@ -80,12 +87,41 @@ def test_unhandled_exception_does_not_leak_internals() -> None:
     assert "division" not in body
     assert "secret_module" not in body
     assert "ZeroDivisionError" not in body
+    assert SECRET_SENTINEL not in caplog.text
+    assert "division by zero" not in caplog.text
+    assert any(
+        getattr(record, "exception_type", None) == "ZeroDivisionError" for record in caplog.records
+    )
 
     problem = ProblemDetails.model_validate(response.json())
     assert problem.code is ErrorCode.INTERNAL_ERROR
     # Hata gövdesi bozuk olsa bile iz sürülebilmeli.
     assert problem.trace_id
     assert response.headers[TRACE_ID_HEADER] == str(problem.trace_id)
+
+
+def test_response_validation_error_does_not_log_invalid_input(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    app = FastAPI()
+    app.add_middleware(TraceIdMiddleware)
+    register_exception_handlers(app)
+
+    @app.get("/bozuk-cevap", response_model=dict[str, int])
+    async def bozuk_cevap() -> dict[str, str]:
+        return {"secret": SECRET_SENTINEL}
+
+    caplog.set_level(logging.ERROR, logger="app.core.handlers")
+    with TestClient(app, raise_server_exceptions=False) as local:
+        response = local.get("/bozuk-cevap")
+
+    assert response.status_code == 500
+    assert SECRET_SENTINEL not in response.text
+    assert SECRET_SENTINEL not in caplog.text
+    assert any(
+        getattr(record, "exception_type", None) == "ResponseValidationError"
+        for record in caplog.records
+    )
 
 
 def test_unknown_path_returns_problem_body(client: TestClient) -> None:

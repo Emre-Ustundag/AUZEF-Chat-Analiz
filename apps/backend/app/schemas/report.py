@@ -15,6 +15,7 @@ from pydantic import Field, model_validator
 
 from app.core.catalog import estimate_cost_usd, find_model
 from app.core.config import settings
+from app.schemas.analysis import ModelId, PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -114,8 +115,8 @@ class AnalysisReport(ApiModel):
     warnings: list[AnalysisWarning] = Field(default_factory=list)
 
     #: İzlenebilirlik: hangi model ve hangi prompt sürümü bu sonucu üretti.
-    model: str
-    prompt_version: str
+    model: ModelId
+    prompt_version: PromptVersion
     prompt_hash: str
 
     token_usage: TokenUsage

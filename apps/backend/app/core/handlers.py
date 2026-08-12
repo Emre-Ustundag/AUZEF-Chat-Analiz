@@ -110,8 +110,54 @@ def _field_path(loc: Sequence[Any]) -> str | None:
     return ".".join(parts) if parts else None
 
 
+def _specialized_request_error(
+    validation_errors: Sequence[dict[str, Any]],
+) -> tuple[ErrorCode, str] | None:
+    """Whitelist enum hatalarını genel 422 kodlarından ayırır.
+
+    `AnalysisRequest` alanları gerçek enum'dur; bu sayede Pydantic ve OpenAPI
+    aynı whitelist'i doğrular. FastAPI ise enum ihlalini normalde her zaman
+    `REQUEST_VALIDATION` yapardı. Public sözleşmedeki `INVALID_MODEL` ve
+    `INVALID_PROMPT` kodlarını korumak için yalnızca boş olmayan string enum
+    girdilerini özelleştiriyoruz. Yanlış tip ve boş string genel doğrulama
+    hatası olarak kalır.
+    """
+    specialized = (
+        (
+            "model",
+            ErrorCode.INVALID_MODEL,
+            "Seçilen model backend whitelist'inde bulunmuyor.",
+        ),
+        (
+            "prompt_version",
+            ErrorCode.INVALID_PROMPT,
+            "Seçilen prompt sürümü desteklenmiyor.",
+        ),
+    )
+    specialized_locations = {("body", field) for field, _, _ in specialized}
+    if any(tuple(error.get("loc", ())) not in specialized_locations for error in validation_errors):
+        # Enum hatasına ek olarak başka bir alan da bozuksa genel request
+        # doğrulaması kazanır. Bu, whitelist alanları düz string iken route
+        # seviyesindeki semantik kontrollerden önceki davranışı korur ve
+        # Next.js mock ile hata önceliğini aynı tutar.
+        return None
+
+    for field, code, detail in specialized:
+        for error in validation_errors:
+            raw_input = error.get("input")
+            if (
+                tuple(error.get("loc", ())) == ("body", field)
+                and error.get("type") == "enum"
+                and isinstance(raw_input, str)
+                and bool(raw_input.strip())
+            ):
+                return code, detail
+    return None
+
+
 async def request_validation_handler(_request: Request, exc: Exception) -> Response:
     assert isinstance(exc, RequestValidationError)
+    validation_errors = exc.errors()
     errors = [
         ErrorItem(field=_field_path(err.get("loc", ())), message=str(err.get("msg", "")))
         # err["input"] BİLEREK kopyalanmıyor. FastAPI'nin varsayılan 422
@@ -119,8 +165,12 @@ async def request_validation_handler(_request: Request, exc: Exception) -> Respo
         # yoludur — istemci OpenRouter anahtarını yanlışlıkla gövdeye koyarsa
         # varsayılan handler onu aynen geri yansıtır ve hem frontend hata
         # state'ine hem de gövde yakalayan her proxy log'una düşer.
-        for err in exc.errors()
+        for err in validation_errors
     ]
+    specialized = _specialized_request_error(validation_errors)
+    if specialized is not None:
+        code, detail = specialized
+        return problem_response(code, detail, errors=errors)
     return problem_response(
         ErrorCode.REQUEST_VALIDATION,
         "İstek gövdesi veya parametreleri doğrulanamadı.",
@@ -130,8 +180,16 @@ async def request_validation_handler(_request: Request, exc: Exception) -> Respo
 
 async def response_validation_handler(_request: Request, exc: Exception) -> Response:
     assert isinstance(exc, ResponseValidationError)
-    # Kendi modelimize uymayan bir cevap ASLA sızdırılmaz; yalnızca loglanır.
-    logger.exception("Cevap doğrulaması başarısız", extra={"trace_id": current_trace_id()})
+    # `logger.exception` kullanılmaz: traceback içindeki `str(exc)`, geçersiz
+    # response input'unu (PII/secret dahil) aynen loga yazabilir. Yalnızca
+    # güvenli sınıf adı ve trace id kaydedilir.
+    logger.error(
+        "Cevap doğrulaması başarısız",
+        extra={
+            "trace_id": current_trace_id(),
+            "exception_type": type(exc).__name__,
+        },
+    )
     return problem_response(ErrorCode.INTERNAL_ERROR, _RESPONSE_INVALID_DETAIL)
 
 
@@ -156,9 +214,16 @@ async def not_implemented_handler(_request: Request, exc: Exception) -> Response
 
 
 async def unhandled_exception_handler(_request: Request, exc: Exception) -> Response:
-    # ASLA str(exc) kullanma: ADR-0001 §7 ham provider yanıtını ve anahtarı
-    # yasaklıyor, httpx hatalarının str()'i rutin olarak istek URL'ini içerir.
-    logger.exception("Yakalanmamış hata", extra={"trace_id": current_trace_id()})
+    # ASLA `str(exc)`, `logger.exception` veya `exc_info=True` kullanma:
+    # traceback de exception metnini içerir. httpx hata metinleri rutin
+    # olarak URL/secret taşır; yalnızca güvenli metadata loglanır.
+    logger.error(
+        "Yakalanmamış hata",
+        extra={
+            "trace_id": current_trace_id(),
+            "exception_type": type(exc).__name__,
+        },
+    )
     return problem_response(ErrorCode.INTERNAL_ERROR, _UNEXPECTED_DETAIL)
 
 

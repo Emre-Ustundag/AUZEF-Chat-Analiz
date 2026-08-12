@@ -66,14 +66,21 @@ const upload: Upload = {
 const models: ModelList = {
   models: [
     {
-      id: "anthropic/claude-sonnet-4",
-      label: "Claude Sonnet 4",
+      id: "anthropic/claude-sonnet-4.6",
+      label: "Claude Sonnet 4.6",
       input_cost_per_million: 3,
       output_cost_per_million: 15,
-      context_window: 200_000,
+      context_window: 1_000_000,
+    },
+    {
+      id: "google/gemini-2.5-flash",
+      label: "Gemini 2.5 Flash",
+      input_cost_per_million: 0.3,
+      output_cost_per_million: 2.5,
+      context_window: 1_048_576,
     },
   ],
-  default_model: "anthropic/claude-sonnet-4",
+  default_model: "anthropic/claude-sonnet-4.6",
   default_prompt_version: "faq_analysis/v1",
 };
 
@@ -110,7 +117,7 @@ describe("ConfigureForm", () => {
     expect(screen.getByText("metin")).toBeInTheDocument();
   });
 
-  it("varsayılan olarak metin kolonunu seçer", async () => {
+  it("varsayılan model ve metin kolonunu seçer", async () => {
     const user = userEvent.setup();
     renderForm();
 
@@ -120,6 +127,7 @@ describe("ConfigureForm", () => {
     await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
 
     const [request] = createAnalysis.mock.calls[0];
+    expect(request.model).toBe("anthropic/claude-sonnet-4.6");
     expect(request.text_column).toBe("mesaj");
     expect(request.sheet_name).toBe("Mesajlar");
   });

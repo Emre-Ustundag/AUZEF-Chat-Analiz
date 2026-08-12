@@ -1,4 +1,4 @@
-import type { ModelList, ModelOption } from "@/lib/api/schemas";
+import type { ModelId, ModelList, ModelOption, PromptVersion } from "@/lib/api/schemas";
 
 /**
  * Mock model whitelist'i.
@@ -11,18 +11,18 @@ import type { ModelList, ModelOption } from "@/lib/api/schemas";
  */
 export const MOCK_MODELS: readonly ModelOption[] = [
   {
-    id: "anthropic/claude-sonnet-4",
-    label: "Claude Sonnet 4",
+    id: "anthropic/claude-sonnet-4.6",
+    label: "Claude Sonnet 4.6",
     input_cost_per_million: 3,
     output_cost_per_million: 15,
-    context_window: 200_000,
+    context_window: 1_000_000,
   },
   {
     id: "openai/gpt-4.1-mini",
     label: "GPT-4.1 mini",
     input_cost_per_million: 0.4,
     output_cost_per_million: 1.6,
-    context_window: 128_000,
+    context_window: 1_047_576,
   },
   {
     id: "google/gemini-2.5-flash",
@@ -33,11 +33,11 @@ export const MOCK_MODELS: readonly ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL = "anthropic/claude-sonnet-4";
-export const DEFAULT_PROMPT_VERSION = "faq_analysis/v1";
+export const DEFAULT_MODEL: ModelId = "anthropic/claude-sonnet-4.6";
+export const DEFAULT_PROMPT_VERSION: PromptVersion = "faq_analysis/v1";
 
 /** Backend'de sürümlenmiş prompt'lar; mock tek sürüm tanıyor. */
-export const KNOWN_PROMPT_VERSIONS: readonly string[] = [DEFAULT_PROMPT_VERSION];
+export const KNOWN_PROMPT_VERSIONS: readonly PromptVersion[] = [DEFAULT_PROMPT_VERSION];
 
 export const MOCK_MODEL_LIST: ModelList = {
   models: [...MOCK_MODELS],

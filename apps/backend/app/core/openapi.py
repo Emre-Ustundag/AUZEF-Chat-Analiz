@@ -259,11 +259,11 @@ def build_openapi(app: FastAPI) -> dict[str, Any]:
                         },
                     },
                     "application/json": {
-                        "schema": {"type": "string", "format": "binary"},
+                        "schema": {"$ref": "#/components/schemas/AnalysisReport"},
                         "examples": {
                             "JSON export": {
                                 "summary": "Attachment olarak indirilen JSON raporu",
-                                "value": '{"schema_version":"1.0","...":"..."}',
+                                "value": examples["analyses.result.200"],
                             }
                         },
                     },

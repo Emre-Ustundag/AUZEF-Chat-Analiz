@@ -9,7 +9,7 @@
 ```bash
 git clone https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz.git
 cd AUZEF-Chat-Analiz
-make install    # npm ci + uv sync --dev
+make install    # npm ci + uv sync --locked --dev
 npm run dev
 ```
 
@@ -68,10 +68,10 @@ npm run build
 
 # backend
 cd apps/backend
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-uv run pytest
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy
+uv run --locked pytest
 ```
 
 Test altyapısı Vitest ve React Testing Library (`apps/web`) ile pytest (`apps/backend`) üzerine kuruludur. Davranış değiştiren her PR ilgili testi de getirmelidir; hata düzeltmelerinde hatayı yeniden üretebilen bir test beklenir.

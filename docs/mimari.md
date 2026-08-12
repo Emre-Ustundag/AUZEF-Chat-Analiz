@@ -163,7 +163,7 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 ### Model listesi
 
 - `GET /api/v1/models` — izin verilen modeller, `default_model`, `default_prompt_version` (ADR-0002 #1)
-- Whitelist: `anthropic/claude-sonnet-4`, `openai/gpt-4.1-mini`, `google/gemini-2.5-flash`; varsayılan model `anthropic/claude-sonnet-4`, varsayılan prompt `faq_analysis/v1`
+- Whitelist: `anthropic/claude-sonnet-4.6`, `openai/gpt-4.1-mini`, `google/gemini-2.5-flash`; varsayılan model `anthropic/claude-sonnet-4.6`, varsayılan prompt `faq_analysis/v1`; tüm whitelist üyeleri structured output destekler
 
 ### Analysis
 

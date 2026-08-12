@@ -63,6 +63,13 @@ interface AnalysisRecord {
   cancelledAt: number | null;
 }
 
+interface IdempotencyRecord {
+  fingerprint: string;
+  responseBody: unknown;
+  traceId: string;
+  expiresAt: number;
+}
+
 /**
  * Modül seviyesindeki Map'ler dev sunucusunun ömrü boyunca yaşar. globalThis
  * üzerinde tutuluyorlar çünkü Next dev'de modüller hot reload sırasında
@@ -71,10 +78,70 @@ interface AnalysisRecord {
 const globalStore = globalThis as unknown as {
   __auzefMockUploads?: Map<string, UploadRecord>;
   __auzefMockAnalyses?: Map<string, AnalysisRecord>;
+  __auzefMockIdempotency?: Map<string, IdempotencyRecord>;
 };
 
 const uploads = (globalStore.__auzefMockUploads ??= new Map());
 const analyses = (globalStore.__auzefMockAnalyses ??= new Map());
+const idempotency = (globalStore.__auzefMockIdempotency ??= new Map());
+
+export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type IdempotencyLookup =
+  | { kind: "miss" }
+  | { kind: "conflict" }
+  | { kind: "replay"; responseBody: unknown; traceId: string };
+
+function normalizedPath(path: string): string {
+  const collapsed = path.replace(/\/{2,}/g, "/");
+  return collapsed.length > 1 ? collapsed.replace(/\/$/, "") : collapsed;
+}
+
+function idempotencyStorageKey(method: string, path: string, key: string): string {
+  return JSON.stringify([method.toUpperCase(), normalizedPath(path), key]);
+}
+
+/** Aynı tuple/fingerprint replay, aynı tuple/farklı fingerprint conflict'tir. */
+export function lookupIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+): IdempotencyLookup {
+  const storageKey = idempotencyStorageKey(method, path, key);
+  const stored = idempotency.get(storageKey);
+
+  if (!stored) return { kind: "miss" };
+  if (stored.expiresAt <= Date.now()) {
+    idempotency.delete(storageKey);
+    return { kind: "miss" };
+  }
+  if (stored.fingerprint !== fingerprint) return { kind: "conflict" };
+
+  return {
+    kind: "replay",
+    responseBody: stored.responseBody,
+    traceId: stored.traceId,
+  };
+}
+
+/** İlk 202'nin body ve trace metadata'sını 24 saat saklar. */
+export function rememberIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+  responseBody: unknown,
+): { responseBody: unknown; traceId: string } {
+  const record: IdempotencyRecord = {
+    fingerprint,
+    responseBody,
+    traceId: randomUUID(),
+    expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+  };
+  idempotency.set(idempotencyStorageKey(method, path, key), record);
+  return { responseBody: record.responseBody, traceId: record.traceId };
+}
 
 const UPLOAD_VALIDATING_AFTER_MS = 1_500;
 const UPLOAD_SETTLED_AFTER_MS = 4_000;

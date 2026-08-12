@@ -83,16 +83,16 @@ jobs:
         run: uv sync --locked --dev
 
       - name: Lint
-        run: uv run ruff check .
+        run: uv run --locked ruff check .
 
       - name: Check formatting
-        run: uv run ruff format --check .
+        run: uv run --locked ruff format --check .
 
       - name: Typecheck
-        run: uv run mypy
+        run: uv run --locked mypy
 
       - name: Test
-        run: uv run pytest
+        run: uv run --locked pytest
 
   contract:
     name: Contract drift (openapi + fixtures + cross-validation)
@@ -130,8 +130,8 @@ jobs:
       - name: Fail if generated artifacts are stale
         working-directory: apps/backend
         run: |
-          uv run python scripts/export_openapi.py --check
-          uv run python scripts/export_fixtures.py --check
+          uv run --locked python scripts/export_openapi.py --check
+          uv run --locked python scripts/export_fixtures.py --check
 
       - name: Second guard — no uncommitted regeneration
         run: git diff --exit-code -- docs/api/openapi.json tests/fixtures/contract

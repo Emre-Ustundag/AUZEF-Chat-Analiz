@@ -14,7 +14,9 @@ from app.schemas.analysis import (
     AnalysisRequest,
     AnalysisStatus,
     ExportFormat,
+    ModelId,
     ModelList,
+    PromptVersion,
 )
 from app.schemas.common import ProblemDetails
 from app.schemas.report import AnalysisReport
@@ -68,6 +70,8 @@ def test_documents_exactly_the_expected_endpoints(openapi: Any) -> None:
         ("UploadStatus", {s.value for s in UploadStatus}),
         ("AnalysisStatus", {s.value for s in AnalysisStatus}),
         ("ExportFormat", {f.value for f in ExportFormat}),
+        ("ModelId", {model.value for model in ModelId}),
+        ("PromptVersion", {prompt.value for prompt in PromptVersion}),
     ],
 )
 def test_enum_members(openapi: Any, schema_name: str, members: set[str]) -> None:
@@ -188,6 +192,19 @@ def test_openrouter_key_is_not_also_a_plain_parameter(openapi: Any) -> None:
 def test_export_documents_content_disposition(openapi: Any) -> None:
     responses = openapi["paths"]["/api/v1/analyses/{analysis_id}/export"]["get"]["responses"]
     assert "Content-Disposition" in responses["200"]["headers"]
+
+
+def test_export_media_schemas_and_json_example_are_exact(openapi: Any) -> None:
+    response = openapi["paths"]["/api/v1/analyses/{analysis_id}/export"]["get"]["responses"]["200"]
+    content = response["content"]
+    xlsx = content["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+    assert xlsx["schema"] == {"type": "string", "format": "binary"}
+
+    json_export = content["application/json"]
+    assert json_export["schema"] == {"$ref": "#/components/schemas/AnalysisReport"}
+    examples = json_export["examples"]
+    assert set(examples) == {"JSON export"}
+    AnalysisReport.model_validate(examples["JSON export"]["value"])
 
 
 def test_trace_id_header_documented_everywhere(openapi: Any) -> None:

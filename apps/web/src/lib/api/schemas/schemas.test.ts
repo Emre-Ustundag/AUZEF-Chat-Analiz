@@ -104,8 +104,8 @@ describe("analysisRequestSchema", () => {
     upload_id: ID,
     sheet_name: "Sayfa1",
     text_column: "mesaj",
-    model: "anthropic/claude-sonnet-4",
-    prompt_version: "v1",
+    model: "anthropic/claude-sonnet-4.6",
+    prompt_version: "faq_analysis/v1",
     top_n: 20,
     max_cost_usd: 5,
   };
@@ -124,6 +124,15 @@ describe("analysisRequestSchema", () => {
 
   it("boş kolon adını reddeder", () => {
     expect(analysisRequestSchema.safeParse({ ...valid, text_column: "" }).success).toBe(false);
+  });
+
+  it("whitelist dışındaki model ve prompt sürümünü reddeder", () => {
+    expect(analysisRequestSchema.safeParse({ ...valid, model: "unknown/model" }).success).toBe(
+      false,
+    );
+    expect(
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v2" }).success,
+    ).toBe(false);
   });
 
   it("OpenRouter anahtarını gövdede taşımaz", () => {
@@ -213,8 +222,8 @@ describe("analysisReportSchema", () => {
     ],
     executive_summary: "Mesajların dörtte biri sınav takvimiyle ilgili.",
     warnings: [],
-    model: "anthropic/claude-sonnet-4",
-    prompt_version: "v1",
+    model: "anthropic/claude-sonnet-4.6",
+    prompt_version: "faq_analysis/v1",
     prompt_hash: "abc123",
     token_usage: {
       prompt_tokens: 100_000,
@@ -254,6 +263,15 @@ describe("analysisReportSchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("yalnızca dondurulmuş model ve prompt sürümünü kabul eder", () => {
+    expect(analysisReportSchema.safeParse({ ...report, model: "unknown/model" }).success).toBe(
+      false,
+    );
+    expect(
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v2" }).success,
+    ).toBe(false);
   });
 });
 

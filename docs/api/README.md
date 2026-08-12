@@ -11,7 +11,7 @@ türetildiği için Pydantic ↔ OpenAPI uyumu tanım gereği sağlanır.
 ```bash
 make generate            # openapi.json + tests/fixtures/contract/
 # veya
-cd apps/backend && uv run python scripts/export_openapi.py
+cd apps/backend && uv run --locked python scripts/export_openapi.py
 ```
 
 ## Drift kontrolü
