@@ -299,6 +299,25 @@ zaten kanıtlanmış olur.
 
 ### Faz 3 — LLM pipeline
 
+**ÖNCE DÜZELTİLECEK — model whitelist'i geçersiz kimlikler içeriyor.**
+
+`apps/backend/app/domain/model_catalog.py` ve mock'taki liste şu kimlikleri
+taşıyor: `anthropic/claude-sonnet-4`, `openai/gpt-4.1-mini`,
+`google/gemini-2.5-flash`. **Bunlar doğrulanmadan yazılmış placeholder'lardır.**
+`anthropic/claude-sonnet-4` geçerli bir Claude model kimliği değil; güncel
+Claude kimlikleri `claude-opus-5`, `claude-sonnet-5`, `claude-haiku-4-5`
+biçiminde (OpenRouter üzerinden `anthropic/` öneki ile). Faz 1 ve 2'de bu
+kimlikler yalnızca birer dize olarak taşındığı için sorun çıkmadı; Faz 3 onları
+GERÇEKTEN çağıracak ve 404 alacak.
+
+Yapılacak: OpenRouter'ın canlı model listesinden (`GET /api/v1/models`)
+kimlikleri **doğrula**, tahmin etme. Whitelist'e yalnızca (a) gerçekten var
+olan ve (b) structured output / JSON Schema desteği doğrulanmış modeller
+girsin. Mock'taki liste de aynı değerlere güncellensin — ikisi ayrışırsa
+arayüz mock'ta çalışıp gerçekte patlar.
+
+
+
 - PII redaksiyonu (telefon, e-posta, T.C./öğrenci no) — LLM'den **önce**
 - Normalize + exact hash dedupe, gerçek frekanslar korunur
 - Token bütçesine göre chunk
