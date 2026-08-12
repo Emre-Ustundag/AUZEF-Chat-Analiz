@@ -29,6 +29,20 @@ os.environ.setdefault("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/2")
 os.environ.setdefault("S3_ENDPOINT_URL", "http://127.0.0.1:9000")
 os.environ.setdefault("S3_BUCKET", "auzef-test")
 
+# ---------------------------------------------------------------------------
+# GÜVENLİK AĞI — hiçbir test GERÇEK OpenRouter'a gitmemeli.
+#
+# Testlerin tamamı `httpx.MockTransport` kullanıyor, ama bir test bunu
+# yapmayı unutursa istek gerçek sağlayıcıya gider: elimizde anahtar yokken
+# bu bir 401 üretir (gürültü), anahtar geldiğinde ise SESSİZCE PARA HARCAR
+# ve testleri sağlayıcının o günkü davranışına bağlar.
+#
+# Varsayılan taban adres bu yüzden discard portuna (TCP/9) çevriliyor:
+# transport'u unutan bir test anında bağlantı hatası alır ve hatayı
+# geliştirici görür. `docker compose` bu değişkeni ayrıca set edebilir.
+# ---------------------------------------------------------------------------
+os.environ.setdefault("OPENROUTER_BASE_URL", "http://127.0.0.1:9/api/v1")
+
 
 def _port_open(host: str, port: int, timeout: float = 0.5) -> bool:
     try:

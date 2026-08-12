@@ -14,6 +14,7 @@ from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 from typing import Any, cast
 
+import httpx
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -22,10 +23,14 @@ from sqlalchemy import text
 from app.core.config import get_settings
 from app.core.db import dispose_engine, session_scope
 from app.main import create_app
+from app.pipeline.llm_classifier import OpenRouterClassifier
+from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import AnalysisJobRead
 from app.schemas.report import AnalysisReport
 from app.services import secret_store, storage
+from app.services.openrouter import OpenRouterClient
 from app.workers import tasks
+from tests.fake_openrouter import FakeOpenRouter
 
 pytestmark = pytest.mark.integration
 
@@ -45,6 +50,44 @@ def _no_broker(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     monkeypatch.setattr(tasks.profile_upload, "delay", lambda *a, **k: None)
     monkeypatch.setattr(tasks.run_analysis_task, "delay", lambda *a, **k: None)
     yield
+
+
+@pytest.fixture(autouse=True)
+def provider(monkeypatch: pytest.MonkeyPatch) -> FakeOpenRouter:
+    """`build_classifier`'ı sahte transport'a bağlar — GERÇEK AĞ YOK.
+
+    Yamanın yeri bilinçli: `build_classifier` Faz 2'den beri TEK değişim
+    noktası. Böylece test, `run_analysis`'in gerçek kodunu (anahtar okuma,
+    maliyet tavanı, aşama ilerletme, hata çevirimi) baştan sona koşturur;
+    yalnızca soketin öbür ucu sahte.
+    """
+    return install_fake_provider(monkeypatch)
+
+
+def install_fake_provider(monkeypatch: pytest.MonkeyPatch, **kwargs: Any) -> FakeOpenRouter:
+    fake = FakeOpenRouter(**kwargs)
+    real_build = tasks.build_classifier
+
+    def fake_build(**build_kwargs: Any) -> Any:
+        settings = build_kwargs["settings"]
+        client = OpenRouterClient(
+            api_key=build_kwargs["api_key"],
+            model=build_kwargs["model"],
+            settings=settings,
+            transport=httpx.MockTransport(fake),
+            sleeper=lambda _s: None,
+        )
+        return OpenRouterClassifier(
+            client=client,
+            prompt=get_prompt(build_kwargs["prompt_version"]),
+            model=build_kwargs["model"],
+            settings=settings,
+            on_progress=build_kwargs.get("on_progress"),
+        )
+
+    assert real_build is not fake_build
+    monkeypatch.setattr(tasks, "build_classifier", fake_build)
+    return fake
 
 
 @pytest_asyncio.fixture
@@ -150,9 +193,16 @@ async def test_analiz_uctan_uca_calisir(client: AsyncClient) -> None:
     for question in parsed.top_questions:
         assert question.percentage == round(question.count / analyzed * 100, 1)
 
-    # Faz 2: gerçek token yok.
-    assert parsed.token_usage.total_tokens == 0
-    assert parsed.estimated_cost_usd == 0.0
+    # FAZ 3: token tüketimi artık GERÇEK — sağlayıcının `usage` bloğundan
+    # geliyor, modelin metninden değil (ADR §4).
+    assert parsed.token_usage.total_tokens > 0
+    assert parsed.token_usage.total_tokens == (
+        parsed.token_usage.prompt_tokens + parsed.token_usage.completion_tokens
+    )
+    assert parsed.estimated_cost_usd > 0.0
+    # Model gerçekten çağrıldı ve prompt sürümü rapora işlendi.
+    assert parsed.prompt_version == "faq_analysis/v1"
+    assert parsed.prompt_hash.startswith("sha256:")
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 

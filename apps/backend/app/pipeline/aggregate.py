@@ -104,8 +104,17 @@ def aggregate(
     top_n: int,
     settings: Settings,
     extra_warnings: list[AnalysisWarning] | None = None,
+    token_usage: TokenUsage | None = None,
+    estimated_cost_usd: float = 0.0,
 ) -> AnalysisReport:
-    """Gerçek frekanslardan raporu üretir."""
+    """Gerçek frekanslardan raporu üretir.
+
+    `token_usage` / `estimated_cost_usd` GEÇİŞ PARAMETRELERİDİR (Faz 3).
+    Toplama matematiğine GİRMEZLER: hiçbir adet, oran veya Top N kararı
+    bunlara bakmaz. Sağlayıcının faturalama ölçümünü rapora taşımanın tek
+    yolu bu — `extra_warnings` ile aynı kalıp. Varsayılanları 0 olduğu için
+    Faz 2'nin çağrıları (ve LLM'siz testler) davranış değiştirmeden çalışır.
+    """
     groups = {group.record_id: group for group in preprocess_result.groups}
     _validate_assignment(classification, groups)
 
@@ -212,11 +221,12 @@ def aggregate(
         model=model,
         prompt_version=prompt_version,
         prompt_hash=_prompt_hash(classifier_id, prompt_version),
-        # Faz 2'de OpenRouter'a hiçbir çağrı yapılmıyor: token tüketimi
-        # GERÇEKTEN sıfır. Uydurma bir tahmin yazmak, maliyet tavanı
-        # mantığını Faz 3'te yanlış temele oturturdu.
-        token_usage=TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
-        estimated_cost_usd=0.0,
+        # Token sayacı SAĞLAYICININ `usage` bloğundan gelir, modelin
+        # metninden değil. Çağıran vermezse 0 kalır — LLM'siz bir koşuda
+        # (vekil sınıflandırıcı) tüketim GERÇEKTEN sıfırdır ve uydurma bir
+        # tahmin yazmak raporu yalancı yapardı.
+        token_usage=token_usage or TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        estimated_cost_usd=estimated_cost_usd,
     )
 
 

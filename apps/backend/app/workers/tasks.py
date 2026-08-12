@@ -30,16 +30,24 @@ from app.core.config import Settings, get_settings
 from app.core.db import session_scope
 from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
+from app.domain.model_catalog import MODEL_WHITELIST
 from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.aggregate import AggregationError, aggregate
-from app.pipeline.classifier import DeterministicClassifier, RecordClassifier
+from app.pipeline.classifier import RecordClassifier
 from app.pipeline.cost import estimate_cost
+from app.pipeline.llm_classifier import (
+    ClassificationCancelledError,
+    OpenRouterClassifier,
+    ProgressCallback,
+)
 from app.pipeline.preprocess import Preprocessor, PreprocessResult
+from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
 from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
-from app.schemas.report import AnalysisWarning
+from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
 from app.services import secret_store, storage
+from app.services.openrouter import OpenRouterClient, OpenRouterError
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
@@ -175,14 +183,104 @@ class _AnalysisCancelledError(Exception):
 PREPROCESS_BATCH_ROWS = 2_000
 
 
-def build_classifier() -> RecordClassifier:
-    """Faz 2'nin sınıflandırıcısı.
+def build_classifier(
+    *,
+    api_key: str,
+    model: str,
+    prompt_version: str,
+    settings: Settings,
+    on_progress: ProgressCallback | None = None,
+) -> RecordClassifier:
+    """Sınıflandırıcıyı kuran TEK değişim noktası (Faz 2 → Faz 3).
 
-    Faz 3'te BURASI OpenRouter uygulamasını döndürecek; `run_analysis`'in
-    geri kalanı ve `pipeline/aggregate.py` DEĞİŞMEYECEK. Değişim noktasının
-    tek bir fonksiyon olması bilinçlidir.
+    Faz 2'de `DeterministicClassifier` dönüyordu; Faz 3'te OpenRouter
+    uygulaması dönüyor. `run_analysis`'in geri kalanı ve
+    `pipeline/aggregate.py` DEĞİŞMEDİ — Faz 2'de ampirik olarak doğrulanan
+    toplama matematiği aynen çalışıyor.
+
+    `DeterministicClassifier` SİLİNMEDİ: testlerin ve toplama matematiğinin
+    LLM'siz koşabilmesi hâlâ değerli.
     """
-    return DeterministicClassifier()
+    client = OpenRouterClient(api_key=api_key, model=model, settings=settings)
+    return OpenRouterClassifier(
+        client=client,
+        prompt=get_prompt(prompt_version),
+        model=model,
+        settings=settings,
+        on_progress=on_progress,
+    )
+
+
+def _close_classifier(classifier: RecordClassifier) -> None:
+    """Sınıflandırıcının HTTP bağlantılarını kapatır (varsa).
+
+    Protokolde `close` YOK — `DeterministicClassifier`'ın kapatacak bir şeyi
+    yok ve protokole zorunlu bir metot eklemek Faz 2'de doğrulanmış sınıfı
+    değiştirmeyi gerektirirdi.
+    """
+    closer = getattr(classifier, "close", None)
+    if callable(closer):
+        closer()
+
+
+def _actual_cost(usage: TokenUsage, model_id: str) -> float:
+    """GERÇEKTEN harcanan tahmini tutar — sağlayıcının token sayacından.
+
+    `pipeline/cost.py`'deki `estimate_cost` ile karıştırılmamalı: o, çağrılar
+    BAŞLAMADAN ÖNCE tavan kontrolü için bir tahmin üretir. Bu ise iş bitince,
+    sağlayıcının bildirdiği gerçek token sayısından hesaplanır. İkisini aynı
+    alana yazmak raporu yalancı yapardı.
+    """
+    option = next((m for m in MODEL_WHITELIST if m.id == model_id), None)
+    if option is None:
+        return 0.0
+    cost = (
+        usage.prompt_tokens / 1_000_000 * option.input_cost_per_million
+        + usage.completion_tokens / 1_000_000 * option.output_cost_per_million
+    )
+    return round(cost, 6)
+
+
+def _chunk_progress_callback(
+    analysis_id: uuid.UUID,
+    loop: asyncio.AbstractEventLoop,
+) -> ProgressCallback:
+    """Map aşamasında chunk başına ilerleme yazan ve iptali kontrol eden geri çağrı.
+
+    NEDEN `run_coroutine_threadsafe`: sınıflandırıcı SENKRON ve
+    `asyncio.to_thread` içinde koşuyor (protokolü async yapmak Faz 2'de
+    doğrulanmış `DeterministicClassifier`'ı da değiştirmeyi gerektirirdi).
+    İlerleme yazımı ise async DB oturumu istiyor. Worker thread'inden ana
+    event loop'a güvenli geçişin yolu bu.
+
+    Bu olmadan `analyzing` aşaması dakikalarca donmuş tek bir blok olurdu:
+    ne ADR §2'nin "anlamlı ilerleme" kuralı işlerdi, ne de iptal aşama
+    ortasında fark edilirdi.
+    """
+    start = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
+    end = STAGE_PROGRESS[AnalysisStatus.AGGREGATING]
+
+    def callback(done: int, total: int) -> bool:
+        fraction = done / total if total > 0 else 1.0
+        progress = round(start + (end - start) * min(1.0, fraction), 1)
+
+        async def write() -> bool:
+            async with session_scope() as session:
+                return await _write_progress(session, analysis_id, progress)
+
+        future = asyncio.run_coroutine_threadsafe(write(), loop)
+        try:
+            return future.result()
+        except Exception:
+            # İlerleme yazamamak işi öldürmemeli; iptal kontrolü bir sonraki
+            # aşama sınırında yine yapılacak.
+            logger.exception(
+                "analysis_progress_write_failed",
+                extra={"analysis_id": str(analysis_id)},
+            )
+            return True
+
+    return callback
 
 
 async def _guarded_update(session: AsyncSession, statement: Executable) -> int:
@@ -236,13 +334,24 @@ async def _write_progress(
     return affected == 1
 
 
-async def _fail(analysis_id: uuid.UUID, code: ErrorCode, detail: str) -> str:
+async def _fail(
+    analysis_id: uuid.UUID,
+    code: ErrorCode,
+    detail: str,
+    *,
+    retry_after: float | None = None,
+) -> str:
     """İşi sözleşmeye uygun bir hata gövdesiyle sonlandırır.
 
     İptal edilmiş bir işi `failed` YAPMAZ: kullanıcı iptal ettiyse gördüğü
     şey "iptal edildi" olmalı, "başarısız" değil.
+
+    `retry_after` yalnızca `PROVIDER_RATE_LIMITED` için doludur (ADR §7).
+    `ProblemDetails` serileştirmesi `None` olduğunda alanı gövdeden tamamen
+    çıkarıyor — frontend bu alanı `.optional()` ilan ediyor, `.nullable()`
+    değil, yani `null` göndermek doğrulamayı patlatırdı.
     """
-    problem = build_problem(code, detail).to_payload()
+    problem = build_problem(code, detail, retry_after=retry_after).to_payload()
     async with session_scope() as session:
         affected = await _guarded_update(
             session,
@@ -462,7 +571,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         },
     )
 
-    # ---- maliyet tavanı (ADR §9, plan §4 "iskelet") ----
+    # ---- maliyet tavanı: LLM ÇAĞRILARI BAŞLAMADAN (ADR §9) ----
     decision = estimate_cost(preprocess_result.groups, model, max_cost_usd)
     logger.info(
         "analysis_cost_estimated",
@@ -473,18 +582,37 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         },
     )
     if decision.exceeds:
-        # FAZ 2: OpenRouter'a çağrı YAPILMADIĞI için durdurulacak bir maliyet
-        # yok; aşım yalnızca uyarı olur. Faz 3'te bu dal işi `failed` yapacak
-        # (ADR §9: "LLM çağrısı başlamadan iş güvenli biçimde durur").
-        warnings.append(
-            AnalysisWarning(
-                code="COST_CEILING_EXCEEDED",
-                message=(
-                    f"Tahmini maliyet ({decision.estimated_cost_usd} USD) "
-                    f"{decision.max_cost_usd} USD sınırının üstünde. Faz 2'de gerçek "
-                    "model çağrısı yapılmadığı için analiz durdurulmadı."
-                ),
-            )
+        # ADR §9: "Token ve tahmini maliyet üst sınırı aşılırsa LLM çağrısı
+        # başlamadan iş güvenli biçimde durur." Faz 2'de burada yalnızca bir
+        # uyarı yazılıyordu çünkü ortada harcanacak para yoktu; Faz 3'te
+        # gerçek çağrı var, dolayısıyla iş DURUYOR.
+        #
+        # BURANIN YERİ ÖNEMLİ: `_advance_stage(ANALYZING)`'den ve
+        # `build_classifier()`'dan ÖNCE. Tek bir OpenRouter çağrısı bile
+        # yapılmadan dönülüyor — "başlamadan durur" bunu gerektiriyor.
+        #
+        # HATA KODU SEÇİMİ — açık bir sapma: ADR §7'nin on bir kodu arasında
+        # maliyet tavanı için ayrılmış bir kod YOK ve frontend'in `ErrorCode`
+        # enum'u birebir eşleşmek zorunda olduğu için yenisi eklenemez.
+        # `JOB_CONFLICT` (409) seçildi: iş, istendiği hâliyle (bu model + bu
+        # veri + bu `max_cost_usd`) yürütülemez durumda — kullanıcının
+        # değiştirebileceği bir çakışma. `INTERNAL_ERROR` yanlış olurdu
+        # (sistemde hata yok, sınır çalıştı) ve `PROVIDER_*` kodları da
+        # yanlış olurdu (sağlayıcıya hiç gidilmedi).
+        logger.info(
+            "analysis_cost_ceiling_exceeded",
+            extra={
+                "analysis_id": str(analysis_id),
+                "estimated_cost_usd": decision.estimated_cost_usd,
+                "max_cost_usd": decision.max_cost_usd,
+            },
+        )
+        return await _fail(
+            analysis_id,
+            "JOB_CONFLICT",
+            f"Tahmini maliyet ({decision.estimated_cost_usd:.4f} USD) belirlediğiniz "
+            f"{decision.max_cost_usd} USD sınırının üzerinde. Analiz başlatılmadı. "
+            "Maliyet sınırını yükseltebilir veya daha ucuz bir model seçebilirsiniz.",
         )
 
     # -------------------------------------------------------- analyzing
@@ -492,12 +620,74 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         if not await _advance_stage(session, analysis_id, AnalysisStatus.ANALYZING):
             return AnalysisStatus.CANCELLED.value
 
-    classifier = build_classifier()
+    # ---- anahtarı şifreli Redis kaydından oku (ADR §10 risk 7) ----
+    # Task payload'ında düz anahtar YOK; ihtiyaç duyulan tek an burası.
+    api_key = await asyncio.to_thread(secret_store.load_key, analysis_id, settings)
+    if not api_key:
+        # TTL dolmuş (kuyrukta 50 dk beklemiş iş) veya kayıt silinmiş.
+        # Bu GERÇEK bir yol ve traceback'e dönüşmemeli.
+        logger.warning("analysis_key_unavailable", extra={"analysis_id": str(analysis_id)})
+        return await _fail(
+            analysis_id,
+            "PROVIDER_AUTH_FAILED",
+            "OpenRouter anahtarının süresi doldu. Analizi yeniden başlatın.",
+        )
+
+    try:
+        classifier = build_classifier(
+            api_key=api_key,
+            model=model,
+            prompt_version=prompt_version,
+            settings=settings,
+            on_progress=_chunk_progress_callback(analysis_id, asyncio.get_running_loop()),
+        )
+    except UnknownPromptVersionError:
+        logger.warning(
+            "analysis_unknown_prompt_version",
+            extra={"analysis_id": str(analysis_id), "prompt_version": prompt_version},
+        )
+        return await _fail(
+            analysis_id,
+            "SHEET_OR_COLUMN_NOT_FOUND",
+            "Seçilen prompt sürümü tanımlı değil.",
+        )
+    finally:
+        # Yerel değişken referansını hemen bırakıyoruz: anahtar yalnızca
+        # istemcinin header'ında yaşasın, bu fonksiyonun çerçevesinde
+        # gereğinden uzun durmasın (traceback'ler yerel değişkenleri taşır).
+        del api_key
+
     try:
         classification = await asyncio.to_thread(classifier.classify, preprocess_result.groups)
+    except ClassificationCancelledError:
+        return AnalysisStatus.CANCELLED.value
+    except OpenRouterError as exc:
+        # Sağlayıcı hataları ZATEN sözleşmedeki koda çevrilmiş durumda;
+        # `exc.detail` ham yanıt veya anahtar taşımıyor (services/openrouter.py).
+        logger.warning(
+            "analysis_provider_failed",
+            extra={"analysis_id": str(analysis_id), "code": exc.code},
+        )
+        return await _fail(analysis_id, exc.code, exc.detail, retry_after=exc.retry_after)
     except Exception:
         logger.exception("analysis_classify_failed", extra={"analysis_id": str(analysis_id)})
         return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sınıflandırma tamamlanamadı.")
+    finally:
+        await asyncio.to_thread(_close_classifier, classifier)
+
+    # Gerçek token tüketimi sağlayıcının `usage` bloğundan geliyor; modelin
+    # metninden DEĞİL (ADR §4). Faz 2'de burada 0 raporlanıyordu.
+    usage = getattr(classifier, "usage", None)
+    token_usage = (
+        TokenUsage(
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            total_tokens=usage.total_tokens,
+        )
+        if usage is not None
+        else TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+    )
+    spent_usd = _actual_cost(token_usage, model)
 
     # ------------------------------------------------------- aggregating
     async with session_scope() as session:
@@ -518,6 +708,8 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             top_n=top_n,
             settings=settings,
             extra_warnings=warnings,
+            token_usage=token_usage,
+            estimated_cost_usd=spent_usd,
         )
     except AggregationError:
         # Değişmez ihlali: sınıflandırıcı aynı kaydı iki kez eşlemiş olabilir.
