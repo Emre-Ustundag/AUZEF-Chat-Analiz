@@ -45,6 +45,7 @@ ErrorCode = Literal[
     "PROVIDER_TIMEOUT",
     "JOB_NOT_FOUND",
     "JOB_CONFLICT",
+    "ANALYSIS_COST_LIMIT_EXCEEDED",
     "INTERNAL_ERROR",
 ]
 
@@ -60,6 +61,15 @@ ERROR_STATUS: dict[ErrorCode, int] = {
     "PROVIDER_TIMEOUT": 504,
     "JOB_NOT_FOUND": 404,
     "JOB_CONFLICT": 409,
+    # Faz 3 EKLEMESİ (ADR §7'nin listesine 12. kod). Gerekçe: ADR §9 maliyet
+    # tavanı aşımında işin durmasını şart koşuyor ama bunun için bir kod
+    # tanımlamıyor. Mevcut on bir koddan hiçbiri uymuyordu ve `JOB_CONFLICT`
+    # kullanmak kullanıcıya "zaten devam eden bir analiz var" dedirtiyordu —
+    # durumuyla ilgisi olmayan, YANILTICI bir mesaj. Frontend kullanıcı
+    # metnini KOD BAŞINA tuttuğu ve backend'in `detail` alanını bilinçli
+    # olarak göstermediği için (bkz. progress-screen testi), ayrı bir anlamın
+    # ayrı bir kodu olmak zorunda.
+    "ANALYSIS_COST_LIMIT_EXCEEDED": 409,
     "INTERNAL_ERROR": 500,
 }
 
@@ -76,6 +86,7 @@ ERROR_TITLES: dict[ErrorCode, str] = {
     "PROVIDER_TIMEOUT": "Sağlayıcı zaman aşımı",
     "JOB_NOT_FOUND": "İşlem bulunamadı",
     "JOB_CONFLICT": "İşlem çakışması",
+    "ANALYSIS_COST_LIMIT_EXCEEDED": "Maliyet sınırı aşıldı",
     "INTERNAL_ERROR": "Beklenmeyen hata",
 }
 

@@ -463,3 +463,19 @@ def test_identifier_model_ve_prompt_hashini_tasir(settings: Settings) -> None:
     identifier = _classifier(settings, provider).identifier
     assert identifier.startswith("openrouter/google/gemini-2.5-flash/")
     assert identifier.endswith(V1.text_hash[:12])
+
+
+def test_close_alttaki_http_havuzunu_kapatir(settings: Settings) -> None:
+    """`workers/tasks.py` her analizden sonra bunu çağırıyor.
+
+    `_close_classifier` `getattr(classifier, "close", None)` ile çalışıyor:
+    metot olmasaydı SESSİZCE hiçbir şey yapmazdı ve uzun ömürlü Celery
+    worker'ında her analiz bir httpx bağlantı havuzu sızdırırdı. Duck
+    typing'in gizlediği hata tam olarak bu — bu yüzden teste bağlanıyor.
+    """
+    provider = _Provider([])
+    classifier = _classifier(settings, provider)
+
+    assert callable(getattr(classifier, "close", None))
+    classifier.close()
+    assert classifier._client._client.is_closed

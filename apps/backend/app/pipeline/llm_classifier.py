@@ -223,6 +223,15 @@ class OpenRouterClassifier:
         """
         return self._usage
 
+    def close(self) -> None:
+        """Alttaki HTTP bağlantı havuzunu kapatır.
+
+        `workers/tasks.py` bunu her analizden sonra çağırıyor. Olmadan
+        UZUN ÖMÜRLÜ Celery worker'ında her analiz bir httpx bağlantı havuzu
+        sızdırırdı — tek bir koşuda görünmez, günler içinde worker'ı yer.
+        """
+        self._client.close()
+
     @property
     def repair_attempts(self) -> int:
         """Toplam onarım denemesi — sürekli onarım gerektiren prompt pahalıdır."""

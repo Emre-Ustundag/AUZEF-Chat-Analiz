@@ -439,7 +439,7 @@ async def test_maliyet_tavani_asiminda_is_failed_olur_ve_hic_cagri_yapilmaz(
     job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
     AnalysisJobRead.model_validate(job)
     assert job["status"] == "failed"
-    assert job["error"]["code"] == "JOB_CONFLICT"
+    assert job["error"]["code"] == "ANALYSIS_COST_LIMIT_EXCEEDED"
     assert job["error"]["status"] == 409
     # Kullanıcı ne yapacağını bilmeli: sayılar mesajda geçmeli.
     assert "USD" in job["error"]["detail"]

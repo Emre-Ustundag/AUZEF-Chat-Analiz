@@ -591,14 +591,13 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         # `build_classifier()`'dan ÖNCE. Tek bir OpenRouter çağrısı bile
         # yapılmadan dönülüyor — "başlamadan durur" bunu gerektiriyor.
         #
-        # HATA KODU SEÇİMİ — açık bir sapma: ADR §7'nin on bir kodu arasında
-        # maliyet tavanı için ayrılmış bir kod YOK ve frontend'in `ErrorCode`
-        # enum'u birebir eşleşmek zorunda olduğu için yenisi eklenemez.
-        # `JOB_CONFLICT` (409) seçildi: iş, istendiği hâliyle (bu model + bu
-        # veri + bu `max_cost_usd`) yürütülemez durumda — kullanıcının
-        # değiştirebileceği bir çakışma. `INTERNAL_ERROR` yanlış olurdu
-        # (sistemde hata yok, sınır çalıştı) ve `PROVIDER_*` kodları da
-        # yanlış olurdu (sağlayıcıya hiç gidilmedi).
+        # HATA KODU — SÖZLEŞME EKLEMESİ (bkz. core/errors.py). ADR §7'nin on
+        # bir kodunda maliyet tavanı için ayrılmış bir kod yoktu. Önce
+        # `JOB_CONFLICT` denendi ve YANLIŞ çıktı: frontend kullanıcı metnini
+        # KOD BAŞINA tutuyor ve backend'in `detail` alanını bilinçli olarak
+        # göstermiyor (progress-screen'de bunu sabitleyen bir test var), yani
+        # kullanıcı maliyet sınırına çarptığında "Bu işlem için zaten devam
+        # eden bir analiz var" görürdü. Ayrı anlam → ayrı kod.
         logger.info(
             "analysis_cost_ceiling_exceeded",
             extra={
@@ -609,7 +608,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         )
         return await _fail(
             analysis_id,
-            "JOB_CONFLICT",
+            "ANALYSIS_COST_LIMIT_EXCEEDED",
             f"Tahmini maliyet ({decision.estimated_cost_usd:.4f} USD) belirlediğiniz "
             f"{decision.max_cost_usd} USD sınırının üzerinde. Analiz başlatılmadı. "
             "Maliyet sınırını yükseltebilir veya daha ucuz bir model seçebilirsiniz.",
@@ -651,10 +650,24 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen prompt sürümü tanımlı değil.",
         )
+    except Exception:
+        # Sınıflandırıcı KURULAMADI. Buradan bir istisnanın kaçmasına izin
+        # verilemez: `run_analysis`'te yalnızca `finally` var, dolayısıyla
+        # istisna Celery'ye kadar gider ve DB satırı sonsuza kadar
+        # `analyzing` durumunda kalırdı — kullanıcı ilerlemeyen bir çubuğu
+        # poll etmeye devam ederdi. Bu fonksiyonun sözleşmesi "istisna
+        # FIRLATMAZ".
+        logger.exception(
+            "analysis_classifier_build_failed",
+            extra={"analysis_id": str(analysis_id)},
+        )
+        return await _fail(analysis_id, "INTERNAL_ERROR", "Analiz başlatılamadı.")
     finally:
-        # Yerel değişken referansını hemen bırakıyoruz: anahtar yalnızca
-        # istemcinin header'ında yaşasın, bu fonksiyonun çerçevesinde
-        # gereğinden uzun durmasın (traceback'ler yerel değişkenleri taşır).
+        # Bu çerçevedeki referansı bırakıyoruz. SINIRLI BİR ÖNLEM: anahtar
+        # istemcinin `Authorization` başlığında yaşamaya devam eder, yani
+        # bu satır anahtarı bellekten SİLMEZ. Yaptığı tek şey, bu
+        # fonksiyondan kaynaklanan bir traceback'in yerel değişkenler
+        # arasında anahtarı taşımasını engellemek.
         del api_key
 
     try:

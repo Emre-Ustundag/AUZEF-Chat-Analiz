@@ -24,6 +24,7 @@ export const errorCodeSchema = z.enum([
   "PROVIDER_TIMEOUT",
   "JOB_NOT_FOUND",
   "JOB_CONFLICT",
+  "ANALYSIS_COST_LIMIT_EXCEEDED",
   "INTERNAL_ERROR",
 ]);
 
@@ -78,6 +79,8 @@ export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
   PROVIDER_TIMEOUT: "Dil modeli zaman aşımına uğradı. Analizi tekrar başlatmayı deneyin.",
   JOB_NOT_FOUND: "İşlem bulunamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.",
   JOB_CONFLICT: "Bu işlem için zaten devam eden bir analiz var.",
+  ANALYSIS_COST_LIMIT_EXCEEDED:
+    "Tahmini analiz maliyeti belirlediğiniz sınırın üzerinde olduğu için analiz başlatılmadı. Maliyet sınırını yükseltin ya da daha ucuz bir model seçin.",
   INTERNAL_ERROR: "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
 };
 
