@@ -34,9 +34,7 @@
       "count": 8,
       "percentage": 20.0,
       "confidence": 1.0,
-      "redacted_examples": [
-        "harç ödemesini nasıl yaparım banka şubesinden mi"
-      ]
+      "redacted_examples": ["harç ödemesini nasıl yaparım banka şubesinden mi"]
     },
     {
       "id": "q3",
@@ -44,9 +42,7 @@
       "count": 8,
       "percentage": 20.0,
       "confidence": 1.0,
-      "redacted_examples": [
-        "kayıt yenileme işlemi için son tarih ne zaman"
-      ]
+      "redacted_examples": ["kayıt yenileme işlemi için son tarih ne zaman"]
     },
     {
       "id": "q4",
@@ -54,9 +50,7 @@
       "count": 8,
       "percentage": 20.0,
       "confidence": 1.0,
-      "redacted_examples": [
-        "ders materyallerine nereden ulaşabilirim linkler çalışmıyor"
-      ]
+      "redacted_examples": ["ders materyallerine nereden ulaşabilirim linkler çalışmıyor"]
     }
   ],
   "themes": [
@@ -65,36 +59,28 @@
       "name": "Sınav",
       "count": 16,
       "percentage": 40.0,
-      "related_question_ids": [
-        "q2"
-      ]
+      "related_question_ids": ["q2"]
     },
     {
       "id": "t-diger",
       "name": "Diğer",
       "count": 8,
       "percentage": 20.0,
-      "related_question_ids": [
-        "q4"
-      ]
+      "related_question_ids": ["q4"]
     },
     {
       "id": "t-harc-ve-odeme",
       "name": "Harç ve Ödeme",
       "count": 8,
       "percentage": 20.0,
-      "related_question_ids": [
-        "q1"
-      ]
+      "related_question_ids": ["q1"]
     },
     {
       "id": "t-kayit-islemleri",
       "name": "Kayıt İşlemleri",
       "count": 8,
       "percentage": 20.0,
-      "related_question_ids": [
-        "q3"
-      ]
+      "related_question_ids": ["q3"]
     }
   ],
   "executive_summary": "Analize giren 40 mesajın %40.0 kadarı «Sınav ne zaman yapılacak?» başlığında toplanıyor. İlk üç soru analiz edilen mesajların %80.0 kadarını oluşturuyor. En büyük tema «Sınav» (16 mesaj, %40.0).",
