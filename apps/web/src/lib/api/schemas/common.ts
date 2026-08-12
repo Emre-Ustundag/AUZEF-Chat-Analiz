@@ -12,12 +12,24 @@ import * as z from "zod";
  * snake_case tutulmuştur; camelCase'e çeviren bir eşleme katmanı yoktur.
  */
 
-/** ADR §7'de tanımlı hata kodları. */
+/**
+ * ADR-0001 §7 + ADR-0002 #1'de tanımlı hata kodları.
+ *
+ * Backend'in `ErrorCode` enum'uyla küme olarak birebir aynı olmak zorunda;
+ * `contract-openapi.test.ts` bunu `docs/api/openapi.json` üzerinden kilitler.
+ * Listede olmayan bir kod gelirse `toApiError` cevabı sentetik bir
+ * INTERNAL_ERROR'a düşürür ve kullanıcı yanlış mesajı görür.
+ */
 export const errorCodeSchema = z.enum([
   "UPLOAD_TOO_LARGE",
   "UPLOAD_INVALID_TYPE",
   "UPLOAD_CORRUPT_OR_ENCRYPTED",
   "SHEET_OR_COLUMN_NOT_FOUND",
+  // ADR-0002 #1 ile eklenen istek doğrulama kodları; hepsi 422.
+  "REQUEST_VALIDATION",
+  "INVALID_MODEL",
+  "INVALID_PROMPT",
+  "COST_LIMIT_EXCEEDED",
   "PROVIDER_AUTH_FAILED",
   "PROVIDER_RATE_LIMITED",
   "PROVIDER_BAD_RESPONSE",
@@ -41,11 +53,11 @@ export const problemDetailsSchema = z.object({
   status: z.int(),
   code: errorCodeSchema,
   detail: z.string(),
-  trace_id: z.string(),
+  trace_id: z.uuid(),
   errors: z
     .array(
       z.object({
-        field: z.string().optional(),
+        field: z.string().nullish(),
         message: z.string(),
       }),
     )
@@ -70,6 +82,11 @@ export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
     "Dosya okunamadı. Bozuk, şifrelenmiş veya makro içeren dosyalar desteklenmez.",
   SHEET_OR_COLUMN_NOT_FOUND:
     "Seçilen sayfa veya kolon dosyada bulunamadı. Lütfen seçiminizi güncelleyin.",
+  REQUEST_VALIDATION: "Gönderilen bilgiler geçersiz. Lütfen formu kontrol edip tekrar deneyin.",
+  INVALID_MODEL: "Seçilen model desteklenmiyor. Listeden geçerli bir model seçin.",
+  INVALID_PROMPT: "Seçilen analiz sürümü geçersiz. Sayfayı yenileyip tekrar deneyin.",
+  COST_LIMIT_EXCEEDED:
+    "Tahmini maliyet belirlediğiniz üst sınırı aşıyor. Sınırı yükseltin veya daha ucuz bir model seçin.",
   PROVIDER_AUTH_FAILED:
     "OpenRouter API anahtarı doğrulanamadı. Anahtarı kontrol edip tekrar deneyin.",
   PROVIDER_RATE_LIMITED: "OpenRouter istek sınırına ulaşıldı. Bir süre bekleyip tekrar deneyin.",
@@ -84,6 +101,11 @@ export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
 /**
  * Kullanıcının yeniden denemesinin anlamlı olduğu hatalar.
  * Arayüzde "Tekrar dene" düğmesi yalnızca bunlarda gösterilir.
+ *
+ * ADR-0002 #1 ile eklenen dört kod (REQUEST_VALIDATION, INVALID_MODEL,
+ * INVALID_PROMPT, COST_LIMIT_EXCEEDED) bilerek DIŞARIDA: hepsi kullanıcı
+ * girdisi hatasıdır ve aynı isteği tekrarlamak aynı hatayı üretir. Bunu
+ * `contract-openapi.test.ts` kilitler.
  */
 export const RETRYABLE_ERROR_CODES: readonly ErrorCode[] = [
   "PROVIDER_RATE_LIMITED",

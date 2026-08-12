@@ -2,6 +2,9 @@
 
 - **Durum:** Karar verildi — uygulamaya hazır
 - **Tarih:** 11 Ağustos 2026
+- **Güncelleme:** API sözleşmesinin kesinleşen ayrıntıları için bkz.
+  [ADR-0002 — API sözleşmesinin dondurulması](adr/0002-api-contract-freeze.md).
+  §6, §7, §8 ve §9'daki ilgili maddeler orada netleştirildi.
 - **Karar sahibi:** Architecture owner
 - **Reviewer:** Backend + Data/LLM ekip üyesi
 - **Bağımlılık:** Yok
@@ -70,24 +73,30 @@ AUZEF-Chat-Analiz/
 │   │   ├── src/features/analysis/
 │   │   └── src/lib/api/
 │   └── backend/
+│       ├── pyproject.toml          # uv projesi, ruff/mypy/pytest config
 │       ├── app/api/v1/
-│       ├── app/core/
+│       ├── app/core/               # errors, handlers, tracing, openapi
 │       ├── app/domain/
 │       ├── app/models/
 │       ├── app/schemas/
 │       ├── app/services/
 │       ├── app/pipeline/
 │       ├── app/workers/
-│       └── app/prompts/faq_analysis/
+│       ├── app/prompts/faq_analysis/
+│       ├── scripts/                # openapi ve fixture üreticileri
+│       └── tests/
 ├── tests/
 │   ├── fixtures/
+│   │   └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
 │   ├── integration/
 │   └── e2e/
 ├── infra/
 │   ├── docker/
 │   └── scripts/
 ├── docs/
-│   └── adr/0001-mvp-architecture.md
+│   ├── mimari.md                   # bu ADR (ADR-0001)
+│   ├── adr/0002-api-contract-freeze.md
+│   └── api/openapi.json            # üretilmiş sözleşme artefaktı
 ├── docker-compose.yml
 ├── Makefile
 └── README.md
@@ -151,15 +160,24 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 - `GET /api/v1/uploads/{upload_id}` — `queued/validating/ready/failed` + sheet/kolon profili
 - `DELETE /api/v1/uploads/{upload_id}` — iptal ve cleanup
 
+### Model listesi
+
+- `GET /api/v1/models` — izin verilen modeller, `default_model`, `default_prompt_version` (ADR-0002 #1)
+- Whitelist: `anthropic/claude-sonnet-4`, `openai/gpt-4.1-mini`, `google/gemini-2.5-flash`; varsayılan model `anthropic/claude-sonnet-4`, varsayılan prompt `faq_analysis/v1`
+
 ### Analysis
 
 - `POST /api/v1/analyses` — `upload_id`, `sheet_name`, `text_column`, `model`, `prompt_version`, `top_n`, `max_cost_usd`
 - Model yalnızca JSON Schema structured output desteği doğrulanmış backend whitelist'inden seçilebilir
 - OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır; reverse proxy ve uygulama loglarında bu header zorunlu olarak redakte edilir
 - `GET /api/v1/analyses/{analysis_id}` — durum, progress, aşama ve güvenli hata
-- `GET /api/v1/analyses/{analysis_id}/result` — tamamlanmış `AnalysisReport`
-- `DELETE /api/v1/analyses/{analysis_id}` — iptal
-- `GET /api/v1/analyses/{analysis_id}/export?format=xlsx|json` — rapor export
+- `GET /api/v1/analyses/{analysis_id}/result` — tamamlanmış `AnalysisReport`; iş tamamlanmamışsa `409 JOB_CONFLICT`
+- `DELETE /api/v1/analyses/{analysis_id}` — iptal: aktif job `204`, terminal job `409 JOB_CONFLICT`, bilinmeyen id `404 JOB_NOT_FOUND` (ADR-0002 #9)
+- `GET /api/v1/analyses/{analysis_id}/export?format=xlsx|json` — rapor export. `Content-Disposition` her zaman `attachment; filename="analiz-{analysis_id}.{format}"`; kullanıcının dosya adı kullanılmaz, dolayısıyla ad tanım gereği ASCII'dir (ADR-0002 #11)
+
+### Tarih biçimi
+
+Tüm API tarihleri UTC ISO 8601'dir ve `Z` ile biter: `YYYY-MM-DDTHH:MM:SS.sssZ`. Girişte her RFC 3339 instant kabul edilip normalize edilir; çıkışta tek biçim üretilir (ADR-0002 #4).
 
 ### Job durumları
 
@@ -167,7 +185,17 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 
 Terminal durumlar: `failed`, `cancelled`.
 
-Her POST isteği opsiyonel `Idempotency-Key` destekler. OpenAPI şeması backend'den üretilir; frontend TypeScript client otomatik oluşturulur.
+### Idempotency
+
+`POST` uçları opsiyonel `Idempotency-Key` header'ı destekler (ADR-0002 #3):
+
+- aynı anahtar + aynı gövde → ilk isteğin `202` cevabı aynen döner
+- aynı anahtar + farklı gövde → `409 JOB_CONFLICT`
+- kayıt 24 saat saklanır
+- replay, istekle gelen yeni `X-OpenRouter-Key` header'ını yok sayar; anahtar orijinal job'a bağlıdır
+- analiz fingerprint'i doğrulanmış request'in canonical JSON SHA-256'sıdır; upload fingerprint'i dosya SHA-256 + filename + MIME + size canonical JSON SHA-256'sıdır; secret/header'lar fingerprint'e girmez
+
+OpenAPI şeması backend'den üretilir ve `docs/api/openapi.json` olarak commit edilir. Frontend client'ının bu şemadan otomatik üretilmesi halef karardır; MVP'de sözleşme uyumu iki dilli fixture doğrulamasıyla zorlanır (ADR-0002 §4).
 
 ## 7. Standart hata modeli
 
@@ -191,6 +219,10 @@ Temel hata kodları:
 - `UPLOAD_INVALID_TYPE` — 415
 - `UPLOAD_CORRUPT_OR_ENCRYPTED` — 422
 - `SHEET_OR_COLUMN_NOT_FOUND` — 422
+- `REQUEST_VALIDATION` — 422 (ADR-0002 #1)
+- `INVALID_MODEL` — 422 (ADR-0002 #1)
+- `INVALID_PROMPT` — 422 (ADR-0002 #1)
+- `COST_LIMIT_EXCEEDED` — 422 (ADR-0002 #1, #10)
 - `PROVIDER_AUTH_FAILED` — 422
 - `PROVIDER_RATE_LIMITED` — 429 + `retry_after`
 - `PROVIDER_BAD_RESPONSE` — 502
@@ -198,6 +230,14 @@ Temel hata kodları:
 - `JOB_NOT_FOUND` — 404
 - `JOB_CONFLICT` — 409
 - `INTERNAL_ERROR` — 500
+
+Ek kurallar (ADR-0002 #6, #7):
+
+- `type`, `title`, `status`, `code`, `detail`, `trace_id` **her** hata cevabında bulunur; `errors` her zaman vardır (boş olabilir)
+- `retry_after` **yalnızca 429** cevaplarında bulunur; diğerlerinde `null` olarak dahi yer almaz
+- `type` URI'si koddan türetilir: `/errors/` + küçük harf + `_` → `-`
+- `errors[].input` asla yankılanmaz; gövdeye yanlışlıkla konmuş bir API anahtarını geri sızdırma yolu kapalıdır
+- hatalar tek merkezî handler'dan üretilir (`app/core/handlers.py`)
 
 Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve loglara yazılmaz.
 
@@ -210,7 +250,10 @@ Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve lo
 - `preprocessing_summary`: analiz edilen, elenen, tekrar ve redakte edilen kayıt sayıları
 - `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `confidence`, `redacted_examples`
 - `themes[]`: `id`, `name`, `count`, `percentage`, `related_question_ids`
+  - `related_question_ids`, `top_n` kırpması sonrası raporda gerçekten yer alan sorulara filtrelenir; `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya devam eder (ADR-0002 #5)
 - `executive_summary` ve `warnings[]`
+  - `warnings[].code` tel üstünde serbest `string`'tir; backend yalnızca sürümlenmiş bir sözlükten (`ROW_LIMIT_TRUNCATED`, `CHUNK_PARTIAL_FAILURE`, `LOW_CONFIDENCE_THEMES`, `PII_REDACTION_INCOMPLETE`, `COST_LIMIT_APPROACHED`) üye yayar
+  - `warnings[].message` kullanıcıya hazır Türkçe metindir — "ham backend metni kullanıcıya basılmaz" kuralının belgelenmiş tek istisnası (ADR-0002 #2)
 - `model`, `prompt_version`, `prompt_hash`
 - `token_usage` ve `estimated_cost_usd`
 
@@ -221,7 +264,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 - MVP yalnızca `.xlsx` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir
 - Varsayılan sıkıştırılmış upload sınırı: 150 MB
 - OOXML açılmış toplam boyut sınırı: 1 GB
-- Varsayılan satır sınırı: 100.000; tüm sınırlar environment config'tir
+- Varsayılan satır sınırı: 100.000; tüm sınırlar environment config'tir. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)
 - OpenRouter key PostgreSQL'e veya loglara yazılmaz
 - BYOK anahtarı AES-GCM ile şifreli Redis kaydı olarak tutulur; TTL her zaman job hard timeout + 5 dakikadır (varsayılan 50 dakika) ve işlem bitince başarı/hata fark etmeksizin silinir
 - Sunucu master encryption key yalnızca secret manager/environment içinde bulunur
@@ -231,7 +274,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 - PII redaksiyonu bilinen T.C./öğrenci no, telefon, e-posta ve benzeri desenleri kapsar; serbest metindeki kişi adlarının eksiksiz maskeleneceği garanti edilmez
 - Frontend ve API üretimde aynı origin altında çalışır; geliştirme CORS allowlist'i yalnızca açıkça tanımlı local origin'leri kabul eder
 - Public deployment yapılmaz; yalnızca anonim örnek veri kullanılır. Gerçek kurum verisi öncesi SSO/erişim kontrolü ve AUZEF veri işleme onayı zorunludur
-- Token ve tahmini maliyet üst sınırı aşılırsa LLM çağrısı başlamadan iş güvenli biçimde durur
+- Token ve tahmini maliyet üst sınırı aşılırsa LLM çağrısı başlamadan iş güvenli biçimde durur. Ön tahmin `POST /analyses` içinde senkron yapılır ve sınır aşılıyorsa istek `422 COST_LIMIT_EXCEEDED` ile reddedilir; çalışma sırasında aşılırsa aynı kod terminal job hatası olarak döner (ADR-0002 #10)
 
 ## 10. Ana riskler ve önlemler
 
@@ -273,3 +316,7 @@ Bu karar uygulamaya hazırdır. Trello kartı ancak aşağıdakiler tamamlanınc
 1. Bu içerik `docs/mimari.md` olarak repoya eklenir.
 2. Backend ve Data/LLM reviewer kararı onaylar.
 3. Repo iskeleti ADR'deki klasör yapısıyla çelişmez.
+
+BE-01 (API sözleşmesinin dondurulması) için ek tamamlanma koşulu: CI'daki
+`web`, `backend` ve `contract` job'larının üçü de yeşil olmalı ve sözleşme
+artefaktları tam yeniden üretimden sonra diff üretmemeli.

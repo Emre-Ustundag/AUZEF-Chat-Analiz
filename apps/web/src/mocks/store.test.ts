@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { analysisJobSchema, analysisReportSchema, uploadSchema } from "@/lib/api/schemas";
-import type { AnalysisRequest } from "@/lib/api/schemas";
+import {
+  analysisJobSchema,
+  analysisReportSchema,
+  problemDetailsSchema,
+  uploadSchema,
+} from "@/lib/api/schemas";
+import type { AnalysisRequest, ErrorCode } from "@/lib/api/schemas";
+import { OPENAPI_PATH, readJson } from "@/lib/api/schemas/contract-paths";
 
 import {
   cancelAnalysisRecord,
@@ -10,6 +16,7 @@ import {
   getAnalysisJobRecord,
   getAnalysisReportRecord,
   getUploadRecord,
+  problem,
 } from "./store";
 
 /**
@@ -145,12 +152,47 @@ describe("analiz mock'u", () => {
     const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
 
     advance(10);
-    cancelAnalysisRecord(analysisId);
+    expect(cancelAnalysisRecord(analysisId)).toBe("cancelled");
     expect(getAnalysisJobRecord(analysisId)?.status).toBe("cancelled");
 
     // İptalden sonra zaman ilerlese de durum değişmemeli.
     advance(60);
     expect(getAnalysisJobRecord(analysisId)?.status).toBe("cancelled");
+  });
+
+  // ADR-0002 #9: aktif → 204, terminal → 409 JOB_CONFLICT, bilinmeyen → 404.
+  describe("iptal üçlü durumu", () => {
+    it("bilinmeyen id için not-found", () => {
+      expect(cancelAnalysisRecord("00000000-0000-4000-8000-000000000000")).toBe("not-found");
+    });
+
+    it("tamamlanmış job için terminal", () => {
+      const upload = createUploadRecord("veri.xlsx", 1024);
+      const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
+
+      advance(40);
+      expect(getAnalysisJobRecord(analysisId)?.status).toBe("completed");
+      expect(cancelAnalysisRecord(analysisId)).toBe("terminal");
+    });
+
+    it("çoktan iptal edilmiş job için terminal", () => {
+      const upload = createUploadRecord("veri.xlsx", 1024);
+      const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
+
+      advance(10);
+      expect(cancelAnalysisRecord(analysisId)).toBe("cancelled");
+      // İkinci iptal sessizce başarılı sayılmamalı.
+      expect(cancelAnalysisRecord(analysisId)).toBe("terminal");
+    });
+
+    it("başarısız job için terminal", () => {
+      const upload = createUploadRecord("hatali_veri.xlsx", 1024);
+      const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
+
+      advance(40);
+      expect(getAnalysisJobRecord(analysisId)?.status).toBe("failed");
+      expect(cancelAnalysisRecord(analysisId)).toBe("terminal");
+    });
   });
 
   it("terminal durumda kalan süre tahmini vermez", () => {
@@ -262,5 +304,77 @@ describe("analiz raporu mock'u", () => {
     const withEight = completedReport(8)!;
 
     expect(withThree.themes.map((t) => t.count)).toEqual(withEight.themes.map((t) => t.count));
+  });
+});
+
+/**
+ * ADR-0002 #2 — satır sınırı hard reject değil, uyar + kırp.
+ *
+ * Bu senaryo olmadan karar yalnızca kâğıt üstünde kalırdı: arayüzde
+ * `exceeds_row_limit` rozetini ve `ROW_LIMIT_TRUNCATED` uyarısını tetikleyen
+ * bir yol bulunmazdı.
+ */
+describe("satır sınırı senaryosu", () => {
+  function rowLimitedReport() {
+    vi.setSystemTime(START);
+    const upload = createUploadRecord("auzef-buyuk-veri.xlsx", 142_606_336);
+    const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
+    advance(40);
+    return { uploadId: upload.uploadId, report: getAnalysisReportRecord(analysisId)! };
+  }
+
+  it("upload reddedilmez, READY döner ve exceeds_row_limit işaretlenir", () => {
+    const { uploadId } = rowLimitedReport();
+    const upload = uploadSchema.parse(getUploadRecord(uploadId));
+
+    expect(upload.status).toBe("ready");
+    expect(upload.error).toBeNull();
+    expect(upload.profile?.exceeds_row_limit).toBe(true);
+    expect(upload.profile?.total_row_count).toBeGreaterThan(100_000);
+  });
+
+  it("rapor kırpılmış kayıt sayısıyla ROW_LIMIT_TRUNCATED uyarısı taşır", () => {
+    const { report } = rowLimitedReport();
+
+    expect(analysisReportSchema.safeParse(report).success).toBe(true);
+    expect(
+      report.preprocessing_summary.analyzed_count + report.preprocessing_summary.discarded_count,
+    ).toBe(100_000);
+    expect(report.source_summary.total_rows).toBeGreaterThan(100_000);
+
+    const warning = report.warnings.find((w) => w.code === "ROW_LIMIT_TRUNCATED");
+    expect(warning).toBeDefined();
+    // Uyarı mesajı kullanıcıya hazır Türkçe olmalı (ADR-0002 #2).
+    expect(warning!.message).toMatch(/satır/);
+  });
+
+  it("normal dosyada uyarı üretilmez", () => {
+    vi.setSystemTime(START);
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    const { analysisId } = createAnalysisRecord(analysisRequestFor(upload.uploadId));
+    advance(40);
+
+    expect(getAnalysisReportRecord(analysisId)!.warnings).toEqual([]);
+  });
+});
+
+/**
+ * `type` URI türetme kuralının iki dilde aynı olduğunun kanıtı.
+ *
+ * Backend `error_type_uri()` ile aynı dönüşümü yapıyor ve kodların listesi
+ * `docs/api/openapi.json` üzerinden okunuyor; yani bir tarafta eklenen kod
+ * diğerinde eksikse burada düşer.
+ */
+describe("problem() type URI'si backend ile aynı", () => {
+  const openapi = readJson<{ components: { schemas: { ErrorCode: { enum: string[] } } } }>(
+    OPENAPI_PATH,
+  );
+
+  it.each(openapi.components.schemas.ErrorCode.enum)("%s", (code) => {
+    const expected = `/errors/${code.toLowerCase().replaceAll("_", "-")}`;
+    const body = problem(code as ErrorCode, 500, "başlık", "detay");
+
+    expect(body.type).toBe(expected);
+    expect(problemDetailsSchema.safeParse(body).success).toBe(true);
   });
 });

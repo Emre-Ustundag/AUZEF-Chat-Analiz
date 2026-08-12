@@ -81,7 +81,7 @@ export type AnalysisRequest = z.infer<typeof analysisRequestSchema>;
 /** POST /api/v1/analyses — 202 Accepted cevabı. */
 export const analysisCreatedSchema = z.object({
   analysis_id: z.uuid(),
-  status: analysisStatusSchema,
+  status: z.literal("queued"),
 });
 
 export type AnalysisCreated = z.infer<typeof analysisCreatedSchema>;
@@ -93,29 +93,45 @@ export type AnalysisCreated = z.infer<typeof analysisCreatedSchema>;
  * değişiminde yazılır. Yani `progress` düzenli artmayabilir; arayüz
  * bunu düz bir sayaç gibi göstermemelidir.
  */
-export const analysisJobSchema = z.object({
-  analysis_id: z.uuid(),
-  status: analysisStatusSchema,
-  /** 0-100 arası tamamlanma yüzdesi. */
-  progress: z.number().min(0).max(100),
-  created_at: z.iso.datetime(),
-  updated_at: z.iso.datetime(),
-  /** Terminal olmayan durumlarda backend'in kalan süre tahmini, saniye. */
-  estimated_seconds_remaining: z.number().nonnegative().nullable().default(null),
-  /** Yalnızca status "failed" iken dolu. */
-  error: problemDetailsSchema.nullable().default(null),
-});
+export const analysisJobSchema = z
+  .object({
+    analysis_id: z.uuid(),
+    status: analysisStatusSchema,
+    /** 0-100 arası tamamlanma yüzdesi. */
+    progress: z.number().min(0).max(100),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+    /** Terminal olmayan durumlarda backend'in kalan süre tahmini, saniye. */
+    estimated_seconds_remaining: z.number().nonnegative().nullable().default(null),
+    /** Yalnızca status "failed" iken dolu. */
+    error: problemDetailsSchema.nullable().default(null),
+  })
+  .superRefine((job, ctx) => {
+    if ((job.status === "failed") !== (job.error !== null)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["error"],
+        message: "Job error alanı status ile uyumsuz.",
+      });
+    }
+    if (TERMINAL_STATUSES.includes(job.status) && job.estimated_seconds_remaining !== null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["estimated_seconds_remaining"],
+        message: "Terminal job kalan süre tahmini taşıyamaz.",
+      });
+    }
+  });
 
 export type AnalysisJob = z.infer<typeof analysisJobSchema>;
 
 /**
- * Model seçim listesi öğesi.
+ * Model seçim listesi öğesi — `GET /api/v1/models`.
  *
- * SÖZLEŞME BOŞLUĞU: ADR §6 "model yalnızca backend whitelist'inden
- * seçilebilir" diyor ama bu listeyi döndüren bir endpoint tanımlamıyor.
- * Arayüzün açılır listeyi doldurabilmesi için buna ihtiyacı var; öneri
- * `GET /api/v1/models`. Backend sahibiyle mutabık kalınması gerekir,
- * kesinleşmiş bir sözleşme değildir.
+ * ADR-0001 §6 "model yalnızca backend whitelist'inden seçilebilir" diyordu
+ * ama bu listeyi döndüren bir endpoint tanımlamıyordu. ADR-0002 #1 ile uç
+ * sözleşmeye dâhil edildi; artık kesinleşmiştir ve `docs/api/openapi.json`
+ * üzerinden doğrulanır.
  */
 export const modelOptionSchema = z.object({
   id: z.string(),
@@ -128,11 +144,29 @@ export const modelOptionSchema = z.object({
 
 export type ModelOption = z.infer<typeof modelOptionSchema>;
 
-export const modelListSchema = z.object({
-  models: z.array(modelOptionSchema),
-  default_model: z.string(),
-  default_prompt_version: z.string(),
-});
+export const modelListSchema = z
+  .object({
+    models: z.array(modelOptionSchema),
+    default_model: z.string(),
+    default_prompt_version: z.string().min(1),
+  })
+  .superRefine((catalog, ctx) => {
+    const ids = catalog.models.map((model) => model.id);
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["models"],
+        message: "Model id'leri benzersiz olmalı.",
+      });
+    }
+    if (!ids.includes(catalog.default_model)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["default_model"],
+        message: "Varsayılan model whitelist içinde olmalı.",
+      });
+    }
+  });
 
 export type ModelList = z.infer<typeof modelListSchema>;
 

@@ -56,6 +56,35 @@ describe("problemDetailsSchema", () => {
     expect(result.retry_after).toBeUndefined();
   });
 
+  // ADR-0002 #6: retry_after 429 dışında YOK; `null` değil. Zod `.optional()`
+  // null'ı reddeder, yani backend null yollarsa bu şema düşer ve toApiError
+  // her hatayı INTERNAL_ERROR'a çevirir.
+  it("retry_after: null reddedilir, alanın yokluğu kabul edilir", () => {
+    const base = {
+      type: "/errors/job-not-found",
+      title: "İşlem bulunamadı",
+      status: 404,
+      code: "JOB_NOT_FOUND",
+      detail: "Analiz kaydı yok.",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(base).success).toBe(true);
+    expect(problemDetailsSchema.safeParse({ ...base, retry_after: null }).success).toBe(false);
+  });
+
+  it("trace_id eksikse reddeder", () => {
+    const result = problemDetailsSchema.safeParse({
+      type: "/errors/job-not-found",
+      title: "İşlem bulunamadı",
+      status: 404,
+      code: "JOB_NOT_FOUND",
+      detail: "Analiz kaydı yok.",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("bilinmeyen hata kodunu reddeder", () => {
     const result = problemDetailsSchema.safeParse({
       type: "/errors/x",
@@ -253,5 +282,16 @@ describe("durum yardımcıları", () => {
     // Kullanıcının dosyası geçersizse tekrar denemek anlamsız.
     expect(isRetryableError("UPLOAD_INVALID_TYPE")).toBe(false);
     expect(isRetryableError("UPLOAD_TOO_LARGE")).toBe(false);
+  });
+
+  // ADR-0002 #1: dördü de kullanıcı girdisi hatası; aynı isteği tekrarlamak
+  // aynı hatayı üretir.
+  it.each([
+    "REQUEST_VALIDATION",
+    "INVALID_MODEL",
+    "INVALID_PROMPT",
+    "COST_LIMIT_EXCEEDED",
+  ] as const)("%s tekrar denenebilir değildir", (code) => {
+    expect(isRetryableError(code)).toBe(false);
   });
 });

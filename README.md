@@ -126,24 +126,30 @@ AUZEF-Chat-Analiz/
 │   │   ├── src/features/analysis/
 │   │   └── src/lib/api/
 │   └── backend/
+│       ├── pyproject.toml          # uv projesi, ruff/mypy/pytest config
 │       ├── app/api/v1/
-│       ├── app/core/
+│       ├── app/core/               # errors, handlers, tracing, openapi
 │       ├── app/domain/
 │       ├── app/models/
-│       ├── app/schemas/
+│       ├── app/schemas/            # Pydantic sözleşme modelleri
 │       ├── app/services/
 │       ├── app/pipeline/
 │       ├── app/workers/
-│       └── app/prompts/faq_analysis/
+│       ├── app/prompts/faq_analysis/
+│       ├── scripts/                # openapi ve fixture üreticileri
+│       └── tests/
 ├── tests/
 │   ├── fixtures/
+│   │   └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
 │   ├── integration/
 │   └── e2e/
 ├── infra/
 │   ├── docker/
 │   └── scripts/
 ├── docs/
-│   └── adr/0001-mvp-architecture.md
+│   ├── mimari.md                   # ADR-0001
+│   ├── adr/0002-api-contract-freeze.md
+│   └── api/openapi.json            # üretilmiş sözleşme artefaktı
 ├── docker-compose.yml
 ├── Makefile
 └── README.md
@@ -217,6 +223,9 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 - Node.js 22.22.2 veya üstü (`.nvmrc` ile sabitlendi; `nvm use` yeterli).
   Next.js 16 daha eski 22.x sürümlerini desteklemiyor.
 - npm
+- Backend üzerinde çalışacaksanız [uv](https://docs.astral.sh/uv/)
+  (`curl -LsSf https://astral.sh/uv/install.sh | sh`). Python sürümü
+  `apps/backend/.python-version` ile sabitlendi.
 - Tam MVP altyapısı eklendiğinde Docker ve Docker Compose
 
 ### Kurulum
@@ -231,8 +240,11 @@ cd AUZEF-Chat-Analiz
 Bağımlılıkları yükleyin:
 
 ```bash
-npm ci
+npm ci                          # frontend
+cd apps/backend && uv sync --dev  # backend (isteğe bağlı)
 ```
+
+veya ikisini birden: `make install`.
 
 Geliştirme sunucusunu başlatın:
 
@@ -244,19 +256,41 @@ Uygulamayı tarayıcıda [http://localhost:3000](http://localhost:3000) adresind
 
 ### Kullanılabilir komutlar
 
-| Komut                  | Açıklama                                            |
-| ---------------------- | --------------------------------------------------- |
-| `npm run dev`          | Geliştirme sunucusunu başlatır                      |
-| `npm run build`        | Üretim derlemesi oluşturur                          |
-| `npm run start`        | Üretim sunucusunu başlatır                          |
-| `npm run lint`         | ESLint kontrollerini çalıştırır                     |
-| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir    |
-| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder |
-| `npm run typecheck`    | Yol tiplerini üretip TypeScript kontrolü yapar      |
-| `npm test`             | Vitest test paketini çalıştırır                     |
+| Komut                  | Açıklama                                                  |
+| ---------------------- | --------------------------------------------------------- |
+| `npm run dev`          | Geliştirme sunucusunu başlatır                            |
+| `npm run build`        | Üretim derlemesi oluşturur                                |
+| `npm run start`        | Üretim sunucusunu başlatır                                |
+| `npm run lint`         | ESLint kontrollerini çalıştırır                           |
+| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir          |
+| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder       |
+| `npm run typecheck`    | Yol tiplerini üretip TypeScript kontrolü yapar            |
+| `npm test`             | Vitest test paketini çalıştırır                           |
+| `make contract`        | API sözleşmesi drift kontrolü                             |
+| `make generate`        | `openapi.json` ve sözleşme fixture'larını üretir          |
+| `make check`           | CI'ın tamamı (lint + typecheck + test + contract + build) |
 
-Bu komutların tamamı her push ve pull request'te GitHub Actions üzerinde de
-çalışır (`.github/workflows/ci.yml`).
+`make help` tüm hedefleri listeler. Bu komutların tamamı her push ve pull
+request'te GitHub Actions üzerinde de çalışır (`.github/workflows/ci.yml`).
+
+### API sözleşmesi
+
+Frontend ve backend tek bir sözleşmeyi paylaşır. Kaynak, `apps/backend/`
+altındaki Pydantic modelleridir; `docs/api/openapi.json` ve
+`tests/fixtures/contract/` bunlardan **üretilir** ve commit edilir. Bu
+dosyaları elle düzenlemeyin.
+
+Bir Pydantic modelini değiştirdiyseniz:
+
+```bash
+make generate     # artefaktları yeniden üret
+make contract     # iki tarafın da uyduğunu doğrula
+```
+
+Ayrışma CI'da `contract` job'ıyla yakalanır: Python'un ürettiği örnek
+gövdeler frontend'in Zod şemalarıyla, `openapi.json`'daki enum'lar da Zod
+enum'larıyla karşılaştırılır. Kararlar ve gerekçeleri
+[ADR-0002](docs/adr/0002-api-contract-freeze.md)'de.
 
 > `npm run typecheck` önce `next typegen` çalıştırır. `PageProps` ve
 > `RouteContext` gibi yol tiplerini Next üretir; `next dev`, `next build` veya

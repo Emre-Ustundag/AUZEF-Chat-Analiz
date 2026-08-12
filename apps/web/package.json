@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:contract": "vitest run src/lib/api/schemas/contract-*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

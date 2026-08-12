@@ -1,12 +1,8 @@
-import { NextResponse } from "next/server";
-
+import { jsonResponse, noContentResponse, problemResponse } from "@/mocks/responses";
 import { deleteUploadRecord, getUploadRecord, problem } from "@/mocks/store";
 
 const notFound = () =>
-  NextResponse.json(
-    problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Upload kaydı yok."),
-    { status: 404 },
-  );
+  problemResponse(problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Upload kaydı yok."));
 
 export async function GET(
   _request: Request,
@@ -14,7 +10,7 @@ export async function GET(
 ) {
   const { uploadId } = await context.params;
   const upload = getUploadRecord(uploadId);
-  return upload ? NextResponse.json(upload) : notFound();
+  return upload ? jsonResponse(upload) : notFound();
 }
 
 export async function DELETE(
@@ -22,7 +18,5 @@ export async function DELETE(
   context: RouteContext<"/api/mock/v1/uploads/[uploadId]">,
 ) {
   const { uploadId } = await context.params;
-  return deleteUploadRecord(uploadId)
-    ? new NextResponse(null, { status: 204 })
-    : notFound();
+  return deleteUploadRecord(uploadId) ? noContentResponse() : notFound();
 }

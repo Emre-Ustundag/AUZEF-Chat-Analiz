@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { jsonResponse, problemResponse } from "@/mocks/responses";
 import { analysisExists, getAnalysisReportRecord, problem } from "@/mocks/store";
 
 /**
@@ -16,24 +15,20 @@ export async function GET(
   const { analysisId } = await context.params;
 
   if (!analysisExists(analysisId)) {
-    return NextResponse.json(
-      problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Analiz kaydı yok."),
-      { status: 404 },
-    );
+    return problemResponse(problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Analiz kaydı yok."));
   }
 
   const report = getAnalysisReportRecord(analysisId);
   if (!report) {
-    return NextResponse.json(
+    return problemResponse(
       problem(
         "JOB_CONFLICT",
         409,
         "Analiz henüz tamamlanmadı",
         "Rapor yalnızca completed durumunda alınabilir.",
       ),
-      { status: 409 },
     );
   }
 
-  return NextResponse.json(report);
+  return jsonResponse(report);
 }
