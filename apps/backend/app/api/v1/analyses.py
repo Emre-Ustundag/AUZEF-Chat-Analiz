@@ -12,8 +12,10 @@
    göstermek demekti; yalnız durumu yazmak ise worker'ın bir sonraki aşama
    yazımıyla iptali EZMESİNE izin verirdi. İkisi birlikte gerekli
    (worker tarafındaki koruma: `workers/tasks.py` → `_advance_stage`).
-3. **Rapor yalnızca tamamlanmış işte dönmeli.** `/result` devam eden işte
-   409 döner — mock'un davranışı da budur.
+3. **Rapor yalnızca tamamlanmış işte dönmeli.** `/result` ve `/export`
+   devam eden işte 409 döner — mock'un davranışı da budur. İkisi aynı
+   kapıyı (`_completed_report`) kullanır; ayrı yazılsalardı biri
+   gevşediğinde sözleşme sessizce ikiye ayrılırdı.
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Request, Response, status
+from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
@@ -44,7 +46,7 @@ from app.schemas.analysis import (
 )
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import secret_store
+from app.services import report_export, secret_store
 
 logger = get_logger(__name__)
 
@@ -236,6 +238,16 @@ async def get_analysis(
     summary="Tamamlanmış analizin raporu",
 )
 async def get_analysis_result(analysis_id: uuid.UUID, session: SessionDep) -> AnalysisReport:
+    return await _completed_report(session, analysis_id)
+
+
+async def _completed_report(session: AsyncSession, analysis_id: uuid.UUID) -> AnalysisReport:
+    """Yalnızca tamamlanmış analizin raporunu döndürür; değilse 409.
+
+    `/result` ve `/export` aynı kapıyı kullanır. Ayrı ayrı yazılsalardı
+    biri gevşediğinde ("export'ta 404 dönsün") sözleşme sessizce ikiye
+    ayrılırdı; mock da ikisinde aynı davranışı taklit ediyor.
+    """
     analysis = await _get_analysis_or_404(session, analysis_id)
 
     if analysis.status is not AnalysisStatus.COMPLETED or analysis.report is None:
@@ -245,7 +257,65 @@ async def get_analysis_result(analysis_id: uuid.UUID, session: SessionDep) -> An
             "Rapor yalnızca tamamlanmış analiz için alınabilir.",
         )
 
+    # JSONB'den şemadan geçiriliyor: `generated_at` buradan `...Z` olarak
+    # çıkar (schemas/common.py::to_iso_z), yani export gövdesi `/result`
+    # gövdesiyle BİREBİR aynı biçimde serileşir.
     return AnalysisReport.model_validate(analysis.report)
+
+
+@router.get(
+    "/{analysis_id}/export",
+    summary="Raporu dosya olarak indir",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {
+                report_export.JSON_MEDIA_TYPE: {},
+                report_export.XLSX_MEDIA_TYPE: {},
+            },
+            "description": "Rapor dosyası (`Content-Disposition: attachment`).",
+        }
+    },
+)
+async def export_analysis(
+    analysis_id: uuid.UUID,
+    session: SessionDep,
+    export_format: Annotated[str, Query(alias="format")] = "json",
+) -> Response:
+    """ADR §6: `?format=xlsx|json`.
+
+    BİLİNMEYEN FORMAT 422 DEĞİL, `json`'dır. Sebep sözleşmede: mock
+    `exportFormatSchema.catch("json")` kullanıyor ve FastAPI'nin
+    `Literal[...]` doğrulaması buradan `RequestValidationError`'a düşerdi —
+    o handler yol `/analyses` ile bitmediği için `UPLOAD_INVALID_TYPE`
+    (415) üretir ve kullanıcı "Desteklenmeyen dosya türü" görürdü. Yüklediği
+    dosyayla hiç ilgisi olmayan bir mesaj. Frontend zaten yalnızca iki
+    geçerli değerden birini gönderiyor.
+    """
+    report = await _completed_report(session, analysis_id)
+
+    if export_format.lower() == "xlsx":
+        # openpyxl senkron ve CPU yoğun; event loop'u bloklamamak için
+        # thread'e taşınıyor (upload yolundaki boto3 ile aynı gerekçe).
+        body = await run_in_threadpool(report_export.build_xlsx, report)
+        media_type = report_export.XLSX_MEDIA_TYPE
+        extension = "xlsx"
+    else:
+        body = report.model_dump_json(indent=2).encode("utf-8")
+        media_type = report_export.JSON_MEDIA_TYPE
+        extension = "json"
+
+    logger.info(
+        "analysis_exported",
+        extra={"analysis_id": str(analysis_id), "format": extension, "bytes": len(body)},
+    )
+    return Response(
+        content=body,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": report_export.content_disposition(str(analysis_id), extension)
+        },
+    )
 
 
 @router.delete(

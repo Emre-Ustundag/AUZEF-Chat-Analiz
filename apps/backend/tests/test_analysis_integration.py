@@ -703,6 +703,151 @@ async def test_anahtar_loglara_yazilmaz(
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
 
+# =====================================================================
+# FAZ 4 — export
+# =====================================================================
+
+
+async def test_export_json_result_govdesiyle_ayni(client: AsyncClient) -> None:
+    """Plan §4 Faz 4: `format=json` rapor gövdesini attachment olarak verir."""
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    response = await client.get(f"/api/v1/analyses/{analysis_id}/export?format=json")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.headers["content-disposition"] == (
+        f'attachment; filename="analiz-{analysis_id}.json"'
+    )
+
+    # İndirilen gövde `/result` ile BİREBİR aynı olmalı: ayrışırsa kullanıcı
+    # ekranda gördüğünden farklı bir dosya indirmiş olur.
+    result = (await client.get(f"/api/v1/analyses/{analysis_id}/result")).json()
+    assert response.json() == result
+    # Frontend `z.iso.datetime()` offset'li damgayı reddeder.
+    assert response.json()["generated_at"].endswith("Z")
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_export_xlsx_gercek_dosya_ve_sayilar_raporla_tutar(client: AsyncClient) -> None:
+    """Plan §4 Faz 4 ölçüt 2 — indirilen dosya openpyxl ile açılıp doğrulanır."""
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    response = await client.get(f"/api/v1/analyses/{analysis_id}/export?format=xlsx")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert response.headers["content-disposition"] == (
+        f'attachment; filename="analiz-{analysis_id}.xlsx"'
+    )
+    assert response.content.startswith(b"PK\x03\x04")
+
+    report = AnalysisReport.model_validate(
+        (await client.get(f"/api/v1/analyses/{analysis_id}/result")).json()
+    )
+
+    workbook = load_workbook(BytesIO(response.content))
+    assert workbook.sheetnames == ["Özet", "Sorular", "Temalar"]
+
+    questions = workbook["Sorular"]
+    assert questions.max_row == len(report.top_questions) + 1
+    for row, question in zip(questions.iter_rows(min_row=2), report.top_questions, strict=True):
+        assert row[0].value == question.id
+        assert row[2].value == question.count
+        assert row[3].value == question.percentage
+        # Sayı METİN olmamalı — yoksa Excel'de toplama/grafik çalışmaz.
+        assert not isinstance(row[2].value, str)
+        assert not isinstance(row[3].value, str)
+
+    themes = workbook["Temalar"]
+    assert themes.max_row == len(report.themes) + 1
+    for row, theme in zip(themes.iter_rows(min_row=2), report.themes, strict=True):
+        assert row[2].value == theme.count
+        assert row[3].value == theme.percentage
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_export_ornekleri_redakte_gider(client: AsyncClient) -> None:
+    """ADR §9: xlsx'e ham öğrenci mesajı değil, maskelenmiş örnek girer."""
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id, sheet_name="Iletisim", text_column="not")
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    response = await client.get(f"/api/v1/analyses/{analysis_id}/export?format=xlsx")
+    workbook = load_workbook(BytesIO(response.content))
+    metin = "\n".join(
+        str(cell)
+        for sheet in workbook.worksheets
+        for row in sheet.iter_rows(values_only=True)
+        for cell in row
+        if cell is not None
+    )
+
+    assert "ali@example.com" not in metin
+    assert "05551234567" not in metin
+    assert "12345678901" not in metin
+    assert "[EPOSTA]" in metin
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_tamamlanmamis_analizde_export_409(client: AsyncClient) -> None:
+    """Mock ile aynı davranış: rapor hazır değilse JOB_CONFLICT."""
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    for fmt in ("json", "xlsx"):
+        response = await client.get(f"/api/v1/analyses/{analysis_id}/export?format={fmt}")
+        assert response.status_code == 409, fmt
+        assert response.json()["code"] == "JOB_CONFLICT"
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_bilinmeyen_analizde_export_404(client: AsyncClient) -> None:
+    response = await client.get(f"/api/v1/analyses/{uuid.uuid4()}/export?format=xlsx")
+    assert response.status_code == 404
+    assert response.json()["code"] == "JOB_NOT_FOUND"
+
+
+async def test_gecersiz_format_json_dondurur(client: AsyncClient) -> None:
+    """Mock `exportFormatSchema.catch("json")` kullanıyor; backend de öyle.
+
+    `Literal[...]` doğrulaması burada 415 `UPLOAD_INVALID_TYPE` üretirdi ve
+    kullanıcı yüklediği dosyayla ilgisi olmayan "Desteklenmeyen dosya türü"
+    mesajını görürdü.
+    """
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    for query in ("?format=pdf", "?format=", ""):
+        response = await client.get(f"/api/v1/analyses/{analysis_id}/export{query}")
+        assert response.status_code == 200, query
+        assert response.headers["content-type"].startswith("application/json"), query
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
 async def test_bilinmeyen_prompt_surumu_reddedilir(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
