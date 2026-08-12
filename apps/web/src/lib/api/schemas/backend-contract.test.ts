@@ -23,9 +23,7 @@ describe("backend Faz 3 raporu", () => {
     const result = analysisReportSchema.safeParse(faz3Report);
 
     if (!result.success) {
-      throw new Error(
-        `Rapor sözleşmeye uymuyor:\n${JSON.stringify(result.error.issues, null, 2)}`,
-      );
+      throw new Error(`Rapor sözleşmeye uymuyor:\n${JSON.stringify(result.error.issues, null, 2)}`);
     }
     expect(result.success).toBe(true);
   });
@@ -41,10 +39,7 @@ describe("backend Faz 3 raporu", () => {
       );
     }
     for (const theme of report.themes) {
-      expect(theme.percentage).toBeCloseTo(
-        Math.round((theme.count / analyzed) * 1000) / 10,
-        5,
-      );
+      expect(theme.percentage).toBeCloseTo(Math.round((theme.count / analyzed) * 1000) / 10, 5);
     }
   });
 
