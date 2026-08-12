@@ -508,6 +508,12 @@ def _trim(text: str, limit: int = 120) -> str:
 _SLUG_STRIP = re.compile(r"[^a-z0-9]+")
 _TR_LOWER = str.maketrans({"I": "ı", "İ": "i", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç"})
 
+#: Türkçe harflerin ASCII karşılıkları. AÇIKÇA yazılmak ZORUNDA: `ı` harfi
+#: Unicode'da `i`'nin aksanlı bir biçimi DEĞİL, bağımsız bir harftir ve
+#: NFKD ayrıştırması onu çözemez. Yalnızca NFKD'ye güvenmek "sınav"ı
+#: "snav"a, "kayıt"ı "kayt"a çeviriyordu — kimlikler okunaksızdı.
+_TR_ASCII = str.maketrans({"ı": "i", "ş": "s", "ğ": "g", "ü": "u", "ö": "o", "ç": "c"})
+
 
 def _theme_id(name: str) -> str:
     """Tema adından kararlı bir kimlik üretir.
@@ -516,7 +522,7 @@ def _theme_id(name: str) -> str:
     ASCII'ye indirgeniyor. Aynı tema adı HER ZAMAN aynı kimliği üretmeli,
     yoksa aynı tema iki kez görünürdü.
     """
-    lowered = name.translate(_TR_LOWER).lower()
+    lowered = name.translate(_TR_LOWER).lower().translate(_TR_ASCII)
     ascii_form = unicodedata.normalize("NFKD", lowered).encode("ascii", "ignore").decode("ascii")
     slug = _SLUG_STRIP.sub("-", ascii_form).strip("-")
     return f"t-{slug or 'diger'}"

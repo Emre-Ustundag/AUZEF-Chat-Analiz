@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncIterator, Iterator
+from json import dumps as json_dumps
 from pathlib import Path
 from typing import Any, cast
 
@@ -405,5 +406,306 @@ async def test_iptal_de_anahtari_siler(client: AsyncClient) -> None:
     finally:
         redis_client.delete(secret_store.redis_key(analysis_id))
         redis_client.close()
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+# =====================================================================
+# FAZ 3 — LLM yolları (hepsi sahte transport üzerinden, GERÇEK AĞ YOK)
+# =====================================================================
+
+
+async def test_maliyet_tavani_asiminda_is_failed_olur_ve_hic_cagri_yapilmaz(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADR §9: "LLM çağrısı BAŞLAMADAN iş güvenli biçimde durur."
+
+    Ölçüt iki katlı: iş `failed` olmalı VE sağlayıcıya tek bir istek bile
+    gitmemeli. İkincisi olmadan "tavan" ancak faturayı gördükten sonra
+    çalışan bir uyarı olurdu.
+    """
+    fake = install_fake_provider(monkeypatch)
+    upload_id, _ = await _ready_upload(client)
+    # Fixture'ın tahmini maliyeti bunun kat kat üzerinde.
+    created = await _create(client, upload_id, max_cost_usd=0.0000001)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "failed"
+
+    # ASIL KANIT: hiçbir HTTP isteği yapılmadı.
+    assert fake.requests == []
+
+    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
+    AnalysisJobRead.model_validate(job)
+    assert job["status"] == "failed"
+    assert job["error"]["code"] == "JOB_CONFLICT"
+    assert job["error"]["status"] == 409
+    # Kullanıcı ne yapacağını bilmeli: sayılar mesajda geçmeli.
+    assert "USD" in job["error"]["detail"]
+    # `retry_after` alanı HİÇ olmamalı (frontend .optional(), .nullable() değil).
+    assert "retry_after" not in job["error"]
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_iki_onarim_denemesinden_sonra_provider_bad_response(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADR §8: geçersiz yanıt en fazla iki onarım denemesinden sonra sonlanır."""
+    fake = install_fake_provider(monkeypatch, always_bad_json=True)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "failed"
+
+    # 1 ilk deneme + 2 onarım = 3. Fazlası ADR §8'i çiğnerdi.
+    assert len(fake.requests) == 3
+    # Onarım turları modele KENDİ bozuk çıktısını geri vermiş olmalı.
+    assert len(fake.requests[-1]["messages"]) == 6
+
+    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
+    assert job["status"] == "failed"
+    assert job["error"]["code"] == "PROVIDER_BAD_RESPONSE"
+    assert job["error"]["status"] == 502
+    # ADR §9: ham model yanıtı hata cevabına SIZMAZ.
+    assert "bu geçerli JSON değil" not in str(job["error"])
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_gecici_bozuk_yanit_onarimla_duzelir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """İki onarım İÇİNDE düzelen model işi başarısız YAPMAMALI."""
+    fake = install_fake_provider(monkeypatch, bad_json_first=2)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+    assert len(fake.requests) == 3
+
+    report = (await client.get(f"/api/v1/analyses/{analysis_id}/result")).json()
+    parsed = AnalysisReport.model_validate(report)
+    # Onarım turlarının token'ı da faturaya girmeli.
+    assert parsed.token_usage.total_tokens > 0
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_rate_limit_tukendiginde_retry_after_ile_biter(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADR §7: PROVIDER_RATE_LIMITED 429 + retry_after."""
+    # openrouter_max_retries varsayılanı 4 → 5 istek; hepsi 429.
+    fake = install_fake_provider(monkeypatch, rate_limit_first=99)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "failed"
+    assert len(fake.requests) == get_settings().openrouter_max_retries + 1
+
+    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
+    AnalysisJobRead.model_validate(job)
+    assert job["status"] == "failed"
+    assert job["error"]["code"] == "PROVIDER_RATE_LIMITED"
+    assert job["error"]["status"] == 429
+    # Sağlayıcının söylediği süre kullanıcıya taşınmalı.
+    assert job["error"]["retry_after"] == 3.0
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_rate_limit_gecicilyse_is_tamamlanir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Backoff işe yarıyor: geçici 429 işi öldürmemeli."""
+    fake = install_fake_provider(monkeypatch, rate_limit_first=2)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+    assert len(fake.requests) == 3
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_modelin_atladigi_kayitlar_rapordan_dusmez(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """EN SİNSİ HATA — atlanan kayıt hiçbir toplama kontrolüne takılmaz."""
+    install_fake_provider(monkeypatch, drop_records=2)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+    report = (await client.get(f"/api/v1/analyses/{analysis_id}/result")).json()
+    parsed = AnalysisReport.model_validate(report)
+
+    # Adetler yine analiz edilen kayda EŞİT olmalı.
+    assert sum(q.count for q in parsed.top_questions) == (
+        parsed.preprocessing_summary.analyzed_count
+    )
+    # Kullanıcı modelin kayıt atladığını GÖRMELİ.
+    kodlar = {w.code for w in parsed.warnings}
+    assert "LLM_UNASSIGNED_RECORDS" in kodlar
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_anahtar_yalnizca_authorization_basliginda_gider(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADR §9: anahtar prompt'a, gövdeye veya loga girmez."""
+    fake = install_fake_provider(monkeypatch)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    assert fake.auth_headers
+    assert all(h == f"Bearer {TEST_KEY}" for h in fake.auth_headers)
+    # İstek GÖVDESİNDE anahtar YOK.
+    for body in fake.requests:
+        assert TEST_KEY not in json_dumps(body)
+
+    # Rapor gövdesinde de yok.
+    report = (await client.get(f"/api/v1/analyses/{analysis_id}/result")).text
+    assert TEST_KEY not in report
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_anahtar_suresi_dolmussa_provider_auth_failed(
+    client: AsyncClient,
+) -> None:
+    """Kuyrukta TTL'i dolmuş iş: traceback değil, sözleşmeye uygun hata."""
+    from redis import Redis
+
+    settings = get_settings()
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    # Anahtarı elle sil — TTL'in dolmasını taklit ediyor.
+    redis_client = Redis.from_url(settings.redis_url)
+    try:
+        redis_client.delete(secret_store.redis_key(analysis_id))
+    finally:
+        redis_client.close()
+
+    assert await tasks.run_analysis(analysis_id) == "failed"
+
+    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
+    assert job["error"]["code"] == "PROVIDER_AUTH_FAILED"
+    assert job["error"]["status"] == 422
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_prompt_kayitlari_delimiter_icinde_gonderir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADR §9: açık delimiter + tool çağrıları kapalı."""
+    fake = install_fake_provider(monkeypatch)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    body = fake.requests[0]
+    assert "tools" not in body
+    assert body["response_format"]["json_schema"]["strict"] is True
+    prompt = body["messages"][1]["content"]
+    assert "<kayitlar>" in prompt and "</kayitlar>" in prompt
+    assert '<kayit id="' in prompt
+    # System prompt backend'den geliyor, istemciden değil.
+    assert "GÜVENLİK KURALLARI" in body["messages"][0]["content"]
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_anahtar_loglara_yazilmaz(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Plan §4 ölçüt 5 / ADR §9: anahtar loglarda YOK.
+
+    Tüm akış boyunca kök logger'a düşen HER kaydı yakalayıp anahtarı
+    arıyoruz. `caplog` yerine elle handler takılıyor çünkü kanıtlanmak
+    istenen şey tam olarak `RedactionFilter`'ın devrede olduğu yol.
+    """
+    import logging
+
+    from app.core.logging import RedactionFilter
+
+    captured: list[str] = []
+
+    class _Capture(logging.Handler):
+        """Filtre UYGULANDIKTAN SONRA kaydın tamamını yakalar.
+
+        Yalnızca biçimlenmiş mesaja bakmak yetmez: anahtar `extra=` ile
+        geçirilen bir alanda da taşınabilir. Bu yüzden `record.__dict__`'in
+        tamamı da metne çevriliyor.
+        """
+
+        def emit(self, record: logging.LogRecord) -> None:
+            captured.append(f"{record.getMessage()} {record.__dict__!r}")
+
+    fake = install_fake_provider(monkeypatch)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    handler = _Capture()
+    handler.addFilter(RedactionFilter())
+    root = logging.getLogger()
+    root.addHandler(handler)
+    previous = root.level
+    root.setLevel(logging.DEBUG)
+    try:
+        assert await tasks.run_analysis(analysis_id) == "completed"
+    finally:
+        root.removeHandler(handler)
+        root.setLevel(previous)
+
+    logs = "\n".join(captured)
+    assert logs, "log yakalanamadı; test bir şey kanıtlamıyor"
+    assert TEST_KEY not in logs
+    assert "sk-or-v1" not in logs
+    # Sağlayıcıya giden istek gerçekten yapıldı — yani test boş bir akışı
+    # değil, anahtarın kullanıldığı akışı ölçüyor.
+    assert fake.auth_headers
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_bilinmeyen_prompt_surumu_reddedilir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Prompt metni backend'de sürümlenir; sessizce varsayılana düşülmez."""
+    install_fake_provider(monkeypatch)
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id, prompt_version="faq_analysis/v99")
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    assert await tasks.run_analysis(analysis_id) == "failed"
+    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
+    assert job["error"]["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
