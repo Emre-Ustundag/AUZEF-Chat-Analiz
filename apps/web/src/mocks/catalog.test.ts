@@ -38,7 +38,7 @@ it("dondurulmuş model kimlikleri, fiyatlar ve context window değerleri exact",
         context_window: 1_048_576,
       },
     ],
-    default_model: "anthropic/claude-sonnet-4.6",
+    default_model: "google/gemini-2.5-flash",
     default_prompt_version: "faq_analysis/v1",
   });
 });

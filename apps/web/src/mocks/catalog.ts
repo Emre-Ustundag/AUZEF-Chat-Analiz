@@ -33,7 +33,7 @@ export const MOCK_MODELS: readonly ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL: ModelId = "anthropic/claude-sonnet-4.6";
+export const DEFAULT_MODEL: ModelId = "google/gemini-2.5-flash";
 export const DEFAULT_PROMPT_VERSION: PromptVersion = "faq_analysis/v1";
 
 /** Backend'de sürümlenmiş prompt'lar; mock tek sürüm tanıyor. */

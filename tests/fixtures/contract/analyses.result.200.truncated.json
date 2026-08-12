@@ -117,7 +117,7 @@
       "message": "Sayfada 250.000 satır bulundu; analiz ilk 100.000 satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı."
     }
   ],
-  "model": "anthropic/claude-sonnet-4.6",
+  "model": "google/gemini-2.5-flash",
   "prompt_version": "faq_analysis/v1",
   "prompt_hash": "sha256:2f8a1c9e4b7d",
   "token_usage": {
@@ -125,5 +125,5 @@
     "completion_tokens": 96400,
     "total_tokens": 1380400
   },
-  "estimated_cost_usd": 5.298
+  "estimated_cost_usd": 0.6262
 }

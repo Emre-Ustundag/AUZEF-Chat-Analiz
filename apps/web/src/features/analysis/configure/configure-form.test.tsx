@@ -80,7 +80,7 @@ const models: ModelList = {
       context_window: 1_048_576,
     },
   ],
-  default_model: "anthropic/claude-sonnet-4.6",
+  default_model: "google/gemini-2.5-flash",
   default_prompt_version: "faq_analysis/v1",
 };
 
@@ -127,7 +127,7 @@ describe("ConfigureForm", () => {
     await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
 
     const [request] = createAnalysis.mock.calls[0];
-    expect(request.model).toBe("anthropic/claude-sonnet-4.6");
+    expect(request.model).toBe("google/gemini-2.5-flash");
     expect(request.text_column).toBe("mesaj");
     expect(request.sheet_name).toBe("Mesajlar");
   });

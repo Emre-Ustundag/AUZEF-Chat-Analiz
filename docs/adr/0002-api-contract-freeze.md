@@ -62,8 +62,9 @@ doğrulandı. Üç whitelist üyesinin de `structured_outputs` desteği zorunlud
 bu nedenle bu kabiliyeti yayımlamayan eski `anthropic/claude-sonnet-4`
 yerine `anthropic/claude-sonnet-4.6` seçildi.
 
-Varsayılan model `anthropic/claude-sonnet-4.6`, varsayılan ve bilinen prompt
-sürümü `faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan okur;
+Daha düşük katalog fiyatı nedeniyle varsayılan model
+`google/gemini-2.5-flash`, varsayılan ve bilinen prompt sürümü
+`faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan okur;
 TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da birebir
 karşılaştırılır.
 

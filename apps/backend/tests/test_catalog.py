@@ -19,7 +19,7 @@ def test_catalog_and_defaults_are_frozen() -> None:
     ]
     assert set(ModelId) == {model.id for model in MODEL_CATALOG}
     assert set(PromptVersion) == set(KNOWN_PROMPT_VERSIONS)
-    assert DEFAULT_MODEL == ModelId.CLAUDE_SONNET_4_6
+    assert DEFAULT_MODEL == ModelId.GEMINI_2_5_FLASH
     assert MODEL_LIST.default_model == DEFAULT_MODEL
     assert DEFAULT_MODEL in {model.id for model in MODEL_LIST.models}
     assert MODEL_LIST.default_prompt_version == DEFAULT_PROMPT_VERSION
@@ -43,4 +43,4 @@ def test_catalog_matches_verified_openrouter_metadata() -> None:
 
 
 def test_fixture_token_cost_is_derived_from_catalog() -> None:
-    assert estimate_cost_usd(DEFAULT_MODEL, 1_284_000, 96_400) == 5.298
+    assert estimate_cost_usd(DEFAULT_MODEL, 1_284_000, 96_400) == 0.6262
