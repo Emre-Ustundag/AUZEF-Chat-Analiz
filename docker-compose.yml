@@ -1,6 +1,11 @@
 # AUZEF Chat Analiz — geliştirme ortamı (ADR §2).
 #
 # Uzun ömürlü YEDİ servis: web, api, worker, beat, postgres, redis, minio.
+# Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
+# çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
+# Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
+# fazla API replikası aynı anda `alembic upgrade` çalıştırdığında yarışa
+# yol açardı.
 #
 # `beat` Faz 4'te eklendi (ADR §9 retention). ADR §2 altı servis sayıyor;
 # yedincisi bir mimari sapma DEĞİL, aynı worker imajının farklı komutla
@@ -8,11 +13,6 @@
 # bozulmuyor. Ayrı process olmasının sebebi `workers/celery_app.py`'de:
 # worker'a `--beat` vermek tek replika varsayardı ve iki worker aynı anda
 # zamanlayıcı koşturursa her süpürme iki kez kuyruğa girerdi.
-# Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
-# çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
-# Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
-# fazla API replikası aynı anda `alembic upgrade` çalıştırdığında yarışa
-# yol açardı.
 
 services:
   # ------------------------------------------------------------- altyapı
@@ -122,6 +122,10 @@ services:
       UPLOAD_RETENTION_HOURS: ${UPLOAD_RETENTION_HOURS:-24}
       ORPHAN_OBJECT_RETENTION_HOURS: ${ORPHAN_OBJECT_RETENTION_HOURS:-24}
       RETENTION_SWEEP_INTERVAL_SECONDS: ${RETENTION_SWEEP_INTERVAL_SECONDS:-3600}
+      # Sağlayıcı taban adresi de config (ADR §9 değişmez 7). Varsayılan
+      # gerçek OpenRouter; sahte bir sağlayıcıya yönlendirebilmek, elde
+      # anahtar yokken uçtan uca akışı doğrulamanın tek yolu.
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
       CORS_ORIGINS: '["http://localhost:3000"]'
     ports:
       - "8000:8000"
@@ -166,8 +170,7 @@ services:
     container_name: auzef-beat
     # Aynı worker imajı, farklı komut: zamanlayıcı iş ÇALIŞTIRMAZ, yalnızca
     # kuyruğa koyar. İşi yapan `worker` servisidir.
-    command:
-      [
+    command: [
         "celery",
         "-A",
         "app.workers.celery_app.celery_app",
