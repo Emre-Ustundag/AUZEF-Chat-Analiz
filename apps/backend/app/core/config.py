@@ -101,6 +101,38 @@ class Settings(BaseSettings):
     #: Rapora eklenecek örnek mesaj sayısı (redakte + kırpılmış).
     report_examples_per_question: int = 3
 
+    # ------------------------------------------------------- OpenRouter (Faz 3)
+    #: ADR §2: OpenRouter çağrıları `httpx` ile yapılır. Taban adres config'tir;
+    #: testler sahte transport kullandığı için burayı değiştirmek zorunda değil.
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+
+    #: Tek bir HTTP çağrısının zaman aşımı. Hard timeout'un çok altında olmalı:
+    #: tek bir takılı çağrı işin tamamını yiyip bitirmemeli.
+    openrouter_timeout_seconds: float = 120.0
+
+    #: Rate limit / geçici sunucu hatasında yapılacak AZAMİ yeniden deneme
+    #: (ADR §10 risk 4: "sınırlı retry"). Sınırsız retry, 429 veren bir
+    #: sağlayıcıda işi hard timeout'a kadar döndürürdü.
+    openrouter_max_retries: int = 4
+
+    #: Exponential backoff taban ve tavan süresi (saniye). Gerçek bekleme
+    #: `min(tavan, taban * 2**deneme)` üzerine jitter eklenerek bulunur;
+    #: jitter olmadan paralel worker'lar aynı anda uyanıp aynı 429'u yeniden
+    #: üretirdi (thundering herd).
+    openrouter_backoff_base_seconds: float = 1.0
+    openrouter_backoff_max_seconds: float = 30.0
+
+    #: ADR §8: "Geçersiz yanıt en fazla iki kontrollü repair/retry
+    #: denemesinden sonra PROVIDER_BAD_RESPONSE ile sonlandırılır."
+    openrouter_max_repair_attempts: int = 2
+
+    #: Bir map çağrısına konacak azami kayıt sayısı ve tahmini token bütçesi.
+    #: İkisi birden uygulanır: hangisi önce dolarsa parti orada kapanır.
+    #: Model bağlam penceresi bir üst sınırdır ama ona kadar doldurmak
+    #: kaliteyi düşürür ve tek bir bozuk yanıt çok kaydı riske atar.
+    llm_chunk_max_records: int = 120
+    llm_chunk_max_prompt_tokens: int = 12_000
+
     # ----------------------------------------------------------- worker
     upload_profile_soft_time_limit_seconds: int = 900
     upload_profile_time_limit_seconds: int = 1200
