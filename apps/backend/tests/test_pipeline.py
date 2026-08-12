@@ -403,6 +403,43 @@ def test_bilinmeyen_kayit_kimligi_reddedilir(settings: Settings) -> None:
         )
 
 
+def test_confidence_kume_tutarliligindan_turetilir(settings: Settings) -> None:
+    """`confidence` grup içi baskınlıktan DETERMİNİSTİK türetilir.
+
+    Faz 2'de model yok; alan, aynı kanonik soruya düşen kayıt gruplarının
+    en baskınının payıdır. Tek gruplu sorularda doğal olarak 1.0 çıkar —
+    bu "uygulanmamış" demek DEĞİL; birden çok yazım aynı imzayı
+    paylaştığında değer 1.0'ın altına iner.
+    """
+    values = (
+        ["sınav tarihleri ne zaman açıklanacak"] * 30
+        + ["sınav tarihleri ne zaman belli olur"] * 10
+        + ["sınav tarihleri ne zaman"] * 4
+    )
+    result = preprocess(values, settings)
+    classifier = DeterministicClassifier()
+    report = aggregate(
+        analysis_id=uuid.uuid4(),
+        preprocess_result=result,
+        classification=classifier.classify(result.groups),
+        filename="veri.xlsx",
+        sheet_name="Mesajlar",
+        text_column="mesaj",
+        model="anthropic/claude-sonnet-4",
+        prompt_version="faq_analysis/v1",
+        classifier_id=classifier.identifier,
+        top_n=10,
+        settings=settings,
+    )
+
+    # Üç yazım tek soruda birleşti; baskın grup 30/44.
+    assert len(report.top_questions) == 1
+    question = report.top_questions[0]
+    assert question.count == 44
+    assert question.confidence == round(30 / 44, 2)
+    assert 0 < question.confidence < 1
+
+
 def test_faz2_token_ve_maliyet_sifir_raporlanir(settings: Settings) -> None:
     """Plan §4: Faz 2'de gerçek token yok, 0 raporlanır."""
     report = _aggregate(top_n=10, settings=settings)
