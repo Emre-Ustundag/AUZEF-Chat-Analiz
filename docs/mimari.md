@@ -197,7 +197,17 @@ Temel hata kodları:
 - `PROVIDER_TIMEOUT` — 504
 - `JOB_NOT_FOUND` — 404
 - `JOB_CONFLICT` — 409
+- `ANALYSIS_COST_LIMIT_EXCEEDED` — 409
 - `INTERNAL_ERROR` — 500
+
+`ANALYSIS_COST_LIMIT_EXCEEDED` Faz 3'te eklendi. Gerekçe: arayüz kullanıcı
+metnini hata KODU başına tutuyor ve backend'in `detail` alanını bilinçli
+olarak göstermiyor (ham sağlayıcı metni kullanıcıya basılmaz). Maliyet
+tavanı aşımı `JOB_CONFLICT` ile raporlansaydı kullanıcı "bu işlem için
+zaten devam eden bir analiz var" mesajını görürdü — durumuyla ilgisi
+olmayan bir metin. Ayrı anlamın ayrı kodu olmak zorunda. Kod tekrar
+denenebilir hatalar kümesine DAHİL DEĞİLDİR: ayar değişmeden yeniden
+denemek aynı sonucu verir.
 
 Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve loglara yazılmaz.
 
