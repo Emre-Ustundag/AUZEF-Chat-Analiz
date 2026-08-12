@@ -19,13 +19,19 @@ dependencies = [
     "pyarrow>=18.1",
     "python-multipart>=0.0.20",
     "cryptography>=50.0.0",
+    # ADR §2: "`httpx`: OpenRouter çağrıları". Faz 3'e kadar YALNIZCA dev
+    # grubundaydı (plan §3.2 (a) onu test aracı sayıyordu) ve o zaman doğruydu.
+    # Faz 3 `services/openrouter.py`'yi ekleyince httpx bir ÇALIŞMA ZAMANI
+    # bağımlılığı oldu; imaj `uv sync --no-dev` ile kurulduğu için
+    # `docker compose up` ModuleNotFoundError ile açılmıyordu. Testler bunu
+    # yakalayamazdı: onlar dev grubunun kurulu olduğu ortamda koşuyor.
+    "httpx>=0.28",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.25",
-    "httpx>=0.28",
     "ruff>=0.9",
     "mypy>=1.14",
     "boto3-stubs[s3]>=1.35",
