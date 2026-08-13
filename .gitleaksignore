@@ -1,0 +1,3 @@
+# Boş AUZEF_BACKEND_MASTER_KEY şablonunun generic-api-key yanlış pozitifi.
+# Fingerprint; commit, dosya, kural ve satıra özeldir. Yeni bulguları gizlemez.
+be25d70fbf2b9ce60479a684f6e7335743a65a83:apps/backend/.env.example:generic-api-key:8
