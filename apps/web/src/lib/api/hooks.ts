@@ -17,6 +17,7 @@ import {
   getUpload,
 } from "./endpoints";
 import type { UploadProgress } from "./endpoints";
+import { isRetryableQueryError } from "./query-client";
 import { queryKeys } from "./query-keys";
 import { LIMITS, isAnalysisSettled, isUploadSettled } from "./schemas";
 import type { AnalysisRequest, ExportFormat } from "./schemas";
@@ -28,6 +29,41 @@ import type { AnalysisRequest, ExportFormat } from "./schemas";
  * Polling'in terminal durumda durması kritik — durmazsa tamamlanmış bir job
  * için sonsuza kadar istek atılır.
  */
+
+interface PollingQuery<TStatus extends string> {
+  state: {
+    data: { status: TStatus } | undefined;
+    error: unknown;
+    status: "error" | "pending" | "success";
+  };
+}
+
+/** Upload ve analiz job'larının ortak polling kararı. */
+function jobPollingInterval<TStatus extends string>(
+  query: PollingQuery<TStatus>,
+  isSettled: (status: TStatus) => boolean,
+): number | false {
+  const cachedStatus = query.state.data?.status;
+
+  // Cache terminal ise sonradan görünen bir hata polling'i yeniden
+  // başlatamaz. Terminal durum sunucudaki işin artık değişmeyeceği
+  // garantisidir ve diğer tüm hata kararlarından önce gelir.
+  if (cachedStatus !== undefined && isSettled(cachedStatus)) return false;
+
+  if (query.state.status === "error") {
+    // İlk başarılı cevap hiç gelmediyse ortada takip edilecek bilinen bir
+    // job yoktur. TanStack'in kısa retry'ları bittikten sonra interval ile
+    // sonsuza kadar yeni bir retry döngüsü başlatma.
+    if (query.state.data === undefined) return false;
+
+    // Cache'te aktif bir job varken yalnızca geçici/ bilinmeyen arka plan
+    // hatalarından sonra poll devam eder. 404 gibi kalıcı bir ApiError'la
+    // silinmiş veya süresi dolmuş bir job'ı sorgulamaya devam etme.
+    if (!isRetryableQueryError(query.state.error)) return false;
+  }
+
+  return LIMITS.POLL_INTERVAL_MS;
+}
 
 export function useModels() {
   return useQuery({
@@ -42,17 +78,7 @@ export function useUploadStatus(uploadId: string | null) {
     queryKey: queryKeys.upload(uploadId ?? ""),
     queryFn: ({ signal }) => getUpload(uploadId!, signal),
     enabled: uploadId !== null,
-    refetchInterval: (query) => {
-      // Hata durumunda polling DURUR. Yalnızca `data`ya bakılırsa, istek hata
-      // verdiğinde veri hiç oluşmadığı için durum "henüz başlamadı" sanılır ve
-      // poll sonsuza kadar sürer: ekran hata gösterirken arkada 2,5 saniyede
-      // bir istek atılır. Geçici hataları `retry` politikası zaten ayrı ele
-      // alıyor; buraya düşen hata kalıcıdır.
-      if (query.state.status === "error") return false;
-      const status = query.state.data?.status;
-      if (!status) return LIMITS.POLL_INTERVAL_MS;
-      return isUploadSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
-    },
+    refetchInterval: (query) => jobPollingInterval(query, isUploadSettled),
     // Poll edilen kaynak her zaman taze kabul edilmeli, yoksa refetchInterval
     // ile staleTime birbiriyle yarışır.
     staleTime: 0,
@@ -64,13 +90,7 @@ export function useAnalysisJob(analysisId: string | null) {
     queryKey: queryKeys.analysisJob(analysisId ?? ""),
     queryFn: ({ signal }) => getAnalysisJob(analysisId!, signal),
     enabled: analysisId !== null,
-    refetchInterval: (query) => {
-      // useUploadStatus'taki ile aynı kural: hata kalıcıdır, poll durur.
-      if (query.state.status === "error") return false;
-      const status = query.state.data?.status;
-      if (!status) return LIMITS.POLL_INTERVAL_MS;
-      return isAnalysisSettled(status) ? false : LIMITS.POLL_INTERVAL_MS;
-    },
+    refetchInterval: (query) => jobPollingInterval(query, isAnalysisSettled),
     // Bilinçli karar: refetchIntervalInBackground açılmadı. İş 45 dakika
     // sürebildiği için kullanıcı sekmeyi arka plana alacak; varsayılan
     // davranışta polling orada duruyor ve sekmeye dönünce kaldığı yerden
