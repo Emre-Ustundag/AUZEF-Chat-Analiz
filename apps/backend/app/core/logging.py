@@ -10,7 +10,7 @@ from typing import Final, TextIO, cast
 
 import structlog
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
-from structlog.typing import EventDict, WrappedLogger
+from structlog.typing import EventDict, Processor, WrappedLogger
 
 from app.core.config import Settings
 from app.core.tracing import current_trace_id
@@ -67,26 +67,51 @@ def redact_sensitive(
 def configure_logging(settings: Settings) -> None:
     """Process logging'ini doğrulanmış settings ile tek biçime getirir."""
     level = getattr(logging, settings.log_level)
-    handler = _DynamicStdoutHandler()
-    handler.setFormatter(logging.Formatter("%(message)s"))
-    root_logger = logging.getLogger()
-    root_logger.handlers = [handler]
-    root_logger.setLevel(level)
 
-    # Bu istemcilerin INFO access logları tam URL (query string dâhil) taşır.
-    # Uygulamanın kendi saf-ASGI request logu güvenli tek erişim kaydıdır.
-    for noisy_logger in ("httpx", "httpx2", "uvicorn.access"):
-        logging.getLogger(noisy_logger).disabled = True
+    #: structlog ve stdlib kayıtlarının PAYLAŞTIĞI ön işlemler. Redaksiyonun
+    #: burada olması şart: aksi hâlde yalnızca structlog çağrıları maskelenir.
+    shared_processors: list[Processor] = [
+        structlog.contextvars.merge_contextvars,
+        redact_sensitive,
+    ]
+
     structlog.configure(
         processors=[
-            structlog.contextvars.merge_contextvars,
-            redact_sensitive,
-            structlog.processors.JSONRenderer(sort_keys=True),
+            *shared_processors,
+            # Render etme, stdlib handler'ına devret: böylece structlog
+            # kayıtları ile uvicorn/warnings kayıtları TEK formatter'dan geçer.
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         wrapper_class=structlog.make_filtering_bound_logger(level),
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=False,
     )
+
+    # `foreign_pre_chain` olmadan structlog kullanmayan her kayıt (uvicorn.error
+    # startup satırları, `warnings`, ileride SQLAlchemy/Celery) aynı stdout'a
+    # DÜZ METİN düşerdi ve JSON parse eden log toplayıcıda akış bozulurdu.
+    handler = _DynamicStdoutHandler()
+    handler.setFormatter(
+        structlog.stdlib.ProcessorFormatter(
+            foreign_pre_chain=shared_processors,
+            processors=[
+                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                structlog.processors.JSONRenderer(sort_keys=True),
+            ],
+        )
+    )
+    root_logger = logging.getLogger()
+    root_logger.handlers = [handler]
+    root_logger.setLevel(level)
+
+    # uvicorn.access INFO logları tam URL'i (query string dâhil) taşır;
+    # uygulamanın kendi saf-ASGI request logu güvenli tek erişim kaydıdır.
+    logging.getLogger("uvicorn.access").disabled = True
+    # httpx istemcileri istek URL'ini INFO'da loglar ve o URL rutin olarak
+    # secret taşır. Logger'ı tamamen kapatmak provider HATALARINI da gizlerdi;
+    # yalnızca INFO gürültüsü susturulur, WARNING ve üstü görünür kalır.
+    for http_client_logger in ("httpx", "httpx2"):
+        logging.getLogger(http_client_logger).setLevel(logging.WARNING)
 
 
 class RequestLoggingMiddleware:

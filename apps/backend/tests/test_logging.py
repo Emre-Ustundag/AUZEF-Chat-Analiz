@@ -1,6 +1,7 @@
 """Yapılandırılmış logların izinli alanları ve redaksiyonu."""
 
 import json
+import logging
 
 from _pytest.capture import CaptureFixture
 from fastapi.testclient import TestClient
@@ -8,6 +9,31 @@ from structlog.typing import EventDict
 
 from app.core.logging import REDACTED, redact_sensitive
 from app.main import create_app
+
+
+def test_structlog_free_records_are_also_json(capsys: CaptureFixture[str]) -> None:
+    """uvicorn/warnings gibi kayıtlar da aynı JSON akışına düşer.
+
+    `foreign_pre_chain` olmadan bunlar düz metin çıkar ve JSON parse eden log
+    toplayıcıda akışı bozardı.
+    """
+    create_app()
+    logging.getLogger("uvicorn.error").warning("Application startup complete.")
+
+    lines = [line for line in capsys.readouterr().out.splitlines() if line.startswith("{")]
+    record = json.loads(lines[-1])
+    assert record["event"] == "Application startup complete."
+
+
+def test_http_client_loggers_keep_warnings_visible() -> None:
+    """INFO'daki URL gürültüsü susar ama provider HATALARI görünür kalır."""
+    create_app()
+
+    for name in ("httpx", "httpx2"):
+        logger = logging.getLogger(name)
+        assert not logger.disabled
+        assert not logger.isEnabledFor(logging.INFO)
+        assert logger.isEnabledFor(logging.WARNING)
 
 
 def test_nested_redaction_masks_all_sensitive_names() -> None:
