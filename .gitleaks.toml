@@ -1,0 +1,15 @@
+title = "AUZEF Chat Analiz secret scanning configuration"
+
+[extend]
+useDefault = true
+
+# Gitleaks'in generic-api-key kuralı yalnızca bu boş şablon satırını yanlış
+# pozitif olarak işaretliyor. Hem dosya yolu hem satır içeriği eşleşmeden
+# allowlist uygulanmaz; dolu veya başka bir konumdaki anahtarlar taranmaya
+# devam eder.
+[[allowlists]]
+description = "Boş backend master key şablonu"
+condition = "AND"
+regexTarget = "line"
+regexes = ['''^AUZEF_BACKEND_MASTER_KEY=$''']
+paths = ['''^apps/backend/\.env\.example$''']
