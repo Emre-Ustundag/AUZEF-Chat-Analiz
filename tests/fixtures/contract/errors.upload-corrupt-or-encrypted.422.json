@@ -1,0 +1,9 @@
+{
+  "type": "/errors/upload-corrupt-or-encrypted",
+  "title": "Dosya okunamadı",
+  "status": 422,
+  "code": "UPLOAD_CORRUPT_OR_ENCRYPTED",
+  "detail": "Dosya okunamadı (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

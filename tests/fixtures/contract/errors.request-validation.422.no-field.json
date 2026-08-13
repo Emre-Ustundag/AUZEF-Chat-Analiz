@@ -1,0 +1,18 @@
+{
+  "type": "/errors/request-validation",
+  "title": "İstek doğrulanamadı",
+  "status": 422,
+  "code": "REQUEST_VALIDATION",
+  "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": [
+    {
+      "field": null,
+      "message": "Field required"
+    },
+    {
+      "field": "top_n",
+      "message": "Input should be greater than or equal to 1"
+    }
+  ]
+}

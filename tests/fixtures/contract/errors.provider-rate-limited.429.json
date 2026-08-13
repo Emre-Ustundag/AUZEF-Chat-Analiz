@@ -1,0 +1,10 @@
+{
+  "type": "/errors/provider-rate-limited",
+  "title": "Sağlayıcı istek sınırına ulaşıldı",
+  "status": 429,
+  "code": "PROVIDER_RATE_LIMITED",
+  "detail": "Sağlayıcı istek sınırına ulaşıldı (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": [],
+  "retry_after": 60.0
+}

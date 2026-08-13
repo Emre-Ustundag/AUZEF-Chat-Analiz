@@ -1,0 +1,9 @@
+{
+  "type": "/errors/provider-auth-failed",
+  "title": "Sağlayıcı kimlik doğrulaması başarısız",
+  "status": 422,
+  "code": "PROVIDER_AUTH_FAILED",
+  "detail": "Sağlayıcı kimlik doğrulaması başarısız (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

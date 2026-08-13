@@ -1,0 +1,9 @@
+{
+  "type": "/errors/upload-too-large",
+  "title": "Dosya boyutu sınırı aşıldı",
+  "status": 413,
+  "code": "UPLOAD_TOO_LARGE",
+  "detail": "Dosya boyutu sınırı aşıldı (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

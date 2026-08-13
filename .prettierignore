@@ -11,6 +11,11 @@ test-results/
 # Generated and binary files
 package-lock.json
 next-env.d.ts
+
+# Sözleşme artefaktları: Python üretiyor (json.dumps indent=2). Prettier bunları
+# printWidth'e göre yeniden sararsa `export_openapi.py --check` kırılır.
+docs/api/openapi.json
+tests/fixtures/contract/
 public/*.ico
 public/*.svg
 *.parquet

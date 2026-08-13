@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0",
+  "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+  "status": "completed",
+  "generated_at": "2026-08-11T10:12:15.000Z",
+  "source_summary": {
+    "filename": "auzef-chatbot-mesajlari.xlsx",
+    "sheet_name": "Mesajlar",
+    "text_column": "mesaj",
+    "total_rows": 48213
+  },
+  "preprocessing_summary": {
+    "analyzed_count": 47106,
+    "discarded_count": 1107,
+    "duplicate_count": 15566,
+    "redacted_count": 2840,
+    "unique_count": 31540
+  },
+  "top_questions": [
+    {
+      "id": "q1",
+      "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+      "count": 11680,
+      "percentage": 24.8,
+      "confidence": 0.94,
+      "redacted_examples": [
+        "sınav tarihleri belli mi",
+        "vize ne zaman"
+      ]
+    },
+    {
+      "id": "q2",
+      "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
+      "count": 8102,
+      "percentage": 17.2,
+      "confidence": 0.91,
+      "redacted_examples": [
+        "ders kitabı nerede",
+        "pdf'leri bulamıyorum"
+      ]
+    },
+    {
+      "id": "q3",
+      "canonical_question": "Harç ödemesini nasıl yaparım?",
+      "count": 5748,
+      "percentage": 12.2,
+      "confidence": 0.89,
+      "redacted_examples": [
+        "harç yatırma",
+        "ödeme yapamıyorum"
+      ]
+    },
+    {
+      "id": "q4",
+      "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+      "count": 4523,
+      "percentage": 9.6,
+      "confidence": 0.87,
+      "redacted_examples": [
+        "kayıt yenilemedim ne olur"
+      ]
+    },
+    {
+      "id": "q5",
+      "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
+      "count": 3311,
+      "percentage": 7.0,
+      "confidence": 0.85,
+      "redacted_examples": [
+        "sınav yeri",
+        "hangi binada"
+      ]
+    },
+    {
+      "id": "q6",
+      "canonical_question": "Mazeret sınavına nasıl başvurulur?",
+      "count": 2204,
+      "percentage": 4.7,
+      "confidence": 0.82,
+      "redacted_examples": [
+        "mazeret sınavı başvuru"
+      ]
+    },
+    {
+      "id": "q7",
+      "canonical_question": "Not itirazı nasıl yapılır?",
+      "count": 1640,
+      "percentage": 3.5,
+      "confidence": 0.78,
+      "redacted_examples": [
+        "notuma itiraz etmek istiyorum"
+      ]
+    },
+    {
+      "id": "q8",
+      "canonical_question": "Öğrenci belgesi nasıl alınır?",
+      "count": 1129,
+      "percentage": 2.4,
+      "confidence": 0.76,
+      "redacted_examples": [
+        "öğrenci belgesi lazım"
+      ]
+    }
+  ],
+  "themes": [
+    {
+      "id": "t1",
+      "name": "Sınav ve takvim",
+      "count": 17195,
+      "percentage": 36.5,
+      "related_question_ids": [
+        "q1",
+        "q5",
+        "q6"
+      ]
+    },
+    {
+      "id": "t2",
+      "name": "Ders materyalleri",
+      "count": 8102,
+      "percentage": 17.2,
+      "related_question_ids": [
+        "q2"
+      ]
+    },
+    {
+      "id": "t3",
+      "name": "Ödeme ve kayıt",
+      "count": 10271,
+      "percentage": 21.8,
+      "related_question_ids": [
+        "q3",
+        "q4"
+      ]
+    },
+    {
+      "id": "t4",
+      "name": "Belge ve itiraz",
+      "count": 2769,
+      "percentage": 5.9,
+      "related_question_ids": [
+        "q7",
+        "q8"
+      ]
+    }
+  ],
+  "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
+  "warnings": [],
+  "model": "google/gemini-2.5-flash",
+  "prompt_version": "faq_analysis/v1",
+  "prompt_hash": "sha256:2f8a1c9e4b7d",
+  "token_usage": {
+    "prompt_tokens": 1284000,
+    "completion_tokens": 96400,
+    "total_tokens": 1380400
+  },
+  "estimated_cost_usd": 0.6262
+}

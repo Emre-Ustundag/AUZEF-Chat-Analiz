@@ -49,18 +49,28 @@ export class ApiError extends Error {
   }
 }
 
+/** Backend'in her cevaba (hata cevapları dâhil) koyduğu izleme kimliği. */
+export const TRACE_ID_HEADER = "X-Trace-Id";
+
 /**
  * Beklenen biçimde bir hata gövdesi alınamadığında kullanılır; ağ kopması,
  * reverse proxy'nin ürettiği HTML hata sayfası veya bozuk JSON gibi durumlar.
+ *
+ * `traceId` header'dan alınır: gövde bozuksa bile sunucu tarafında
+ * grep'lenecek bir kimlik kalsın. Sözleşme drift'inin üretimdeki semptomu tam
+ * olarak budur ve tam da o anda iz sürebilmek gerekir.
  */
-export function unknownApiError(status: number, detail: string): ApiError {
+export function unknownApiError(status: number, detail: string, traceId = ""): ApiError {
+  // HTTP/proxy/ağ statüsü ayrı bir diagnostic değerdir; ProblemDetails
+  // invariantı gereği INTERNAL_ERROR gövdesi her zaman 500 taşır.
+  void status;
   return new ApiError({
     type: "/errors/internal",
     title: "Beklenmeyen hata",
-    status,
+    status: 500,
     code: "INTERNAL_ERROR",
     detail,
-    trace_id: "",
+    trace_id: traceId,
     errors: [],
   });
 }
@@ -70,11 +80,17 @@ export function unknownApiError(status: number, detail: string): ApiError {
  * olmayan cevaplarda da (export indirmesi) kullanılıyor.
  */
 export async function toApiError(response: Response): Promise<ApiError> {
+  const traceId = response.headers.get(TRACE_ID_HEADER) ?? "";
+
   let body: unknown;
   try {
     body = await response.json();
   } catch {
-    return unknownApiError(response.status, `Sunucu yanıtı okunamadı (HTTP ${response.status}).`);
+    return unknownApiError(
+      response.status,
+      `Sunucu yanıtı okunamadı (HTTP ${response.status}).`,
+      traceId,
+    );
   }
 
   const parsed = problemDetailsSchema.safeParse(body);
@@ -82,6 +98,7 @@ export async function toApiError(response: Response): Promise<ApiError> {
     return unknownApiError(
       response.status,
       `Sunucu beklenmeyen bir hata biçimi döndü (HTTP ${response.status}).`,
+      traceId,
     );
   }
 
@@ -130,11 +147,15 @@ export async function apiRequest<T>(
     return schema.parse(undefined);
   }
 
+  // Başarılı cevabın trace id'si: aşağıdaki iki hata yolu sözleşme drift'inin
+  // ta kendisidir ve tam o anda sunucu logunu bulabilmek gerekir.
+  const traceId = response.headers.get(TRACE_ID_HEADER) ?? "";
+
   let payload: unknown;
   try {
     payload = await response.json();
   } catch {
-    throw unknownApiError(response.status, "Sunucu yanıtı çözümlenemedi.");
+    throw unknownApiError(response.status, "Sunucu yanıtı çözümlenemedi.", traceId);
   }
 
   const parsed = schema.safeParse(payload);
@@ -142,6 +163,7 @@ export async function apiRequest<T>(
     throw unknownApiError(
       response.status,
       `Sunucu yanıtı beklenen sözleşmeye uymuyor: ${z.prettifyError(parsed.error)}`,
+      traceId,
     );
   }
 

@@ -1,0 +1,17 @@
+{
+  "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+  "status": "failed",
+  "filename": "bozuk.xlsx",
+  "size_bytes": 1204,
+  "created_at": "2026-08-11T10:00:00.000Z",
+  "profile": null,
+  "error": {
+    "type": "/errors/upload-corrupt-or-encrypted",
+    "title": "Dosya okunamadı",
+    "status": 422,
+    "code": "UPLOAD_CORRUPT_OR_ENCRYPTED",
+    "detail": "OOXML yapısı doğrulanamadı.",
+    "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+    "errors": []
+  }
+}

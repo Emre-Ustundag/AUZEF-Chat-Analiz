@@ -9,6 +9,8 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
+import { ERROR_STATUS_BY_CODE, LIMITS, percentageHalfUp } from "@/lib/api/schemas";
+import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
  * Backend hazır olana kadar kullanılan bellek içi sahte durum deposu.
@@ -27,7 +29,8 @@ import type {
  */
 
 /** Dosya adına gömülen anahtar kelimelerle hata yolları tetiklenir. */
-export type Scenario = "success" | "upload-failed" | "analysis-failed" | "rate-limited" | "slow";
+export type Scenario =
+  "success" | "upload-failed" | "analysis-failed" | "rate-limited" | "slow" | "row-limit";
 
 export function scenarioFromFilename(filename: string): Scenario {
   const name = filename.toLocaleLowerCase("tr");
@@ -35,8 +38,19 @@ export function scenarioFromFilename(filename: string): Scenario {
   if (name.includes("hata")) return "analysis-failed";
   if (name.includes("limit")) return "rate-limited";
   if (name.includes("yavas")) return "slow";
+  // ADR-0002 #2'yi tarayıcıda çalıştırılabilir yapan senaryo: satır sınırı
+  // aşılır ama iş reddedilmez, kırpılır ve uyarılır.
+  if (name.includes("buyuk")) return "row-limit";
   return "success";
 }
+
+/** ADR-0001 §9 / ADR-0002 #2: aşılırsa reddedilmez, kırpılır.
+ *
+ * Sözleşmedeki tek kaynaktan geliyor — kendi kopyasını tutsaydı, mock'un
+ * ürettiği gövdeler Zod invariant'larından sessizce ayrışabilirdi.
+ */
+const MAX_ROWS = LIMITS.MAX_ROWS;
+const ROW_LIMIT_TOTAL_ROWS = 250_000;
 
 interface UploadRecord {
   uploadId: string;
@@ -54,6 +68,13 @@ interface AnalysisRecord {
   cancelledAt: number | null;
 }
 
+interface IdempotencyRecord {
+  fingerprint: string;
+  responseBody: unknown;
+  traceId: string;
+  expiresAt: number;
+}
+
 /**
  * Modül seviyesindeki Map'ler dev sunucusunun ömrü boyunca yaşar. globalThis
  * üzerinde tutuluyorlar çünkü Next dev'de modüller hot reload sırasında
@@ -62,10 +83,70 @@ interface AnalysisRecord {
 const globalStore = globalThis as unknown as {
   __auzefMockUploads?: Map<string, UploadRecord>;
   __auzefMockAnalyses?: Map<string, AnalysisRecord>;
+  __auzefMockIdempotency?: Map<string, IdempotencyRecord>;
 };
 
 const uploads = (globalStore.__auzefMockUploads ??= new Map());
 const analyses = (globalStore.__auzefMockAnalyses ??= new Map());
+const idempotency = (globalStore.__auzefMockIdempotency ??= new Map());
+
+export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type IdempotencyLookup =
+  | { kind: "miss" }
+  | { kind: "conflict" }
+  | { kind: "replay"; responseBody: unknown; traceId: string };
+
+function normalizedPath(path: string): string {
+  const collapsed = path.replace(/\/{2,}/g, "/");
+  return collapsed.length > 1 ? collapsed.replace(/\/$/, "") : collapsed;
+}
+
+function idempotencyStorageKey(method: string, path: string, key: string): string {
+  return JSON.stringify([method.toUpperCase(), normalizedPath(path), key]);
+}
+
+/** Aynı tuple/fingerprint replay, aynı tuple/farklı fingerprint conflict'tir. */
+export function lookupIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+): IdempotencyLookup {
+  const storageKey = idempotencyStorageKey(method, path, key);
+  const stored = idempotency.get(storageKey);
+
+  if (!stored) return { kind: "miss" };
+  if (stored.expiresAt <= Date.now()) {
+    idempotency.delete(storageKey);
+    return { kind: "miss" };
+  }
+  if (stored.fingerprint !== fingerprint) return { kind: "conflict" };
+
+  return {
+    kind: "replay",
+    responseBody: stored.responseBody,
+    traceId: stored.traceId,
+  };
+}
+
+/** İlk 202'nin body ve trace metadata'sını 24 saat saklar. */
+export function rememberIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+  responseBody: unknown,
+): { responseBody: unknown; traceId: string } {
+  const record: IdempotencyRecord = {
+    fingerprint,
+    responseBody,
+    traceId: randomUUID(),
+    expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+  };
+  idempotency.set(idempotencyStorageKey(method, path, key), record);
+  return { responseBody: record.responseBody, traceId: record.traceId };
+}
 
 const UPLOAD_VALIDATING_AFTER_MS = 1_500;
 const UPLOAD_SETTLED_AFTER_MS = 4_000;
@@ -89,6 +170,9 @@ export function problem(
   detail: string,
   extra: Partial<ProblemDetails> = {},
 ): ProblemDetails {
+  if (status !== ERROR_STATUS_BY_CODE[code]) {
+    throw new Error(`${code} status=${ERROR_STATUS_BY_CODE[code]} taşımalı.`);
+  }
   return {
     type: `/errors/${code.toLowerCase().replaceAll("_", "-")}`,
     title,
@@ -134,7 +218,7 @@ export function getUploadRecord(uploadId: string): Upload | null {
     filename: record.filename,
     size_bytes: record.sizeBytes,
     created_at: new Date(record.createdAt).toISOString(),
-    profile: status === "ready" ? buildProfile() : null,
+    profile: status === "ready" ? buildProfile(record.scenario === "row-limit") : null,
     error:
       status === "failed"
         ? problem(
@@ -151,18 +235,20 @@ export function deleteUploadRecord(uploadId: string): boolean {
   return uploads.delete(uploadId);
 }
 
-function buildProfile() {
+function buildProfile(exceedsRowLimit = false) {
+  const totalRows = exceedsRowLimit ? ROW_LIMIT_TOTAL_ROWS : 48_213;
+
   return {
     sheets: [
       {
         name: "Mesajlar",
-        row_count: 48_213,
+        row_count: totalRows,
         column_count: 5,
         columns: [
           {
             name: "tarih",
             index: 0,
-            non_empty_count: 48_213,
+            non_empty_count: totalRows,
             empty_count: 0,
             unique_count: 41_002,
             avg_length: 19,
@@ -172,7 +258,7 @@ function buildProfile() {
           {
             name: "kullanici_id",
             index: 1,
-            non_empty_count: 48_213,
+            non_empty_count: totalRows,
             empty_count: 0,
             unique_count: 12_884,
             avg_length: 8,
@@ -182,7 +268,7 @@ function buildProfile() {
           {
             name: "mesaj",
             index: 2,
-            non_empty_count: 47_106,
+            non_empty_count: totalRows - 1_107,
             empty_count: 1_107,
             unique_count: 31_540,
             avg_length: 64,
@@ -196,7 +282,7 @@ function buildProfile() {
           {
             name: "kanal",
             index: 3,
-            non_empty_count: 48_213,
+            non_empty_count: totalRows,
             empty_count: 0,
             unique_count: 3,
             avg_length: 7,
@@ -206,7 +292,7 @@ function buildProfile() {
           {
             name: "yanit",
             index: 4,
-            non_empty_count: 44_980,
+            non_empty_count: totalRows - 3_233,
             empty_count: 3_233,
             unique_count: 8_712,
             avg_length: 128,
@@ -217,15 +303,15 @@ function buildProfile() {
       },
       {
         name: "Ham Veri",
-        row_count: 48_213,
+        row_count: totalRows,
         column_count: 2,
         columns: [
           {
             name: "id",
             index: 0,
-            non_empty_count: 48_213,
+            non_empty_count: totalRows,
             empty_count: 0,
-            unique_count: 48_213,
+            unique_count: totalRows,
             avg_length: 6,
             is_likely_text: false,
             sample_values: ["1", "2"],
@@ -233,7 +319,7 @@ function buildProfile() {
           {
             name: "icerik",
             index: 1,
-            non_empty_count: 47_106,
+            non_empty_count: totalRows - 1_107,
             empty_count: 1_107,
             unique_count: 31_540,
             avg_length: 64,
@@ -243,8 +329,8 @@ function buildProfile() {
         ],
       },
     ],
-    total_row_count: 48_213,
-    exceeds_row_limit: false,
+    total_row_count: totalRows * 2,
+    exceeds_row_limit: exceedsRowLimit,
   };
 }
 
@@ -333,11 +419,25 @@ export function getAnalysisJobRecord(analysisId: string): AnalysisJob | null {
   };
 }
 
-export function cancelAnalysisRecord(analysisId: string): boolean {
+/** DELETE /analyses/{id} sonucu — ADR-0002 #9. */
+export type CancelResult = "cancelled" | "not-found" | "terminal";
+
+/**
+ * Aktif job iptal edilir (204). Terminal job 409 JOB_CONFLICT üretir:
+ * tamamlanmış veya çoktan iptal edilmiş bir işi "iptal etmek" sessizce
+ * başarılı sayılmamalı. Bilinmeyen id 404.
+ */
+export function cancelAnalysisRecord(analysisId: string): CancelResult {
   const record = analyses.get(analysisId);
-  if (!record) return false;
+  if (!record) return "not-found";
+
+  const { status } = stageOf(record);
+  if (status === "completed" || status === "failed" || status === "cancelled") {
+    return "terminal";
+  }
+
   record.cancelledAt = Date.now();
-  return true;
+  return "cancelled";
 }
 
 export function analysisExists(analysisId: string): boolean {
@@ -349,7 +449,15 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
   if (!record) return null;
   if (stageOf(record).status !== "completed") return null;
 
-  const analyzed = 47_106;
+  // ADR-0002 #2: satır sınırı aşılırsa iş reddedilmez; ilk MAX_ROWS satır
+  // işlenir ve rapora ROW_LIMIT_TRUNCATED uyarısı eklenir.
+  const truncated = record.scenario === "row-limit";
+  const totalRows = truncated ? ROW_LIMIT_TOTAL_ROWS : 48_213;
+  const considered = Math.min(totalRows, MAX_ROWS);
+  const discarded = 1_107;
+  const analyzed = considered - discarded;
+  const unique = Math.round(analyzed * (31_540 / 47_106));
+  const duplicate = analyzed - unique;
 
   // Adet ve oranlar tek kaynaktan türetiliyor: gerçek backend de oranı
   // sayımdan hesaplayacak (ADR §4), sabit yazılmış yüzdeler sözleşmeyi
@@ -420,8 +528,6 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     { id: "t4", name: "Belge ve itiraz", questionIds: ["q7", "q8"] },
   ];
 
-  const pct = (count: number) => Number(((count / analyzed) * 100).toFixed(1));
-
   return {
     schema_version: "1.0",
     analysis_id: record.analysisId,
@@ -431,20 +537,20 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       filename: uploads.get(record.request.upload_id)?.filename ?? "veri.xlsx",
       sheet_name: record.request.sheet_name,
       text_column: record.request.text_column,
-      total_rows: 48_213,
+      total_rows: totalRows,
     },
     preprocessing_summary: {
       analyzed_count: analyzed,
-      discarded_count: 1_107,
-      duplicate_count: 15_566,
-      redacted_count: 2_841,
-      unique_count: 31_540,
+      discarded_count: discarded,
+      duplicate_count: duplicate,
+      redacted_count: Math.round(analyzed * (2_841 / 47_106)),
+      unique_count: unique,
     },
     top_questions: questions.slice(0, record.request.top_n).map((q) => ({
       id: q.id,
       canonical_question: q.canonical_question,
       count: q.count,
-      percentage: pct(q.count),
+      percentage: percentageHalfUp(q.count, analyzed),
       confidence: q.confidence,
       redacted_examples: q.examples,
     })),
@@ -456,24 +562,33 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
         0,
       );
 
-      // SÖZLEŞME SORUSU: ADR §8 related_question_ids'in top_n kırpmasından
-      // sonra ne göstereceğini tanımlamıyor. Burada yalnızca raporda gerçekten
-      // yer alan sorulara bağlanıyor; aksi halde arayüz çözemeyeceği bir
-      // kimliğe bağlantı vermiş olurdu. Backend'in aynı davranışı seçmesi
-      // gerekiyor, teyit edilmeli.
+      // ADR-0002 #5 ile donduruldu: yalnızca raporda gerçekten yer alan
+      // sorulara bağlanır; aksi halde arayüz çözemeyeceği bir kimliğe
+      // bağlantı vermiş olurdu. Backend aynı kuralı uygular ve
+      // tests/fixtures/contract/analyses.result.200.truncated.json ile
+      // iki taraftan da doğrulanır.
       const includedIds = new Set(questions.slice(0, record.request.top_n).map((q) => q.id));
 
       return {
         id: theme.id,
         name: theme.name,
         count,
-        percentage: pct(count),
+        percentage: percentageHalfUp(count, analyzed),
         related_question_ids: theme.questionIds.filter((id) => includedIds.has(id)),
       };
     }),
     executive_summary:
       "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
-    warnings: [],
+    warnings: truncated
+      ? [
+          {
+            code: "ROW_LIMIT_TRUNCATED",
+            // ADR-0002 #2: uyarı mesajı KULLANICIYA HAZIR Türkçedir; kod
+            // serbest string olduğu için arayüz mesaj uyduramaz.
+            message: `Dosyada ${ROW_LIMIT_TOTAL_ROWS.toLocaleString("tr")} satır bulundu; analiz ilk ${MAX_ROWS.toLocaleString("tr")} satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı.`,
+          },
+        ]
+      : [],
     model: record.request.model,
     prompt_version: record.request.prompt_version,
     prompt_hash: "sha256:2f8a1c9e4b7d",
@@ -482,6 +597,6 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       completion_tokens: 96_400,
       total_tokens: 1_380_400,
     },
-    estimated_cost_usd: 4.1412,
+    estimated_cost_usd: estimateCostUsd(record.request.model),
   };
 }

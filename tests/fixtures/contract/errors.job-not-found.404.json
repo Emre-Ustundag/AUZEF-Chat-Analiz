@@ -1,0 +1,9 @@
+{
+  "type": "/errors/job-not-found",
+  "title": "İşlem bulunamadı",
+  "status": 404,
+  "code": "JOB_NOT_FOUND",
+  "detail": "İşlem bulunamadı (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

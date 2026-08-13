@@ -1,0 +1,120 @@
+{
+  "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+  "status": "ready",
+  "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
+  "size_bytes": 142606336,
+  "created_at": "2026-08-11T10:00:00.000Z",
+  "profile": {
+    "sheets": [
+      {
+        "name": "Mesajlar",
+        "row_count": 250000,
+        "column_count": 5,
+        "columns": [
+          {
+            "name": "tarih",
+            "index": 0,
+            "non_empty_count": 250000,
+            "empty_count": 0,
+            "unique_count": 41002,
+            "avg_length": 19.0,
+            "is_likely_text": false,
+            "sample_values": [
+              "2026-03-01 09:12",
+              "2026-03-01 09:14"
+            ]
+          },
+          {
+            "name": "kullanici_id",
+            "index": 1,
+            "non_empty_count": 250000,
+            "empty_count": 0,
+            "unique_count": 12884,
+            "avg_length": 8.0,
+            "is_likely_text": false,
+            "sample_values": [
+              "[ID]",
+              "[ID]"
+            ]
+          },
+          {
+            "name": "mesaj",
+            "index": 2,
+            "non_empty_count": 248893,
+            "empty_count": 1107,
+            "unique_count": 31540,
+            "avg_length": 64.0,
+            "is_likely_text": true,
+            "sample_values": [
+              "sınav tarihleri ne zaman açıklanacak",
+              "ders materyallerine nereden ulaşabilirim",
+              "harç ödemesini nasıl yaparım"
+            ]
+          },
+          {
+            "name": "kanal",
+            "index": 3,
+            "non_empty_count": 250000,
+            "empty_count": 0,
+            "unique_count": 3,
+            "avg_length": 7.0,
+            "is_likely_text": false,
+            "sample_values": [
+              "web",
+              "mobil"
+            ]
+          },
+          {
+            "name": "yanit",
+            "index": 4,
+            "non_empty_count": 246767,
+            "empty_count": 3233,
+            "unique_count": 8712,
+            "avg_length": 128.0,
+            "is_likely_text": true,
+            "sample_values": [
+              "Sınav takvimi için...",
+              "Materyallere..."
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Ham Veri",
+        "row_count": 250000,
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "id",
+            "index": 0,
+            "non_empty_count": 250000,
+            "empty_count": 0,
+            "unique_count": 250000,
+            "avg_length": 6.0,
+            "is_likely_text": false,
+            "sample_values": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "name": "icerik",
+            "index": 1,
+            "non_empty_count": 248893,
+            "empty_count": 1107,
+            "unique_count": 31540,
+            "avg_length": 64.0,
+            "is_likely_text": true,
+            "sample_values": [
+              "sınav ne zaman",
+              "kayıt yenileme"
+            ]
+          }
+        ]
+      }
+    ],
+    "total_row_count": 500000,
+    "exceeds_row_limit": true
+  },
+  "error": null
+}

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-
+import { jsonResponse, problemResponse } from "@/mocks/responses";
 import { analysisExists, getAnalysisReportRecord, problem } from "@/mocks/store";
+import { invalidUuidProblem } from "@/mocks/validation";
 
 /**
  * GET /api/mock/v1/analyses/{analysisId}/result
@@ -14,26 +14,24 @@ export async function GET(
   context: RouteContext<"/api/mock/v1/analyses/[analysisId]/result">,
 ) {
   const { analysisId } = await context.params;
+  const invalidUuid = invalidUuidProblem(analysisId, "path.analysis_id");
+  if (invalidUuid) return problemResponse(invalidUuid);
 
   if (!analysisExists(analysisId)) {
-    return NextResponse.json(
-      problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Analiz kaydı yok."),
-      { status: 404 },
-    );
+    return problemResponse(problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Analiz kaydı yok."));
   }
 
   const report = getAnalysisReportRecord(analysisId);
   if (!report) {
-    return NextResponse.json(
+    return problemResponse(
       problem(
         "JOB_CONFLICT",
         409,
         "Analiz henüz tamamlanmadı",
         "Rapor yalnızca completed durumunda alınabilir.",
       ),
-      { status: 409 },
     );
   }
 
-  return NextResponse.json(report);
+  return jsonResponse(report);
 }
