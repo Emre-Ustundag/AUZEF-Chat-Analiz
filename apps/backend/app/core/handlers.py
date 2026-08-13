@@ -231,6 +231,32 @@ async def not_implemented_handler(request: Request, exc: Exception) -> Response:
     )
 
 
+def _cors_headers(request: Request) -> dict[str, str]:
+    """Bu handler'ın 500'ü için CORS header'larını elle kurar.
+
+    `ServerErrorMiddleware` TÜM user middleware'in — dolayısıyla
+    `CORSMiddleware`'in de — dışında çalışır, o yüzden buradan çıkan cevaba
+    CORS header'ı eklenmez. Sonuç: cross-origin bir istemci ne problem
+    gövdesini ne `X-Trace-Id`'yi okuyabilir, düpedüz network error görür —
+    yani hatanın izini sürmenin tek yolu kaybolur.
+
+    Origin yalnızca yapılandırılmış allow-list'e karşı doğrulanır; eşleşme
+    yoksa header eklenmez ve tarayıcı cevabı zaten bloklar.
+    """
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    settings = getattr(request.app.state, "settings", None)
+    allowed: Sequence[str] = getattr(settings, "cors_origins", None) or ()
+    if origin.rstrip("/") not in allowed:
+        return {}
+    return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Expose-Headers": TRACE_ID_HEADER,
+        "Vary": "Origin",
+    }
+
+
 async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
     # ASLA `str(exc)`, `logger.exception` veya `exc_info=True` kullanma:
     # traceback de exception metnini içerir. httpx hata metinleri rutin
@@ -240,11 +266,14 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> Respo
         trace_id=_request_trace_id(request),
         exception_type=type(exc).__name__,
     )
-    return problem_response(
+    response = problem_response(
         ErrorCode.INTERNAL_ERROR,
         _UNEXPECTED_DETAIL,
         trace_id=_request_trace_id(request),
     )
+    for header, value in _cors_headers(request).items():
+        response.headers[header] = value
+    return response
 
 
 def register_exception_handlers(app: FastAPI) -> None:

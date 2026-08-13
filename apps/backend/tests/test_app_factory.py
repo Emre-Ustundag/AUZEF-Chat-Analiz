@@ -64,3 +64,34 @@ def test_cross_origin_response_exposes_trace_id(monkeypatch: pytest.MonkeyPatch)
     }
     assert TRACE_ID_HEADER.lower() in exposed
     assert response.headers[TRACE_ID_HEADER]
+
+
+def test_unhandled_error_keeps_cors_headers(monkeypatch: pytest.MonkeyPatch) -> None:
+    """500 `ServerErrorMiddleware`'den çıkar — CORS middleware'inin dışından.
+
+    Header'lar elle eklenmezse cross-origin istemci problem gövdesini de
+    trace id'yi de okuyamaz ve hatanın izi kaybolur.
+    """
+    monkeypatch.setenv("AUZEF_ENVIRONMENT", "development")
+    monkeypatch.setenv("AUZEF_CORS_ORIGINS", f'["{CORS_ORIGIN}"]')
+    get_settings.cache_clear()
+    try:
+        app = create_app()
+
+        @app.get("/patlayan-test-ucu")
+        async def patlayan_test_ucu() -> None:
+            raise RuntimeError("beklenmeyen")
+
+        with TestClient(app, raise_server_exceptions=False) as client:
+            response = client.get("/patlayan-test-ucu", headers={"Origin": CORS_ORIGIN})
+            foreign = client.get("/patlayan-test-ucu", headers={"Origin": "http://kotu.example"})
+    finally:
+        get_settings.cache_clear()
+
+    assert response.status_code == 500
+    assert response.headers["access-control-allow-origin"] == CORS_ORIGIN
+    assert TRACE_ID_HEADER.lower() in response.headers["access-control-expose-headers"].lower()
+
+    # Allow-list dışındaki origin header almaz; tarayıcı cevabı zaten bloklar.
+    assert foreign.status_code == 500
+    assert "access-control-allow-origin" not in foreign.headers
