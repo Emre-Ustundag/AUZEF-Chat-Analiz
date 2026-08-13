@@ -50,22 +50,35 @@ tanımlamıyordu; frontend o uç olmadan configure ekranını hiç render edemiy
 
 Whitelist ve varsayılanlar `app/core/catalog.py` içinde tek kaynaktır:
 
-| Model                       | Girdi / 1M token | Çıktı / 1M token | Context window |
-| --------------------------- | ---------------: | ---------------: | -------------: |
-| `anthropic/claude-sonnet-4` |            3 USD |           15 USD |        200.000 |
-| `openai/gpt-4.1-mini`       |          0,4 USD |          1,6 USD |        128.000 |
-| `google/gemini-2.5-flash`   |          0,3 USD |          2,5 USD |      1.048.576 |
+| Model                         | Girdi / 1M token | Çıktı / 1M token | Context window |
+| ----------------------------- | ---------------: | ---------------: | -------------: |
+| `anthropic/claude-sonnet-4.6` |            3 USD |           15 USD |      1.000.000 |
+| `openai/gpt-4.1-mini`         |          0,4 USD |          1,6 USD |      1.047.576 |
+| `google/gemini-2.5-flash`     |          0,3 USD |          2,5 USD |      1.048.576 |
 
-Varsayılan model `anthropic/claude-sonnet-4`, varsayılan ve bilinen prompt
-sürümü `faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan
-okur; TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da
-birebir karşılaştırılır.
+Bu değerler 12 Ağustos 2026 tarihinde
+[OpenRouter'ın resmi model kataloğuyla](https://openrouter.ai/api/v1/models)
+doğrulandı. Üç whitelist üyesinin de `structured_outputs` desteği zorunludur;
+bu nedenle bu kabiliyeti yayımlamayan eski `anthropic/claude-sonnet-4`
+yerine `anthropic/claude-sonnet-4.6` seçildi.
+
+Daha düşük katalog fiyatı nedeniyle varsayılan model
+`google/gemini-2.5-flash`, varsayılan ve bilinen prompt sürümü
+`faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan okur;
+TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da birebir
+karşılaştırılır.
+
+Model ve prompt kimlikleri tel şemasında serbest `string` değildir:
+`ModelId` ve `PromptVersion` enum'ları `AnalysisRequest`, model listesi ve
+raporun tamamında aynı exact whitelist'i zorlar. Geçersiz, boş olmayan model
+ve prompt değerleri sırasıyla `INVALID_MODEL` ve `INVALID_PROMPT` olur.
 
 ### #2 — Satır sınırı: uyar + kırp, reddetme
 
 Upload **her zaman** tam profillenir ve `profile.exceeds_row_limit` set
-edilir. Analiz ilk `MAX_ROWS` (varsayılan 100.000) satırı işler ve rapora
+edilir. Analiz ilk `MAX_ROWS` (100.000) satırı işler ve rapora
 `ROW_LIMIT_TRUNCATED` uyarısı ekler. Yeni bir hata kodu gerekmez.
+Sınırın kendisi env düğmesi değil, sözleşme sabitidir — bkz. #13.
 
 Uyarı sözlüğü (`WarningCode`) **üretici-kapalı, tüketici-açık**: backend
 yalnızca sözlükteki üyeleri yayabilir ama tel üstündeki alan `str` kalır. Zod
@@ -132,6 +145,13 @@ Tema `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya 
 eder. Yani `top_n` küçükken bir temanın adedi, listelenen sorularının
 toplamından büyük olabilir — bu beklenen davranıştır, hata değil.
 
+Soru ve tema id'leri kendi listelerinde benzersizdir; bir tema aynı soru
+bağlantısını tekrarlayamaz. Her soru/tema `count` değeri `analyzed_count`'u
+aşamaz ve `percentage`, `count / analyzed_count * 100` değerinin bir ondalığa
+**half-up** yuvarlanmış halidir. Python `round()` half-even kullandığı için iki
+dil de aynı tam sayı formülünü uygular. `redacted_count` da `analyzed_count`'u
+aşamaz.
+
 `tests/fixtures/contract/analyses.result.200.truncated.json` bu kuralın
 çalıştırılabilir spesifikasyonudur.
 
@@ -143,9 +163,15 @@ cevabında bulunur. `errors` her zaman vardır (boş olabilir).
 `retry_after` **yalnızca 429**'da bulunur ve başka hiçbir cevapta —
 `null` olarak dahi — yer almaz. Gerekçesi §2'deki ölçümde.
 
+`status`, `code` kaydındaki HTTP statüsüyle birebir eşleşir; handler veya
+istemci bu eşleşmeyi override edemez. Contract-only 501 bu nedenle ayrı
+`NOT_IMPLEMENTED` kodudur, `INTERNAL_ERROR` değildir.
+
 `trace_id` hem gövdede hem `X-Trace-Id` header'ında UUID'dir ve iki değer
 aynıdır. `errors[].field`, alan yolu üretilemeyen validation hatalarında
 `null` olabilir; frontend bunu nullable + optional kabul eder.
+Request sonunda ContextVar token'ı her durumda reset edilir; unhandled-error
+yolu aynı kimliği `request.state.trace_id` üzerinden korur.
 
 `type` URI'si koddan türetilir: `/errors/` + küçük harf + `_` → `-`. Aynı
 kural mock'ta da uygulanır ve iki taraftan da test edilir.
@@ -167,14 +193,29 @@ Aynı sebeple `openapi.json`'dan `HTTPValidationError` ve `ValidationError`
 şemaları silinir: sunucunun asla üretmediği bir gövdeyi belgeleyen bir kayıt
 artefaktı, daha ilk gün yalan söyler.
 
+Starlette/python-multipart'ın route validation'dan önce ürettiği bozuk veya
+boundary'siz multipart 400'leri güvenli, sabit detaylı
+`REQUEST_VALIDATION`/422'ye normalize edilir; parser detayı dışarı yansıtılmaz.
+
 ### #8 — Sözleşme üretilmiş bir artefakt
 
 `docs/api/openapi.json` kayıt artefaktıdır ve Pydantic modellerinden
 üretilir; elle yazılmaz. Böylece Pydantic ↔ OpenAPI parity'si tanım gereği
 sağlanır.
 
-Public OpenAPI hedef v1 sözleşmesini gösterir; contract-only stub'ların geçici
-`501` cevabı belgelenmez. Her uç yalnızca gerçekten üretebildiği status'ları,
+**"Tanım gereği" bir muafiyet değil, bir yapılandırma sonucudur.** FastAPI
+cevap modelleri için Pydantic'in _serialization_ şemasını yayımlar ve default'u
+olan alanlar orada varsayılan olarak `required` DIŞINDA kalır — oysa
+`model_dump()` onları her cevapta yazar. Bu yüzden `ApiModel`
+`json_schema_serialization_defaults_required=True` taşır. Bayrak yalnızca
+`ProblemDetails`'te olduğu sürece artefakt `status`, `warnings`, `error`,
+`profile` ve `estimated_seconds_remaining`'i "opsiyonel" diye belgeliyordu;
+üretilmiş bir client'ta arayüzün dayandığı discriminator'lar buharlaşırdı.
+`contract-openapi.test.ts` beş cevap modelinin `required` listesini kilitler.
+
+Public OpenAPI mevcut contract-only davranışı da doğru gösterir: dokuz stub
+`501 NOT_IMPLEMENTED` cevabını belgeler. BE-02 bir route'u uyguladığında o
+route'un 501 kaydı kaldırılır. Her uç yalnızca gerçekten üretebildiği status'ları,
 hatalarda yalnızca `application/problem+json` media type'ını ve Pydantic
 fixture'larından türetilmiş adlandırılmış request/response örneklerini taşır.
 
@@ -212,14 +253,66 @@ demek türetme kuralını backend'in uydurmasına bırakırdı. Sabit ad tanım 
 ASCII'dir, RFC 5987 `filename*` gerektirmez ve `endpoints.ts`'teki mevcut
 fallback ile birebir aynıdır.
 
+JSON export gövdesi telde gerçek `AnalysisReport` nesnesidir ve OpenAPI'de
+aynı bileşene referans verir. Yalnızca XLSX media type'ı binary şema taşır;
+JSON'u `string/binary` olarak belgelemek üretilmiş istemciyi yanlış tipe
+yönlendirir.
+
 ### #12 — Sürümleme
 
 `schema_version` **rapor gövdesini** sürümler (`"1.0"`). API `/api/v1` öneki
 ve `openapi.info.version` ile sürümlenir. Opsiyonel bir alan eklemek ikisini de
 artırmaz; bir alanı kaldırmak veya yeniden adlandırmak ikisini de artırır.
+`AnalysisReport` bu değeri serbest string değil literal `"1.0"` olarak doğrular.
 
 `openapi.info.version` paket sürümünden bilerek ayrıdır: bir bağımlılık
 yükseltmesi kayıt artefaktını değiştirmemelidir.
+
+### #13 — Frontend'in uyguladığı limitler sözleşme sabitidir
+
+`MAX_UPLOAD_BYTES` ve `MAX_ROWS`, `app/core/config.py` içinde modül seviyesinde
+`Final` sabitlerdir ve `.env.example`'da yer almaz. Diğer çalışma sınırları
+(`max_uncompressed_bytes`, `analysis_timeout_seconds`,
+`idempotency_ttl_seconds`) `Settings` içinde ve `AUZEF_` önekiyle
+environment'tan değiştirilebilir.
+
+Gerekçe: `MAX_ROWS` yalnızca bir limit değil, **iki dilde yazılmış cevap
+invariant'larının parçası** — `analyzed_count + discarded_count ==
+min(total_rows, MAX_ROWS)`, `profile.exceeds_row_limit` ve
+`ROW_LIMIT_TRUNCATED` uyarısının varlığı hepsi ona bağlı (#2). Frontend aynası
+`LIMITS.MAX_ROWS` bir derleme zamanı sabiti olduğu için, backend tarafını env
+ile oynatmak sunucunun **doğru** ürettiği cevapları Zod'a reddettirir;
+`apiRequest` bunu sentetik bir `INTERNAL_ERROR`'a çevirir ve kullanıcı upload
+ile rapor ekranlarında "Beklenmeyen bir hata" görür. Üstelik §4'teki dört
+katmanın hiçbiri kırmızıya dönmez, çünkü artefaktlar CI'da varsayılan env ile
+üretiliyor — yani drift üretime kadar görünmezdi. `MAX_UPLOAD_BYTES` da
+frontend'in yükleme öncesi rejection ve kullanıcıya gösterilen metnini
+belirler: backend daha yüksekse browser geçerli dosyayı engeller, daha düşükse
+UI geçerli gösterdiği dosyayı ancak upload bittikten sonra 413 ile kaybeder.
+
+İki sınır `manifest.json`'da `limits.max_upload_bytes` ve `limits.max_rows`
+olarak yayımlanır; `contract-fixtures.test.ts` frontend sabitlerini bunlara
+karşı doğrular. Değeri değiştirmek bir sözleşme değişikliğidir:
+`config.py` sabiti + `contract_version` bump + `make generate` + ilgili
+frontend `LIMITS` sabiti birlikte güncellenir.
+
+### #14 — `estimated_cost_usd` cevap şemasında doğrulanmaz
+
+`AnalysisReport.estimated_cost_usd` alanı yalnızca `ge=0` kısıtı taşır. Değer,
+raporun üretildiği andaki katalog fiyatlarıyla hesaplanır ve rapora yazılır;
+doğruluğu **yazma yolunda** (BE-02) garanti edilir.
+
+Bunu bir `model_validator` içinde `catalog.estimate_cost_usd` ile yeniden
+hesaplayıp karşılaştırmak cazipti ama okuma yolunu dış dünyaya bağlardı:
+OpenRouter fiyatı değiştiği an `catalog.py` güncellenir ve daha önce üretilmiş
+**tüm** raporlar cevap doğrulamasında düşerek kalıcı 500 verirdi
+(`GET /analyses/{id}/result`). Aynı gerekçeyle raporun `model` alanı aktif
+`ModelId` whitelist'inden ayrı, boş olmayan bir tarihsel kimliktir — bir modeli
+kullanımdan kaldırmak, onunla üretilmiş raporları silmek anlamına gelmemeli.
+Request ve model listesi aktif enum'u kullanmaya devam eder.
+
+Kural: cevap şemaları **tel biçimini** ve gövde içi tutarlılığı doğrular;
+zamanla değişen dış tablolara bakan iş mantığı doğrulaması yazma yolunda kalır.
 
 ## 4. Drift kontrolü
 

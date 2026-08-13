@@ -57,6 +57,26 @@ export function isAnalysisSettled(status: AnalysisStatus): boolean {
 }
 
 /**
+ * BE-01'de dondurulan OpenRouter model whitelist'i.
+ *
+ * Bu değerler request, model kataloğu ve rapor şemalarında aynı anda
+ * kullanılır. Böylece backend'in desteklemediği bir model tel üstünde
+ * "herhangi bir string" gibi görünemez.
+ */
+export const modelIdSchema = z.enum([
+  "anthropic/claude-sonnet-4.6",
+  "openai/gpt-4.1-mini",
+  "google/gemini-2.5-flash",
+]);
+
+export type ModelId = z.infer<typeof modelIdSchema>;
+
+/** BE-01'de dondurulan, sürümlenmiş prompt whitelist'i. */
+export const promptVersionSchema = z.enum(["faq_analysis/v1"]);
+
+export type PromptVersion = z.infer<typeof promptVersionSchema>;
+
+/**
  * POST /api/v1/analyses gövdesi.
  *
  * OpenRouter anahtarı BU GÖVDEDE YER ALMAZ. ADR §6/§9 gereği yalnızca
@@ -67,8 +87,8 @@ export const analysisRequestSchema = z.object({
   upload_id: z.uuid(),
   sheet_name: z.string().min(1, "Sayfa seçilmelidir."),
   text_column: z.string().min(1, "Analiz edilecek metin kolonu seçilmelidir."),
-  model: z.string().min(1, "Model seçilmelidir."),
-  prompt_version: z.string().min(1),
+  model: modelIdSchema,
+  prompt_version: promptVersionSchema,
   top_n: z.int().min(1, "En az 1 sonuç istenmelidir.").max(100, "En fazla 100 sonuç istenebilir."),
   max_cost_usd: z
     .number()
@@ -134,7 +154,7 @@ export type AnalysisJob = z.infer<typeof analysisJobSchema>;
  * üzerinden doğrulanır.
  */
 export const modelOptionSchema = z.object({
-  id: z.string(),
+  id: modelIdSchema,
   label: z.string(),
   /** 1M girdi tokenı başına USD; maliyet tahmini için. */
   input_cost_per_million: z.number().nonnegative(),
@@ -147,8 +167,8 @@ export type ModelOption = z.infer<typeof modelOptionSchema>;
 export const modelListSchema = z
   .object({
     models: z.array(modelOptionSchema),
-    default_model: z.string(),
-    default_prompt_version: z.string().min(1),
+    default_model: modelIdSchema,
+    default_prompt_version: promptVersionSchema,
   })
   .superRefine((catalog, ctx) => {
     const ids = catalog.models.map((model) => model.id);
@@ -157,6 +177,17 @@ export const modelListSchema = z
         code: "custom",
         path: ["models"],
         message: "Model id'leri benzersiz olmalı.",
+      });
+    }
+    const actualIds = new Set(ids);
+    if (
+      modelIdSchema.options.some((id) => !actualIds.has(id)) ||
+      actualIds.size !== modelIdSchema.options.length
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["models"],
+        message: "Model listesi dondurulmuş whitelist ile birebir aynı olmalı.",
       });
     }
     if (!ids.includes(catalog.default_model)) {

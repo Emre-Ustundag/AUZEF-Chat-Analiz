@@ -1,6 +1,10 @@
 {
   "$comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: apps/backend/scripts/export_fixtures.py",
   "contract_version": "1.0.0",
+  "limits": {
+    "max_upload_bytes": 157286400,
+    "max_rows": 100000
+  },
   "cases": [
     {
       "id": "health.live.200",
@@ -257,6 +261,14 @@
       "status": 409,
       "model": "ProblemDetails",
       "file": "errors.job-conflict.409.json"
+    },
+    {
+      "id": "errors.not-implemented.501",
+      "method": "ANY",
+      "path": "*",
+      "status": 501,
+      "model": "ProblemDetails",
+      "file": "errors.not-implemented.501.json"
     },
     {
       "id": "errors.service-not-ready.503",

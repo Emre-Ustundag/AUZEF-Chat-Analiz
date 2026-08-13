@@ -3,7 +3,7 @@
 # Backend komutları uv, frontend komutları npm workspace kullanır.
 
 BACKEND := apps/backend
-UV := uv run --project $(BACKEND)
+UV := uv run --locked --project $(BACKEND)
 
 .DEFAULT_GOAL := help
 .PHONY: help install dev lint format typecheck test build contract openapi fixtures generate check clean
@@ -14,7 +14,7 @@ help: ## Komutları listele
 
 install: ## Node ve Python bağımlılıklarını kur
 	npm ci
-	cd $(BACKEND) && uv sync --dev
+	cd $(BACKEND) && uv sync --locked --dev
 
 dev: ## Frontend geliştirme sunucusu
 	npm run dev
@@ -22,20 +22,20 @@ dev: ## Frontend geliştirme sunucusu
 lint: ## Tüm lint kapıları
 	npm run lint
 	npm run format:check
-	cd $(BACKEND) && uv run ruff check .
-	cd $(BACKEND) && uv run ruff format --check .
+	cd $(BACKEND) && uv run --locked ruff check .
+	cd $(BACKEND) && uv run --locked ruff format --check .
 
 format: ## Biçimlendir
 	npm run format
-	cd $(BACKEND) && uv run ruff format .
+	cd $(BACKEND) && uv run --locked ruff format .
 
 typecheck: ## TypeScript + mypy
 	npm run typecheck
-	cd $(BACKEND) && uv run mypy
+	cd $(BACKEND) && uv run --locked mypy
 
 test: ## Tüm testler
 	npm test
-	cd $(BACKEND) && uv run pytest
+	cd $(BACKEND) && uv run --locked pytest
 
 build: ## Frontend production build
 	NEXT_TELEMETRY_DISABLED=1 npm run build
@@ -51,7 +51,6 @@ generate: openapi fixtures ## Tüm sözleşme artefaktlarını yeniden üret
 contract: ## Sözleşme drift kontrolü (CI'ın çalıştırdığı)
 	$(UV) python $(BACKEND)/scripts/export_openapi.py --check
 	$(UV) python $(BACKEND)/scripts/export_fixtures.py --check
-	git diff --exit-code -- docs/api/openapi.json tests/fixtures/contract
 	npm run test:contract
 
 check: lint typecheck test contract build ## CI'ın tamamı

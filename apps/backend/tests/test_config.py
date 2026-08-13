@@ -5,7 +5,7 @@ import base64
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import _REPO_ROOT, Environment, Settings
+from app.core.config import _REPO_ROOT, MAX_ROWS, MAX_UPLOAD_BYTES, Environment, Settings
 
 
 def test_repo_root_resolves_to_the_actual_repo_root() -> None:
@@ -20,16 +20,28 @@ def test_defaults_match_adr_limits() -> None:
     assert settings.log_level == "INFO"
     assert settings.cors_origins == ["http://localhost:3000"]
     assert settings.backend_master_key is None
-    assert settings.max_rows == 100_000
-    assert settings.max_upload_bytes == 150 * 1024 * 1024
+    assert MAX_ROWS == 100_000
+    assert MAX_UPLOAD_BYTES == 150 * 1024 * 1024
     assert settings.max_uncompressed_bytes == 1024 * 1024 * 1024
     assert settings.analysis_timeout_seconds == 45 * 60
     assert settings.idempotency_ttl_seconds == 24 * 60 * 60
 
 
 def test_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUZEF_MAX_UNCOMPRESSED_BYTES", "2048")
+    assert Settings().max_uncompressed_bytes == 2048
+
+
+def test_frontend_limits_are_frozen_and_not_environment_configurable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUZEF_MAX_UPLOAD_BYTES", "1024")
     monkeypatch.setenv("AUZEF_MAX_ROWS", "250000")
-    assert Settings().max_rows == 250_000
+
+    assert MAX_UPLOAD_BYTES == 150 * 1024 * 1024
+    assert MAX_ROWS == 100_000
+    assert "max_upload_bytes" not in Settings.model_fields
+    assert "max_rows" not in Settings.model_fields
 
 
 def test_contract_version_is_independent_of_package_version() -> None:

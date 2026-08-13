@@ -25,10 +25,6 @@ def new_trace_id() -> str:
     return str(uuid4())
 
 
-def set_trace_id(value: str) -> None:
-    _trace_id.set(value)
-
-
 def _sanitize(raw: str | None) -> str:
     """Gelen trace id'yi yalnızca UUID ise onurlandırır.
 
@@ -60,7 +56,7 @@ class TraceIdMiddleware:
 
         headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
         trace_id = _sanitize(headers.get(TRACE_ID_HEADER.lower()))
-        set_trace_id(trace_id)
+        token = _trace_id.set(trace_id)
         scope.setdefault("state", {})["trace_id"] = trace_id
 
         async def send_with_trace_id(message: Message) -> None:
@@ -68,4 +64,9 @@ class TraceIdMiddleware:
                 MutableHeaders(scope=message)[TRACE_ID_HEADER] = trace_id
             await send(message)
 
-        await self.app(scope, receive, send_with_trace_id)
+        try:
+            await self.app(scope, receive, send_with_trace_id)
+        finally:
+            # Aynı task/context daha sonra yeniden kullanılırsa biten isteğin
+            # kimliği loglara veya background işlerine sızmamalı.
+            _trace_id.reset(token)

@@ -1,5 +1,6 @@
 import { jsonResponse, noContentResponse, problemResponse } from "@/mocks/responses";
 import { cancelAnalysisRecord, getAnalysisJobRecord, problem } from "@/mocks/store";
+import { invalidUuidProblem } from "@/mocks/validation";
 
 const notFound = () =>
   problemResponse(problem("JOB_NOT_FOUND", 404, "İşlem bulunamadı", "Analiz kaydı yok."));
@@ -9,6 +10,9 @@ export async function GET(
   context: RouteContext<"/api/mock/v1/analyses/[analysisId]">,
 ) {
   const { analysisId } = await context.params;
+  const invalidUuid = invalidUuidProblem(analysisId, "path.analysis_id");
+  if (invalidUuid) return problemResponse(invalidUuid);
+
   const job = getAnalysisJobRecord(analysisId);
   return job ? jsonResponse(job) : notFound();
 }
@@ -24,6 +28,8 @@ export async function DELETE(
   context: RouteContext<"/api/mock/v1/analyses/[analysisId]">,
 ) {
   const { analysisId } = await context.params;
+  const invalidUuid = invalidUuidProblem(analysisId, "path.analysis_id");
+  if (invalidUuid) return problemResponse(invalidUuid);
 
   switch (cancelAnalysisRecord(analysisId)) {
     case "cancelled":

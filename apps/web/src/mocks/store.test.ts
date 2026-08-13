@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   analysisJobSchema,
   analysisReportSchema,
+  ERROR_STATUS_BY_CODE,
+  percentageHalfUp,
   problemDetailsSchema,
   uploadSchema,
 } from "@/lib/api/schemas";
@@ -16,7 +18,10 @@ import {
   getAnalysisJobRecord,
   getAnalysisReportRecord,
   getUploadRecord,
+  IDEMPOTENCY_TTL_MS,
+  lookupIdempotency,
   problem,
+  rememberIdempotency,
 } from "./store";
 
 /**
@@ -48,7 +53,7 @@ function analysisRequestFor(uploadId: string): AnalysisRequest {
     upload_id: uploadId,
     sheet_name: "Mesajlar",
     text_column: "mesaj",
-    model: "anthropic/claude-sonnet-4",
+    model: "anthropic/claude-sonnet-4.6",
     prompt_version: "faq_analysis/v1",
     top_n: 8,
     max_cost_usd: 10,
@@ -97,6 +102,20 @@ describe("upload mock'u", () => {
 
   it("bilinmeyen upload için null döner", () => {
     expect(getUploadRecord("yok-boyle-bir-kayit")).toBeNull();
+  });
+});
+
+describe("idempotency store", () => {
+  it("24 saat içinde replay eder, TTL dolduğu anda kaydı miss sayar", () => {
+    const key = `ttl-${crypto.randomUUID()}`;
+    rememberIdempotency("POST", "/api/v1/uploads/", key, "fingerprint", { id: "first" });
+
+    expect(lookupIdempotency("post", "//api/v1/uploads", key, "fingerprint").kind).toBe("replay");
+
+    vi.setSystemTime(new Date(START.getTime() + IDEMPOTENCY_TTL_MS));
+    expect(lookupIdempotency("POST", "/api/v1/uploads", key, "fingerprint")).toEqual({
+      kind: "miss",
+    });
   });
 });
 
@@ -263,7 +282,7 @@ describe("analiz raporu mock'u", () => {
     const analyzed = report.preprocessing_summary.analyzed_count;
 
     for (const question of report.top_questions) {
-      const expected = Number(((question.count / analyzed) * 100).toFixed(1));
+      const expected = percentageHalfUp(question.count, analyzed);
       expect(question.percentage).toBe(expected);
     }
   });
@@ -372,7 +391,9 @@ describe("problem() type URI'si backend ile aynı", () => {
 
   it.each(openapi.components.schemas.ErrorCode.enum)("%s", (code) => {
     const expected = `/errors/${code.toLowerCase().replaceAll("_", "-")}`;
-    const body = problem(code as ErrorCode, 500, "başlık", "detay");
+    const typedCode = code as ErrorCode;
+    const extra = typedCode === "PROVIDER_RATE_LIMITED" ? { retry_after: 60 } : {};
+    const body = problem(typedCode, ERROR_STATUS_BY_CODE[typedCode], "başlık", "detay", extra);
 
     expect(body.type).toBe(expected);
     expect(problemDetailsSchema.safeParse(body).success).toBe(true);

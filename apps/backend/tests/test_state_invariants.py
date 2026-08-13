@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.schemas.analysis import AnalysisCreated, AnalysisJob, ModelList
-from app.schemas.report import AnalysisReport
+from app.schemas.report import AnalysisReport, AnalysisWarning, percentage_half_up
 from app.schemas.upload import Upload, UploadCreated
 from tests.conftest import read_fixture
 
@@ -73,4 +73,58 @@ def test_report_numeric_invariants() -> None:
         AnalysisReport,
         report | {"token_usage": report["token_usage"] | {"total_tokens": 1}},
     )
-    _invalid(AnalysisReport, report | {"estimated_cost_usd": 0})
+    # `estimated_cost_usd` BİLEREK burada değil: katalog fiyatına bağlı bir
+    # cevap invariant'ı, fiyat değiştiğinde geçmiş raporları 500'e çevirirdi
+    # (report.py alan docstring'i). Yalnızca `ge=0` kısıtı doğrulanır.
+    _invalid(AnalysisReport, report | {"estimated_cost_usd": -1})
+
+
+def test_report_version_and_historical_model_policy() -> None:
+    report = read_fixture("analyses.result.200.json")
+
+    _invalid(AnalysisReport, report | {"schema_version": "garbage"})
+    historical = AnalysisReport.model_validate(report | {"model": "retired/provider-model-v1"})
+    assert historical.model == "retired/provider-model-v1"
+
+
+def test_report_count_percentage_and_id_invariants() -> None:
+    report = read_fixture("analyses.result.200.json")
+    prep = report["preprocessing_summary"]
+
+    _invalid(
+        AnalysisReport,
+        report | {"preprocessing_summary": prep | {"redacted_count": prep["analyzed_count"] + 1}},
+    )
+
+    questions = [*report["top_questions"]]
+    questions[0] = questions[0] | {"count": prep["analyzed_count"] + 1, "percentage": 100}
+    _invalid(AnalysisReport, report | {"top_questions": questions})
+
+    questions = [*report["top_questions"]]
+    questions[0] = questions[0] | {"percentage": questions[0]["percentage"] + 0.1}
+    _invalid(AnalysisReport, report | {"top_questions": questions})
+
+    _invalid(
+        AnalysisReport,
+        report | {"top_questions": [*report["top_questions"], report["top_questions"][0]]},
+    )
+    _invalid(AnalysisReport, report | {"themes": [*report["themes"], report["themes"][0]]})
+
+    themes = [*report["themes"]]
+    themes[0] = themes[0] | {
+        "related_question_ids": [
+            themes[0]["related_question_ids"][0],
+            themes[0]["related_question_ids"][0],
+        ]
+    }
+    _invalid(AnalysisReport, report | {"themes": themes})
+
+
+def test_percentage_rounding_is_exact_half_up() -> None:
+    assert percentage_half_up(1, 16) == 6.3
+    assert percentage_half_up(0, 0) == 0.0
+
+
+def test_warning_codes_are_producer_closed() -> None:
+    with pytest.raises(ValidationError):
+        AnalysisWarning(code="ROW_LMIT_TRUNCATED", message="Yazım hatalı kod")

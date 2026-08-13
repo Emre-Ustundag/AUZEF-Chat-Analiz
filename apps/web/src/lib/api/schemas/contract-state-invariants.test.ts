@@ -67,6 +67,14 @@ describe("diğer çapraz alan kuralları", () => {
     );
   });
 
+  it("model listesi dondurulmuş whitelist'in tamamını exact taşımalı", () => {
+    const catalog = readFixture<Record<string, unknown>>("models.list.200.json");
+    const models = catalog.models as Record<string, unknown>[];
+    expect(modelListSchema.safeParse({ ...catalog, models: models.slice(0, -1) }).success).toBe(
+      false,
+    );
+  });
+
   it("rapor sayısal invariant'larını zorlar", () => {
     const report = readFixture<Record<string, unknown>>("analyses.result.200.truncated.json");
     const prep = report.preprocessing_summary as Record<string, number>;

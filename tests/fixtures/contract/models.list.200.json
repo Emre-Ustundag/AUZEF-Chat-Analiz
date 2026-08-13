@@ -1,18 +1,18 @@
 {
   "models": [
     {
-      "id": "anthropic/claude-sonnet-4",
-      "label": "Claude Sonnet 4",
+      "id": "anthropic/claude-sonnet-4.6",
+      "label": "Claude Sonnet 4.6",
       "input_cost_per_million": 3.0,
       "output_cost_per_million": 15.0,
-      "context_window": 200000
+      "context_window": 1000000
     },
     {
       "id": "openai/gpt-4.1-mini",
       "label": "GPT-4.1 mini",
       "input_cost_per_million": 0.4,
       "output_cost_per_million": 1.6,
-      "context_window": 128000
+      "context_window": 1047576
     },
     {
       "id": "google/gemini-2.5-flash",
@@ -22,6 +22,6 @@
       "context_window": 1048576
     }
   ],
-  "default_model": "anthropic/claude-sonnet-4",
+  "default_model": "google/gemini-2.5-flash",
   "default_prompt_version": "faq_analysis/v1"
 }

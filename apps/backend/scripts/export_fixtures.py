@@ -10,7 +10,6 @@ budur.
 """
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -18,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.core.config import MAX_ROWS, MAX_UPLOAD_BYTES, get_settings
 from app.schemas.examples import CONSTRAINT_CASES, build_cases
 from scripts._io import dumps, repo_root, write_or_check
 
@@ -36,18 +35,8 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="Yazma, yalnızca farkı raporla.")
     args = parser.parse_args()
 
-    previous_environment = os.environ.get("AUZEF_ENVIRONMENT")
-    os.environ["AUZEF_ENVIRONMENT"] = "test"
-    get_settings.cache_clear()
-    try:
-        cases = build_cases()
-        contract_version = get_settings().contract_version
-    finally:
-        if previous_environment is None:
-            os.environ.pop("AUZEF_ENVIRONMENT", None)
-        else:
-            os.environ["AUZEF_ENVIRONMENT"] = previous_environment
-        get_settings.cache_clear()
+    settings = get_settings()
+    cases = build_cases()
     ok = True
     manifest_cases = []
 
@@ -74,7 +63,16 @@ def main() -> int:
         )
 
     manifest = _HEADER | {
-        "contract_version": contract_version,
+        # `settings`'ten okunuyor, elle yazılmıyor: sürüm bump'ında
+        # manifest.json ile openapi.json'ın sessizce ayrışmasını engeller.
+        "contract_version": settings.contract_version,
+        # Sözleşmede donmuş sınırlar. Frontend `LIMITS` sabitleri buraya karşı
+        # doğrulanır (contract-fixtures.test.ts); iki dilin aynı sayıyı
+        # gördüğünü kanıtlayan tek yer burası.
+        "limits": {
+            "max_upload_bytes": MAX_UPLOAD_BYTES,
+            "max_rows": MAX_ROWS,
+        },
         "cases": manifest_cases,
     }
     ok &= write_or_check(OUTPUT_DIR / "manifest.json", dumps(manifest), check=args.check)

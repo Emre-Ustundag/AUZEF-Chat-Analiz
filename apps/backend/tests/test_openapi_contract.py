@@ -14,7 +14,9 @@ from app.schemas.analysis import (
     AnalysisRequest,
     AnalysisStatus,
     ExportFormat,
+    ModelId,
     ModelList,
+    PromptVersion,
 )
 from app.schemas.common import ProblemDetails
 from app.schemas.health import LivenessResponse, ReadinessResponse
@@ -39,15 +41,15 @@ EXPECTED_ENDPOINTS = {
 EXPECTED_STATUSES = {
     ("get", "/api/v1/health/live"): {200},
     ("get", "/api/v1/health/ready"): {200, 503},
-    ("post", "/api/v1/uploads"): {202, 409, 413, 415, 422, 500},
-    ("get", "/api/v1/uploads/{upload_id}"): {200, 404, 422, 500},
-    ("delete", "/api/v1/uploads/{upload_id}"): {204, 404, 422, 500},
-    ("get", "/api/v1/models"): {200, 500},
-    ("post", "/api/v1/analyses"): {202, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}"): {200, 404, 422, 500},
-    ("delete", "/api/v1/analyses/{analysis_id}"): {204, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}/result"): {200, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}/export"): {200, 404, 409, 422, 500},
+    ("post", "/api/v1/uploads"): {202, 409, 413, 415, 422, 500, 501},
+    ("get", "/api/v1/uploads/{upload_id}"): {200, 404, 422, 500, 501},
+    ("delete", "/api/v1/uploads/{upload_id}"): {204, 404, 422, 500, 501},
+    ("get", "/api/v1/models"): {200, 500, 501},
+    ("post", "/api/v1/analyses"): {202, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}"): {200, 404, 422, 500, 501},
+    ("delete", "/api/v1/analyses/{analysis_id}"): {204, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}/result"): {200, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}/export"): {200, 404, 409, 422, 500, 501},
 }
 
 
@@ -73,6 +75,8 @@ def test_documents_exactly_the_expected_endpoints(openapi: Any) -> None:
         ("UploadStatus", {s.value for s in UploadStatus}),
         ("AnalysisStatus", {s.value for s in AnalysisStatus}),
         ("ExportFormat", {f.value for f in ExportFormat}),
+        ("ModelId", {model.value for model in ModelId}),
+        ("PromptVersion", {prompt.value for prompt in PromptVersion}),
     ],
 )
 def test_enum_members(openapi: Any, schema_name: str, members: set[str]) -> None:
@@ -130,7 +134,8 @@ def test_error_responses_only_use_problem_media_type(openapi: Any) -> None:
         for method, operation in ops.items():
             if method not in {"get", "post", "put", "patch", "delete"}:
                 continue
-            assert "501" not in operation["responses"], f"{method} {path}"
+            if not path.startswith("/api/v1/health/"):
+                assert operation["responses"]["501"]["x-error-codes"] == ["NOT_IMPLEMENTED"]
             for status, response in operation["responses"].items():
                 if status.isdigit() and int(status) >= 400:
                     assert set(response["content"]) == {PROBLEM_MEDIA_TYPE}, (
@@ -193,6 +198,19 @@ def test_openrouter_key_is_not_also_a_plain_parameter(openapi: Any) -> None:
 def test_export_documents_content_disposition(openapi: Any) -> None:
     responses = openapi["paths"]["/api/v1/analyses/{analysis_id}/export"]["get"]["responses"]
     assert "Content-Disposition" in responses["200"]["headers"]
+
+
+def test_export_media_schemas_and_json_example_are_exact(openapi: Any) -> None:
+    response = openapi["paths"]["/api/v1/analyses/{analysis_id}/export"]["get"]["responses"]["200"]
+    content = response["content"]
+    xlsx = content["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+    assert xlsx["schema"] == {"type": "string", "format": "binary"}
+
+    json_export = content["application/json"]
+    assert json_export["schema"] == {"$ref": "#/components/schemas/AnalysisReport"}
+    examples = json_export["examples"]
+    assert set(examples) == {"JSON export"}
+    AnalysisReport.model_validate(examples["JSON export"]["value"])
 
 
 def test_trace_id_header_documented_everywhere(openapi: Any) -> None:

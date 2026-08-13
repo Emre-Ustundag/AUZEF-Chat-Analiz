@@ -7,8 +7,10 @@ from app.schemas.analysis import (
     AnalysisRequest,
     AnalysisStatus,
     ExportFormat,
+    ModelId,
     ModelList,
     ModelOption,
+    PromptVersion,
 )
 from app.schemas.base import ApiModel, ApiRequestModel, UtcDateTime
 from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
@@ -45,10 +47,12 @@ __all__ = [
     "ErrorItem",
     "ExportFormat",
     "LivenessResponse",
+    "ModelId",
     "ModelList",
     "ModelOption",
     "PreprocessingSummary",
     "ProblemDetails",
+    "PromptVersion",
     "ReadinessCheckResponse",
     "ReadinessResponse",
     "SheetProfile",

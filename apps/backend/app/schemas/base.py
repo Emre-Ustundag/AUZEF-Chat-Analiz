@@ -61,9 +61,23 @@ fixture yeniden üretiminde sahte diff üretir. Sabit 3 hane, JS
 
 
 class ApiModel(BaseModel):
-    """Cevap gövdeleri için taban."""
+    """Cevap gövdeleri için taban.
 
-    model_config = ConfigDict(extra="ignore", frozen=True)
+    `json_schema_serialization_defaults_required`: FastAPI response modelleri
+    için Pydantic'in SERIALIZATION şemasını yayımlar ve default'u olan bir alan
+    orada varsayılan olarak `required` dışında kalır. Oysa `model_dump()` o
+    alanı HER cevapta yazıyor — bayrak olmadan openapi.json `status`,
+    `warnings`, `error`, `profile` ve `estimated_seconds_remaining`'i
+    "opsiyonel" diye belgeliyordu. Bu artefakttan üretilecek bir client'ta
+    `report.status === "completed"` ve `job.error !== null` discriminator'ları
+    tip düzeyinde buharlaşırdı (ADR-0002 #7, #8).
+    """
+
+    model_config = ConfigDict(
+        extra="ignore",
+        frozen=True,
+        json_schema_serialization_defaults_required=True,
+    )
 
 
 class ApiRequestModel(BaseModel):

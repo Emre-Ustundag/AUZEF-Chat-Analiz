@@ -11,7 +11,7 @@ import binascii
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated, Literal, Self
+from typing import Annotated, Final, Literal, Self
 
 from pydantic import AnyHttpUrl, BeforeValidator, Field, SecretStr, TypeAdapter, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,6 +34,12 @@ def _normalize_log_level(value: object) -> object:
 
 NormalizedLogLevel = Annotated[LogLevel, BeforeValidator(_normalize_log_level)]
 
+MAX_UPLOAD_BYTES: Final[int] = 150 * 1024 * 1024
+"""Sıkıştırılmış upload sınırı; frontend ile donmuş sözleşme sabiti."""
+
+MAX_ROWS: Final[int] = 100_000
+"""Analize giren azami satır sayısı; üstü kırpılır ve raporda uyarılır."""
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -48,12 +54,8 @@ class Settings(BaseSettings):
     cors_origins: list[str] | None = None
     backend_master_key: SecretStr | None = None
 
-    #: Sıkıştırılmış upload sınırı: 150 MB.
-    max_upload_bytes: int = Field(default=150 * 1024 * 1024, gt=0)
     #: OOXML açılmış toplam boyut sınırı: 1 GB.
     max_uncompressed_bytes: int = Field(default=1024 * 1024 * 1024, gt=0)
-    #: ADR-0002 #2: hard reject DEĞİL — bu sınırın üstü kırpılır ve uyarılır.
-    max_rows: int = Field(default=100_000, gt=0)
     #: ADR-0002 #3: Idempotency-Key kaydının saklama süresi (24 saat).
     idempotency_ttl_seconds: int = Field(default=24 * 60 * 60, gt=0)
     #: ADR-0001 §2: analiz hard timeout'u 45 dakika.

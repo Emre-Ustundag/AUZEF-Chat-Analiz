@@ -15,10 +15,10 @@
     "test:contract": "npm run test:contract --workspace apps/web",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "backend:lint": "uv run --project apps/backend ruff check apps/backend",
-    "backend:test": "uv run --project apps/backend pytest apps/backend",
-    "openapi": "uv run --project apps/backend python apps/backend/scripts/export_openapi.py",
-    "fixtures": "uv run --project apps/backend python apps/backend/scripts/export_fixtures.py",
+    "backend:lint": "uv run --locked --project apps/backend ruff check apps/backend",
+    "backend:test": "uv run --locked --project apps/backend pytest apps/backend",
+    "openapi": "uv run --locked --project apps/backend python apps/backend/scripts/export_openapi.py",
+    "fixtures": "uv run --locked --project apps/backend python apps/backend/scripts/export_fixtures.py",
     "contract": "npm run openapi -- --check && npm run fixtures -- --check && npm run test:contract"
   },
   "devDependencies": {

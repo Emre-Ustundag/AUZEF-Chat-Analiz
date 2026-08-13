@@ -9,6 +9,7 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
+import { ERROR_STATUS_BY_CODE, LIMITS, percentageHalfUp } from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -43,8 +44,12 @@ export function scenarioFromFilename(filename: string): Scenario {
   return "success";
 }
 
-/** ADR-0001 §9 / ADR-0002 #2: aşılırsa reddedilmez, kırpılır. */
-const MAX_ROWS = 100_000;
+/** ADR-0001 §9 / ADR-0002 #2: aşılırsa reddedilmez, kırpılır.
+ *
+ * Sözleşmedeki tek kaynaktan geliyor — kendi kopyasını tutsaydı, mock'un
+ * ürettiği gövdeler Zod invariant'larından sessizce ayrışabilirdi.
+ */
+const MAX_ROWS = LIMITS.MAX_ROWS;
 const ROW_LIMIT_TOTAL_ROWS = 250_000;
 
 interface UploadRecord {
@@ -63,6 +68,13 @@ interface AnalysisRecord {
   cancelledAt: number | null;
 }
 
+interface IdempotencyRecord {
+  fingerprint: string;
+  responseBody: unknown;
+  traceId: string;
+  expiresAt: number;
+}
+
 /**
  * Modül seviyesindeki Map'ler dev sunucusunun ömrü boyunca yaşar. globalThis
  * üzerinde tutuluyorlar çünkü Next dev'de modüller hot reload sırasında
@@ -71,10 +83,70 @@ interface AnalysisRecord {
 const globalStore = globalThis as unknown as {
   __auzefMockUploads?: Map<string, UploadRecord>;
   __auzefMockAnalyses?: Map<string, AnalysisRecord>;
+  __auzefMockIdempotency?: Map<string, IdempotencyRecord>;
 };
 
 const uploads = (globalStore.__auzefMockUploads ??= new Map());
 const analyses = (globalStore.__auzefMockAnalyses ??= new Map());
+const idempotency = (globalStore.__auzefMockIdempotency ??= new Map());
+
+export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type IdempotencyLookup =
+  | { kind: "miss" }
+  | { kind: "conflict" }
+  | { kind: "replay"; responseBody: unknown; traceId: string };
+
+function normalizedPath(path: string): string {
+  const collapsed = path.replace(/\/{2,}/g, "/");
+  return collapsed.length > 1 ? collapsed.replace(/\/$/, "") : collapsed;
+}
+
+function idempotencyStorageKey(method: string, path: string, key: string): string {
+  return JSON.stringify([method.toUpperCase(), normalizedPath(path), key]);
+}
+
+/** Aynı tuple/fingerprint replay, aynı tuple/farklı fingerprint conflict'tir. */
+export function lookupIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+): IdempotencyLookup {
+  const storageKey = idempotencyStorageKey(method, path, key);
+  const stored = idempotency.get(storageKey);
+
+  if (!stored) return { kind: "miss" };
+  if (stored.expiresAt <= Date.now()) {
+    idempotency.delete(storageKey);
+    return { kind: "miss" };
+  }
+  if (stored.fingerprint !== fingerprint) return { kind: "conflict" };
+
+  return {
+    kind: "replay",
+    responseBody: stored.responseBody,
+    traceId: stored.traceId,
+  };
+}
+
+/** İlk 202'nin body ve trace metadata'sını 24 saat saklar. */
+export function rememberIdempotency(
+  method: string,
+  path: string,
+  key: string,
+  fingerprint: string,
+  responseBody: unknown,
+): { responseBody: unknown; traceId: string } {
+  const record: IdempotencyRecord = {
+    fingerprint,
+    responseBody,
+    traceId: randomUUID(),
+    expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+  };
+  idempotency.set(idempotencyStorageKey(method, path, key), record);
+  return { responseBody: record.responseBody, traceId: record.traceId };
+}
 
 const UPLOAD_VALIDATING_AFTER_MS = 1_500;
 const UPLOAD_SETTLED_AFTER_MS = 4_000;
@@ -98,6 +170,9 @@ export function problem(
   detail: string,
   extra: Partial<ProblemDetails> = {},
 ): ProblemDetails {
+  if (status !== ERROR_STATUS_BY_CODE[code]) {
+    throw new Error(`${code} status=${ERROR_STATUS_BY_CODE[code]} taşımalı.`);
+  }
   return {
     type: `/errors/${code.toLowerCase().replaceAll("_", "-")}`,
     title,
@@ -453,8 +528,6 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     { id: "t4", name: "Belge ve itiraz", questionIds: ["q7", "q8"] },
   ];
 
-  const pct = (count: number) => Number(((count / analyzed) * 100).toFixed(1));
-
   return {
     schema_version: "1.0",
     analysis_id: record.analysisId,
@@ -477,7 +550,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       id: q.id,
       canonical_question: q.canonical_question,
       count: q.count,
-      percentage: pct(q.count),
+      percentage: percentageHalfUp(q.count, analyzed),
       confidence: q.confidence,
       redacted_examples: q.examples,
     })),
@@ -500,7 +573,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
         id: theme.id,
         name: theme.name,
         count,
-        percentage: pct(count),
+        percentage: percentageHalfUp(count, analyzed),
         related_question_ids: theme.questionIds.filter((id) => includedIds.has(id)),
       };
     }),

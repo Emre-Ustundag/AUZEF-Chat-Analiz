@@ -11,7 +11,7 @@ türetildiği için Pydantic ↔ OpenAPI uyumu tanım gereği sağlanır.
 ```bash
 make generate            # openapi.json + tests/fixtures/contract/
 # veya
-cd apps/backend && uv run python scripts/export_openapi.py
+cd apps/backend && uv run --locked python scripts/export_openapi.py
 ```
 
 ## Drift kontrolü
@@ -26,6 +26,8 @@ değiştirdiyseniz artefaktları yeniden üretip commit'lemeniz gerekir.
 OpenAPI'deki request/response örnekleri ayrı elle yazılmış kopyalar değildir;
 fixture'larla aynı Pydantic instance'larından üretilir. Hata cevapları yalnızca
 `application/problem+json`, tüm cevaplar örnek bir `X-Trace-Id` header'ı taşır.
+Contract-only dokuz route, uygulanana kadar public `501 NOT_IMPLEMENTED`
+cevabını da belgeler.
 
 ## İlgili
 

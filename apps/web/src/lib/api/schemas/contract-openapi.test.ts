@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  analysisReportSchema,
   analysisStatusSchema,
   ERROR_MESSAGES_TR,
   errorCodeSchema,
   exportFormatSchema,
+  modelIdSchema,
   problemDetailsSchema,
+  promptVersionSchema,
   RETRYABLE_ERROR_CODES,
   uploadStatusSchema,
 } from "./index";
@@ -33,6 +36,7 @@ interface OpenApiDocument {
         responses: Record<
           string,
           {
+            "x-error-codes"?: string[];
             content?: Record<
               string,
               { schema?: { $ref?: string }; examples?: Record<string, { value: unknown }> }
@@ -70,6 +74,8 @@ describe("enum parity — OpenAPI ↔ Zod", () => {
     ["UploadStatus", uploadStatusSchema.options],
     ["AnalysisStatus", analysisStatusSchema.options],
     ["ExportFormat", exportFormatSchema.options],
+    ["ModelId", modelIdSchema.options],
+    ["PromptVersion", promptVersionSchema.options],
   ])("%s aynı üyelere sahip", (schemaName, zodOptions) => {
     const openapiEnum = openapi.components.schemas[schemaName]?.enum;
     expect(openapiEnum, `${schemaName} openapi.json'da bulunamadı`).toBeDefined();
@@ -106,12 +112,12 @@ describe("hata kodu tablosu", () => {
 
 describe("yol envanteri", () => {
   const EXPECTED_ENDPOINTS = [
+    "GET /api/v1/health/live",
+    "GET /api/v1/health/ready",
     "POST /api/v1/uploads",
     "GET /api/v1/uploads/{upload_id}",
     "DELETE /api/v1/uploads/{upload_id}",
     "GET /api/v1/models",
-    "GET /api/v1/health/live",
-    "GET /api/v1/health/ready",
     "POST /api/v1/analyses",
     "GET /api/v1/analyses/{analysis_id}",
     "DELETE /api/v1/analyses/{analysis_id}",
@@ -130,17 +136,17 @@ describe("yol envanteri", () => {
 
 describe("sözleşme detayları", () => {
   const expectedStatuses: Record<string, number[]> = {
-    "POST /api/v1/uploads": [202, 409, 413, 415, 422, 500],
-    "GET /api/v1/uploads/{upload_id}": [200, 404, 422, 500],
-    "DELETE /api/v1/uploads/{upload_id}": [204, 404, 422, 500],
-    "GET /api/v1/models": [200, 500],
     "GET /api/v1/health/live": [200],
     "GET /api/v1/health/ready": [200, 503],
-    "POST /api/v1/analyses": [202, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}": [200, 404, 422, 500],
-    "DELETE /api/v1/analyses/{analysis_id}": [204, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}/result": [200, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}/export": [200, 404, 409, 422, 500],
+    "POST /api/v1/uploads": [202, 409, 413, 415, 422, 500, 501],
+    "GET /api/v1/uploads/{upload_id}": [200, 404, 422, 500, 501],
+    "DELETE /api/v1/uploads/{upload_id}": [204, 404, 422, 500, 501],
+    "GET /api/v1/models": [200, 500, 501],
+    "POST /api/v1/analyses": [202, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}": [200, 404, 422, 500, 501],
+    "DELETE /api/v1/analyses/{analysis_id}": [204, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}/result": [200, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}/export": [200, 404, 409, 422, 500, 501],
   };
 
   it("her uç yalnızca gerçekten üretebildiği status'ları belgeler", () => {
@@ -170,10 +176,69 @@ describe("sözleşme detayları", () => {
     expect(schema.properties?.retry_after).not.toHaveProperty("anyOf");
   });
 
+  /**
+   * Sunucunun HER cevapta yazdığı alanlar `required` olarak belgelenmelidir.
+   *
+   * Pydantic'in serialization şeması default'u olan alanları varsayılan olarak
+   * required dışında bırakır; `ApiModel` bunu
+   * `json_schema_serialization_defaults_required` ile geri çeviriyor. Bayrak
+   * düşerse bu artefakttan üretilecek client'ta `status?: "completed"` ve
+   * `error?: ProblemDetails | null` çıkar — arayüzün dayandığı iki
+   * discriminator tip düzeyinde buharlaşır. Fixture'lar alanların gerçekten
+   * her zaman yazıldığının kanıtı (ör. uploads.get.200.queued.json →
+   * profile: null, error: null).
+   */
+  it.each([
+    ["AnalysisCreated", ["analysis_id", "status"]],
+    ["UploadCreated", ["upload_id", "status"]],
+    [
+      "AnalysisJob",
+      [
+        "analysis_id",
+        "status",
+        "progress",
+        "created_at",
+        "updated_at",
+        "estimated_seconds_remaining",
+        "error",
+      ],
+    ],
+    ["Upload", ["upload_id", "status", "filename", "size_bytes", "created_at", "profile", "error"]],
+    [
+      "AnalysisReport",
+      [
+        "schema_version",
+        "analysis_id",
+        "status",
+        "generated_at",
+        "source_summary",
+        "preprocessing_summary",
+        "top_questions",
+        "themes",
+        "executive_summary",
+        "warnings",
+        "model",
+        "prompt_version",
+        "prompt_hash",
+        "token_usage",
+        "estimated_cost_usd",
+      ],
+    ],
+  ])("%s cevap şemasında her alan required", (name, expected) => {
+    const schema = openapi.components.schemas[name];
+    expect(Object.keys(schema.properties ?? {}).sort()).toEqual([...expected].sort());
+    expect(schema.required?.sort()).toEqual([...expected].sort());
+  });
+
   it("hata cevapları yalnızca problem+json ve geçerli ProblemDetails örnekleri taşır", () => {
     for (const [path, operations] of Object.entries(openapi.paths)) {
       for (const [method, operation] of Object.entries(operations)) {
-        expect(operation.responses).not.toHaveProperty("501");
+        if (!path.startsWith("/api/v1/health/")) {
+          expect(
+            operation.responses["501"]?.["x-error-codes"],
+            `${method} ${path} public 501`,
+          ).toEqual(["NOT_IMPLEMENTED"]);
+        }
         for (const [status, response] of Object.entries(operation.responses)) {
           if (Number(status) < 400) continue;
           expect(Object.keys(response.content ?? {}), `${method} ${path} ${status}`).toEqual([
@@ -209,6 +274,18 @@ describe("sözleşme detayları", () => {
           expect(response.headers?.["X-Trace-Id"]?.example).toBeTruthy();
         }
       }
+    }
+  });
+
+  it("JSON export gerçek AnalysisReport şeması ve geçerli rapor örneği taşır", () => {
+    const response = openapi.paths["/api/v1/analyses/{analysis_id}/export"].get.responses["200"];
+    const jsonMedia = response.content?.["application/json"];
+
+    expect(jsonMedia?.schema?.$ref).toBe("#/components/schemas/AnalysisReport");
+    expect(Object.keys(jsonMedia?.examples ?? {})).not.toHaveLength(0);
+    for (const example of Object.values(jsonMedia?.examples ?? {})) {
+      const result = analysisReportSchema.safeParse(example.value);
+      expect(result.success ? null : result.error.issues).toBeNull();
     }
   });
 

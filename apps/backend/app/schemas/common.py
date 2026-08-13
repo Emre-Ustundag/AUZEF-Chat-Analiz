@@ -7,11 +7,11 @@ from enum import StrEnum
 from typing import Any, Self
 from uuid import UUID
 
-from pydantic import ConfigDict, Field, GetJsonSchemaHandler, model_validator
+from pydantic import Field, GetJsonSchemaHandler, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import CoreSchema
 
-from app.core.errors import ErrorCode
+from app.core.errors import ERROR_STATUS, ErrorCode
 from app.schemas.base import ApiModel
 
 
@@ -45,13 +45,12 @@ class ProblemDetails(ApiModel):
 
     `type`, `title`, `status`, `code`, `detail` ve `trace_id` HER cevapta
     bulunur — frontend'in `problemDetailsSchema`'sı altısını da zorunlu tutar.
-    """
 
-    model_config = ConfigDict(
-        extra="ignore",
-        frozen=True,
-        json_schema_serialization_defaults_required=True,
-    )
+    Bu garantiyi veren `json_schema_serialization_defaults_required` artık
+    `ApiModel`'de; burada tekrarlanmıyor. Bayrağın YALNIZCA bu modelde olması,
+    diğer sekiz cevap modelinin openapi.json'da yanlış `required` listesiyle
+    yayımlanmasının sebebiydi.
+    """
 
     type: str
     title: str
@@ -64,7 +63,11 @@ class ProblemDetails(ApiModel):
     retry_after: float | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
 
     @model_validator(mode="after")
-    def _retry_after_iff_rate_limited(self) -> Self:
+    def _error_invariants(self) -> Self:
+        expected_status = ERROR_STATUS[self.code]
+        if self.status != expected_status:
+            raise ValueError(f"{self.code} status={expected_status} taşımak zorunda.")
+
         is_rate_limited = self.code is ErrorCode.PROVIDER_RATE_LIMITED
         if is_rate_limited and self.retry_after is None:
             raise ValueError("PROVIDER_RATE_LIMITED cevabı retry_after içermek zorunda.")

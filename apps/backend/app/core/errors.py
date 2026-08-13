@@ -28,6 +28,7 @@ class ErrorCode(StrEnum):
     PROVIDER_TIMEOUT = "PROVIDER_TIMEOUT"
     JOB_NOT_FOUND = "JOB_NOT_FOUND"
     JOB_CONFLICT = "JOB_CONFLICT"
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
     SERVICE_NOT_READY = "SERVICE_NOT_READY"
     INTERNAL_ERROR = "INTERNAL_ERROR"
 
@@ -47,6 +48,7 @@ ERROR_STATUS: Final[dict[ErrorCode, int]] = {
     ErrorCode.PROVIDER_TIMEOUT: 504,
     ErrorCode.JOB_NOT_FOUND: 404,
     ErrorCode.JOB_CONFLICT: 409,
+    ErrorCode.NOT_IMPLEMENTED: 501,
     ErrorCode.SERVICE_NOT_READY: 503,
     ErrorCode.INTERNAL_ERROR: 500,
 }
@@ -66,6 +68,7 @@ ERROR_TITLES: Final[dict[ErrorCode, str]] = {
     ErrorCode.PROVIDER_TIMEOUT: "Sağlayıcı zaman aşımı",
     ErrorCode.JOB_NOT_FOUND: "İşlem bulunamadı",
     ErrorCode.JOB_CONFLICT: "İşlem durumu bu isteğe uygun değil",
+    ErrorCode.NOT_IMPLEMENTED: "Uç nokta henüz uygulanmadı",
     ErrorCode.SERVICE_NOT_READY: "Servis hazır değil",
     ErrorCode.INTERNAL_ERROR: "Beklenmeyen hata",
 }
@@ -194,6 +197,10 @@ class JobNotFoundError(AppError):
 
 class JobConflictError(AppError):
     code = ErrorCode.JOB_CONFLICT
+
+
+class NotImplementedAppError(AppError):
+    code = ErrorCode.NOT_IMPLEMENTED
 
 
 class ServiceNotReadyError(AppError):

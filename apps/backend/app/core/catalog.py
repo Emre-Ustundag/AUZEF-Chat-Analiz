@@ -12,31 +12,31 @@ Artık kaynak burası. Fixture üreticisi bunu okuyor, frontend mock'u da
 
 from typing import Final
 
-from app.schemas.analysis import ModelList, ModelOption
+from app.schemas.analysis import ModelId, ModelList, ModelOption, PromptVersion
 
-DEFAULT_MODEL: Final = "anthropic/claude-sonnet-4"
-DEFAULT_PROMPT_VERSION: Final = "faq_analysis/v1"
+DEFAULT_MODEL: Final = ModelId.GEMINI_2_5_FLASH
+DEFAULT_PROMPT_VERSION: Final = PromptVersion.FAQ_ANALYSIS_V1
 
 #: Backend'de sürümlenmiş prompt'lar (ADR-0001 §9).
-KNOWN_PROMPT_VERSIONS: Final[tuple[str, ...]] = (DEFAULT_PROMPT_VERSION,)
+KNOWN_PROMPT_VERSIONS: Final[tuple[PromptVersion, ...]] = tuple(PromptVersion)
 
 MODEL_CATALOG: Final[tuple[ModelOption, ...]] = (
     ModelOption(
-        id="anthropic/claude-sonnet-4",
-        label="Claude Sonnet 4",
+        id=ModelId.CLAUDE_SONNET_4_6,
+        label="Claude Sonnet 4.6",
         input_cost_per_million=3,
         output_cost_per_million=15,
-        context_window=200_000,
+        context_window=1_000_000,
     ),
     ModelOption(
-        id="openai/gpt-4.1-mini",
+        id=ModelId.GPT_4_1_MINI,
         label="GPT-4.1 mini",
         input_cost_per_million=0.4,
         output_cost_per_million=1.6,
-        context_window=128_000,
+        context_window=1_047_576,
     ),
     ModelOption(
-        id="google/gemini-2.5-flash",
+        id=ModelId.GEMINI_2_5_FLASH,
         label="Gemini 2.5 Flash",
         input_cost_per_million=0.3,
         output_cost_per_million=2.5,
@@ -51,11 +51,15 @@ MODEL_LIST: Final = ModelList(
 )
 
 
-def find_model(model_id: str) -> ModelOption | None:
+def find_model(model_id: str | ModelId) -> ModelOption | None:
     return next((model for model in MODEL_CATALOG if model.id == model_id), None)
 
 
-def estimate_cost_usd(model_id: str, prompt_tokens: int, completion_tokens: int) -> float:
+def estimate_cost_usd(
+    model_id: str | ModelId,
+    prompt_tokens: int,
+    completion_tokens: int,
+) -> float:
     """Token sayılarından USD maliyet. Rapor `estimated_cost_usd` ile aynı kural.
 
     Sabit yazılmış bir maliyet, katalog fiyatı değiştiğinde sessizce yanlış

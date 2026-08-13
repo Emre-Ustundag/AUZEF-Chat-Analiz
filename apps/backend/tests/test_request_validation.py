@@ -13,7 +13,7 @@ VALID_BODY = {
     "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
     "sheet_name": "Mesajlar",
     "text_column": "mesaj",
-    "model": "anthropic/claude-sonnet-4",
+    "model": "anthropic/claude-sonnet-4.6",
     "prompt_version": "faq_analysis/v1",
     "top_n": 8,
     "max_cost_usd": 10,
@@ -33,6 +33,38 @@ def test_out_of_range_field_reports_field_path(client: TestClient) -> None:
     problem = ProblemDetails.model_validate(body)
     assert problem.code is ErrorCode.REQUEST_VALIDATION
     assert [e.field for e in problem.errors] == ["top_n"]
+
+
+def test_nonempty_unknown_model_has_specific_error_code(client: TestClient) -> None:
+    status, body = _post(client, model="provider/model-not-allowed")
+
+    assert status == 422
+    problem = ProblemDetails.model_validate(body)
+    assert problem.code is ErrorCode.INVALID_MODEL
+    assert [e.field for e in problem.errors] == ["model"]
+
+
+def test_nonempty_unknown_prompt_has_specific_error_code(client: TestClient) -> None:
+    status, body = _post(client, prompt_version="faq_analysis/v999")
+
+    assert status == 422
+    problem = ProblemDetails.model_validate(body)
+    assert problem.code is ErrorCode.INVALID_PROMPT
+    assert [e.field for e in problem.errors] == ["prompt_version"]
+
+
+def test_empty_whitelist_value_remains_general_validation(client: TestClient) -> None:
+    status, body = _post(client, model="")
+
+    assert status == 422
+    assert ProblemDetails.model_validate(body).code is ErrorCode.REQUEST_VALIDATION
+
+
+def test_other_invalid_field_keeps_general_validation_precedence(client: TestClient) -> None:
+    status, body = _post(client, model="provider/model-not-allowed", top_n=0)
+
+    assert status == 422
+    assert ProblemDetails.model_validate(body).code is ErrorCode.REQUEST_VALIDATION
 
 
 def test_validation_body_never_echoes_input(client: TestClient) -> None:
@@ -67,6 +99,34 @@ def test_malformed_json_is_422_not_400(client: TestClient) -> None:
 
     assert response.status_code == 422
     assert ProblemDetails.model_validate(response.json()).code is ErrorCode.REQUEST_VALIDATION
+
+
+def test_malformed_multipart_is_safe_422(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/uploads",
+        content=b"bu bir multipart govdesi degil",
+        headers={"Content-Type": "multipart/form-data; boundary=sinir"},
+    )
+
+    assert response.status_code == 422
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.code is ErrorCode.REQUEST_VALIDATION
+    assert problem.detail == "İstek gövdesi veya parametreleri doğrulanamadı."
+    assert "multipart" not in response.text.lower()
+    assert "boundary" not in response.text.lower()
+
+
+def test_missing_multipart_boundary_is_safe_422(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/uploads",
+        content=b"dosya",
+        headers={"Content-Type": "multipart/form-data"},
+    )
+
+    assert response.status_code == 422
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.code is ErrorCode.REQUEST_VALIDATION
+    assert problem.detail == "İstek gövdesi veya parametreleri doğrulanamadı."
 
 
 def test_missing_api_key_returns_provider_auth_failed(client: TestClient) -> None:
@@ -125,4 +185,4 @@ def test_valid_body_reaches_the_stub(client: TestClient) -> None:
     status, body = _post(client)
 
     assert status == 501
-    assert ProblemDetails.model_validate(body).code is ErrorCode.INTERNAL_ERROR
+    assert ProblemDetails.model_validate(body).code is ErrorCode.NOT_IMPLEMENTED
