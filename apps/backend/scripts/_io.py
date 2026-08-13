@@ -2,7 +2,10 @@
 
 import difflib
 import json
+import os
 import sys
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +13,31 @@ from typing import Any
 def repo_root() -> Path:
     """apps/backend/scripts/_io.py -> repo kökü."""
     return Path(__file__).resolve().parents[3]
+
+
+@contextmanager
+def frozen_artifact_env() -> Iterator[None]:
+    """Artefakt üretimini daima secretsiz test ortamına sabitler.
+
+    Script'ler hem geliştiricinin kabuğundan hem kök `.env`'den `AUZEF_*`
+    miras alır. Sabitlemezsek `contract_version` gibi alanlar üretilmiş
+    artefakta sızar; üstelik openapi.json ile manifest.json farklı ortamlarda
+    üretilirse hiçbir drift kontrolü kırmızıya dönmeden sessizce ayrışırlar.
+    Bu yüzden İKİ export script'i de aynı guard'ı kullanır.
+    """
+    from app.core.config import get_settings
+
+    previous = os.environ.get("AUZEF_ENVIRONMENT")
+    os.environ["AUZEF_ENVIRONMENT"] = "test"
+    get_settings.cache_clear()
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("AUZEF_ENVIRONMENT", None)
+        else:
+            os.environ["AUZEF_ENVIRONMENT"] = previous
+        get_settings.cache_clear()
 
 
 #: `json.dumps` girdisi tanım gereği şemasız; daraltmak yanlış kesinlik verirdi.

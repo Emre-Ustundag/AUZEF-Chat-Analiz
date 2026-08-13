@@ -1,21 +1,14 @@
-"""Ayar kaynakları — ADR-0001 §9.
+"""Ayar kaynakları, ortam ayrımı ve fail-fast doğrulama."""
 
-Operasyonel sınırlar environment'tan okunur; frontend'in uyguladığı upload ve
-satır sınırları okunmaz (ADR-0002 #13).
-"""
+import base64
 
 import pytest
+from pydantic import ValidationError
 
-from app.core.config import _REPO_ROOT, MAX_ROWS, MAX_UPLOAD_BYTES, Settings
+from app.core.config import _REPO_ROOT, MAX_ROWS, MAX_UPLOAD_BYTES, Environment, Settings
 
 
 def test_repo_root_resolves_to_the_actual_repo_root() -> None:
-    """Yol hesabı sessizce kayarsa .env hiç okunmaz, varsayılanlar kullanılır.
-
-    Yanlış bir `parents[n]` hata vermez — yalnızca var olmayan bir dosyaya
-    bakar ve her şey çalışıyormuş gibi görünür. Bu yüzden ankraj olarak
-    repoda kesin bulunan iki yol kullanılıyor.
-    """
     assert (_REPO_ROOT / "docs" / "mimari.md").is_file()
     assert (_REPO_ROOT / "apps" / "backend" / "pyproject.toml").is_file()
 
@@ -23,28 +16,28 @@ def test_repo_root_resolves_to_the_actual_repo_root() -> None:
 def test_defaults_match_adr_limits() -> None:
     settings = Settings(_env_file=None)
 
+    assert settings.environment is Environment.DEVELOPMENT
+    assert settings.log_level == "INFO"
+    assert settings.cors_origins == ["http://localhost:3000"]
+    assert settings.backend_master_key is None
+    assert MAX_ROWS == 100_000
     assert MAX_UPLOAD_BYTES == 150 * 1024 * 1024
     assert settings.max_uncompressed_bytes == 1024 * 1024 * 1024
     assert settings.analysis_timeout_seconds == 45 * 60
     assert settings.idempotency_ttl_seconds == 24 * 60 * 60
 
 
-def test_operational_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    # `_env_file=None`: dosyadaki diğer testler gibi. Geliştiricinin kök
+    # `.env`'i okunursa (örn. AUZEF_ENVIRONMENT=production, master key'siz)
+    # test lokalde patlar, CI'da `.env` olmadığı için yeşil kalırdı.
     monkeypatch.setenv("AUZEF_MAX_UNCOMPRESSED_BYTES", "2048")
-    assert Settings().max_uncompressed_bytes == 2048
+    assert Settings(_env_file=None).max_uncompressed_bytes == 2048
 
 
 def test_frontend_limits_are_frozen_and_not_environment_configurable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """ADR-0002 #13: frontend limitleri operasyon düğmesi değil, sözleşme sabiti.
-
-    Env'den okunabilseydi, backend'in doğru ürettiği cevap frontend'in derleme
-    zamanı sabitine dayanan Zod invariant'larında düşerdi ve hiçbir drift
-    kontrolü kırmızıya dönmezdi (artefaktlar CI'da varsayılan env ile
-    üretiliyor). `Settings` alanı olmadığını da doğruluyoruz: alan geri
-    eklenirse bu test düşer.
-    """
     monkeypatch.setenv("AUZEF_MAX_UPLOAD_BYTES", "1024")
     monkeypatch.setenv("AUZEF_MAX_ROWS", "250000")
 
@@ -55,5 +48,60 @@ def test_frontend_limits_are_frozen_and_not_environment_configurable(
 
 
 def test_contract_version_is_independent_of_package_version() -> None:
-    # ADR-0002 #12: bir bağımlılık yükseltmesi openapi.json'ı değiştirmemeli.
     assert Settings(_env_file=None).contract_version == "1.0.0"
+
+
+@pytest.mark.parametrize("environment", [Environment.TEST, Environment.PRODUCTION])
+def test_non_development_cors_defaults_to_empty(environment: Environment) -> None:
+    if environment is Environment.PRODUCTION:
+        settings = Settings(
+            _env_file=None,
+            environment=environment,
+            backend_master_key=base64.b64encode(b"k" * 32).decode(),
+        )
+    else:
+        settings = Settings(_env_file=None, environment=environment)
+    assert settings.cors_origins == []
+
+
+@pytest.mark.parametrize(
+    ("variable", "value"),
+    [
+        ("AUZEF_ENVIRONMENT", "staging"),
+        ("AUZEF_LOG_LEVEL", "VERBOSE"),
+        ("AUZEF_CORS_ORIGINS", '["*"]'),
+        ("AUZEF_CORS_ORIGINS", '["https://*.example.com"]'),
+    ],
+)
+def test_invalid_runtime_configuration_fails_fast(
+    monkeypatch: pytest.MonkeyPatch, variable: str, value: str
+) -> None:
+    monkeypatch.setenv(variable, value)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
+
+
+@pytest.mark.parametrize(
+    "master_key",
+    [None, "base64-degil!", base64.b64encode(b"too-short").decode()],
+)
+def test_production_requires_base64_encoded_32_byte_key(master_key: str | None) -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            environment=Environment.PRODUCTION,
+            backend_master_key=master_key,
+        )
+
+
+def test_production_accepts_valid_master_key() -> None:
+    settings = Settings(
+        _env_file=None,
+        environment=Environment.PRODUCTION,
+        backend_master_key=base64.b64encode(b"k" * 32).decode(),
+    )
+    assert settings.environment is Environment.PRODUCTION
+
+
+def test_log_level_is_case_insensitive() -> None:
+    assert Settings(_env_file=None, log_level="warning").log_level == "WARNING"

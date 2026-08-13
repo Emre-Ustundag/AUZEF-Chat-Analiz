@@ -41,6 +41,7 @@ from app.schemas.analysis import (
     AnalysisStatus,
 )
 from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
+from app.schemas.health import LivenessResponse, ReadinessCheckResponse, ReadinessResponse
 from app.schemas.report import (
     AnalysisReport,
     AnalysisWarning,
@@ -402,6 +403,33 @@ ANALYSIS_REQUEST = AnalysisRequest(
 
 def build_cases() -> list[Case]:
     cases: list[Case] = [
+        Case(
+            "health.live.200",
+            "GET",
+            "/api/v1/health/live",
+            200,
+            "LivenessResponse",
+            LivenessResponse(),
+        ),
+        Case(
+            "health.ready.200",
+            "GET",
+            "/api/v1/health/ready",
+            200,
+            "ReadinessResponse",
+            ReadinessResponse(checks=[ReadinessCheckResponse(name="example-dependency")]),
+        ),
+        Case(
+            "health.ready.503",
+            "GET",
+            "/api/v1/health/ready",
+            503,
+            "ProblemDetails",
+            build_problem(
+                ErrorCode.SERVICE_NOT_READY,
+                "Servis trafiğe hazır değil.",
+            ),
+        ),
         Case(
             "uploads.create.202",
             "POST",

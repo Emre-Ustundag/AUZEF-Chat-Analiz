@@ -12,7 +12,7 @@ from typing import Final
 
 
 class ErrorCode(StrEnum):
-    """16 kod: ADR-0001 §7'deki 11 + ADR-0002 ile eklenen sözleşme kodları."""
+    """Dondurulmuş hata sözlüğü ve BE-02 readiness genişletmesi."""
 
     UPLOAD_TOO_LARGE = "UPLOAD_TOO_LARGE"
     UPLOAD_INVALID_TYPE = "UPLOAD_INVALID_TYPE"
@@ -29,6 +29,7 @@ class ErrorCode(StrEnum):
     JOB_NOT_FOUND = "JOB_NOT_FOUND"
     JOB_CONFLICT = "JOB_CONFLICT"
     NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
+    SERVICE_NOT_READY = "SERVICE_NOT_READY"
     INTERNAL_ERROR = "INTERNAL_ERROR"
 
 
@@ -48,6 +49,7 @@ ERROR_STATUS: Final[dict[ErrorCode, int]] = {
     ErrorCode.JOB_NOT_FOUND: 404,
     ErrorCode.JOB_CONFLICT: 409,
     ErrorCode.NOT_IMPLEMENTED: 501,
+    ErrorCode.SERVICE_NOT_READY: 503,
     ErrorCode.INTERNAL_ERROR: 500,
 }
 
@@ -67,6 +69,7 @@ ERROR_TITLES: Final[dict[ErrorCode, str]] = {
     ErrorCode.JOB_NOT_FOUND: "İşlem bulunamadı",
     ErrorCode.JOB_CONFLICT: "İşlem durumu bu isteğe uygun değil",
     ErrorCode.NOT_IMPLEMENTED: "Uç nokta henüz uygulanmadı",
+    ErrorCode.SERVICE_NOT_READY: "Servis hazır değil",
     ErrorCode.INTERNAL_ERROR: "Beklenmeyen hata",
 }
 
@@ -198,6 +201,10 @@ class JobConflictError(AppError):
 
 class NotImplementedAppError(AppError):
     code = ErrorCode.NOT_IMPLEMENTED
+
+
+class ServiceNotReadyError(AppError):
+    code = ErrorCode.SERVICE_NOT_READY
 
 
 class InternalError(AppError):

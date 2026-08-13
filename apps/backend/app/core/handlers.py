@@ -5,10 +5,10 @@ kurmaz; böylece `type/title/status/code/detail/trace_id` alanlarının her zama
 dolu olduğu tek yerden garanti edilir (ADR-0002 #6).
 """
 
-import logging
 from collections.abc import Sequence
 from typing import Any
 
+import structlog
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import JSONResponse
@@ -26,7 +26,7 @@ from app.core.errors import (
 from app.core.tracing import TRACE_ID_HEADER, current_trace_id, new_trace_id
 from app.schemas.common import ErrorItem, ProblemDetails
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 #: RFC 9457 zorunlu media type.
 PROBLEM_MEDIA_TYPE = "application/problem+json"
@@ -188,11 +188,9 @@ async def response_validation_handler(request: Request, exc: Exception) -> Respo
     # response input'unu (PII/secret dahil) aynen loga yazabilir. Yalnızca
     # güvenli sınıf adı ve trace id kaydedilir.
     logger.error(
-        "Cevap doğrulaması başarısız",
-        extra={
-            "trace_id": _request_trace_id(request),
-            "exception_type": type(exc).__name__,
-        },
+        "response_validation_failed",
+        trace_id=_request_trace_id(request),
+        exception_type=type(exc).__name__,
     )
     return problem_response(
         ErrorCode.INTERNAL_ERROR,
@@ -233,22 +231,49 @@ async def not_implemented_handler(request: Request, exc: Exception) -> Response:
     )
 
 
+def _cors_headers(request: Request) -> dict[str, str]:
+    """Bu handler'ın 500'ü için CORS header'larını elle kurar.
+
+    `ServerErrorMiddleware` TÜM user middleware'in — dolayısıyla
+    `CORSMiddleware`'in de — dışında çalışır, o yüzden buradan çıkan cevaba
+    CORS header'ı eklenmez. Sonuç: cross-origin bir istemci ne problem
+    gövdesini ne `X-Trace-Id`'yi okuyabilir, düpedüz network error görür —
+    yani hatanın izini sürmenin tek yolu kaybolur.
+
+    Origin yalnızca yapılandırılmış allow-list'e karşı doğrulanır; eşleşme
+    yoksa header eklenmez ve tarayıcı cevabı zaten bloklar.
+    """
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    settings = getattr(request.app.state, "settings", None)
+    allowed: Sequence[str] = getattr(settings, "cors_origins", None) or ()
+    if origin.rstrip("/") not in allowed:
+        return {}
+    return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Expose-Headers": TRACE_ID_HEADER,
+        "Vary": "Origin",
+    }
+
+
 async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
     # ASLA `str(exc)`, `logger.exception` veya `exc_info=True` kullanma:
     # traceback de exception metnini içerir. httpx hata metinleri rutin
     # olarak URL/secret taşır; yalnızca güvenli metadata loglanır.
     logger.error(
-        "Yakalanmamış hata",
-        extra={
-            "trace_id": _request_trace_id(request),
-            "exception_type": type(exc).__name__,
-        },
+        "unhandled_exception",
+        trace_id=_request_trace_id(request),
+        exception_type=type(exc).__name__,
     )
-    return problem_response(
+    response = problem_response(
         ErrorCode.INTERNAL_ERROR,
         _UNEXPECTED_DETAIL,
         trace_id=_request_trace_id(request),
     )
+    for header, value in _cors_headers(request).items():
+        response.headers[header] = value
+    return response
 
 
 def register_exception_handlers(app: FastAPI) -> None:

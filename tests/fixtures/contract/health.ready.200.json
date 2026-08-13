@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "checks": [
+    {
+      "name": "example-dependency",
+      "status": "ok"
+    }
+  ]
+}

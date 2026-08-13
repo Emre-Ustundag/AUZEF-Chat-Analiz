@@ -112,6 +112,8 @@ describe("hata kodu tablosu", () => {
 
 describe("yol envanteri", () => {
   const EXPECTED_ENDPOINTS = [
+    "GET /api/v1/health/live",
+    "GET /api/v1/health/ready",
     "POST /api/v1/uploads",
     "GET /api/v1/uploads/{upload_id}",
     "DELETE /api/v1/uploads/{upload_id}",
@@ -134,6 +136,8 @@ describe("yol envanteri", () => {
 
 describe("sözleşme detayları", () => {
   const expectedStatuses: Record<string, number[]> = {
+    "GET /api/v1/health/live": [200],
+    "GET /api/v1/health/ready": [200, 503],
     "POST /api/v1/uploads": [202, 409, 413, 415, 422, 500, 501],
     "GET /api/v1/uploads/{upload_id}": [200, 404, 422, 500, 501],
     "DELETE /api/v1/uploads/{upload_id}": [204, 404, 422, 500, 501],
@@ -229,10 +233,12 @@ describe("sözleşme detayları", () => {
   it("hata cevapları yalnızca problem+json ve geçerli ProblemDetails örnekleri taşır", () => {
     for (const [path, operations] of Object.entries(openapi.paths)) {
       for (const [method, operation] of Object.entries(operations)) {
-        expect(
-          operation.responses["501"]?.["x-error-codes"],
-          `${method} ${path} public 501`,
-        ).toEqual(["NOT_IMPLEMENTED"]);
+        if (!path.startsWith("/api/v1/health/")) {
+          expect(
+            operation.responses["501"]?.["x-error-codes"],
+            `${method} ${path} public 501`,
+          ).toEqual(["NOT_IMPLEMENTED"]);
+        }
         for (const [status, response] of Object.entries(operation.responses)) {
           if (Number(status) < 400) continue;
           expect(Object.keys(response.content ?? {}), `${method} ${path} ${status}`).toEqual([

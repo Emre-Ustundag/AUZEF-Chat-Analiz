@@ -1,48 +1,53 @@
-"""Çalışma sınırları — ADR-0001 §9.
+"""Uygulama ayarları ve çalışma sınırları.
 
-Operasyonel sınırlar `Settings` içinde ve environment ile değiştirilebilir.
-`MAX_UPLOAD_BYTES` ve `MAX_ROWS` ise frontend'in de uyguladığı sözleşme
-sabitleridir (aşağıdaki gerekçelere bakın).
+Tek kaynak Pydantic Settings'tir. `get_settings()` cache'i hem API'nin hem
+OpenAPI/fixture üreticilerinin aynı değerleri görmesini sağlar.
 """
 
-from pathlib import Path
-from typing import Final
+from __future__ import annotations
 
+import base64
+import binascii
+from enum import StrEnum
+from functools import lru_cache
+from pathlib import Path
+from typing import Annotated, Final, Literal, Self
+
+from pydantic import AnyHttpUrl, BeforeValidator, Field, SecretStr, TypeAdapter, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #: apps/backend/app/core/config.py -> repo kökü (core, app, backend, apps).
-#: .env kökte duruyor (Docker Compose de oradan okuyor) ama backend
-#: apps/backend içinden çalıştırılıyor; göreli bir yol yanlış dosyaya
-#: bakardı. `apps/backend/.env` OKUNMAZ.
 _REPO_ROOT = Path(__file__).resolve().parents[4]
 
-MAX_UPLOAD_BYTES: Final[int] = 150 * 1024 * 1024
-"""Sıkıştırılmış upload sınırı — SÖZLEŞMEDE DONMUŞ, env ile değişmez.
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
-Frontend dosyayı göndermeden önce aynı sınırı uygular. Backend tarafı env ile
-değiştirilebilseydi tarayıcı geçerli bir dosyayı reddedebilir veya sunucunun
-reddedeceği dosyayı geçerli gösterebilirdi. `manifest.json` iki tarafı bu
-değere kilitler.
+
+class Environment(StrEnum):
+    DEVELOPMENT = "development"
+    TEST = "test"
+    PRODUCTION = "production"
+
+
+def _normalize_log_level(value: object) -> object:
+    return value.upper() if isinstance(value, str) else value
+
+
+NormalizedLogLevel = Annotated[LogLevel, BeforeValidator(_normalize_log_level)]
+
+MAX_UPLOAD_BYTES: Final[int] = 150 * 1024 * 1024
+"""Sıkıştırılmış upload sınırı; frontend ile donmuş sözleşme sabiti.
+
+`Settings` ALANI DEĞİL — env ile değiştirilirse frontend'in derleme zamanı
+aynası (`lib/api/schemas/common.ts` → `LIMITS`) ile ayrışır. Tam gerekçe ve
+değiştirme prosedürü: `apps/backend/README.md` → "Ortam ayarları".
 """
 
 MAX_ROWS: Final[int] = 100_000
-"""Analize giren azami satır sayısı — SÖZLEŞMEDE DONMUŞ, env ile değişmez.
+"""Analize giren azami satır sayısı; üstü kırpılır ve raporda uyarılır.
 
-ADR-0002 #2: sınır hard reject değil; üstü kırpılır ve rapora
-`ROW_LIMIT_TRUNCATED` uyarısı eklenir.
-
-Neden `Settings` alanı değil: bu sayı yalnızca bir limit değil, iki dilde
-yazılmış cevap invariant'larının parçası —
-`analyzed_count + discarded_count == min(total_rows, MAX_ROWS)`,
-`exceeds_row_limit` ve `ROW_LIMIT_TRUNCATED`'ın varlığı hepsi ona bağlı.
-Frontend aynası (`lib/api/schemas/common.ts` → `LIMITS.MAX_ROWS`) derleme
-zamanı sabiti olduğu için, backend tarafını env ile oynatmak sunucunun DOĞRU
-ürettiği cevapları Zod'a reddettirir ve kullanıcı sentetik bir INTERNAL_ERROR
-görür — üstelik hiçbir drift kontrolü kırmızıya dönmeden, çünkü artefaktlar
-varsayılan env ile üretiliyor. Değeri değiştirmek bir sözleşme değişikliğidir:
-`contract_version` bump + artefakt yeniden üretimi + Zod tarafının güncellenmesi
-gerekir. `manifest.json`'daki `limits.max_upload_bytes` ve `limits.max_rows`
-iki tarafı birbirine kilitler.
+`MAX_UPLOAD_BYTES` ile aynı sebeple env'e açılmaz: cevap invariant'ları
+(`analyzed_count + discarded_count == min(total_rows, MAX_ROWS)`,
+`exceeds_row_limit`, `ROW_LIMIT_TRUNCATED`) bu sayıya bağlı.
 """
 
 
@@ -54,16 +59,52 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
     )
 
-    #: OOXML açılmış toplam boyut sınırı: 1 GB.
-    max_uncompressed_bytes: int = 1024 * 1024 * 1024
-    #: ADR-0002 #3: Idempotency-Key kaydının saklama süresi (24 saat).
-    idempotency_ttl_seconds: int = 24 * 60 * 60
-    #: ADR-0001 §2: analiz hard timeout'u 45 dakika.
-    analysis_timeout_seconds: int = 45 * 60
+    environment: Environment = Environment.DEVELOPMENT
+    log_level: NormalizedLogLevel = "INFO"
+    cors_origins: list[str] | None = None
+    backend_master_key: SecretStr | None = None
 
-    #: Sözleşme sürümü. Paket sürümünden BİLEREK ayrı: bir bağımlılık
-    #: yükseltmesi openapi.json'ı değiştirmesin (ADR-0002 #12).
+    #: OOXML açılmış toplam boyut sınırı: 1 GB.
+    max_uncompressed_bytes: int = Field(default=1024 * 1024 * 1024, gt=0)
+    #: ADR-0002 #3: Idempotency-Key kaydının saklama süresi (24 saat).
+    idempotency_ttl_seconds: int = Field(default=24 * 60 * 60, gt=0)
+    #: ADR-0001 §2: analiz hard timeout'u 45 dakika.
+    analysis_timeout_seconds: int = Field(default=45 * 60, gt=0)
+
+    #: Sözleşme sürümü paket sürümünden bilinçli olarak ayrıdır.
     contract_version: str = "1.0.0"
 
+    @model_validator(mode="after")
+    def validate_environment_security(self) -> Self:
+        origins = self.cors_origins
+        if origins is None:
+            origins = (
+                ["http://localhost:3000"] if self.environment is Environment.DEVELOPMENT else []
+            )
 
-settings = Settings()
+        normalized_origins: list[str] = []
+        for origin in origins:
+            if "*" in origin:
+                raise ValueError("CORS origin wildcard olamaz.")
+            parsed = TypeAdapter(AnyHttpUrl).validate_python(origin)
+            normalized_origins.append(str(parsed).rstrip("/"))
+        object.__setattr__(self, "cors_origins", normalized_origins)
+
+        if self.environment is Environment.PRODUCTION:
+            if self.backend_master_key is None:
+                raise ValueError("Production ortamında backend_master_key zorunludur.")
+            raw_key = self.backend_master_key.get_secret_value()
+            try:
+                decoded = base64.b64decode(raw_key, validate=True)
+            except (binascii.Error, ValueError) as exc:
+                raise ValueError("backend_master_key geçerli Base64 olmalıdır.") from exc
+            if len(decoded) != 32:
+                raise ValueError("backend_master_key Base64 kodlu 32 byte olmalıdır.")
+
+        return self
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Process başına tek doğrulanmış settings nesnesi döndürür."""
+    return Settings()

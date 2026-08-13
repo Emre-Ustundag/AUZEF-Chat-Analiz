@@ -10,7 +10,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.core.handlers import PROBLEM_MEDIA_TYPE
 from app.core.tracing import TRACE_ID_HEADER
 from app.schemas.examples import build_cases
@@ -49,6 +49,8 @@ def _examples_by_case_id() -> dict[str, Any]:
 
 #: (path, method, status) -> o cevaba iliştirilecek örneklerin case id'leri.
 _RESPONSE_EXAMPLES: dict[tuple[str, str, str], dict[str, str]] = {
+    ("/api/v1/health/live", "get", "200"): {"Process çalışıyor": "health.live.200"},
+    ("/api/v1/health/ready", "get", "200"): {"Trafiğe hazır": "health.ready.200"},
     ("/api/v1/uploads", "post", "202"): {"Kuyruğa alındı": "uploads.create.202"},
     ("/api/v1/uploads/{upload_id}", "get", "200"): {
         "Doğrulanıyor": "uploads.get.200.queued",
@@ -120,7 +122,7 @@ def _trace_id_header() -> dict[str, Any]:
 def build_openapi(app: FastAPI) -> dict[str, Any]:
     schema = get_openapi(
         title="AUZEF Chat Analiz API",
-        version=settings.contract_version,
+        version=get_settings().contract_version,
         description=(
             "AUZEF chatbot mesajlarından sık sorulan soru ve tema analizi.\n\n"
             "Tüm hata cevapları RFC 9457 Problem Details biçimindedir ve her "

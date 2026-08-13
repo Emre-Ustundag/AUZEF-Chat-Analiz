@@ -11,3 +11,4 @@ export * from "./common";
 export * from "./upload";
 export * from "./analysis";
 export * from "./report";
+export * from "./health";

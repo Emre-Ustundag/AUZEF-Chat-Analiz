@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from app.schemas.analysis import AnalysisCreated, AnalysisJob, AnalysisRequest, ModelList
 from app.schemas.common import ProblemDetails
+from app.schemas.health import LivenessResponse, ReadinessResponse
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import Upload, UploadCreated
 from scripts.export_fixtures import main as export_fixtures_main
@@ -26,6 +27,8 @@ MODELS: dict[str, type[BaseModel]] = {
     "AnalysisCreated": AnalysisCreated,
     "AnalysisJob": AnalysisJob,
     "AnalysisReport": AnalysisReport,
+    "LivenessResponse": LivenessResponse,
+    "ReadinessResponse": ReadinessResponse,
     "ProblemDetails": ProblemDetails,
 }
 

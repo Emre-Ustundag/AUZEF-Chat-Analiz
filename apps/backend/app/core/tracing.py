@@ -43,7 +43,7 @@ class TraceIdMiddleware:
     """Saf ASGI middleware.
 
     `BaseHTTPMiddleware` DEĞİL: o streaming response'ları ve background
-    task'ları bozar, BE-02'de `GET /export` binary stream edecek.
+    task'ları bozar; `GET /export` ileride binary stream edecek.
     """
 
     def __init__(self, app: ASGIApp) -> None:

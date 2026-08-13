@@ -1,6 +1,7 @@
 """Merkezi RFC 9457 üretimi — her hata cevabı bu handler'lardan çıkar."""
 
 import logging
+from typing import Any
 
 import pytest
 from fastapi import FastAPI
@@ -18,6 +19,17 @@ from app.core.tracing import TRACE_ID_HEADER, TraceIdMiddleware
 from app.schemas.common import ProblemDetails
 
 SECRET_SENTINEL = "SENSITIVE_INPUT_SENTINEL_9472"
+
+
+def _structlog_events(caplog: pytest.LogCaptureFixture) -> list[dict[str, Any]]:
+    """Kayıtların structlog event dict'lerini toplar.
+
+    `ProcessorFormatter.wrap_for_formatter` render'ı stdlib formatter'ına
+    erteler; olay bu yüzden `record.msg` içinde dict olarak durur,
+    `getMessage()` ise Python repr'i verir. Yapılandırılmış alanları okumanın
+    doğru yeri `msg`.
+    """
+    return [record.msg for record in caplog.records if isinstance(record.msg, dict)]
 
 
 @pytest.mark.parametrize("code", list(ErrorCode))
@@ -90,7 +102,7 @@ def test_unhandled_exception_does_not_leak_internals(
     assert SECRET_SENTINEL not in caplog.text
     assert "division by zero" not in caplog.text
     assert any(
-        getattr(record, "exception_type", None) == "ZeroDivisionError" for record in caplog.records
+        event.get("exception_type") == "ZeroDivisionError" for event in _structlog_events(caplog)
     )
 
     problem = ProblemDetails.model_validate(response.json())
@@ -119,8 +131,8 @@ def test_response_validation_error_does_not_log_invalid_input(
     assert SECRET_SENTINEL not in response.text
     assert SECRET_SENTINEL not in caplog.text
     assert any(
-        getattr(record, "exception_type", None) == "ResponseValidationError"
-        for record in caplog.records
+        event.get("exception_type") == "ResponseValidationError"
+        for event in _structlog_events(caplog)
     )
 
 

@@ -6,6 +6,126 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/health/live": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Live",
+        "description": "Process çalışıyorsa başarılıdır; dış servis kontrol etmez.",
+        "operationId": "live_api_v1_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                },
+                "examples": {
+                  "Process çalışıyor": {
+                    "value": {
+                      "status": "ok"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Ready",
+        "description": "Kayıtlı zorunlu bağımlılıkların trafik almaya hazır olduğunu doğrular.",
+        "operationId": "ready_api_v1_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                },
+                "examples": {
+                  "Trafiğe hazır": {
+                    "value": {
+                      "status": "ready",
+                      "checks": [
+                        {
+                          "name": "example-dependency",
+                          "status": "ok"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "503": {
+            "description": "RFC 9457 Problem Details — olası kodlar: SERVICE_NOT_READY",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "SERVICE_NOT_READY": {
+                    "value": {
+                      "type": "/errors/service-not-ready",
+                      "title": "Servis hazır değil",
+                      "status": 503,
+                      "code": "SERVICE_NOT_READY",
+                      "detail": "Servis hazır değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "SERVICE_NOT_READY"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/uploads": {
       "post": {
         "tags": [
@@ -3291,10 +3411,11 @@
           "JOB_NOT_FOUND",
           "JOB_CONFLICT",
           "NOT_IMPLEMENTED",
+          "SERVICE_NOT_READY",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
-        "description": "16 kod: ADR-0001 §7'deki 11 + ADR-0002 ile eklenen sözleşme kodları."
+        "description": "Dondurulmuş hata sözlüğü ve BE-02 readiness genişletmesi."
       },
       "ErrorItem": {
         "properties": {
@@ -3329,6 +3450,21 @@
           "json"
         ],
         "title": "ExportFormat"
+      },
+      "LivenessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "LivenessResponse"
       },
       "ModelId": {
         "type": "string",
@@ -3498,6 +3634,50 @@
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."
+      },
+      "ReadinessCheckResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status"
+        ],
+        "title": "ReadinessCheckResponse"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ready",
+            "title": "Status",
+            "default": "ready"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/ReadinessCheckResponse"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadinessResponse"
       },
       "SheetProfile": {
         "properties": {

@@ -37,6 +37,7 @@ export const errorCodeSchema = z.enum([
   "JOB_NOT_FOUND",
   "JOB_CONFLICT",
   "NOT_IMPLEMENTED",
+  "SERVICE_NOT_READY",
   "INTERNAL_ERROR",
 ]);
 
@@ -59,6 +60,7 @@ export const ERROR_STATUS_BY_CODE = {
   JOB_NOT_FOUND: 404,
   JOB_CONFLICT: 409,
   NOT_IMPLEMENTED: 501,
+  SERVICE_NOT_READY: 503,
   INTERNAL_ERROR: 500,
 } as const satisfies Record<ErrorCode, number>;
 
@@ -136,6 +138,7 @@ export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
   JOB_NOT_FOUND: "İşlem bulunamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.",
   JOB_CONFLICT: "Bu işlem için zaten devam eden bir analiz var.",
   NOT_IMPLEMENTED: "Bu özellik henüz kullanıma hazır değil.",
+  SERVICE_NOT_READY: "Servis henüz trafiğe hazır değil. Lütfen kısa bir süre sonra tekrar deneyin.",
   INTERNAL_ERROR: "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
 };
 

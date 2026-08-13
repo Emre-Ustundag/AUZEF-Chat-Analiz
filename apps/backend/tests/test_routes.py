@@ -24,7 +24,7 @@ def test_route_exists_and_returns_501(client: TestClient, method: str, path: str
     """501 bekleniyor — 404/405 DEĞİL.
 
     404 yol yanlış demek, 405 method yanlış demek. Yalnızca 501, ucun doğru
-    bağlandığını ve gövdesinin BE-02'yi beklediğini kanıtlar.
+    bağlandığını ve gövdesinin uygulama kartını beklediğini kanıtlar.
     """
     response = client.request(method, path)
 
@@ -49,7 +49,7 @@ def test_delete_endpoints_declare_204(openapi: object) -> None:
 
 
 def test_stub_count_matches_endpoint_count() -> None:
-    """BE-02'nin iş listesi tam olarak dokuz madde.
+    """Route iş mantığı kartlarının listesi tam olarak dokuz madde.
 
     `grep -rn "raise NotImplementedError" app/api` ile aynı sayıyı vermeli.
     """
