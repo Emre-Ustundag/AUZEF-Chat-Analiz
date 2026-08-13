@@ -10,7 +10,7 @@ from app.core.config import Environment, get_settings
 from app.core.handlers import register_exception_handlers
 from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.openapi import install_openapi
-from app.core.tracing import TraceIdMiddleware
+from app.core.tracing import TRACE_ID_HEADER, TraceIdMiddleware
 from app.services.health import ReadinessCheck
 
 
@@ -35,7 +35,17 @@ def create_app(*, readiness_checks: Sequence[ReadinessCheck] = ()) -> FastAPI:
             allow_origins=settings.cors_origins,
             allow_credentials=False,
             allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-            allow_headers=["Content-Type", "Idempotency-Key", "X-OpenRouter-Key", "X-Trace-Id"],
+            allow_headers=[
+                "Content-Type",
+                "Idempotency-Key",
+                "X-OpenRouter-Key",
+                TRACE_ID_HEADER,
+            ],
+            # Bu olmadan tarayıcı `X-Trace-Id`'yi JS'e HİÇ göstermez: CORS
+            # yalnızca safelist header'ları okunabilir kılar. Frontend
+            # `toApiError()` içinde header'dan okuyor (`ApiError.traceId`) ve
+            # gövde bozukken sunucu logunu bulmanın tek yolu o.
+            expose_headers=[TRACE_ID_HEADER],
         )
 
     # FastAPI son eklenen middleware'i en dışta çalıştırır. Trace context'i

@@ -6,7 +6,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.tracing import TRACE_ID_HEADER
 from app.main import create_app
+
+CORS_ORIGIN = "http://localhost:3000"
 
 
 @pytest.mark.parametrize("environment", ["development", "test"])
@@ -37,3 +40,27 @@ def test_docs_are_disabled_in_production(monkeypatch: pytest.MonkeyPatch) -> Non
             assert client.get("/openapi.json").status_code == 404
     finally:
         get_settings.cache_clear()
+
+
+def test_cross_origin_response_exposes_trace_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`X-Trace-Id` expose edilmezse frontend `ApiError.traceId`'yi okuyamaz.
+
+    Safelist dışındaki her cevap header'ı, `Access-Control-Expose-Headers`
+    saymadıkça cross-origin JS'e görünmez; header cevaba yazılmış olsa bile.
+    """
+    monkeypatch.setenv("AUZEF_ENVIRONMENT", "development")
+    monkeypatch.setenv("AUZEF_CORS_ORIGINS", f'["{CORS_ORIGIN}"]')
+    get_settings.cache_clear()
+    try:
+        with TestClient(create_app()) as client:
+            response = client.get("/api/v1/health/live", headers={"Origin": CORS_ORIGIN})
+    finally:
+        get_settings.cache_clear()
+
+    assert response.headers["access-control-allow-origin"] == CORS_ORIGIN
+    exposed = {
+        header.strip().lower()
+        for header in response.headers["access-control-expose-headers"].split(",")
+    }
+    assert TRACE_ID_HEADER.lower() in exposed
+    assert response.headers[TRACE_ID_HEADER]

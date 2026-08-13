@@ -90,6 +90,18 @@ def test_retry_after_forbidden_elsewhere() -> None:
         _problem(ErrorCode.JOB_NOT_FOUND, 60)
 
 
+def test_status_must_match_error_code() -> None:
+    with pytest.raises(ValidationError):
+        ProblemDetails(
+            type=error_type_uri(ErrorCode.INTERNAL_ERROR),
+            title=ERROR_TITLES[ErrorCode.INTERNAL_ERROR],
+            status=400,
+            code=ErrorCode.INTERNAL_ERROR,
+            detail="detay",
+            trace_id="9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+        )
+
+
 def test_retry_after_omitted_not_null() -> None:
     """ADR-0002 #6'nın kalbi.
 
