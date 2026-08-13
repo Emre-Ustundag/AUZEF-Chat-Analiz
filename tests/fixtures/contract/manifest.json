@@ -1,0 +1,266 @@
+{
+  "$comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: apps/backend/scripts/export_fixtures.py",
+  "contract_version": "1.0.0",
+  "limits": {
+    "max_upload_bytes": 157286400,
+    "max_rows": 100000
+  },
+  "cases": [
+    {
+      "id": "uploads.create.202",
+      "method": "POST",
+      "path": "/api/v1/uploads",
+      "status": 202,
+      "model": "UploadCreated",
+      "file": "uploads.create.202.json"
+    },
+    {
+      "id": "uploads.delete.204",
+      "method": "DELETE",
+      "path": "/api/v1/uploads/{upload_id}",
+      "status": 204,
+      "model": null,
+      "file": null
+    },
+    {
+      "id": "uploads.get.200.queued",
+      "method": "GET",
+      "path": "/api/v1/uploads/{upload_id}",
+      "status": 200,
+      "model": "Upload",
+      "file": "uploads.get.200.queued.json"
+    },
+    {
+      "id": "uploads.get.200.ready",
+      "method": "GET",
+      "path": "/api/v1/uploads/{upload_id}",
+      "status": 200,
+      "model": "Upload",
+      "file": "uploads.get.200.ready.json"
+    },
+    {
+      "id": "uploads.get.200.row-limit",
+      "method": "GET",
+      "path": "/api/v1/uploads/{upload_id}",
+      "status": 200,
+      "model": "Upload",
+      "file": "uploads.get.200.row-limit.json"
+    },
+    {
+      "id": "uploads.get.200.failed",
+      "method": "GET",
+      "path": "/api/v1/uploads/{upload_id}",
+      "status": 200,
+      "model": "Upload",
+      "file": "uploads.get.200.failed.json"
+    },
+    {
+      "id": "models.list.200",
+      "method": "GET",
+      "path": "/api/v1/models",
+      "status": 200,
+      "model": "ModelList",
+      "file": "models.list.200.json"
+    },
+    {
+      "id": "analyses.request",
+      "method": "POST",
+      "path": "/api/v1/analyses",
+      "status": 202,
+      "model": "AnalysisRequest",
+      "file": "analyses.request.json"
+    },
+    {
+      "id": "analyses.create.202",
+      "method": "POST",
+      "path": "/api/v1/analyses",
+      "status": 202,
+      "model": "AnalysisCreated",
+      "file": "analyses.create.202.json"
+    },
+    {
+      "id": "analyses.get.200.analyzing",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}",
+      "status": 200,
+      "model": "AnalysisJob",
+      "file": "analyses.get.200.analyzing.json"
+    },
+    {
+      "id": "analyses.get.200.failed",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}",
+      "status": 200,
+      "model": "AnalysisJob",
+      "file": "analyses.get.200.failed.json"
+    },
+    {
+      "id": "analyses.get.200.cancelled",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}",
+      "status": 200,
+      "model": "AnalysisJob",
+      "file": "analyses.get.200.cancelled.json"
+    },
+    {
+      "id": "analyses.delete.204",
+      "method": "DELETE",
+      "path": "/api/v1/analyses/{analysis_id}",
+      "status": 204,
+      "model": null,
+      "file": null
+    },
+    {
+      "id": "analyses.result.200",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}/result",
+      "status": 200,
+      "model": "AnalysisReport",
+      "file": "analyses.result.200.json"
+    },
+    {
+      "id": "analyses.result.200.truncated",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}/result",
+      "status": 200,
+      "model": "AnalysisReport",
+      "file": "analyses.result.200.truncated.json"
+    },
+    {
+      "id": "errors.upload-too-large.413",
+      "method": "ANY",
+      "path": "*",
+      "status": 413,
+      "model": "ProblemDetails",
+      "file": "errors.upload-too-large.413.json"
+    },
+    {
+      "id": "errors.upload-invalid-type.415",
+      "method": "ANY",
+      "path": "*",
+      "status": 415,
+      "model": "ProblemDetails",
+      "file": "errors.upload-invalid-type.415.json"
+    },
+    {
+      "id": "errors.upload-corrupt-or-encrypted.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.upload-corrupt-or-encrypted.422.json"
+    },
+    {
+      "id": "errors.sheet-or-column-not-found.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.sheet-or-column-not-found.422.json"
+    },
+    {
+      "id": "errors.request-validation.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.request-validation.422.json"
+    },
+    {
+      "id": "errors.invalid-model.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.invalid-model.422.json"
+    },
+    {
+      "id": "errors.invalid-prompt.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.invalid-prompt.422.json"
+    },
+    {
+      "id": "errors.cost-limit-exceeded.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.cost-limit-exceeded.422.json"
+    },
+    {
+      "id": "errors.provider-auth-failed.422",
+      "method": "ANY",
+      "path": "*",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.provider-auth-failed.422.json"
+    },
+    {
+      "id": "errors.provider-rate-limited.429",
+      "method": "ANY",
+      "path": "*",
+      "status": 429,
+      "model": "ProblemDetails",
+      "file": "errors.provider-rate-limited.429.json"
+    },
+    {
+      "id": "errors.provider-bad-response.502",
+      "method": "ANY",
+      "path": "*",
+      "status": 502,
+      "model": "ProblemDetails",
+      "file": "errors.provider-bad-response.502.json"
+    },
+    {
+      "id": "errors.provider-timeout.504",
+      "method": "ANY",
+      "path": "*",
+      "status": 504,
+      "model": "ProblemDetails",
+      "file": "errors.provider-timeout.504.json"
+    },
+    {
+      "id": "errors.job-not-found.404",
+      "method": "ANY",
+      "path": "*",
+      "status": 404,
+      "model": "ProblemDetails",
+      "file": "errors.job-not-found.404.json"
+    },
+    {
+      "id": "errors.job-conflict.409",
+      "method": "ANY",
+      "path": "*",
+      "status": 409,
+      "model": "ProblemDetails",
+      "file": "errors.job-conflict.409.json"
+    },
+    {
+      "id": "errors.not-implemented.501",
+      "method": "ANY",
+      "path": "*",
+      "status": 501,
+      "model": "ProblemDetails",
+      "file": "errors.not-implemented.501.json"
+    },
+    {
+      "id": "errors.internal-error.500",
+      "method": "ANY",
+      "path": "*",
+      "status": 500,
+      "model": "ProblemDetails",
+      "file": "errors.internal-error.500.json"
+    },
+    {
+      "id": "errors.request-validation.422.no-field",
+      "method": "POST",
+      "path": "/api/v1/analyses",
+      "status": 422,
+      "model": "ProblemDetails",
+      "file": "errors.request-validation.422.no-field.json"
+    }
+  ]
+}

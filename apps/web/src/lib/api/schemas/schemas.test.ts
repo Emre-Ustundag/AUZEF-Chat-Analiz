@@ -7,6 +7,7 @@ import {
   isAnalysisSettled,
   isUploadSettled,
   isRetryableError,
+  percentageHalfUp,
   problemDetailsSchema,
   uploadSchema,
 } from "./index";
@@ -56,6 +57,71 @@ describe("problemDetailsSchema", () => {
     expect(result.retry_after).toBeUndefined();
   });
 
+  // ADR-0002 #6: retry_after 429 dışında YOK; `null` değil. Zod `.optional()`
+  // null'ı reddeder, yani backend null yollarsa bu şema düşer ve toApiError
+  // her hatayı INTERNAL_ERROR'a çevirir.
+  it("retry_after: null reddedilir, alanın yokluğu kabul edilir", () => {
+    const base = {
+      type: "/errors/job-not-found",
+      title: "İşlem bulunamadı",
+      status: 404,
+      code: "JOB_NOT_FOUND",
+      detail: "Analiz kaydı yok.",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(base).success).toBe(true);
+    expect(problemDetailsSchema.safeParse({ ...base, retry_after: null }).success).toBe(false);
+  });
+
+  it("status hata kodunun kayıtlı HTTP statüsüyle aynı olmalıdır", () => {
+    const problem = {
+      type: "/errors/internal-error",
+      title: "Beklenmeyen hata",
+      status: 400,
+      code: "INTERNAL_ERROR",
+      detail: "x",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(problem).success).toBe(false);
+  });
+
+  it("retry_after yalnızca rate limit kodunda zorunludur", () => {
+    const rateLimited = {
+      type: "/errors/provider-rate-limited",
+      title: "Sağlayıcı istek sınırına ulaşıldı",
+      status: 429,
+      code: "PROVIDER_RATE_LIMITED",
+      detail: "x",
+      trace_id: ID,
+    };
+    const internal = {
+      type: "/errors/internal-error",
+      title: "Beklenmeyen hata",
+      status: 500,
+      code: "INTERNAL_ERROR",
+      detail: "x",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(rateLimited).success).toBe(false);
+    expect(problemDetailsSchema.safeParse({ ...rateLimited, retry_after: 60 }).success).toBe(true);
+    expect(problemDetailsSchema.safeParse({ ...internal, retry_after: 60 }).success).toBe(false);
+  });
+
+  it("trace_id eksikse reddeder", () => {
+    const result = problemDetailsSchema.safeParse({
+      type: "/errors/job-not-found",
+      title: "İşlem bulunamadı",
+      status: 404,
+      code: "JOB_NOT_FOUND",
+      detail: "Analiz kaydı yok.",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("bilinmeyen hata kodunu reddeder", () => {
     const result = problemDetailsSchema.safeParse({
       type: "/errors/x",
@@ -75,8 +141,8 @@ describe("analysisRequestSchema", () => {
     upload_id: ID,
     sheet_name: "Sayfa1",
     text_column: "mesaj",
-    model: "anthropic/claude-sonnet-4",
-    prompt_version: "v1",
+    model: "anthropic/claude-sonnet-4.6",
+    prompt_version: "faq_analysis/v1",
     top_n: 20,
     max_cost_usd: 5,
   };
@@ -95,6 +161,15 @@ describe("analysisRequestSchema", () => {
 
   it("boş kolon adını reddeder", () => {
     expect(analysisRequestSchema.safeParse({ ...valid, text_column: "" }).success).toBe(false);
+  });
+
+  it("whitelist dışındaki model ve prompt sürümünü reddeder", () => {
+    expect(analysisRequestSchema.safeParse({ ...valid, model: "unknown/model" }).success).toBe(
+      false,
+    );
+    expect(
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v2" }).success,
+    ).toBe(false);
   });
 
   it("OpenRouter anahtarını gövdede taşımaz", () => {
@@ -168,7 +243,7 @@ describe("analysisReportSchema", () => {
         id: "q1",
         canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
         count: 1240,
-        percentage: 24.8,
+        percentage: 25.8,
         confidence: 0.92,
         redacted_examples: ["sınav ne zaman"],
       },
@@ -178,14 +253,14 @@ describe("analysisReportSchema", () => {
         id: "t1",
         name: "Sınav takvimi",
         count: 1240,
-        percentage: 24.8,
+        percentage: 25.8,
         related_question_ids: ["q1"],
       },
     ],
     executive_summary: "Mesajların dörtte biri sınav takvimiyle ilgili.",
     warnings: [],
-    model: "anthropic/claude-sonnet-4",
-    prompt_version: "v1",
+    model: "anthropic/claude-sonnet-4.6",
+    prompt_version: "faq_analysis/v1",
     prompt_hash: "abc123",
     token_usage: {
       prompt_tokens: 100_000,
@@ -226,6 +301,61 @@ describe("analysisReportSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("tarihsel model kimliğini kabul eder, prompt sürümünü dondurur", () => {
+    expect(analysisReportSchema.safeParse({ ...report, model: "retired/model-v1" }).success).toBe(
+      true,
+    );
+    expect(
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v2" }).success,
+    ).toBe(false);
+  });
+
+  it("tüketici gelecekteki warning kodlarına açıktır", () => {
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        warnings: [{ code: "FUTURE_NON_FATAL_WARNING", message: "Kullanıcıya hazır uyarı." }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rapor sürümünü 1.0'a sabitler", () => {
+    expect(analysisReportSchema.safeParse({ ...report, schema_version: "garbage" }).success).toBe(
+      false,
+    );
+  });
+
+  it("count, yüzde ve kimlik invariant'larını uygular", () => {
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        preprocessing_summary: { ...report.preprocessing_summary, redacted_count: 4801 },
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        top_questions: [{ ...report.top_questions[0], count: 4801, percentage: 100 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        themes: [{ ...report.themes[0], percentage: 25.7 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        top_questions: [report.top_questions[0], report.top_questions[0]],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("yüzdeleri bir ondalığa half-up yuvarlar", () => {
+    expect(percentageHalfUp(1, 16)).toBe(6.3);
+  });
 });
 
 describe("durum yardımcıları", () => {
@@ -253,5 +383,16 @@ describe("durum yardımcıları", () => {
     // Kullanıcının dosyası geçersizse tekrar denemek anlamsız.
     expect(isRetryableError("UPLOAD_INVALID_TYPE")).toBe(false);
     expect(isRetryableError("UPLOAD_TOO_LARGE")).toBe(false);
+  });
+
+  // ADR-0002 #1: dördü de kullanıcı girdisi hatası; aynı isteği tekrarlamak
+  // aynı hatayı üretir.
+  it.each([
+    "REQUEST_VALIDATION",
+    "INVALID_MODEL",
+    "INVALID_PROMPT",
+    "COST_LIMIT_EXCEEDED",
+  ] as const)("%s tekrar denenebilir değildir", (code) => {
+    expect(isRetryableError(code)).toBe(false);
   });
 });

@@ -9,11 +9,15 @@
 ```bash
 git clone https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz.git
 cd AUZEF-Chat-Analiz
-npm ci
+make install    # npm ci + uv sync --locked --dev
 npm run dev
 ```
 
 Uygulama varsayılan olarak `http://localhost:3000` adresinde çalışır.
+
+Yalnızca frontend üzerinde çalışacaksanız `npm ci` yeterlidir. Backend için
+[uv](https://docs.astral.sh/uv/) gerekir:
+`curl -LsSf https://astral.sh/uv/install.sh | sh`.
 
 ## Branch akışı
 
@@ -46,21 +50,48 @@ git switch -c feature/excel-upload
 
 ## Kalite kontrolleri
 
-PR açmadan önce mevcut kontrolleri çalıştırın:
+PR açmadan önce mevcut kontrolleri çalıştırın. Hepsi tek komutta:
 
 ```bash
+make check
+```
+
+Ayrı ayrı çalıştırmak isterseniz:
+
+```bash
+# frontend
 npm run format:check
 npm run lint
 npm run typecheck
 npm test
 npm run build
+
+# backend
+cd apps/backend
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy
+uv run --locked pytest
 ```
 
-Test altyapısı Vitest ve React Testing Library ile kurulmuştur (`apps/web`). Davranış değiştiren her PR ilgili testi de getirmelidir; hata düzeltmelerinde hatayı yeniden üretebilen bir test beklenir.
+Test altyapısı Vitest ve React Testing Library (`apps/web`) ile pytest (`apps/backend`) üzerine kuruludur. Davranış değiştiren her PR ilgili testi de getirmelidir; hata düzeltmelerinde hatayı yeniden üretebilen bir test beklenir.
 
 `npm run typecheck` önce `next typegen` çalıştırır: `PageProps` ve `RouteContext` gibi yol tiplerini Next üretir ve build alınmamış temiz bir kopyada bulunmazlar.
 
-Her push ve pull request'te GitHub Actions üzerinden format kontrolü, lint, tip kontrolü, testler, production build ve Gitleaks secret taraması çalışır. Bu kontroller başarılı olmadan PR merge edilmemelidir.
+Her push ve pull request'te GitHub Actions üzerinden format kontrolü, lint, tip kontrolü, testler, production build, sözleşme drift kontrolü ve Gitleaks secret taraması çalışır. Bu kontroller başarılı olmadan PR merge edilmemelidir.
+
+## API sözleşmesi değişiklikleri
+
+`docs/api/openapi.json` ve `tests/fixtures/contract/` **üretilmiş** dosyalardır; elle düzenlemeyin. `apps/backend/app/schemas/` altındaki bir Pydantic modelini değiştirdiyseniz artefaktları yeniden üretip aynı PR içinde commit'leyin:
+
+```bash
+make generate
+make contract
+```
+
+Sözleşmeyi ilgilendiren bir davranış değişikliği (yeni hata kodu, yeni alan, değişen sınır) üç yeri birden ister: Pydantic modeli, frontend'in Zod şeması ve `apps/web/src/mocks/` altındaki mock. Mock fiili referans implementasyondur; güncellenmezse arayüz gerçekte var olmayan bir davranışa karşı geliştirilir.
+
+Kararlar ve gerekçeleri: [`docs/adr/0002-api-contract-freeze.md`](docs/adr/0002-api-contract-freeze.md).
 
 ## Pull request süreci
 

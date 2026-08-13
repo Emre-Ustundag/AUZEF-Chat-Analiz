@@ -1,0 +1,73 @@
+[project]
+name = "auzef-backend"
+version = "0.1.0"
+description = "AUZEF Chat Analiz — API sözleşme katmanı (BE-01, contract-only)"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "fastapi>=0.121",
+  "pydantic>=2.12",
+  "pydantic-settings>=2.8",
+  # POST /uploads multipart; FastAPI multipart form desteği için zorunlu kılar.
+  "python-multipart>=0.0.20",
+  "uvicorn[standard]>=0.38",
+]
+
+# BE-01 contract-only: SQLAlchemy, Celery, openpyxl ve Polars BİLEREK yok.
+# Sözleşme katmanının bir DB driver'ı import etmesi, birinin onu bağlamasına
+# davetiyedir. Bunlar BE-02 (FastAPI iskeleti) ile gelir.
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4",
+  "pytest-asyncio>=1.0",
+  # Starlette 1.6 TestClient httpx2 istiyor; httpx'i kullanmak
+  # StarletteDeprecationWarning üretiyor. BE-02'de OpenRouter çağrıları için
+  # bir HTTP istemcisi runtime bağımlılığına terfi edecek.
+  "httpx2>=2.10",
+  "ruff>=0.14",
+  "mypy>=1.18",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+# Prettier'ın printWidth: 100 değeriyle aynı: repo genelinde tek sarma genişliği.
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ANN", "RUF", "TID"]
+ignore = [
+  # RUF001/002/003 Türkçe harfleri (ı, ş, ğ...) "belirsiz unicode" sayıyor.
+  # Bu repoda yorum ve docstring'ler Türkçe; kural burada yalnızca gürültü.
+  "RUF001",
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI'nin `Depends()`/`File()` idiomu varsayılan argümanda çağrı gerektirir.
+"app/api/**" = ["B008"]
+# Fixture'lar ve openapi.json şemasız JSON; `Any` burada dürüst olan tip.
+"tests/**" = ["ANN401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["app", "scripts", "tests"]
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+asyncio_mode = "auto"

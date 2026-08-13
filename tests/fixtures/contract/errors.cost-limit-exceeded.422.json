@@ -1,0 +1,9 @@
+{
+  "type": "/errors/cost-limit-exceeded",
+  "title": "Maliyet sınırı aşıldı",
+  "status": 422,
+  "code": "COST_LIMIT_EXCEEDED",
+  "detail": "Maliyet sınırı aşıldı (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}

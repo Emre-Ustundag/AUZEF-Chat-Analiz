@@ -1,0 +1,152 @@
+{
+  "$comment": "ÜRETİLMİŞ DOSYA — elle düzenlemeyin. Kaynak: apps/backend/scripts/export_fixtures.py",
+  "cases": [
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "top_n",
+      "value": 0,
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "top_n",
+      "value": 1,
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "top_n",
+      "value": 100,
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "top_n",
+      "value": 101,
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "max_cost_usd",
+      "value": 0,
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "max_cost_usd",
+      "value": 0.01,
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "max_cost_usd",
+      "value": 100,
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "max_cost_usd",
+      "value": 100.01,
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "sheet_name",
+      "value": "",
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "text_column",
+      "value": "",
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "model",
+      "value": "",
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "prompt_version",
+      "value": "",
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "upload_id",
+      "value": "not-a-uuid",
+      "valid": false
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "progress",
+      "value": 101,
+      "valid": false
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "progress",
+      "value": 100,
+      "valid": true
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "progress",
+      "value": -1,
+      "valid": false
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "status",
+      "value": "bilinmeyen",
+      "valid": false
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "estimated_seconds_remaining",
+      "value": -1,
+      "valid": false
+    },
+    {
+      "model": "AnalysisJob",
+      "base": "analyses.get.200.analyzing",
+      "field": "estimated_seconds_remaining",
+      "value": null,
+      "valid": true
+    },
+    {
+      "model": "Upload",
+      "base": "uploads.get.200.ready",
+      "field": "size_bytes",
+      "value": -1,
+      "valid": false
+    },
+    {
+      "model": "Upload",
+      "base": "uploads.get.200.ready",
+      "field": "status",
+      "value": "bilinmeyen",
+      "valid": false
+    }
+  ]
+}

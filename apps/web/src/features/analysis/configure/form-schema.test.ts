@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import { analysisRequestSchema } from "@/lib/api/schemas";
 
-import { configureFormSchema, toAnalysisRequest } from "./form-schema";
+import { configureFormSchema, type ConfigureFormValues, toAnalysisRequest } from "./form-schema";
 
 const UPLOAD_ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
 
 const validValues = {
   sheet_name: "Mesajlar",
   text_column: "mesaj",
-  model: "anthropic/claude-sonnet-4",
+  model: "anthropic/claude-sonnet-4.6",
   prompt_version: "faq_analysis/v1",
   top_n: 20,
   max_cost_usd: 10,
   openrouter_api_key: "sk-or-gizli-anahtar",
-};
+} satisfies ConfigureFormValues;
 
 describe("configureFormSchema", () => {
   it("geçerli değerleri kabul eder", () => {

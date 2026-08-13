@@ -1,0 +1,3805 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AUZEF Chat Analiz API",
+    "description": "AUZEF chatbot mesajlarından sık sorulan soru ve tema analizi.\n\nTüm hata cevapları RFC 9457 Problem Details biçimindedir ve her zaman `type`, `title`, `status`, `code`, `detail`, `trace_id` alanlarını taşır. `retry_after` YALNIZCA 429 cevaplarında bulunur ve başka hiçbir cevapta `null` olarak dahi yer almaz.\n\nTüm tarihler UTC ISO 8601'dir ve `Z` ile biter (`YYYY-MM-DDTHH:MM:SS.sssZ`).",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/uploads": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Dosya yükle",
+        "description": "Multipart `.xlsx` yükler ve doğrulama/profil job'ını kuyruğa alır. Opsiyonel `Idempotency-Key` header'ı desteklenir.",
+        "operationId": "create_upload_api_v1_uploads_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_upload_api_v1_uploads_post"
+              },
+              "examples": {
+                "XLSX dosyası": {
+                  "summary": "file alanında binary .xlsx içeriği",
+                  "value": {
+                    "file": "(binary .xlsx content)"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadCreated"
+                },
+                "examples": {
+                  "Kuyruğa alındı": {
+                    "value": {
+                      "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                      "status": "queued"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "409": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_CONFLICT": {
+                    "value": {
+                      "type": "/errors/job-conflict",
+                      "title": "İşlem durumu bu isteğe uygun değil",
+                      "status": 409,
+                      "code": "JOB_CONFLICT",
+                      "detail": "İşlem durumu bu isteğe uygun değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "413": {
+            "description": "RFC 9457 Problem Details — olası kodlar: UPLOAD_TOO_LARGE",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "UPLOAD_TOO_LARGE": {
+                    "value": {
+                      "type": "/errors/upload-too-large",
+                      "title": "Dosya boyutu sınırı aşıldı",
+                      "status": 413,
+                      "code": "UPLOAD_TOO_LARGE",
+                      "detail": "Dosya boyutu sınırı aşıldı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "UPLOAD_TOO_LARGE"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "415": {
+            "description": "RFC 9457 Problem Details — olası kodlar: UPLOAD_INVALID_TYPE",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "UPLOAD_INVALID_TYPE": {
+                    "value": {
+                      "type": "/errors/upload-invalid-type",
+                      "title": "Desteklenmeyen dosya türü",
+                      "status": 415,
+                      "code": "UPLOAD_INVALID_TYPE",
+                      "detail": "Desteklenmeyen dosya türü (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "UPLOAD_INVALID_TYPE"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Opsiyonel. Aynı anahtar + aynı gövde ile tekrarlanan istek, ilk isteğin 202 cevabını aynen döndürür (replay). Aynı anahtar + FARKLI gövde ise 409 `JOB_CONFLICT` üretir. Kayıt 24 saat saklanır.\n\nReplay, orijinal 202'yi döndürür ve istekle gelen yeni `X-OpenRouter-Key` header'ını YOK SAYAR: anahtar orijinal job'a bağlıdır. Aksi hâlde anahtar rotasyonundan sonraki bir retry, ölmüş bir job'ı sessizce diriltirdi.\n\nFingerprint ve saklama anahtarı ADR-0002 #3'te byte seviyesinde tanımlıdır; secret/header değerleri fingerprint'e girmez.",
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "example": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c"
+          }
+        ]
+      }
+    },
+    "/api/v1/uploads/{upload_id}": {
+      "get": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Upload durumu ve profili",
+        "operationId": "get_upload_api_v1_uploads__upload_id__get",
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Upload Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                },
+                "examples": {
+                  "Doğrulanıyor": {
+                    "value": {
+                      "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                      "status": "queued",
+                      "filename": "auzef-chatbot-mesajlari.xlsx",
+                      "size_bytes": 88412160,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "profile": null,
+                      "error": null
+                    }
+                  },
+                  "Hazır (profil dolu)": {
+                    "value": {
+                      "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                      "status": "ready",
+                      "filename": "auzef-chatbot-mesajlari.xlsx",
+                      "size_bytes": 88412160,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "profile": {
+                        "sheets": [
+                          {
+                            "name": "Mesajlar",
+                            "row_count": 48213,
+                            "column_count": 5,
+                            "columns": [
+                              {
+                                "name": "tarih",
+                                "index": 0,
+                                "non_empty_count": 48213,
+                                "empty_count": 0,
+                                "unique_count": 41002,
+                                "avg_length": 19.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "2026-03-01 09:12",
+                                  "2026-03-01 09:14"
+                                ]
+                              },
+                              {
+                                "name": "kullanici_id",
+                                "index": 1,
+                                "non_empty_count": 48213,
+                                "empty_count": 0,
+                                "unique_count": 12884,
+                                "avg_length": 8.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "[ID]",
+                                  "[ID]"
+                                ]
+                              },
+                              {
+                                "name": "mesaj",
+                                "index": 2,
+                                "non_empty_count": 47106,
+                                "empty_count": 1107,
+                                "unique_count": 31540,
+                                "avg_length": 64.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "sınav tarihleri ne zaman açıklanacak",
+                                  "ders materyallerine nereden ulaşabilirim",
+                                  "harç ödemesini nasıl yaparım"
+                                ]
+                              },
+                              {
+                                "name": "kanal",
+                                "index": 3,
+                                "non_empty_count": 48213,
+                                "empty_count": 0,
+                                "unique_count": 3,
+                                "avg_length": 7.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "web",
+                                  "mobil"
+                                ]
+                              },
+                              {
+                                "name": "yanit",
+                                "index": 4,
+                                "non_empty_count": 44980,
+                                "empty_count": 3233,
+                                "unique_count": 8712,
+                                "avg_length": 128.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "Sınav takvimi için...",
+                                  "Materyallere..."
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Ham Veri",
+                            "row_count": 48213,
+                            "column_count": 2,
+                            "columns": [
+                              {
+                                "name": "id",
+                                "index": 0,
+                                "non_empty_count": 48213,
+                                "empty_count": 0,
+                                "unique_count": 48213,
+                                "avg_length": 6.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "1",
+                                  "2"
+                                ]
+                              },
+                              {
+                                "name": "icerik",
+                                "index": 1,
+                                "non_empty_count": 47106,
+                                "empty_count": 1107,
+                                "unique_count": 31540,
+                                "avg_length": 64.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "sınav ne zaman",
+                                  "kayıt yenileme"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "total_row_count": 96426,
+                        "exceeds_row_limit": false
+                      },
+                      "error": null
+                    }
+                  },
+                  "Satır sınırı aşıldı": {
+                    "value": {
+                      "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                      "status": "ready",
+                      "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
+                      "size_bytes": 142606336,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "profile": {
+                        "sheets": [
+                          {
+                            "name": "Mesajlar",
+                            "row_count": 250000,
+                            "column_count": 5,
+                            "columns": [
+                              {
+                                "name": "tarih",
+                                "index": 0,
+                                "non_empty_count": 250000,
+                                "empty_count": 0,
+                                "unique_count": 41002,
+                                "avg_length": 19.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "2026-03-01 09:12",
+                                  "2026-03-01 09:14"
+                                ]
+                              },
+                              {
+                                "name": "kullanici_id",
+                                "index": 1,
+                                "non_empty_count": 250000,
+                                "empty_count": 0,
+                                "unique_count": 12884,
+                                "avg_length": 8.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "[ID]",
+                                  "[ID]"
+                                ]
+                              },
+                              {
+                                "name": "mesaj",
+                                "index": 2,
+                                "non_empty_count": 248893,
+                                "empty_count": 1107,
+                                "unique_count": 31540,
+                                "avg_length": 64.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "sınav tarihleri ne zaman açıklanacak",
+                                  "ders materyallerine nereden ulaşabilirim",
+                                  "harç ödemesini nasıl yaparım"
+                                ]
+                              },
+                              {
+                                "name": "kanal",
+                                "index": 3,
+                                "non_empty_count": 250000,
+                                "empty_count": 0,
+                                "unique_count": 3,
+                                "avg_length": 7.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "web",
+                                  "mobil"
+                                ]
+                              },
+                              {
+                                "name": "yanit",
+                                "index": 4,
+                                "non_empty_count": 246767,
+                                "empty_count": 3233,
+                                "unique_count": 8712,
+                                "avg_length": 128.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "Sınav takvimi için...",
+                                  "Materyallere..."
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Ham Veri",
+                            "row_count": 250000,
+                            "column_count": 2,
+                            "columns": [
+                              {
+                                "name": "id",
+                                "index": 0,
+                                "non_empty_count": 250000,
+                                "empty_count": 0,
+                                "unique_count": 250000,
+                                "avg_length": 6.0,
+                                "is_likely_text": false,
+                                "sample_values": [
+                                  "1",
+                                  "2"
+                                ]
+                              },
+                              {
+                                "name": "icerik",
+                                "index": 1,
+                                "non_empty_count": 248893,
+                                "empty_count": 1107,
+                                "unique_count": 31540,
+                                "avg_length": 64.0,
+                                "is_likely_text": true,
+                                "sample_values": [
+                                  "sınav ne zaman",
+                                  "kayıt yenileme"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "total_row_count": 500000,
+                        "exceeds_row_limit": true
+                      },
+                      "error": null
+                    }
+                  },
+                  "Başarısız": {
+                    "value": {
+                      "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                      "status": "failed",
+                      "filename": "bozuk.xlsx",
+                      "size_bytes": 1204,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "profile": null,
+                      "error": {
+                        "type": "/errors/upload-corrupt-or-encrypted",
+                        "title": "Dosya okunamadı",
+                        "status": 422,
+                        "code": "UPLOAD_CORRUPT_OR_ENCRYPTED",
+                        "detail": "OOXML yapısı doğrulanamadı.",
+                        "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                        "errors": []
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Upload'ı iptal et ve temizle",
+        "operationId": "delete_upload_api_v1_uploads__upload_id__delete",
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Upload Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "İzin verilen modeller ve varsayılanlar",
+        "description": "Yalnızca JSON Schema structured output desteği doğrulanmış modeller listelenir. `default_model` ve `default_prompt_version` formun başlangıç değerlerini besler.",
+        "operationId": "list_models_api_v1_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelList"
+                },
+                "examples": {
+                  "Whitelist": {
+                    "value": {
+                      "models": [
+                        {
+                          "id": "anthropic/claude-sonnet-4.6",
+                          "label": "Claude Sonnet 4.6",
+                          "input_cost_per_million": 3.0,
+                          "output_cost_per_million": 15.0,
+                          "context_window": 1000000
+                        },
+                        {
+                          "id": "openai/gpt-4.1-mini",
+                          "label": "GPT-4.1 mini",
+                          "input_cost_per_million": 0.4,
+                          "output_cost_per_million": 1.6,
+                          "context_window": 1047576
+                        },
+                        {
+                          "id": "google/gemini-2.5-flash",
+                          "label": "Gemini 2.5 Flash",
+                          "input_cost_per_million": 0.3,
+                          "output_cost_per_million": 2.5,
+                          "context_window": 1048576
+                        }
+                      ],
+                      "default_model": "google/gemini-2.5-flash",
+                      "default_prompt_version": "faq_analysis/v1"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses": {
+      "post": {
+        "tags": [
+          "analyses"
+        ],
+        "summary": "Analiz başlat",
+        "description": "Analizi kuyruğa alır. OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır; gövdeye veya sorgu parametresine asla konmaz, loglarda redakte edilir ve PostgreSQL'e yazılmaz.\n\nMaliyet ön tahmini `max_cost_usd` sınırını aşarsa istek burada `COST_LIMIT_EXCEEDED` ile reddedilir; çalışma sırasında aşılırsa aynı kod terminal job hatası olarak döner (ADR-0002 #10).",
+        "operationId": "create_analysis_api_v1_analyses_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Opsiyonel. Aynı anahtar + aynı gövde ile tekrarlanan istek, ilk isteğin 202 cevabını aynen döndürür (replay). Aynı anahtar + FARKLI gövde ise 409 `JOB_CONFLICT` üretir. Kayıt 24 saat saklanır.\n\nReplay, orijinal 202'yi döndürür ve istekle gelen yeni `X-OpenRouter-Key` header'ını YOK SAYAR: anahtar orijinal job'a bağlıdır. Aksi hâlde anahtar rotasyonundan sonraki bir retry, ölmüş bir job'ı sessizce diriltirdi.\n\nFingerprint ve saklama anahtarı ADR-0002 #3'te byte seviyesinde tanımlıdır; secret/header değerleri fingerprint'e girmez.",
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "example": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisRequest"
+              },
+              "examples": {
+                "Tipik analiz isteği": {
+                  "value": {
+                    "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                    "sheet_name": "Mesajlar",
+                    "text_column": "mesaj",
+                    "model": "google/gemini-2.5-flash",
+                    "prompt_version": "faq_analysis/v1",
+                    "top_n": 8,
+                    "max_cost_usd": 10.0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisCreated"
+                },
+                "examples": {
+                  "Kuyruğa alındı": {
+                    "value": {
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "queued"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "409": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_CONFLICT": {
+                    "value": {
+                      "type": "/errors/job-conflict",
+                      "title": "İşlem durumu bu isteğe uygun değil",
+                      "status": 409,
+                      "code": "JOB_CONFLICT",
+                      "detail": "İşlem durumu bu isteğe uygun değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: COST_LIMIT_EXCEEDED, INVALID_MODEL, INVALID_PROMPT, PROVIDER_AUTH_FAILED, REQUEST_VALIDATION, SHEET_OR_COLUMN_NOT_FOUND",
+            "x-error-codes": [
+              "REQUEST_VALIDATION",
+              "INVALID_MODEL",
+              "INVALID_PROMPT",
+              "COST_LIMIT_EXCEEDED",
+              "PROVIDER_AUTH_FAILED",
+              "SHEET_OR_COLUMN_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "INVALID_MODEL": {
+                    "value": {
+                      "type": "/errors/invalid-model",
+                      "title": "Geçersiz model",
+                      "status": 422,
+                      "code": "INVALID_MODEL",
+                      "detail": "Geçersiz model (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "INVALID_PROMPT": {
+                    "value": {
+                      "type": "/errors/invalid-prompt",
+                      "title": "Geçersiz prompt sürümü",
+                      "status": 422,
+                      "code": "INVALID_PROMPT",
+                      "detail": "Geçersiz prompt sürümü (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "COST_LIMIT_EXCEEDED": {
+                    "value": {
+                      "type": "/errors/cost-limit-exceeded",
+                      "title": "Maliyet sınırı aşıldı",
+                      "status": 422,
+                      "code": "COST_LIMIT_EXCEEDED",
+                      "detail": "Maliyet sınırı aşıldı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "PROVIDER_AUTH_FAILED": {
+                    "value": {
+                      "type": "/errors/provider-auth-failed",
+                      "title": "Sağlayıcı kimlik doğrulaması başarısız",
+                      "status": 422,
+                      "code": "PROVIDER_AUTH_FAILED",
+                      "detail": "Sağlayıcı kimlik doğrulaması başarısız (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "SHEET_OR_COLUMN_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/sheet-or-column-not-found",
+                      "title": "Sayfa veya kolon bulunamadı",
+                      "status": 422,
+                      "code": "SHEET_OR_COLUMN_NOT_FOUND",
+                      "detail": "Sayfa veya kolon bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OpenRouterKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/analyses/{analysis_id}": {
+      "get": {
+        "tags": [
+          "analyses"
+        ],
+        "summary": "Analiz durumu",
+        "description": "Frontend bu ucu 2,5 saniyede bir poll eder ve terminal durumda (`completed`/`failed`/`cancelled`) durur. `progress` düzenli artmayabilir: ilerleme her satırda değil, yalnızca aşama veya anlamlı yüzde değişiminde yazılır.",
+        "operationId": "get_analysis_api_v1_analyses__analysis_id__get",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJob"
+                },
+                "examples": {
+                  "Analiz sürüyor": {
+                    "value": {
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "analyzing",
+                      "progress": 62.5,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "updated_at": "2026-08-11T10:04:30.000Z",
+                      "estimated_seconds_remaining": 430.0,
+                      "error": null
+                    }
+                  },
+                  "Sağlayıcı hatasıyla bitti": {
+                    "value": {
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "failed",
+                      "progress": 100.0,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "updated_at": "2026-08-11T10:04:30.000Z",
+                      "estimated_seconds_remaining": null,
+                      "error": {
+                        "type": "/errors/provider-rate-limited",
+                        "title": "Sağlayıcı istek sınırına ulaşıldı",
+                        "status": 429,
+                        "code": "PROVIDER_RATE_LIMITED",
+                        "detail": "OpenRouter istek sınırı aşıldı.",
+                        "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                        "errors": [],
+                        "retry_after": 60.0
+                      }
+                    }
+                  },
+                  "İptal edildi": {
+                    "value": {
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "cancelled",
+                      "progress": 41.0,
+                      "created_at": "2026-08-11T10:00:00.000Z",
+                      "updated_at": "2026-08-11T10:04:30.000Z",
+                      "estimated_seconds_remaining": null,
+                      "error": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "analyses"
+        ],
+        "summary": "Analizi iptal et",
+        "description": "Aktif job → 204 ve durum `cancelled`. Terminal job → 409 `JOB_CONFLICT`. Bilinmeyen id → 404 `JOB_NOT_FOUND` (ADR-0002 #9).",
+        "operationId": "cancel_analysis_api_v1_analyses__analysis_id__delete",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "409": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_CONFLICT": {
+                    "value": {
+                      "type": "/errors/job-conflict",
+                      "title": "İşlem durumu bu isteğe uygun değil",
+                      "status": 409,
+                      "code": "JOB_CONFLICT",
+                      "detail": "İşlem durumu bu isteğe uygun değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/{analysis_id}/result": {
+      "get": {
+        "tags": [
+          "analyses"
+        ],
+        "summary": "Tamamlanmış rapor",
+        "description": "Yalnızca `status` `completed` iken 200 döner. Aksi hâlde 409 `JOB_CONFLICT`.",
+        "operationId": "get_analysis_result_api_v1_analyses__analysis_id__result_get",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisReport"
+                },
+                "examples": {
+                  "Tam rapor": {
+                    "value": {
+                      "schema_version": "1.0",
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "completed",
+                      "generated_at": "2026-08-11T10:12:15.000Z",
+                      "source_summary": {
+                        "filename": "auzef-chatbot-mesajlari.xlsx",
+                        "sheet_name": "Mesajlar",
+                        "text_column": "mesaj",
+                        "total_rows": 48213
+                      },
+                      "preprocessing_summary": {
+                        "analyzed_count": 47106,
+                        "discarded_count": 1107,
+                        "duplicate_count": 15566,
+                        "redacted_count": 2840,
+                        "unique_count": 31540
+                      },
+                      "top_questions": [
+                        {
+                          "id": "q1",
+                          "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+                          "count": 11680,
+                          "percentage": 24.8,
+                          "confidence": 0.94,
+                          "redacted_examples": [
+                            "sınav tarihleri belli mi",
+                            "vize ne zaman"
+                          ]
+                        },
+                        {
+                          "id": "q2",
+                          "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
+                          "count": 8102,
+                          "percentage": 17.2,
+                          "confidence": 0.91,
+                          "redacted_examples": [
+                            "ders kitabı nerede",
+                            "pdf'leri bulamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q3",
+                          "canonical_question": "Harç ödemesini nasıl yaparım?",
+                          "count": 5748,
+                          "percentage": 12.2,
+                          "confidence": 0.89,
+                          "redacted_examples": [
+                            "harç yatırma",
+                            "ödeme yapamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q4",
+                          "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+                          "count": 4523,
+                          "percentage": 9.6,
+                          "confidence": 0.87,
+                          "redacted_examples": [
+                            "kayıt yenilemedim ne olur"
+                          ]
+                        },
+                        {
+                          "id": "q5",
+                          "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
+                          "count": 3311,
+                          "percentage": 7.0,
+                          "confidence": 0.85,
+                          "redacted_examples": [
+                            "sınav yeri",
+                            "hangi binada"
+                          ]
+                        },
+                        {
+                          "id": "q6",
+                          "canonical_question": "Mazeret sınavına nasıl başvurulur?",
+                          "count": 2204,
+                          "percentage": 4.7,
+                          "confidence": 0.82,
+                          "redacted_examples": [
+                            "mazeret sınavı başvuru"
+                          ]
+                        },
+                        {
+                          "id": "q7",
+                          "canonical_question": "Not itirazı nasıl yapılır?",
+                          "count": 1640,
+                          "percentage": 3.5,
+                          "confidence": 0.78,
+                          "redacted_examples": [
+                            "notuma itiraz etmek istiyorum"
+                          ]
+                        },
+                        {
+                          "id": "q8",
+                          "canonical_question": "Öğrenci belgesi nasıl alınır?",
+                          "count": 1129,
+                          "percentage": 2.4,
+                          "confidence": 0.76,
+                          "redacted_examples": [
+                            "öğrenci belgesi lazım"
+                          ]
+                        }
+                      ],
+                      "themes": [
+                        {
+                          "id": "t1",
+                          "name": "Sınav ve takvim",
+                          "count": 17195,
+                          "percentage": 36.5,
+                          "related_question_ids": [
+                            "q1",
+                            "q5",
+                            "q6"
+                          ]
+                        },
+                        {
+                          "id": "t2",
+                          "name": "Ders materyalleri",
+                          "count": 8102,
+                          "percentage": 17.2,
+                          "related_question_ids": [
+                            "q2"
+                          ]
+                        },
+                        {
+                          "id": "t3",
+                          "name": "Ödeme ve kayıt",
+                          "count": 10271,
+                          "percentage": 21.8,
+                          "related_question_ids": [
+                            "q3",
+                            "q4"
+                          ]
+                        },
+                        {
+                          "id": "t4",
+                          "name": "Belge ve itiraz",
+                          "count": 2769,
+                          "percentage": 5.9,
+                          "related_question_ids": [
+                            "q7",
+                            "q8"
+                          ]
+                        }
+                      ],
+                      "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
+                      "warnings": [],
+                      "model": "google/gemini-2.5-flash",
+                      "prompt_version": "faq_analysis/v1",
+                      "prompt_hash": "sha256:2f8a1c9e4b7d",
+                      "token_usage": {
+                        "prompt_tokens": 1284000,
+                        "completion_tokens": 96400,
+                        "total_tokens": 1380400
+                      },
+                      "estimated_cost_usd": 0.6262
+                    }
+                  },
+                  "Satır sınırı kırpılmış": {
+                    "value": {
+                      "schema_version": "1.0",
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "completed",
+                      "generated_at": "2026-08-11T10:12:15.000Z",
+                      "source_summary": {
+                        "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
+                        "sheet_name": "Mesajlar",
+                        "text_column": "mesaj",
+                        "total_rows": 250000
+                      },
+                      "preprocessing_summary": {
+                        "analyzed_count": 98893,
+                        "discarded_count": 1107,
+                        "duplicate_count": 32679,
+                        "redacted_count": 5963,
+                        "unique_count": 66214
+                      },
+                      "top_questions": [
+                        {
+                          "id": "q1",
+                          "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+                          "count": 11680,
+                          "percentage": 11.8,
+                          "confidence": 0.94,
+                          "redacted_examples": [
+                            "sınav tarihleri belli mi",
+                            "vize ne zaman"
+                          ]
+                        },
+                        {
+                          "id": "q2",
+                          "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
+                          "count": 8102,
+                          "percentage": 8.2,
+                          "confidence": 0.91,
+                          "redacted_examples": [
+                            "ders kitabı nerede",
+                            "pdf'leri bulamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q3",
+                          "canonical_question": "Harç ödemesini nasıl yaparım?",
+                          "count": 5748,
+                          "percentage": 5.8,
+                          "confidence": 0.89,
+                          "redacted_examples": [
+                            "harç yatırma",
+                            "ödeme yapamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q4",
+                          "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+                          "count": 4523,
+                          "percentage": 4.6,
+                          "confidence": 0.87,
+                          "redacted_examples": [
+                            "kayıt yenilemedim ne olur"
+                          ]
+                        },
+                        {
+                          "id": "q5",
+                          "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
+                          "count": 3311,
+                          "percentage": 3.3,
+                          "confidence": 0.85,
+                          "redacted_examples": [
+                            "sınav yeri",
+                            "hangi binada"
+                          ]
+                        }
+                      ],
+                      "themes": [
+                        {
+                          "id": "t1",
+                          "name": "Sınav ve takvim",
+                          "count": 17195,
+                          "percentage": 17.4,
+                          "related_question_ids": [
+                            "q1",
+                            "q5"
+                          ]
+                        },
+                        {
+                          "id": "t2",
+                          "name": "Ders materyalleri",
+                          "count": 8102,
+                          "percentage": 8.2,
+                          "related_question_ids": [
+                            "q2"
+                          ]
+                        },
+                        {
+                          "id": "t3",
+                          "name": "Ödeme ve kayıt",
+                          "count": 10271,
+                          "percentage": 10.4,
+                          "related_question_ids": [
+                            "q3",
+                            "q4"
+                          ]
+                        },
+                        {
+                          "id": "t4",
+                          "name": "Belge ve itiraz",
+                          "count": 2769,
+                          "percentage": 2.8,
+                          "related_question_ids": []
+                        }
+                      ],
+                      "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
+                      "warnings": [
+                        {
+                          "code": "ROW_LIMIT_TRUNCATED",
+                          "message": "Sayfada 250.000 satır bulundu; analiz ilk 100.000 satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı."
+                        }
+                      ],
+                      "model": "google/gemini-2.5-flash",
+                      "prompt_version": "faq_analysis/v1",
+                      "prompt_hash": "sha256:2f8a1c9e4b7d",
+                      "token_usage": {
+                        "prompt_tokens": 1284000,
+                        "completion_tokens": 96400,
+                        "total_tokens": 1380400
+                      },
+                      "estimated_cost_usd": 0.6262
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "409": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_CONFLICT": {
+                    "value": {
+                      "type": "/errors/job-conflict",
+                      "title": "İşlem durumu bu isteğe uygun değil",
+                      "status": 409,
+                      "code": "JOB_CONFLICT",
+                      "detail": "İşlem durumu bu isteğe uygun değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyses/{analysis_id}/export": {
+      "get": {
+        "tags": [
+          "analyses"
+        ],
+        "summary": "Raporu dışa aktar",
+        "description": "Dosya adı her zaman `analiz-{analysis_id}.{format}` biçimindedir; kullanıcının yüklediği dosya adı kullanılmaz. Böylece `Content-Disposition` tanım gereği ASCII kalır ve RFC 5987 `filename*` gerekmez (ADR-0002 #11).",
+        "operationId": "export_analysis_api_v1_analyses__analysis_id__export_get",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat",
+              "default": "xlsx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "examples": {
+                  "XLSX export": {
+                    "summary": "Binary XLSX dosyası",
+                    "value": "PK...(binary xlsx content)"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisReport"
+                },
+                "examples": {
+                  "JSON export": {
+                    "summary": "Attachment olarak indirilen JSON raporu",
+                    "value": {
+                      "schema_version": "1.0",
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "completed",
+                      "generated_at": "2026-08-11T10:12:15.000Z",
+                      "source_summary": {
+                        "filename": "auzef-chatbot-mesajlari.xlsx",
+                        "sheet_name": "Mesajlar",
+                        "text_column": "mesaj",
+                        "total_rows": 48213
+                      },
+                      "preprocessing_summary": {
+                        "analyzed_count": 47106,
+                        "discarded_count": 1107,
+                        "duplicate_count": 15566,
+                        "redacted_count": 2840,
+                        "unique_count": 31540
+                      },
+                      "top_questions": [
+                        {
+                          "id": "q1",
+                          "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+                          "count": 11680,
+                          "percentage": 24.8,
+                          "confidence": 0.94,
+                          "redacted_examples": [
+                            "sınav tarihleri belli mi",
+                            "vize ne zaman"
+                          ]
+                        },
+                        {
+                          "id": "q2",
+                          "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
+                          "count": 8102,
+                          "percentage": 17.2,
+                          "confidence": 0.91,
+                          "redacted_examples": [
+                            "ders kitabı nerede",
+                            "pdf'leri bulamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q3",
+                          "canonical_question": "Harç ödemesini nasıl yaparım?",
+                          "count": 5748,
+                          "percentage": 12.2,
+                          "confidence": 0.89,
+                          "redacted_examples": [
+                            "harç yatırma",
+                            "ödeme yapamıyorum"
+                          ]
+                        },
+                        {
+                          "id": "q4",
+                          "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+                          "count": 4523,
+                          "percentage": 9.6,
+                          "confidence": 0.87,
+                          "redacted_examples": [
+                            "kayıt yenilemedim ne olur"
+                          ]
+                        },
+                        {
+                          "id": "q5",
+                          "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
+                          "count": 3311,
+                          "percentage": 7.0,
+                          "confidence": 0.85,
+                          "redacted_examples": [
+                            "sınav yeri",
+                            "hangi binada"
+                          ]
+                        },
+                        {
+                          "id": "q6",
+                          "canonical_question": "Mazeret sınavına nasıl başvurulur?",
+                          "count": 2204,
+                          "percentage": 4.7,
+                          "confidence": 0.82,
+                          "redacted_examples": [
+                            "mazeret sınavı başvuru"
+                          ]
+                        },
+                        {
+                          "id": "q7",
+                          "canonical_question": "Not itirazı nasıl yapılır?",
+                          "count": 1640,
+                          "percentage": 3.5,
+                          "confidence": 0.78,
+                          "redacted_examples": [
+                            "notuma itiraz etmek istiyorum"
+                          ]
+                        },
+                        {
+                          "id": "q8",
+                          "canonical_question": "Öğrenci belgesi nasıl alınır?",
+                          "count": 1129,
+                          "percentage": 2.4,
+                          "confidence": 0.76,
+                          "redacted_examples": [
+                            "öğrenci belgesi lazım"
+                          ]
+                        }
+                      ],
+                      "themes": [
+                        {
+                          "id": "t1",
+                          "name": "Sınav ve takvim",
+                          "count": 17195,
+                          "percentage": 36.5,
+                          "related_question_ids": [
+                            "q1",
+                            "q5",
+                            "q6"
+                          ]
+                        },
+                        {
+                          "id": "t2",
+                          "name": "Ders materyalleri",
+                          "count": 8102,
+                          "percentage": 17.2,
+                          "related_question_ids": [
+                            "q2"
+                          ]
+                        },
+                        {
+                          "id": "t3",
+                          "name": "Ödeme ve kayıt",
+                          "count": 10271,
+                          "percentage": 21.8,
+                          "related_question_ids": [
+                            "q3",
+                            "q4"
+                          ]
+                        },
+                        {
+                          "id": "t4",
+                          "name": "Belge ve itiraz",
+                          "count": 2769,
+                          "percentage": 5.9,
+                          "related_question_ids": [
+                            "q7",
+                            "q8"
+                          ]
+                        }
+                      ],
+                      "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
+                      "warnings": [],
+                      "model": "google/gemini-2.5-flash",
+                      "prompt_version": "faq_analysis/v1",
+                      "prompt_hash": "sha256:2f8a1c9e4b7d",
+                      "token_usage": {
+                        "prompt_tokens": 1284000,
+                        "completion_tokens": 96400,
+                        "total_tokens": 1380400
+                      },
+                      "estimated_cost_usd": 0.6262
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              },
+              "Content-Disposition": {
+                "description": "Her zaman `attachment; filename=\"analiz-{analysis_id}.{format}\"`. Kullanıcının dosya adı kullanılmadığı için tanım gereği ASCII'dir; RFC 5987 `filename*` üretilmez.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment; filename=\"analiz-6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90.xlsx\""
+              }
+            }
+          },
+          "404": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_NOT_FOUND",
+            "x-error-codes": [
+              "JOB_NOT_FOUND"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_NOT_FOUND": {
+                    "value": {
+                      "type": "/errors/job-not-found",
+                      "title": "İşlem bulunamadı",
+                      "status": 404,
+                      "code": "JOB_NOT_FOUND",
+                      "detail": "İşlem bulunamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "409": {
+            "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "JOB_CONFLICT": {
+                    "value": {
+                      "type": "/errors/job-conflict",
+                      "title": "İşlem durumu bu isteğe uygun değil",
+                      "status": 409,
+                      "code": "JOB_CONFLICT",
+                      "detail": "İşlem durumu bu isteğe uygun değil (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "422": {
+            "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "REQUEST_VALIDATION": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek doğrulanamadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  },
+                  "REQUEST_VALIDATION (alan yolu olmayan hata)": {
+                    "value": {
+                      "type": "/errors/request-validation",
+                      "title": "İstek doğrulanamadı",
+                      "status": 422,
+                      "code": "REQUEST_VALIDATION",
+                      "detail": "İstek gövdesi veya parametreleri doğrulanamadı.",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": [
+                        {
+                          "field": null,
+                          "message": "Field required"
+                        },
+                        {
+                          "field": "top_n",
+                          "message": "Input should be greater than or equal to 1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "500": {
+            "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "INTERNAL_ERROR": {
+                    "value": {
+                      "type": "/errors/internal-error",
+                      "title": "Beklenmeyen hata",
+                      "status": 500,
+                      "code": "INTERNAL_ERROR",
+                      "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalysisCreated": {
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analysis Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "queued",
+            "title": "Status",
+            "default": "queued"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "status"
+        ],
+        "title": "AnalysisCreated",
+        "description": "POST /api/v1/analyses — 202 Accepted."
+      },
+      "AnalysisJob": {
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analysis Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AnalysisStatus"
+          },
+          "progress": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Progress"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "estimated_seconds_remaining": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Seconds Remaining"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProblemDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "status",
+          "progress",
+          "created_at",
+          "updated_at",
+          "estimated_seconds_remaining",
+          "error"
+        ],
+        "title": "AnalysisJob",
+        "description": "GET /api/v1/analyses/{analysis_id} — durum sorgulaması.\n\nADR-0001 §2: ilerleme her satırda değil, yalnızca aşama veya anlamlı yüzde\ndeğişiminde yazılır; `progress` düzenli artmayabilir."
+      },
+      "AnalysisReport": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schema Version"
+          },
+          "analysis_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analysis Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "completed",
+            "title": "Status",
+            "default": "completed"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "source_summary": {
+            "$ref": "#/components/schemas/SourceSummary"
+          },
+          "preprocessing_summary": {
+            "$ref": "#/components/schemas/PreprocessingSummary"
+          },
+          "top_questions": {
+            "items": {
+              "$ref": "#/components/schemas/TopQuestion"
+            },
+            "type": "array",
+            "title": "Top Questions"
+          },
+          "themes": {
+            "items": {
+              "$ref": "#/components/schemas/Theme"
+            },
+            "type": "array",
+            "title": "Themes"
+          },
+          "executive_summary": {
+            "type": "string",
+            "title": "Executive Summary"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model"
+          },
+          "prompt_version": {
+            "$ref": "#/components/schemas/PromptVersion"
+          },
+          "prompt_hash": {
+            "type": "string",
+            "title": "Prompt Hash"
+          },
+          "token_usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          },
+          "estimated_cost_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Estimated Cost Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_version",
+          "analysis_id",
+          "status",
+          "generated_at",
+          "source_summary",
+          "preprocessing_summary",
+          "top_questions",
+          "themes",
+          "executive_summary",
+          "warnings",
+          "model",
+          "prompt_version",
+          "prompt_hash",
+          "token_usage",
+          "estimated_cost_usd"
+        ],
+        "title": "AnalysisReport",
+        "description": "GET /api/v1/analyses/{analysis_id}/result — yalnızca \"completed\" iken."
+      },
+      "AnalysisRequest": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Upload Id"
+          },
+          "sheet_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Sheet Name"
+          },
+          "text_column": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text Column"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelId"
+          },
+          "prompt_version": {
+            "$ref": "#/components/schemas/PromptVersion"
+          },
+          "top_n": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Top N"
+          },
+          "max_cost_usd": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Max Cost Usd"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "upload_id",
+          "sheet_name",
+          "text_column",
+          "model",
+          "prompt_version",
+          "top_n",
+          "max_cost_usd"
+        ],
+        "title": "AnalysisRequest",
+        "description": "POST /api/v1/analyses gövdesi.\n\nOpenRouter anahtarı BU GÖVDEDE YER ALMAZ — yalnızca `X-OpenRouter-Key`\nheader'ında taşınır (ADR-0001 §6/§9). `RequestValidationError` handler'ı\n`errors[].input` alanını asla yankılamaz; anahtar yanlışlıkla gövdeye\nkonursa geri sızdırılmaması için (ADR-0002 #7)."
+      },
+      "AnalysisStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "validating",
+          "preprocessing",
+          "analyzing",
+          "aggregating",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "title": "AnalysisStatus",
+        "description": "queued -> validating -> preprocessing -> analyzing -> aggregating -> completed\n\nTerminal: completed, failed, cancelled."
+      },
+      "AnalysisWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "examples": [
+              "ROW_LIMIT_TRUNCATED",
+              "CHUNK_PARTIAL_FAILURE",
+              "LOW_CONFIDENCE_THEMES",
+              "PII_REDACTION_INCOMPLETE",
+              "COST_LIMIT_APPROACHED"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "AnalysisWarning",
+        "description": "İşi durdurmayan uyarı."
+      },
+      "Body_create_upload_api_v1_uploads_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_upload_api_v1_uploads_post"
+      },
+      "ColumnProfile": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Index"
+          },
+          "non_empty_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Non Empty Count"
+          },
+          "empty_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Empty Count"
+          },
+          "unique_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unique Count"
+          },
+          "avg_length": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Avg Length"
+          },
+          "is_likely_text": {
+            "type": "boolean",
+            "title": "Is Likely Text"
+          },
+          "sample_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "index",
+          "non_empty_count",
+          "empty_count",
+          "unique_count",
+          "avg_length",
+          "is_likely_text",
+          "sample_values"
+        ],
+        "title": "ColumnProfile"
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "UPLOAD_TOO_LARGE",
+          "UPLOAD_INVALID_TYPE",
+          "UPLOAD_CORRUPT_OR_ENCRYPTED",
+          "SHEET_OR_COLUMN_NOT_FOUND",
+          "REQUEST_VALIDATION",
+          "INVALID_MODEL",
+          "INVALID_PROMPT",
+          "COST_LIMIT_EXCEEDED",
+          "PROVIDER_AUTH_FAILED",
+          "PROVIDER_RATE_LIMITED",
+          "PROVIDER_BAD_RESPONSE",
+          "PROVIDER_TIMEOUT",
+          "JOB_NOT_FOUND",
+          "JOB_CONFLICT",
+          "NOT_IMPLEMENTED",
+          "INTERNAL_ERROR"
+        ],
+        "title": "ErrorCode",
+        "description": "16 kod: ADR-0001 §7'deki 11 + ADR-0002 ile eklenen sözleşme kodları."
+      },
+      "ErrorItem": {
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorItem",
+        "description": "Alan bazlı doğrulama hatası."
+      },
+      "ExportFormat": {
+        "type": "string",
+        "enum": [
+          "xlsx",
+          "json"
+        ],
+        "title": "ExportFormat"
+      },
+      "ModelId": {
+        "type": "string",
+        "enum": [
+          "anthropic/claude-sonnet-4.6",
+          "openai/gpt-4.1-mini",
+          "google/gemini-2.5-flash"
+        ],
+        "title": "ModelId",
+        "description": "BE-01'de dondurulmuş, structured-output destekli model whitelist'i."
+      },
+      "ModelList": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelOption"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "default_model": {
+            "$ref": "#/components/schemas/ModelId"
+          },
+          "default_prompt_version": {
+            "$ref": "#/components/schemas/PromptVersion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "default_model",
+          "default_prompt_version"
+        ],
+        "title": "ModelList",
+        "description": "GET /api/v1/models"
+      },
+      "ModelOption": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ModelId"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "input_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Input Cost Per Million"
+          },
+          "output_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Output Cost Per Million"
+          },
+          "context_window": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Context Window"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "input_cost_per_million",
+          "output_cost_per_million",
+          "context_window"
+        ],
+        "title": "ModelOption",
+        "description": "GET /api/v1/models öğesi.\n\nADR-0001 §6 \"model yalnızca backend whitelist'inden seçilebilir\" diyordu\nama listeyi döndüren endpoint'i tanımlamıyordu. ADR-0002 #1 ile\n`GET /api/v1/models` sözleşmeye dâhil edildi."
+      },
+      "PreprocessingSummary": {
+        "properties": {
+          "analyzed_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Analyzed Count"
+          },
+          "discarded_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Discarded Count"
+          },
+          "duplicate_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Duplicate Count"
+          },
+          "redacted_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Redacted Count"
+          },
+          "unique_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unique Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analyzed_count",
+          "discarded_count",
+          "duplicate_count",
+          "redacted_count",
+          "unique_count"
+        ],
+        "title": "PreprocessingSummary"
+      },
+      "ProblemDetails": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status"
+          },
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "trace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trace Id"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "retry_after": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Retry After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code",
+          "detail",
+          "trace_id",
+          "errors"
+        ],
+        "title": "ProblemDetails",
+        "description": "ADR-0001 §7 / ADR-0002 #6.\n\n`type`, `title`, `status`, `code`, `detail` ve `trace_id` HER cevapta\nbulunur — frontend'in `problemDetailsSchema`'sı altısını da zorunlu tutar.\n\nBu garantiyi veren `json_schema_serialization_defaults_required` artık\n`ApiModel`'de; burada tekrarlanmıyor. Bayrağın YALNIZCA bu modelde olması,\ndiğer sekiz cevap modelinin openapi.json'da yanlış `required` listesiyle\nyayımlanmasının sebebiydi."
+      },
+      "PromptVersion": {
+        "type": "string",
+        "enum": [
+          "faq_analysis/v1"
+        ],
+        "title": "PromptVersion",
+        "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."
+      },
+      "SheetProfile": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "row_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Row Count"
+          },
+          "column_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Column Count"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnProfile"
+            },
+            "type": "array",
+            "title": "Columns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "row_count",
+          "column_count",
+          "columns"
+        ],
+        "title": "SheetProfile"
+      },
+      "SourceSummary": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "sheet_name": {
+            "type": "string",
+            "title": "Sheet Name"
+          },
+          "text_column": {
+            "type": "string",
+            "title": "Text Column"
+          },
+          "total_rows": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "sheet_name",
+          "text_column",
+          "total_rows"
+        ],
+        "title": "SourceSummary"
+      },
+      "Theme": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Percentage"
+          },
+          "related_question_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Question Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "count",
+          "percentage",
+          "related_question_ids"
+        ],
+        "title": "Theme"
+      },
+      "TokenUsage": {
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Completion Tokens"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt_tokens",
+          "completion_tokens",
+          "total_tokens"
+        ],
+        "title": "TokenUsage"
+      },
+      "TopQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "canonical_question": {
+            "type": "string",
+            "title": "Canonical Question"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Percentage"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "redacted_examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Redacted Examples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "canonical_question",
+          "count",
+          "percentage",
+          "confidence",
+          "redacted_examples"
+        ],
+        "title": "TopQuestion"
+      },
+      "Upload": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Upload Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/UploadStatus"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Size Bytes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UploadProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProblemDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id",
+          "status",
+          "filename",
+          "size_bytes",
+          "created_at",
+          "profile",
+          "error"
+        ],
+        "title": "Upload",
+        "description": "GET /api/v1/uploads/{upload_id}"
+      },
+      "UploadCreated": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Upload Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "queued",
+            "title": "Status",
+            "default": "queued"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id",
+          "status"
+        ],
+        "title": "UploadCreated",
+        "description": "POST /api/v1/uploads — 202 Accepted."
+      },
+      "UploadProfile": {
+        "properties": {
+          "sheets": {
+            "items": {
+              "$ref": "#/components/schemas/SheetProfile"
+            },
+            "type": "array",
+            "title": "Sheets"
+          },
+          "total_row_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Row Count"
+          },
+          "exceeds_row_limit": {
+            "type": "boolean",
+            "title": "Exceeds Row Limit",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "sheets",
+          "total_row_count",
+          "exceeds_row_limit"
+        ],
+        "title": "UploadProfile"
+      },
+      "UploadStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "validating",
+          "ready",
+          "failed"
+        ],
+        "title": "UploadStatus"
+      }
+    },
+    "securitySchemes": {
+      "OpenRouterKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-OpenRouter-Key",
+        "description": "BYOK OpenRouter anahtarı. Yalnızca bu header'da taşınır; gövdeye veya sorgu parametresine konmaz, loglarda redakte edilir ve kalıcı olarak saklanmaz."
+      }
+    }
+  }
+}

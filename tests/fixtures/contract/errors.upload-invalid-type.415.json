@@ -1,0 +1,9 @@
+{
+  "type": "/errors/upload-invalid-type",
+  "title": "Desteklenmeyen dosya türü",
+  "status": 415,
+  "code": "UPLOAD_INVALID_TYPE",
+  "detail": "Desteklenmeyen dosya türü (örnek gövde).",
+  "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+  "errors": []
+}
