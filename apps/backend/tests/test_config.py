@@ -28,8 +28,11 @@ def test_defaults_match_adr_limits() -> None:
 
 
 def test_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    # `_env_file=None`: dosyadaki diğer testler gibi. Geliştiricinin kök
+    # `.env`'i okunursa (örn. AUZEF_ENVIRONMENT=production, master key'siz)
+    # test lokalde patlar, CI'da `.env` olmadığı için yeşil kalırdı.
     monkeypatch.setenv("AUZEF_MAX_UNCOMPRESSED_BYTES", "2048")
-    assert Settings().max_uncompressed_bytes == 2048
+    assert Settings(_env_file=None).max_uncompressed_bytes == 2048
 
 
 def test_frontend_limits_are_frozen_and_not_environment_configurable(

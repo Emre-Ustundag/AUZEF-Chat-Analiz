@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from app.core.config import MAX_ROWS, MAX_UPLOAD_BYTES, get_settings
 from app.schemas.examples import CONSTRAINT_CASES, build_cases
-from scripts._io import dumps, repo_root, write_or_check
+from scripts._io import dumps, frozen_artifact_env, repo_root, write_or_check
 
 OUTPUT_DIR = repo_root() / "tests" / "fixtures" / "contract"
 
@@ -35,6 +35,11 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="Yazma, yalnızca farkı raporla.")
     args = parser.parse_args()
 
+    with frozen_artifact_env():
+        return _export(check=args.check)
+
+
+def _export(*, check: bool) -> int:
     settings = get_settings()
     cases = build_cases()
     ok = True
@@ -49,7 +54,7 @@ def main() -> int:
             # retry_after bastırma, UUID casing. Fixture'ın değerli olmasının
             # tek sebebi bu.
             payload = case.payload.model_dump(mode="json")
-            ok &= write_or_check(OUTPUT_DIR / file_name, dumps(payload), check=args.check)
+            ok &= write_or_check(OUTPUT_DIR / file_name, dumps(payload), check=check)
 
         manifest_cases.append(
             {
@@ -75,12 +80,12 @@ def main() -> int:
         },
         "cases": manifest_cases,
     }
-    ok &= write_or_check(OUTPUT_DIR / "manifest.json", dumps(manifest), check=args.check)
+    ok &= write_or_check(OUTPUT_DIR / "manifest.json", dumps(manifest), check=check)
 
     constraints = _HEADER | {"cases": CONSTRAINT_CASES}
-    ok &= write_or_check(OUTPUT_DIR / "constraints.json", dumps(constraints), check=args.check)
+    ok &= write_or_check(OUTPUT_DIR / "constraints.json", dumps(constraints), check=check)
 
-    if ok and not args.check:
+    if ok and not check:
         written = sum(1 for c in cases if c.payload is not None) + 2
         print(f"yazıldı: {written} dosya -> {OUTPUT_DIR.relative_to(repo_root())}")
     return 0 if ok else 1

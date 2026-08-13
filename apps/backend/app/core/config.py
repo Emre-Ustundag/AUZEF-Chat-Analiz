@@ -35,10 +35,20 @@ def _normalize_log_level(value: object) -> object:
 NormalizedLogLevel = Annotated[LogLevel, BeforeValidator(_normalize_log_level)]
 
 MAX_UPLOAD_BYTES: Final[int] = 150 * 1024 * 1024
-"""Sıkıştırılmış upload sınırı; frontend ile donmuş sözleşme sabiti."""
+"""Sıkıştırılmış upload sınırı; frontend ile donmuş sözleşme sabiti.
+
+`Settings` ALANI DEĞİL — env ile değiştirilirse frontend'in derleme zamanı
+aynası (`lib/api/schemas/common.ts` → `LIMITS`) ile ayrışır. Tam gerekçe ve
+değiştirme prosedürü: `apps/backend/README.md` → "Ortam ayarları".
+"""
 
 MAX_ROWS: Final[int] = 100_000
-"""Analize giren azami satır sayısı; üstü kırpılır ve raporda uyarılır."""
+"""Analize giren azami satır sayısı; üstü kırpılır ve raporda uyarılır.
+
+`MAX_UPLOAD_BYTES` ile aynı sebeple env'e açılmaz: cevap invariant'ları
+(`analyzed_count + discarded_count == min(total_rows, MAX_ROWS)`,
+`exceeds_row_limit`, `ROW_LIMIT_TRUNCATED`) bu sayıya bağlı.
+"""
 
 
 class Settings(BaseSettings):
