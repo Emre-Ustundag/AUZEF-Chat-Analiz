@@ -101,6 +101,34 @@ def test_malformed_json_is_422_not_400(client: TestClient) -> None:
     assert ProblemDetails.model_validate(response.json()).code is ErrorCode.REQUEST_VALIDATION
 
 
+def test_malformed_multipart_is_safe_422(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/uploads",
+        content=b"bu bir multipart govdesi degil",
+        headers={"Content-Type": "multipart/form-data; boundary=sinir"},
+    )
+
+    assert response.status_code == 422
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.code is ErrorCode.REQUEST_VALIDATION
+    assert problem.detail == "İstek gövdesi veya parametreleri doğrulanamadı."
+    assert "multipart" not in response.text.lower()
+    assert "boundary" not in response.text.lower()
+
+
+def test_missing_multipart_boundary_is_safe_422(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/uploads",
+        content=b"dosya",
+        headers={"Content-Type": "multipart/form-data"},
+    )
+
+    assert response.status_code == 422
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.code is ErrorCode.REQUEST_VALIDATION
+    assert problem.detail == "İstek gövdesi veya parametreleri doğrulanamadı."
+
+
 def test_missing_api_key_returns_provider_auth_failed(client: TestClient) -> None:
     """ADR-0002: eksik anahtar REQUEST_VALIDATION değil PROVIDER_AUTH_FAILED.
 
@@ -157,4 +185,4 @@ def test_valid_body_reaches_the_stub(client: TestClient) -> None:
     status, body = _post(client)
 
     assert status == 501
-    assert ProblemDetails.model_validate(body).code is ErrorCode.INTERNAL_ERROR
+    assert ProblemDetails.model_validate(body).code is ErrorCode.NOT_IMPLEMENTED

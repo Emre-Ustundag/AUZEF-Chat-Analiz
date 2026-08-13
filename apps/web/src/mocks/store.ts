@@ -9,7 +9,7 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
-import { LIMITS } from "@/lib/api/schemas";
+import { ERROR_STATUS_BY_CODE, LIMITS, percentageHalfUp } from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -170,6 +170,9 @@ export function problem(
   detail: string,
   extra: Partial<ProblemDetails> = {},
 ): ProblemDetails {
+  if (status !== ERROR_STATUS_BY_CODE[code]) {
+    throw new Error(`${code} status=${ERROR_STATUS_BY_CODE[code]} taşımalı.`);
+  }
   return {
     type: `/errors/${code.toLowerCase().replaceAll("_", "-")}`,
     title,
@@ -525,8 +528,6 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     { id: "t4", name: "Belge ve itiraz", questionIds: ["q7", "q8"] },
   ];
 
-  const pct = (count: number) => Number(((count / analyzed) * 100).toFixed(1));
-
   return {
     schema_version: "1.0",
     analysis_id: record.analysisId,
@@ -549,7 +550,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       id: q.id,
       canonical_question: q.canonical_question,
       count: q.count,
-      percentage: pct(q.count),
+      percentage: percentageHalfUp(q.count, analyzed),
       confidence: q.confidence,
       redacted_examples: q.examples,
     })),
@@ -572,7 +573,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
         id: theme.id,
         name: theme.name,
         count,
-        percentage: pct(count),
+        percentage: percentageHalfUp(count, analyzed),
         related_question_ids: theme.questionIds.filter((id) => includedIds.has(id)),
       };
     }),

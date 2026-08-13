@@ -1,8 +1,8 @@
 """Çalışma sınırları — ADR-0001 §9.
 
 Operasyonel sınırlar `Settings` içinde ve environment ile değiştirilebilir.
-TEK istisna `MAX_ROWS`: o bir operasyon düğmesi değil, sözleşmenin parçası
-(aşağıdaki gerekçeye bakın).
+`MAX_UPLOAD_BYTES` ve `MAX_ROWS` ise frontend'in de uyguladığı sözleşme
+sabitleridir (aşağıdaki gerekçelere bakın).
 """
 
 from pathlib import Path
@@ -15,6 +15,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 #: apps/backend içinden çalıştırılıyor; göreli bir yol yanlış dosyaya
 #: bakardı. `apps/backend/.env` OKUNMAZ.
 _REPO_ROOT = Path(__file__).resolve().parents[4]
+
+MAX_UPLOAD_BYTES: Final[int] = 150 * 1024 * 1024
+"""Sıkıştırılmış upload sınırı — SÖZLEŞMEDE DONMUŞ, env ile değişmez.
+
+Frontend dosyayı göndermeden önce aynı sınırı uygular. Backend tarafı env ile
+değiştirilebilseydi tarayıcı geçerli bir dosyayı reddedebilir veya sunucunun
+reddedeceği dosyayı geçerli gösterebilirdi. `manifest.json` iki tarafı bu
+değere kilitler.
+"""
 
 MAX_ROWS: Final[int] = 100_000
 """Analize giren azami satır sayısı — SÖZLEŞMEDE DONMUŞ, env ile değişmez.
@@ -32,7 +41,8 @@ zamanı sabiti olduğu için, backend tarafını env ile oynatmak sunucunun DOĞ
 görür — üstelik hiçbir drift kontrolü kırmızıya dönmeden, çünkü artefaktlar
 varsayılan env ile üretiliyor. Değeri değiştirmek bir sözleşme değişikliğidir:
 `contract_version` bump + artefakt yeniden üretimi + Zod tarafının güncellenmesi
-gerekir. `manifest.json`'daki `limits.max_rows` iki tarafı birbirine kilitler.
+gerekir. `manifest.json`'daki `limits.max_upload_bytes` ve `limits.max_rows`
+iki tarafı birbirine kilitler.
 """
 
 
@@ -44,8 +54,6 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
     )
 
-    #: Sıkıştırılmış upload sınırı: 150 MB.
-    max_upload_bytes: int = 150 * 1024 * 1024
     #: OOXML açılmış toplam boyut sınırı: 1 GB.
     max_uncompressed_bytes: int = 1024 * 1024 * 1024
     #: ADR-0002 #3: Idempotency-Key kaydının saklama süresi (24 saat).

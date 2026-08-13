@@ -49,6 +49,7 @@ from app.schemas.report import (
     Theme,
     TokenUsage,
     TopQuestion,
+    percentage_half_up,
 )
 from app.schemas.upload import (
     ColumnProfile,
@@ -309,9 +310,6 @@ def build_report(
     included = _QUESTIONS[:top_n]
     included_ids = {question["id"] for question in included}
 
-    def percentage(count: int) -> float:
-        return round(count / analyzed * 100, 1)
-
     themes: list[Theme] = []
     for theme in _THEMES:
         ids = set(theme["question_ids"])
@@ -321,7 +319,7 @@ def build_report(
                 id=theme["id"],
                 name=theme["name"],
                 count=count,
-                percentage=percentage(count),
+                percentage=percentage_half_up(count, analyzed),
                 related_question_ids=[qid for qid in theme["question_ids"] if qid in included_ids],
             )
         )
@@ -349,7 +347,7 @@ def build_report(
                 id=question["id"],
                 canonical_question=question["canonical_question"],
                 count=question["count"],
-                percentage=percentage(question["count"]),
+                percentage=percentage_half_up(question["count"], analyzed),
                 confidence=question["confidence"],
                 redacted_examples=question["examples"],
             )

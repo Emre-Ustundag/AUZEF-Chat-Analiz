@@ -33,7 +33,7 @@ export interface ManifestCase {
 export interface Manifest {
   contract_version: string;
   /** Sözleşmede donmuş sınırlar; `LIMITS` sabitlerinin karşılığı. */
-  limits: { max_rows: number };
+  limits: { max_upload_bytes: number; max_rows: number };
   cases: ManifestCase[];
 }
 

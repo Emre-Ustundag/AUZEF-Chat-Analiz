@@ -11,7 +11,7 @@ from pydantic import Field, GetJsonSchemaHandler, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import CoreSchema
 
-from app.core.errors import ErrorCode
+from app.core.errors import ERROR_STATUS, ErrorCode
 from app.schemas.base import ApiModel
 
 
@@ -63,7 +63,11 @@ class ProblemDetails(ApiModel):
     retry_after: float | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
 
     @model_validator(mode="after")
-    def _retry_after_iff_rate_limited(self) -> Self:
+    def _error_invariants(self) -> Self:
+        expected_status = ERROR_STATUS[self.code]
+        if self.status != expected_status:
+            raise ValueError(f"{self.code} status={expected_status} taşımak zorunda.")
+
         is_rate_limited = self.code is ErrorCode.PROVIDER_RATE_LIMITED
         if is_rate_limited and self.retry_after is None:
             raise ValueError("PROVIDER_RATE_LIMITED cevabı retry_after içermek zorunda.")

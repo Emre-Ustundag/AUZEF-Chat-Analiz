@@ -61,10 +61,13 @@ export const TRACE_ID_HEADER = "X-Trace-Id";
  * olarak budur ve tam da o anda iz sürebilmek gerekir.
  */
 export function unknownApiError(status: number, detail: string, traceId = ""): ApiError {
+  // HTTP/proxy/ağ statüsü ayrı bir diagnostic değerdir; ProblemDetails
+  // invariantı gereği INTERNAL_ERROR gövdesi her zaman 500 taşır.
+  void status;
   return new ApiError({
     type: "/errors/internal",
     title: "Beklenmeyen hata",
-    status,
+    status: 500,
     code: "INTERNAL_ERROR",
     detail,
     trace_id: traceId,

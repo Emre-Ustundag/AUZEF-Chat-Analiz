@@ -260,6 +260,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         },
         "parameters": [
@@ -720,6 +756,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         }
       },
@@ -882,6 +954,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         }
       }
@@ -970,6 +1078,42 @@
             },
             "x-error-codes": [
               "INTERNAL_ERROR"
+            ],
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
             ],
             "headers": {
               "X-Trace-Id": {
@@ -1281,6 +1425,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         },
         "security": [
@@ -1502,6 +1682,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         }
       },
@@ -1684,6 +1900,42 @@
                       "status": 500,
                       "code": "INTERNAL_ERROR",
                       "detail": "Beklenmeyen hata (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
                       "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
                       "errors": []
                     }
@@ -2202,6 +2454,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         }
       }
@@ -2601,6 +2889,42 @@
                 "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
               }
             }
+          },
+          "501": {
+            "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "examples": {
+                  "NOT_IMPLEMENTED": {
+                    "value": {
+                      "type": "/errors/not-implemented",
+                      "title": "Uç nokta henüz uygulanmadı",
+                      "status": 501,
+                      "code": "NOT_IMPLEMENTED",
+                      "detail": "Uç nokta henüz uygulanmadı (örnek gövde).",
+                      "trace_id": "9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+                      "errors": []
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "example": "9d8c7b6a-5e4f-4321-8abc-0123456789ab"
+              }
+            }
           }
         }
       }
@@ -2696,6 +3020,7 @@
         "properties": {
           "schema_version": {
             "type": "string",
+            "const": "1.0",
             "title": "Schema Version"
           },
           "analysis_id": {
@@ -2746,7 +3071,9 @@
             "title": "Warnings"
           },
           "model": {
-            "$ref": "#/components/schemas/ModelId"
+            "type": "string",
+            "minLength": 1,
+            "title": "Model"
           },
           "prompt_version": {
             "$ref": "#/components/schemas/PromptVersion"
@@ -2963,10 +3290,11 @@
           "PROVIDER_TIMEOUT",
           "JOB_NOT_FOUND",
           "JOB_CONFLICT",
+          "NOT_IMPLEMENTED",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
-        "description": "15 kod: ADR-0001 §7'deki 11 + ADR-0002 #1 ile eklenen 4 istek hatası."
+        "description": "16 kod: ADR-0001 §7'deki 11 + ADR-0002 ile eklenen sözleşme kodları."
       },
       "ErrorItem": {
         "properties": {
@@ -3237,6 +3565,7 @@
         "properties": {
           "id": {
             "type": "string",
+            "minLength": 1,
             "title": "Id"
           },
           "name": {
@@ -3302,6 +3631,7 @@
         "properties": {
           "id": {
             "type": "string",
+            "minLength": 1,
             "title": "Id"
           },
           "canonical_question": {

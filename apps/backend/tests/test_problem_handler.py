@@ -58,7 +58,7 @@ def test_stub_routes_return_501(client: TestClient) -> None:
 
     assert response.status_code == 501
     problem = ProblemDetails.model_validate(response.json())
-    assert problem.code is ErrorCode.INTERNAL_ERROR
+    assert problem.code is ErrorCode.NOT_IMPLEMENTED
     assert problem.trace_id
 
 
@@ -137,5 +137,6 @@ def test_unknown_path_returns_problem_body(client: TestClient) -> None:
 def test_method_not_allowed_returns_problem_body(client: TestClient) -> None:
     response = client.post("/api/v1/models")
 
-    assert response.status_code == 405
-    ProblemDetails.model_validate(response.json())
+    assert response.status_code == 422
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.code is ErrorCode.REQUEST_VALIDATION

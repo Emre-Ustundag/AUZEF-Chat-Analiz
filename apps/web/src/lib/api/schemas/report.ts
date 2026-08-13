@@ -1,7 +1,14 @@
 import * as z from "zod";
 
-import { modelIdSchema, promptVersionSchema } from "./analysis";
+import { promptVersionSchema } from "./analysis";
 import { LIMITS } from "./common";
+
+/** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
+export function percentageHalfUp(count: number, total: number): number {
+  if (total === 0) return 0;
+  const tenths = Math.floor((2 * count * 1000 + total) / (2 * total));
+  return tenths / 10;
+}
 
 /**
  * AnalysisReport — ADR §8 "Sonuç modeli".
@@ -44,7 +51,7 @@ export const preprocessingSummarySchema = z.object({
 export type PreprocessingSummary = z.infer<typeof preprocessingSummarySchema>;
 
 export const topQuestionSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1),
   canonical_question: z.string(),
   count: z.int().nonnegative(),
   /** 0-100 aralığında yüzde. Biçimlendirme için lib/format formatPercentage kullanılır. */
@@ -58,7 +65,7 @@ export const topQuestionSchema = z.object({
 export type TopQuestion = z.infer<typeof topQuestionSchema>;
 
 export const themeSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1),
   name: z.string(),
   /** Temaya düşen TÜM mesajlar — top_n kırpmasından etkilenmez. */
   count: z.int().nonnegative(),
@@ -127,7 +134,7 @@ export type AnalysisWarning = z.infer<typeof analysisWarningSchema>;
 
 export const analysisReportSchema = z
   .object({
-    schema_version: z.string(),
+    schema_version: z.literal("1.0"),
     analysis_id: z.uuid(),
     status: z.literal("completed"),
     generated_at: z.iso.datetime(),
@@ -141,8 +148,8 @@ export const analysisReportSchema = z
     executive_summary: z.string(),
     warnings: z.array(analysisWarningSchema).default([]),
 
-    /** İzlenebilirlik: hangi model ve hangi prompt sürümü bu sonucu üretti. */
-    model: modelIdSchema,
+    /** Tarihsel raporlar aktif whitelist değişse de okunabilsin diye serbest kimlik. */
+    model: z.string().min(1),
     prompt_version: promptVersionSchema,
     prompt_hash: z.string(),
 
@@ -166,13 +173,69 @@ export const analysisReportSchema = z
         message: "Benzersiz ve tekrar kayıt toplamı analiz edilen kayıt sayısıyla aynı olmalı.",
       });
     }
+    if (prep.redacted_count > prep.analyzed_count) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["preprocessing_summary", "redacted_count"],
+        message: "Redakte kayıt sayısı analiz edilen kayıt sayısını aşamaz.",
+      });
+    }
     const usage = report.token_usage;
     if (usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens) {
       ctx.addIssue({ code: "custom", path: ["token_usage"], message: "Token toplamı tutarsız." });
     }
 
-    const questionIds = new Set(report.top_questions.map((question) => question.id));
+    const questionIdList = report.top_questions.map((question) => question.id);
+    const questionIds = new Set(questionIdList);
+    if (questionIds.size !== questionIdList.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["top_questions"],
+        message: "Soru id'leri benzersiz olmalı.",
+      });
+    }
+
+    const themeIdList = report.themes.map((theme) => theme.id);
+    if (new Set(themeIdList).size !== themeIdList.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["themes"],
+        message: "Tema id'leri benzersiz olmalı.",
+      });
+    }
+
+    const validateCount = (
+      item: { count: number; percentage: number },
+      path: ["top_questions" | "themes", number],
+    ) => {
+      if (item.count > prep.analyzed_count) {
+        ctx.addIssue({
+          code: "custom",
+          path: [...path, "count"],
+          message: "Adet analiz edilen kayıt sayısını aşamaz.",
+        });
+      }
+      if (item.percentage !== percentageHalfUp(item.count, prep.analyzed_count)) {
+        ctx.addIssue({
+          code: "custom",
+          path: [...path, "percentage"],
+          message: "Yüzde adetten exact half-up kuralıyla türetilmeli.",
+        });
+      }
+    };
+    report.top_questions.forEach((question, index) =>
+      validateCount(question, ["top_questions", index]),
+    );
+    report.themes.forEach((theme, index) => validateCount(theme, ["themes", index]));
+
     report.themes.forEach((theme, themeIndex) => {
+      if (new Set(theme.related_question_ids).size !== theme.related_question_ids.length) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["themes", themeIndex, "related_question_ids"],
+          message: "Tema aynı soru id'sini tekrarlayamaz.",
+        });
+      }
       theme.related_question_ids.forEach((id, idIndex) => {
         if (!questionIds.has(id)) {
           ctx.addIssue({

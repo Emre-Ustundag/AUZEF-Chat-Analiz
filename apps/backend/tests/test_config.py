@@ -1,11 +1,12 @@
 """Ayar kaynakları — ADR-0001 §9.
 
-Operasyonel sınırlar environment'tan okunur; `MAX_ROWS` okunmaz (ADR-0002 #13).
+Operasyonel sınırlar environment'tan okunur; frontend'in uyguladığı upload ve
+satır sınırları okunmaz (ADR-0002 #13).
 """
 
 import pytest
 
-from app.core.config import _REPO_ROOT, MAX_ROWS, Settings
+from app.core.config import _REPO_ROOT, MAX_ROWS, MAX_UPLOAD_BYTES, Settings
 
 
 def test_repo_root_resolves_to_the_actual_repo_root() -> None:
@@ -22,21 +23,21 @@ def test_repo_root_resolves_to_the_actual_repo_root() -> None:
 def test_defaults_match_adr_limits() -> None:
     settings = Settings(_env_file=None)
 
-    assert settings.max_upload_bytes == 150 * 1024 * 1024
+    assert MAX_UPLOAD_BYTES == 150 * 1024 * 1024
     assert settings.max_uncompressed_bytes == 1024 * 1024 * 1024
     assert settings.analysis_timeout_seconds == 45 * 60
     assert settings.idempotency_ttl_seconds == 24 * 60 * 60
 
 
-def test_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("AUZEF_MAX_UPLOAD_BYTES", "1024")
-    assert Settings().max_upload_bytes == 1024
+def test_operational_environment_overrides_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUZEF_MAX_UNCOMPRESSED_BYTES", "2048")
+    assert Settings().max_uncompressed_bytes == 2048
 
 
-def test_max_rows_is_frozen_and_not_environment_configurable(
+def test_frontend_limits_are_frozen_and_not_environment_configurable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """ADR-0002 #13: `MAX_ROWS` bir operasyon düğmesi değil, sözleşme sabiti.
+    """ADR-0002 #13: frontend limitleri operasyon düğmesi değil, sözleşme sabiti.
 
     Env'den okunabilseydi, backend'in doğru ürettiği cevap frontend'in derleme
     zamanı sabitine dayanan Zod invariant'larında düşerdi ve hiçbir drift
@@ -44,9 +45,12 @@ def test_max_rows_is_frozen_and_not_environment_configurable(
     üretiliyor). `Settings` alanı olmadığını da doğruluyoruz: alan geri
     eklenirse bu test düşer.
     """
+    monkeypatch.setenv("AUZEF_MAX_UPLOAD_BYTES", "1024")
     monkeypatch.setenv("AUZEF_MAX_ROWS", "250000")
 
+    assert MAX_UPLOAD_BYTES == 150 * 1024 * 1024
     assert MAX_ROWS == 100_000
+    assert "max_upload_bytes" not in Settings.model_fields
     assert "max_rows" not in Settings.model_fields
 
 

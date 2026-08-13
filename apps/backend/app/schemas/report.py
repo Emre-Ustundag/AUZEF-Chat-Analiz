@@ -10,12 +10,25 @@ kategorilere eşler, sayı üretmez.
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.core.config import MAX_ROWS
-from app.schemas.analysis import ModelId, PromptVersion
+from app.schemas.analysis import PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
+
+
+def percentage_half_up(count: int, total: int) -> float:
+    """`count / total * 100` değerini bir ondalığa half-up yuvarlar.
+
+    Python `round()` tie durumunda half-even kullanır; JavaScript'in pozitif
+    sayılardaki `Math.round()` davranışıyla ayrışır. Tam sayı aritmetiği hem bu
+    farkı hem de binary float sınır vakalarını ortadan kaldırır.
+    """
+    if total == 0:
+        return 0.0
+    tenths = (2 * count * 1000 + total) // (2 * total)
+    return tenths / 10
 
 
 class SourceSummary(ApiModel):
@@ -37,7 +50,7 @@ class PreprocessingSummary(ApiModel):
 
 
 class TopQuestion(ApiModel):
-    id: str
+    id: str = Field(min_length=1)
     canonical_question: str
     count: int = Field(ge=0)
     #: 0-100 aralığında; `preprocessing_summary.analyzed_count`'a göre hesaplanır.
@@ -49,7 +62,7 @@ class TopQuestion(ApiModel):
 
 
 class Theme(ApiModel):
-    id: str
+    id: str = Field(min_length=1)
     name: str
     #: Temaya düşen TÜM mesajlar — top_n kırpmasından etkilenmez.
     count: int = Field(ge=0)
@@ -92,13 +105,23 @@ class AnalysisWarning(ApiModel):
     gizlenen bir uyarı, kusurlu bir uyarıdan kötüdür.
     """
 
+    @field_validator("code")
+    @classmethod
+    def _producer_uses_known_code(cls, value: str) -> str:
+        """Backend üreticisi kapalı; tel/Zod tüketicisi bilinmeyene açıktır."""
+        try:
+            WarningCode(value)
+        except ValueError as exc:
+            raise ValueError("Backend yalnızca kayıtlı WarningCode üyelerini üretebilir.") from exc
+        return value
+
 
 class AnalysisReport(ApiModel):
     """GET /api/v1/analyses/{analysis_id}/result — yalnızca "completed" iken."""
 
     #: Rapor GÖVDESİNİ sürümler; API `/api/v1` + openapi.info.version ile
     #: sürümlenir (ADR-0002 #12).
-    schema_version: str
+    schema_version: Literal["1.0"]
     analysis_id: UUID
     status: Literal["completed"] = "completed"
     generated_at: UtcDateTime
@@ -113,7 +136,11 @@ class AnalysisReport(ApiModel):
     warnings: list[AnalysisWarning] = Field(default_factory=list)
 
     #: İzlenebilirlik: hangi model ve hangi prompt sürümü bu sonucu üretti.
-    model: ModelId
+    #:
+    #: Request tarafının aktif `ModelId` whitelist'inden bilinçli olarak ayrı:
+    #: bir model emekliye ayrıldığında onunla üretilmiş tarihsel raporlar hâlâ
+    #: okunabilmeli.
+    model: str = Field(min_length=1)
     prompt_version: PromptVersion
     prompt_hash: str
 
@@ -140,14 +167,40 @@ class AnalysisReport(ApiModel):
             )
         if prep.unique_count + prep.duplicate_count != prep.analyzed_count:
             raise ValueError("unique_count + duplicate_count, analyzed_count'a eşit olmalı.")
+        if prep.redacted_count > prep.analyzed_count:
+            raise ValueError("redacted_count, analyzed_count'u aşamaz.")
 
         usage = self.token_usage
         if usage.total_tokens != usage.prompt_tokens + usage.completion_tokens:
             raise ValueError("total_tokens, prompt_tokens + completion_tokens olmalı.")
 
-        present_ids = {question.id for question in self.top_questions}
+        question_ids = [question.id for question in self.top_questions]
+        if len(question_ids) != len(set(question_ids)):
+            raise ValueError("top_questions id'leri benzersiz olmalı.")
+
+        theme_ids = [theme.id for theme in self.themes]
+        if len(theme_ids) != len(set(theme_ids)):
+            raise ValueError("themes id'leri benzersiz olmalı.")
+
+        for question in self.top_questions:
+            if question.count > prep.analyzed_count:
+                raise ValueError("Soru/tema count değeri analyzed_count'u aşamaz.")
+            if question.percentage != percentage_half_up(question.count, prep.analyzed_count):
+                raise ValueError("Soru/tema percentage değeri count'tan half-up türetilmeli.")
+        for theme in self.themes:
+            if theme.count > prep.analyzed_count:
+                raise ValueError("Soru/tema count değeri analyzed_count'u aşamaz.")
+            if theme.percentage != percentage_half_up(theme.count, prep.analyzed_count):
+                raise ValueError("Soru/tema percentage değeri count'tan half-up türetilmeli.")
+
+        present_ids = set(question_ids)
         if any(not set(theme.related_question_ids) <= present_ids for theme in self.themes):
             raise ValueError("related_question_ids yalnızca top_questions id'lerini içerebilir.")
+        if any(
+            len(theme.related_question_ids) != len(set(theme.related_question_ids))
+            for theme in self.themes
+        ):
+            raise ValueError("related_question_ids aynı soru id'sini tekrarlayamaz.")
 
         truncated = self.source_summary.total_rows > MAX_ROWS
         has_warning = any(

@@ -145,6 +145,13 @@ Tema `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya 
 eder. Yani `top_n` küçükken bir temanın adedi, listelenen sorularının
 toplamından büyük olabilir — bu beklenen davranıştır, hata değil.
 
+Soru ve tema id'leri kendi listelerinde benzersizdir; bir tema aynı soru
+bağlantısını tekrarlayamaz. Her soru/tema `count` değeri `analyzed_count`'u
+aşamaz ve `percentage`, `count / analyzed_count * 100` değerinin bir ondalığa
+**half-up** yuvarlanmış halidir. Python `round()` half-even kullandığı için iki
+dil de aynı tam sayı formülünü uygular. `redacted_count` da `analyzed_count`'u
+aşamaz.
+
 `tests/fixtures/contract/analyses.result.200.truncated.json` bu kuralın
 çalıştırılabilir spesifikasyonudur.
 
@@ -156,9 +163,15 @@ cevabında bulunur. `errors` her zaman vardır (boş olabilir).
 `retry_after` **yalnızca 429**'da bulunur ve başka hiçbir cevapta —
 `null` olarak dahi — yer almaz. Gerekçesi §2'deki ölçümde.
 
+`status`, `code` kaydındaki HTTP statüsüyle birebir eşleşir; handler veya
+istemci bu eşleşmeyi override edemez. Contract-only 501 bu nedenle ayrı
+`NOT_IMPLEMENTED` kodudur, `INTERNAL_ERROR` değildir.
+
 `trace_id` hem gövdede hem `X-Trace-Id` header'ında UUID'dir ve iki değer
 aynıdır. `errors[].field`, alan yolu üretilemeyen validation hatalarında
 `null` olabilir; frontend bunu nullable + optional kabul eder.
+Request sonunda ContextVar token'ı her durumda reset edilir; unhandled-error
+yolu aynı kimliği `request.state.trace_id` üzerinden korur.
 
 `type` URI'si koddan türetilir: `/errors/` + küçük harf + `_` → `-`. Aynı
 kural mock'ta da uygulanır ve iki taraftan da test edilir.
@@ -180,6 +193,10 @@ Aynı sebeple `openapi.json`'dan `HTTPValidationError` ve `ValidationError`
 şemaları silinir: sunucunun asla üretmediği bir gövdeyi belgeleyen bir kayıt
 artefaktı, daha ilk gün yalan söyler.
 
+Starlette/python-multipart'ın route validation'dan önce ürettiği bozuk veya
+boundary'siz multipart 400'leri güvenli, sabit detaylı
+`REQUEST_VALIDATION`/422'ye normalize edilir; parser detayı dışarı yansıtılmaz.
+
 ### #8 — Sözleşme üretilmiş bir artefakt
 
 `docs/api/openapi.json` kayıt artefaktıdır ve Pydantic modellerinden
@@ -196,8 +213,9 @@ olan alanlar orada varsayılan olarak `required` DIŞINDA kalır — oysa
 üretilmiş bir client'ta arayüzün dayandığı discriminator'lar buharlaşırdı.
 `contract-openapi.test.ts` beş cevap modelinin `required` listesini kilitler.
 
-Public OpenAPI hedef v1 sözleşmesini gösterir; contract-only stub'ların geçici
-`501` cevabı belgelenmez. Her uç yalnızca gerçekten üretebildiği status'ları,
+Public OpenAPI mevcut contract-only davranışı da doğru gösterir: dokuz stub
+`501 NOT_IMPLEMENTED` cevabını belgeler. BE-02 bir route'u uyguladığında o
+route'un 501 kaydı kaldırılır. Her uç yalnızca gerçekten üretebildiği status'ları,
 hatalarda yalnızca `application/problem+json` media type'ını ve Pydantic
 fixture'larından türetilmiş adlandırılmış request/response örneklerini taşır.
 
@@ -245,19 +263,20 @@ yönlendirir.
 `schema_version` **rapor gövdesini** sürümler (`"1.0"`). API `/api/v1` öneki
 ve `openapi.info.version` ile sürümlenir. Opsiyonel bir alan eklemek ikisini de
 artırmaz; bir alanı kaldırmak veya yeniden adlandırmak ikisini de artırır.
+`AnalysisReport` bu değeri serbest string değil literal `"1.0"` olarak doğrular.
 
 `openapi.info.version` paket sürümünden bilerek ayrıdır: bir bağımlılık
 yükseltmesi kayıt artefaktını değiştirmemelidir.
 
-### #13 — `MAX_ROWS` sözleşme sabitidir, environment ayarı değil
+### #13 — Frontend'in uyguladığı limitler sözleşme sabitidir
 
-Diğer tüm çalışma sınırları (`max_upload_bytes`, `max_uncompressed_bytes`,
-`analysis_timeout_seconds`, `idempotency_ttl_seconds`) `Settings` içinde ve
-`AUZEF_` önekiyle environment'tan değiştirilebilir. `MAX_ROWS` değildir:
-`app/core/config.py` içinde modül seviyesinde `Final` bir sabittir ve
-`.env.example`'da yer almaz.
+`MAX_UPLOAD_BYTES` ve `MAX_ROWS`, `app/core/config.py` içinde modül seviyesinde
+`Final` sabitlerdir ve `.env.example`'da yer almaz. Diğer çalışma sınırları
+(`max_uncompressed_bytes`, `analysis_timeout_seconds`,
+`idempotency_ttl_seconds`) `Settings` içinde ve `AUZEF_` önekiyle
+environment'tan değiştirilebilir.
 
-Gerekçe: bu sayı yalnızca bir limit değil, **iki dilde yazılmış cevap
+Gerekçe: `MAX_ROWS` yalnızca bir limit değil, **iki dilde yazılmış cevap
 invariant'larının parçası** — `analyzed_count + discarded_count ==
 min(total_rows, MAX_ROWS)`, `profile.exceeds_row_limit` ve
 `ROW_LIMIT_TRUNCATED` uyarısının varlığı hepsi ona bağlı (#2). Frontend aynası
@@ -266,13 +285,16 @@ ile oynatmak sunucunun **doğru** ürettiği cevapları Zod'a reddettirir;
 `apiRequest` bunu sentetik bir `INTERNAL_ERROR`'a çevirir ve kullanıcı upload
 ile rapor ekranlarında "Beklenmeyen bir hata" görür. Üstelik §4'teki dört
 katmanın hiçbiri kırmızıya dönmez, çünkü artefaktlar CI'da varsayılan env ile
-üretiliyor — yani drift üretime kadar görünmezdi.
+üretiliyor — yani drift üretime kadar görünmezdi. `MAX_UPLOAD_BYTES` da
+frontend'in yükleme öncesi rejection ve kullanıcıya gösterilen metnini
+belirler: backend daha yüksekse browser geçerli dosyayı engeller, daha düşükse
+UI geçerli gösterdiği dosyayı ancak upload bittikten sonra 413 ile kaybeder.
 
-Sınır `manifest.json`'da `limits.max_rows` olarak yayımlanır ve
-`contract-fixtures.test.ts` frontend sabitini ona karşı doğrular; iki tarafın
-aynı sayıyı gördüğünü kanıtlayan tek yer burasıdır. Değeri değiştirmek bir
-sözleşme değişikliğidir: `config.py`'deki `MAX_ROWS` + `contract_version`
-bump + `make generate` + `LIMITS.MAX_ROWS`.
+İki sınır `manifest.json`'da `limits.max_upload_bytes` ve `limits.max_rows`
+olarak yayımlanır; `contract-fixtures.test.ts` frontend sabitlerini bunlara
+karşı doğrular. Değeri değiştirmek bir sözleşme değişikliğidir:
+`config.py` sabiti + `contract_version` bump + `make generate` + ilgili
+frontend `LIMITS` sabiti birlikte güncellenir.
 
 ### #14 — `estimated_cost_usd` cevap şemasında doğrulanmaz
 
@@ -284,9 +306,10 @@ Bunu bir `model_validator` içinde `catalog.estimate_cost_usd` ile yeniden
 hesaplayıp karşılaştırmak cazipti ama okuma yolunu dış dünyaya bağlardı:
 OpenRouter fiyatı değiştiği an `catalog.py` güncellenir ve daha önce üretilmiş
 **tüm** raporlar cevap doğrulamasında düşerek kalıcı 500 verirdi
-(`GET /analyses/{id}/result`). Aynı gerekçeyle raporun modelinin whitelist'te
-olma şartı da kaldırıldı — bir modeli kullanımdan kaldırmak, onunla üretilmiş
-raporları silmek anlamına gelmemeli.
+(`GET /analyses/{id}/result`). Aynı gerekçeyle raporun `model` alanı aktif
+`ModelId` whitelist'inden ayrı, boş olmayan bir tarihsel kimliktir — bir modeli
+kullanımdan kaldırmak, onunla üretilmiş raporları silmek anlamına gelmemeli.
+Request ve model listesi aktif enum'u kullanmaya devam eder.
 
 Kural: cevap şemaları **tel biçimini** ve gövde içi tutarlılığı doğrular;
 zamanla değişen dış tablolara bakan iş mantığı doğrulaması yazma yolunda kalır.

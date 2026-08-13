@@ -162,11 +162,6 @@ def build_openapi(app: FastAPI) -> dict[str, Any]:
 
             responses = operation.setdefault("responses", {})
 
-            # BE-01 stub'larının döndürdüğü 501, dondurulmuş sözleşmenin
-            # parçası değil; BE-02 gövdeleri doldurunca kaybolacak geçici bir
-            # geliştirme davranışı. Public belgede yer almamalı.
-            responses.pop("501", None)
-
             for status_code, response in responses.items():
                 if status_code.isdigit() and int(status_code) >= 400:
                     # FastAPI `model=` verildiğinde `application/json` üretiyor;

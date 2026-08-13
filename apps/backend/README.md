@@ -2,7 +2,8 @@
 
 Bu paket **BE-01 kapsamında contract-only**dir: Pydantic modelleri, route imzaları,
 merkezi RFC 9457 hata yönetimi ve üretilmiş OpenAPI şeması içerir. Route gövdeleri
-`NotImplementedError` fırlatır ve **501** döner; gerçek uygulama BE-02'de gelir.
+`NotImplementedError` fırlatır ve public sözleşmede belgelenen **501
+`NOT_IMPLEMENTED`** döner; gerçek uygulama BE-02'de gelir.
 
 Kararların tamamı için: [`docs/adr/0002-api-contract-freeze.md`](../../docs/adr/0002-api-contract-freeze.md)
 

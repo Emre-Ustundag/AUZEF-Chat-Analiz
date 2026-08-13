@@ -29,7 +29,9 @@ def test_route_exists_and_returns_501(client: TestClient, method: str, path: str
     response = client.request(method, path)
 
     assert response.status_code == 501, f"{method} {path}"
-    assert ProblemDetails.model_validate(response.json()).status == 501
+    problem = ProblemDetails.model_validate(response.json())
+    assert problem.status == 501
+    assert problem.code.value == "NOT_IMPLEMENTED"
 
 
 def test_upload_post_requires_multipart_file(client: TestClient) -> None:

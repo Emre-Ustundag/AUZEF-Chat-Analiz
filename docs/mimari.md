@@ -229,12 +229,14 @@ Temel hata kodları:
 - `PROVIDER_TIMEOUT` — 504
 - `JOB_NOT_FOUND` — 404
 - `JOB_CONFLICT` — 409
+- `NOT_IMPLEMENTED` — 501 (contract-only stub; route uygulanınca kaldırılır)
 - `INTERNAL_ERROR` — 500
 
 Ek kurallar (ADR-0002 #6, #7):
 
 - `type`, `title`, `status`, `code`, `detail`, `trace_id` **her** hata cevabında bulunur; `errors` her zaman vardır (boş olabilir)
 - `retry_after` **yalnızca 429** cevaplarında bulunur; diğerlerinde `null` olarak dahi yer almaz
+- `status`, hata kodunun kayıtlı HTTP statüsüyle birebir aynı olmak zorundadır
 - `type` URI'si koddan türetilir: `/errors/` + küçük harf + `_` → `-`
 - `errors[].input` asla yankılanmaz; gövdeye yanlışlıkla konmuş bir API anahtarını geri sızdırma yolu kapalıdır
 - hatalar tek merkezî handler'dan üretilir (`app/core/handlers.py`)
@@ -251,10 +253,11 @@ Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve lo
 - `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `confidence`, `redacted_examples`
 - `themes[]`: `id`, `name`, `count`, `percentage`, `related_question_ids`
   - `related_question_ids`, `top_n` kırpması sonrası raporda gerçekten yer alan sorulara filtrelenir; `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya devam eder (ADR-0002 #5)
+  - soru/tema id'leri benzersiz, `count <= analyzed_count`; `percentage`, bir ondalığa exact half-up yuvarlanmış gerçek orandır
 - `executive_summary` ve `warnings[]`
   - `warnings[].code` tel üstünde serbest `string`'tir; backend yalnızca sürümlenmiş bir sözlükten (`ROW_LIMIT_TRUNCATED`, `CHUNK_PARTIAL_FAILURE`, `LOW_CONFIDENCE_THEMES`, `PII_REDACTION_INCOMPLETE`, `COST_LIMIT_APPROACHED`) üye yayar
   - `warnings[].message` kullanıcıya hazır Türkçe metindir — "ham backend metni kullanıcıya basılmaz" kuralının belgelenmiş tek istisnası (ADR-0002 #2)
-- `model`, `prompt_version`, `prompt_hash`
+- `model`, `prompt_version`, `prompt_hash` (`model` tarihsel raporlarda aktif whitelist'ten bağımsız, boş olmayan kimliktir)
 - `token_usage` ve `estimated_cost_usd`
 
 LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-output desteği doğrulanmış modelleri kabul eder. Geçersiz yanıt en fazla iki kontrollü repair/retry denemesinden sonra `PROVIDER_BAD_RESPONSE` ile sonlandırılır.
@@ -262,7 +265,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 ## 9. Güvenlik ve çalışma sınırları
 
 - MVP yalnızca `.xlsx` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir
-- Varsayılan sıkıştırılmış upload sınırı: 150 MB
+- Sözleşmede donmuş sıkıştırılmış upload sınırı: 150 MB
 - OOXML açılmış toplam boyut sınırı: 1 GB
 - Boyut ve süre sınırları environment config'tir (`AUZEF_` öneki); satır sınırı DEĞİLDİR
 - Satır sınırı: 100.000, sözleşmede donmuştur (ADR-0002 #13) — hem Pydantic hem Zod cevap invariant'larında kullanıldığı için env ile oynatmak backend'in doğru ürettiği cevapları frontend'e reddettirirdi. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)

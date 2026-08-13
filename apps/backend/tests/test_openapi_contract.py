@@ -36,15 +36,15 @@ EXPECTED_ENDPOINTS = {
 }
 
 EXPECTED_STATUSES = {
-    ("post", "/api/v1/uploads"): {202, 409, 413, 415, 422, 500},
-    ("get", "/api/v1/uploads/{upload_id}"): {200, 404, 422, 500},
-    ("delete", "/api/v1/uploads/{upload_id}"): {204, 404, 422, 500},
-    ("get", "/api/v1/models"): {200, 500},
-    ("post", "/api/v1/analyses"): {202, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}"): {200, 404, 422, 500},
-    ("delete", "/api/v1/analyses/{analysis_id}"): {204, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}/result"): {200, 404, 409, 422, 500},
-    ("get", "/api/v1/analyses/{analysis_id}/export"): {200, 404, 409, 422, 500},
+    ("post", "/api/v1/uploads"): {202, 409, 413, 415, 422, 500, 501},
+    ("get", "/api/v1/uploads/{upload_id}"): {200, 404, 422, 500, 501},
+    ("delete", "/api/v1/uploads/{upload_id}"): {204, 404, 422, 500, 501},
+    ("get", "/api/v1/models"): {200, 500, 501},
+    ("post", "/api/v1/analyses"): {202, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}"): {200, 404, 422, 500, 501},
+    ("delete", "/api/v1/analyses/{analysis_id}"): {204, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}/result"): {200, 404, 409, 422, 500, 501},
+    ("get", "/api/v1/analyses/{analysis_id}/export"): {200, 404, 409, 422, 500, 501},
 }
 
 
@@ -129,7 +129,7 @@ def test_error_responses_only_use_problem_media_type(openapi: Any) -> None:
         for method, operation in ops.items():
             if method not in {"get", "post", "put", "patch", "delete"}:
                 continue
-            assert "501" not in operation["responses"], f"{method} {path}"
+            assert operation["responses"]["501"]["x-error-codes"] == ["NOT_IMPLEMENTED"]
             for status, response in operation["responses"].items():
                 if status.isdigit() and int(status) >= 400:
                     assert set(response["content"]) == {PROBLEM_MEDIA_TYPE}, (

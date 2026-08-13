@@ -7,6 +7,7 @@ import {
   isAnalysisSettled,
   isUploadSettled,
   isRetryableError,
+  percentageHalfUp,
   problemDetailsSchema,
   uploadSchema,
 } from "./index";
@@ -71,6 +72,42 @@ describe("problemDetailsSchema", () => {
 
     expect(problemDetailsSchema.safeParse(base).success).toBe(true);
     expect(problemDetailsSchema.safeParse({ ...base, retry_after: null }).success).toBe(false);
+  });
+
+  it("status hata kodunun kayıtlı HTTP statüsüyle aynı olmalıdır", () => {
+    const problem = {
+      type: "/errors/internal-error",
+      title: "Beklenmeyen hata",
+      status: 400,
+      code: "INTERNAL_ERROR",
+      detail: "x",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(problem).success).toBe(false);
+  });
+
+  it("retry_after yalnızca rate limit kodunda zorunludur", () => {
+    const rateLimited = {
+      type: "/errors/provider-rate-limited",
+      title: "Sağlayıcı istek sınırına ulaşıldı",
+      status: 429,
+      code: "PROVIDER_RATE_LIMITED",
+      detail: "x",
+      trace_id: ID,
+    };
+    const internal = {
+      type: "/errors/internal-error",
+      title: "Beklenmeyen hata",
+      status: 500,
+      code: "INTERNAL_ERROR",
+      detail: "x",
+      trace_id: ID,
+    };
+
+    expect(problemDetailsSchema.safeParse(rateLimited).success).toBe(false);
+    expect(problemDetailsSchema.safeParse({ ...rateLimited, retry_after: 60 }).success).toBe(true);
+    expect(problemDetailsSchema.safeParse({ ...internal, retry_after: 60 }).success).toBe(false);
   });
 
   it("trace_id eksikse reddeder", () => {
@@ -206,7 +243,7 @@ describe("analysisReportSchema", () => {
         id: "q1",
         canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
         count: 1240,
-        percentage: 24.8,
+        percentage: 25.8,
         confidence: 0.92,
         redacted_examples: ["sınav ne zaman"],
       },
@@ -216,7 +253,7 @@ describe("analysisReportSchema", () => {
         id: "t1",
         name: "Sınav takvimi",
         count: 1240,
-        percentage: 24.8,
+        percentage: 25.8,
         related_question_ids: ["q1"],
       },
     ],
@@ -265,13 +302,59 @@ describe("analysisReportSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("yalnızca dondurulmuş model ve prompt sürümünü kabul eder", () => {
-    expect(analysisReportSchema.safeParse({ ...report, model: "unknown/model" }).success).toBe(
-      false,
+  it("tarihsel model kimliğini kabul eder, prompt sürümünü dondurur", () => {
+    expect(analysisReportSchema.safeParse({ ...report, model: "retired/model-v1" }).success).toBe(
+      true,
     );
     expect(
       analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v2" }).success,
     ).toBe(false);
+  });
+
+  it("tüketici gelecekteki warning kodlarına açıktır", () => {
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        warnings: [{ code: "FUTURE_NON_FATAL_WARNING", message: "Kullanıcıya hazır uyarı." }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rapor sürümünü 1.0'a sabitler", () => {
+    expect(analysisReportSchema.safeParse({ ...report, schema_version: "garbage" }).success).toBe(
+      false,
+    );
+  });
+
+  it("count, yüzde ve kimlik invariant'larını uygular", () => {
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        preprocessing_summary: { ...report.preprocessing_summary, redacted_count: 4801 },
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        top_questions: [{ ...report.top_questions[0], count: 4801, percentage: 100 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        themes: [{ ...report.themes[0], percentage: 25.7 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisReportSchema.safeParse({
+        ...report,
+        top_questions: [report.top_questions[0], report.top_questions[0]],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("yüzdeleri bir ondalığa half-up yuvarlar", () => {
+    expect(percentageHalfUp(1, 16)).toBe(6.3);
   });
 });
 

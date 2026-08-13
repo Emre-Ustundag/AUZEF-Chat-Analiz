@@ -36,6 +36,7 @@ interface OpenApiDocument {
         responses: Record<
           string,
           {
+            "x-error-codes"?: string[];
             content?: Record<
               string,
               { schema?: { $ref?: string }; examples?: Record<string, { value: unknown }> }
@@ -133,15 +134,15 @@ describe("yol envanteri", () => {
 
 describe("sözleşme detayları", () => {
   const expectedStatuses: Record<string, number[]> = {
-    "POST /api/v1/uploads": [202, 409, 413, 415, 422, 500],
-    "GET /api/v1/uploads/{upload_id}": [200, 404, 422, 500],
-    "DELETE /api/v1/uploads/{upload_id}": [204, 404, 422, 500],
-    "GET /api/v1/models": [200, 500],
-    "POST /api/v1/analyses": [202, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}": [200, 404, 422, 500],
-    "DELETE /api/v1/analyses/{analysis_id}": [204, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}/result": [200, 404, 409, 422, 500],
-    "GET /api/v1/analyses/{analysis_id}/export": [200, 404, 409, 422, 500],
+    "POST /api/v1/uploads": [202, 409, 413, 415, 422, 500, 501],
+    "GET /api/v1/uploads/{upload_id}": [200, 404, 422, 500, 501],
+    "DELETE /api/v1/uploads/{upload_id}": [204, 404, 422, 500, 501],
+    "GET /api/v1/models": [200, 500, 501],
+    "POST /api/v1/analyses": [202, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}": [200, 404, 422, 500, 501],
+    "DELETE /api/v1/analyses/{analysis_id}": [204, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}/result": [200, 404, 409, 422, 500, 501],
+    "GET /api/v1/analyses/{analysis_id}/export": [200, 404, 409, 422, 500, 501],
   };
 
   it("her uç yalnızca gerçekten üretebildiği status'ları belgeler", () => {
@@ -228,7 +229,10 @@ describe("sözleşme detayları", () => {
   it("hata cevapları yalnızca problem+json ve geçerli ProblemDetails örnekleri taşır", () => {
     for (const [path, operations] of Object.entries(openapi.paths)) {
       for (const [method, operation] of Object.entries(operations)) {
-        expect(operation.responses).not.toHaveProperty("501");
+        expect(
+          operation.responses["501"]?.["x-error-codes"],
+          `${method} ${path} public 501`,
+        ).toEqual(["NOT_IMPLEMENTED"]);
         for (const [status, response] of Object.entries(operation.responses)) {
           if (Number(status) < 400) continue;
           expect(Object.keys(response.content ?? {}), `${method} ${path} ${status}`).toEqual([

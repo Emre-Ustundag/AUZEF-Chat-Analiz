@@ -98,6 +98,7 @@ describe("unknownApiError", () => {
   it("her zaman geçerli bir ApiError üretir", () => {
     const error = unknownApiError(0, "Sunucuya ulaşılamadı.");
     expect(error.code).toBe("INTERNAL_ERROR");
+    expect(error.status).toBe(500);
     expect(error.userMessage).toBeTruthy();
     expect(error.isRetryable).toBe(true);
   });

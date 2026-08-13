@@ -8,6 +8,7 @@ import {
   analysisRequestSchema,
   LIMITS,
   modelListSchema,
+  percentageHalfUp,
   problemDetailsSchema,
   uploadCreatedSchema,
   uploadSchema,
@@ -71,6 +72,7 @@ describe("fixture envanteri", () => {
    * config.py → MAX_ROWS); değiştirmek contract_version bump'ı gerektirir.
    */
   it("LIMITS sabitleri backend'in donmuş sınırlarıyla aynı", () => {
+    expect(LIMITS.MAX_UPLOAD_BYTES).toBe(manifest.limits.max_upload_bytes);
     expect(LIMITS.MAX_ROWS).toBe(manifest.limits.max_rows);
   });
 
@@ -162,9 +164,7 @@ describe("ADR-0002 #5 — top_n kırpması ve related_question_ids", () => {
     for (const theme of parsedTruncated.themes) {
       expect(theme.count).toBe(fullById.get(theme.id)!.count);
       expect(theme.percentage).toBe(
-        Number(
-          ((theme.count / parsedTruncated.preprocessing_summary.analyzed_count) * 100).toFixed(1),
-        ),
+        percentageHalfUp(theme.count, parsedTruncated.preprocessing_summary.analyzed_count),
       );
     }
   });

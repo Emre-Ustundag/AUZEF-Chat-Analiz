@@ -30,6 +30,7 @@ EXPECTED_STATUS = {
     "PROVIDER_TIMEOUT": 504,
     "JOB_NOT_FOUND": 404,
     "JOB_CONFLICT": 409,
+    "NOT_IMPLEMENTED": 501,
     "INTERNAL_ERROR": 500,
 }
 
@@ -86,6 +87,18 @@ def test_retry_after_required_on_429() -> None:
 def test_retry_after_forbidden_elsewhere() -> None:
     with pytest.raises(ValidationError):
         _problem(ErrorCode.JOB_NOT_FOUND, 60)
+
+
+def test_status_must_match_error_code() -> None:
+    with pytest.raises(ValidationError):
+        ProblemDetails(
+            type=error_type_uri(ErrorCode.INTERNAL_ERROR),
+            title=ERROR_TITLES[ErrorCode.INTERNAL_ERROR],
+            status=400,
+            code=ErrorCode.INTERNAL_ERROR,
+            detail="detay",
+            trace_id="9d8c7b6a-5e4f-4321-8abc-0123456789ab",
+        )
 
 
 def test_retry_after_omitted_not_null() -> None:
