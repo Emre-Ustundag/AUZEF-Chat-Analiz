@@ -30,9 +30,15 @@ Health endpoint'leri:
 
 ## Ortam ayarları
 
-`cp apps/backend/.env.example .env` ile kök ortam dosyasını oluşturabilirsiniz.
-Uygulama bu kök `.env` dosyasını okur; tüm backend değişkenleri `AUZEF_`
-öneklidir.
+Backend **yalnızca repo kökündeki `.env` dosyasını** okur; `apps/backend/.env`
+OKUNMAZ. Şablon repo kökündedir ve web ile Docker Compose değişkenlerini de
+içerir, dolayısıyla kökten kopyalayın:
+
+```bash
+cp .env.example .env   # repo kökünde
+```
+
+Tüm backend değişkenleri `AUZEF_` öneklidir.
 
 | Değişken                   | Varsayılan    | Açıklama                                           |
 | -------------------------- | ------------- | -------------------------------------------------- |

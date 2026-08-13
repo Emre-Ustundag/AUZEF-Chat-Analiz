@@ -1,3 +1,12 @@
 # Boş AUZEF_BACKEND_MASTER_KEY şablonunun generic-api-key yanlış pozitifi.
 # Fingerprint; commit, dosya, kural ve satıra özeldir. Yeni bulguları gizlemez.
+#
+# `apps/backend/.env.example` çalışan ağaçtan kaldırıldı (backend yalnızca kök
+# `.env`'i okuyor), ama gitleaks GEÇMİŞİ tarıyor: aşağıdaki commit dosyayı hâlâ
+# içerdiği için bu satır silinemez.
+#
+# DİKKAT: fingerprint'in ilk alanı commit SHA'sıdır. PR #8 squash veya rebase
+# ile merge edilirse be25d70 main'de var olmaz, eşleşme kırılır ve Secret Scan
+# main'de düşer. Merge commit ile birleştirin; squash şartsa merge sonrası bu
+# satırı yeni SHA ile güncelleyin.
 be25d70fbf2b9ce60479a684f6e7335743a65a83:apps/backend/.env.example:generic-api-key:8
