@@ -43,6 +43,11 @@ Uygulama bu kök `.env` dosyasını okur; tüm backend değişkenleri `AUZEF_`
 
 Gerçek anahtarları veya kurum verisini Git'e eklemeyin.
 
+150 MB upload sınırı ile 100.000 satır analiz sınırı frontend ve backend
+arasında donmuş sözleşme sabitleridir; `AUZEF_*` ortam değişkenleriyle
+değiştirilemez. Bu değerlerin değişmesi contract version artışı ile OpenAPI,
+fixture ve frontend sabitlerinin birlikte güncellenmesini gerektirir.
+
 ## Kalite kapıları
 
 ```bash
