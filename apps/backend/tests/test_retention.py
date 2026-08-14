@@ -107,7 +107,7 @@ async def ready_upload(client: AsyncClient) -> tuple[uuid.UUID, str]:
     return upload_id, storage_key
 
 
-async def start_analysis(client: AsyncClient, upload_id: uuid.UUID, **overrides: Any) -> uuid.UUID:
+async def submit_analysis(client: AsyncClient, upload_id: uuid.UUID, **overrides: Any) -> Any:
     payload: dict[str, Any] = {
         "upload_id": str(upload_id),
         "sheet_name": "Mesajlar",
@@ -118,9 +118,14 @@ async def start_analysis(client: AsyncClient, upload_id: uuid.UUID, **overrides:
         "max_cost_usd": 5.0,
     }
     payload.update(overrides)
-    response = await client.post(
+    return await client.post(
         "/api/v1/analyses", json=payload, headers={"X-OpenRouter-Key": TEST_KEY}
     )
+
+
+async def start_analysis(client: AsyncClient, upload_id: uuid.UUID, **overrides: Any) -> uuid.UUID:
+    response = await submit_analysis(client, upload_id, **overrides)
+    assert response.status_code == 202
     return uuid.UUID(response.json()["analysis_id"])
 
 
@@ -202,11 +207,10 @@ async def test_maliyet_tavani_asiminda_kaynak_dosya_korunur(client: AsyncClient)
     doğruluyor — asıl kanıt bu.
     """
     upload_id, key = await ready_upload(client)
-    first = await start_analysis(client, upload_id, max_cost_usd=0.0000001)
+    first = await submit_analysis(client, upload_id, max_cost_usd=0.0000001)
 
-    assert await tasks.run_analysis(first) == "failed"
-    job = (await client.get(f"/api/v1/analyses/{first}")).json()
-    assert job["error"]["code"] == "COST_LIMIT_EXCEEDED"
+    assert first.status_code == 422
+    assert first.json()["code"] == "COST_LIMIT_EXCEEDED"
     assert object_exists(key), "hiçbir şey tüketilmedi; kaynak dosya durmalı"
 
     # Kullanıcı sınırı yükseltip aynı upload üzerinde yeniden deniyor.

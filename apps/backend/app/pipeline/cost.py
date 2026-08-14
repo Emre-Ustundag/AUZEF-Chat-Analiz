@@ -67,6 +67,29 @@ def cost_for_tokens(prompt_tokens: int, completion_tokens: int, model_id: str) -
     return round(cost, 6)
 
 
+def estimate_profile_cost(
+    record_count: int,
+    average_length: float,
+    model_id: str,
+) -> float:
+    """Upload profilinden senkron analiz ön tahmini üretir.
+
+    ADR-0002 #10 gereği ``POST /analyses`` pahalı olduğu baştan belli bir
+    işi job oluşturmadan reddeder. Bu aşamada ham hücreler okunmadığı için
+    worker'daki dedupe-aware ``estimate_cost`` kullanılamaz; seçilen kolonun
+    profilindeki kayıt sayısı ve ortalama uzunlukla muhafazakâr bir tahmin
+    yapılır. Worker, gerçek ön işleme sonrasında daha kesin kontrolü ayrıca
+    uygular.
+    """
+    if record_count <= 0:
+        return 0.0
+
+    tokens_per_record = int(max(0.0, average_length) / CHARS_PER_TOKEN)
+    prompt_tokens = record_count * (tokens_per_record + OVERHEAD_TOKENS_PER_RECORD)
+    completion_tokens = record_count * OUTPUT_TOKENS_PER_RECORD
+    return cost_for_tokens(prompt_tokens, completion_tokens, model_id)
+
+
 @dataclass(frozen=True)
 class CostDecision:
     estimated_prompt_tokens: int

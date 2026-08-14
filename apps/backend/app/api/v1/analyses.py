@@ -36,13 +36,14 @@ from app.api.v1.responses import (
     ANALYSIS_READ,
     ANALYSIS_RESULT,
 )
-from app.core.config import Settings, get_settings
+from app.core.config import MAX_ROWS, Settings, get_settings
 from app.core.db import get_session
 from app.core.errors import ApiError
 from app.core.logging import get_logger
 from app.domain.model_catalog import is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
+from app.pipeline.cost import estimate_profile_cost
 from app.schemas.analysis import (
     TERMINAL_STATUSES,
     AnalysisCreate,
@@ -53,7 +54,7 @@ from app.schemas.analysis import (
 )
 from app.schemas.common import ProblemDetails
 from app.schemas.report import AnalysisReport
-from app.schemas.upload import UploadProfile, UploadStatus
+from app.schemas.upload import ColumnProfile, UploadProfile, UploadStatus
 from app.services import report_export, secret_store
 
 logger = get_logger(__name__)
@@ -69,7 +70,7 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 OpenRouterKeyDep = Annotated[str | None, Header(alias="X-OpenRouter-Key")]
 
 
-def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate) -> None:
+def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate) -> ColumnProfile:
     """Seçilen sayfa ve kolonun profilde GERÇEKTEN bulunduğunu doğrular.
 
     Bu kontrol olmadan hata ancak worker dosyayı açtığında ortaya çıkar ve
@@ -85,11 +86,13 @@ def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate
             "Seçilen sayfa dosyada bulunamadı.",
         )
 
-    if not any(column.name == body.text_column for column in sheet.columns):
+    column = next((column for column in sheet.columns if column.name == body.text_column), None)
+    if column is None:
         raise ApiError(
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen kolon bu sayfada bulunamadı.",
         )
+    return column
 
 
 async def _get_analysis_or_404(session: AsyncSession, analysis_id: uuid.UUID) -> Analysis:
@@ -138,7 +141,24 @@ async def create_analysis(
             "Yükleme henüz analiz edilebilir durumda değil.",
         )
 
-    _validate_selection(upload.profile, body)
+    column = _validate_selection(upload.profile, body)
+
+    # ADR-0002 #10: pahalı olduğu profilden belli olan istek job ve Redis
+    # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
+    # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
+    # ayrıca denetler; bu ilk kapı kullanıcıya anında geri bildirim verir.
+    estimated_cost_usd = estimate_profile_cost(
+        min(column.non_empty_count, MAX_ROWS),
+        column.avg_length,
+        body.model,
+    )
+    if estimated_cost_usd > body.max_cost_usd:
+        raise ApiError(
+            "COST_LIMIT_EXCEEDED",
+            f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
+            f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
+            "yükseltin ya da daha ucuz bir model seçin.",
+        )
 
     analysis_id = uuid.uuid4()
     analysis = Analysis(

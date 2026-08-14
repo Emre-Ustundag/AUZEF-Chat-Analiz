@@ -29,7 +29,7 @@ from app.pipeline.classifier import (
     ThemeAssignment,
     _signature_tokens,
 )
-from app.pipeline.cost import CostDecision, estimate_cost
+from app.pipeline.cost import CostDecision, estimate_cost, estimate_profile_cost
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
 from app.prompts.faq_analysis import V1
 from app.schemas.report import AnalysisReport
@@ -487,6 +487,18 @@ def test_ucucu_ol_ucu_uctan_uca_gercek_veriyle(settings: Settings) -> None:
 
 
 # ------------------------------------------------------------- maliyet tavanı
+
+
+def test_profil_maliyet_tahmini_kayit_sayisiyla_artar() -> None:
+    one = estimate_profile_cost(1, 120.0, "anthropic/claude-sonnet-4.6")
+    hundred = estimate_profile_cost(100, 120.0, "anthropic/claude-sonnet-4.6")
+
+    assert one > 0
+    assert hundred == round(one * 100, 6)
+
+
+def test_profil_maliyet_tahmini_bos_kolonda_sifirdir() -> None:
+    assert estimate_profile_cost(0, 120.0, "anthropic/claude-sonnet-4.6") == 0.0
 
 
 def test_maliyet_tahmini_benzersiz_kayitlardan_hesaplanir(settings: Settings) -> None:
