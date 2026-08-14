@@ -38,7 +38,7 @@ pytestmark = pytest.mark.integration
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
-TEST_KEY = "sk-or-v1-testkey0123456789abcdef0123456789"
+TEST_KEY = "test-key-aaaaaaaaaaaaaaaaaaaaaaaa"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -260,7 +260,7 @@ async def test_whitelist_disi_model_reddedilir(client: AsyncClient) -> None:
     response = await _create(client, upload_id, model="uydurma/model-9")
 
     assert response.status_code == 422
-    assert response.json()["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
+    assert response.json()["code"] == "INVALID_MODEL"
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
@@ -462,36 +462,29 @@ async def test_iptal_de_anahtari_siler(client: AsyncClient) -> None:
 # =====================================================================
 
 
-async def test_maliyet_tavani_asiminda_is_failed_olur_ve_hic_cagri_yapilmaz(
+async def test_maliyet_tavani_asiminda_istek_reddedilir_ve_hic_cagri_yapilmaz(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """ADR §9: "LLM çağrısı BAŞLAMADAN iş güvenli biçimde durur."
+    """ADR-0002 #10: ön tahmin aşılırsa job yaratılmadan istek reddedilir.
 
-    Ölçüt iki katlı: iş `failed` olmalı VE sağlayıcıya tek bir istek bile
-    gitmemeli. İkincisi olmadan "tavan" ancak faturayı gördükten sonra
-    çalışan bir uyarı olurdu.
+    Ölçüt iki katlı: cevap sözleşmedeki 422 olmalı VE sağlayıcıya tek bir
+    istek bile gitmemeli. İkincisi olmadan "tavan" ancak faturayı gördükten
+    sonra çalışan bir uyarı olurdu.
     """
     fake = install_fake_provider(monkeypatch)
     upload_id, _ = await _ready_upload(client)
     # Fixture'ın tahmini maliyeti bunun kat kat üzerinde.
     created = await _create(client, upload_id, max_cost_usd=0.0000001)
-    analysis_id = uuid.UUID(created.json()["analysis_id"])
-
-    assert await tasks.run_analysis(analysis_id) == "failed"
+    assert created.status_code == 422
+    problem = created.json()
+    assert problem["code"] == "COST_LIMIT_EXCEEDED"
+    assert problem["status"] == 422
+    assert "USD" in problem["detail"]
+    assert "retry_after" not in problem
 
     # ASIL KANIT: hiçbir HTTP isteği yapılmadı.
     assert fake.requests == []
-
-    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
-    AnalysisJobRead.model_validate(job)
-    assert job["status"] == "failed"
-    assert job["error"]["code"] == "COST_LIMIT_EXCEEDED"
-    assert job["error"]["status"] == 409
-    # Kullanıcı ne yapacağını bilmeli: sayılar mesajda geçmeli.
-    assert "USD" in job["error"]["detail"]
-    # `retry_after` alanı HİÇ olmamalı (frontend .optional(), .nullable() değil).
-    assert "retry_after" not in job["error"]
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
@@ -866,22 +859,23 @@ async def test_bilinmeyen_analizde_export_404(client: AsyncClient) -> None:
     assert response.json()["code"] == "JOB_NOT_FOUND"
 
 
-async def test_gecersiz_format_json_dondurur(client: AsyncClient) -> None:
-    """Mock `exportFormatSchema.catch("json")` kullanıyor; backend de öyle.
-
-    `Literal[...]` doğrulaması burada 415 `UPLOAD_INVALID_TYPE` üretirdi ve
-    kullanıcı yüklediği dosyayla ilgisi olmayan "Desteklenmeyen dosya türü"
-    mesajını görürdü.
-    """
+async def test_gecersiz_export_formati_reddedilir(client: AsyncClient) -> None:
+    """ADR-0002 #7: geçersiz query değeri alan bazlı 422 üretir."""
     upload_id, _ = await _ready_upload(client)
     created = await _create(client, upload_id)
     analysis_id = uuid.UUID(created.json()["analysis_id"])
     assert await tasks.run_analysis(analysis_id) == "completed"
 
-    for query in ("?format=pdf", "?format=", ""):
+    for query in ("?format=pdf", "?format="):
         response = await client.get(f"/api/v1/analyses/{analysis_id}/export{query}")
-        assert response.status_code == 200, query
-        assert response.headers["content-type"].startswith("application/json"), query
+        assert response.status_code == 422, query
+        problem = response.json()
+        assert problem["code"] == "REQUEST_VALIDATION", query
+        assert problem["errors"][0]["field"] == "query.format", query
+
+    default_response = await client.get(f"/api/v1/analyses/{analysis_id}/export")
+    assert default_response.status_code == 200
+    assert default_response.headers["content-type"].startswith("application/json")
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
@@ -894,11 +888,8 @@ async def test_bilinmeyen_prompt_surumu_reddedilir(
     install_fake_provider(monkeypatch)
     upload_id, _ = await _ready_upload(client)
     created = await _create(client, upload_id, prompt_version="faq_analysis/v99")
-    analysis_id = uuid.UUID(created.json()["analysis_id"])
-
-    assert await tasks.run_analysis(analysis_id) == "failed"
-    job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
-    assert job["error"]["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
+    assert created.status_code == 422
+    assert created.json()["code"] == "INVALID_PROMPT"
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
@@ -995,7 +986,7 @@ async def test_kosu_ortasinda_tavan_asilirsa_is_durur(
     # Sağlayıcı her çağrıda pahalı: ilk chunk'tan sonra tavan aşılır.
     install_fake_provider(monkeypatch, prompt_tokens=400_000, completion_tokens=0)
     upload_id, _ = await _ready_upload(client)
-    # sonnet-5 girdi 2.0 USD/M -> çağrı başına 0.8 USD; tavan 0.5 USD.
+    # Sonnet 4.6 girdi 3 USD/M -> çağrı başına 1.2 USD; tavan 0.5 USD.
     created = await _create(client, upload_id, max_cost_usd=0.5)
     analysis_id = uuid.UUID(created.json()["analysis_id"])
 
@@ -1003,6 +994,6 @@ async def test_kosu_ortasinda_tavan_asilirsa_is_durur(
 
     job = (await client.get(f"/api/v1/analyses/{analysis_id}")).json()
     assert job["error"]["code"] == "COST_LIMIT_EXCEEDED"
-    assert job["error"]["status"] == 409
+    assert job["error"]["status"] == 422
 
     await client.delete(f"/api/v1/uploads/{upload_id}")

@@ -253,20 +253,21 @@ async def test_gecersiz_uuid_bicimi_sozlesmeye_uyan_hata_doner(
     FastAPI'nin varsayılan `{"detail": [...]}` gövdesi frontend'in
     `problemDetailsSchema` doğrulamasından geçemezdi.
 
-    B7: kod `JOB_NOT_FOUND` (404) olmalı, `UPLOAD_INVALID_TYPE` (415) DEĞİL.
-    İstekte dosya yok; kullanıcıya "Yalnızca .xlsx dosyaları analiz
-    edilebilir" demek bozuk bir bağlantı için anlamsız. `JOB_NOT_FOUND`'ın
-    Türkçe metni ("Bağlantı geçersiz veya süresi dolmuş olabilir") tam olarak
-    bu durumu anlatıyor.
+    ADR-0002 #7: geçersiz path parametresi alan bazlı `REQUEST_VALIDATION`
+    (422) üretmeli; dosya türü veya iş bulunamadı kodlarına kaymamalı.
     """
     response = await client.get(f"/api/v1/{kaynak}/gecersiz-kimlik")
 
-    assert response.status_code == 404
+    assert response.status_code == 422
     body = response.json()
-    assert body["code"] == "JOB_NOT_FOUND"
+    assert body["code"] == "REQUEST_VALIDATION"
     assert body["code"] in FRONTEND_ERROR_CODES
     assert "trace_id" in body
-    assert body["errors"] == []
+    expected_field = {
+        "uploads": "path.upload_id",
+        "analyses": "path.analysis_id",
+    }[kaynak]
+    assert body["errors"][0]["field"] == expected_field
 
 
 async def test_govde_dogrulama_hatasi_yol_hatasindan_ayrisir(client: AsyncClient) -> None:
@@ -280,7 +281,7 @@ async def test_govde_dogrulama_hatasi_yol_hatasindan_ayrisir(client: AsyncClient
 
     assert response.status_code == 422
     body = response.json()
-    assert body["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
+    assert body["code"] == "REQUEST_VALIDATION"
     # Alan bazlı hatalar taşınıyor ama kullanıcı verisi (`input`) taşınmıyor.
     assert body["errors"]
     assert all(set(item) <= {"field", "message"} for item in body["errors"])

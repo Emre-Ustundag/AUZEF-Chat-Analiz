@@ -21,7 +21,7 @@ from app.core.config import Settings
 from app.services import secret_store
 from app.services.secret_store import SecretDecryptionError
 
-SAMPLE_KEY = "sk-or-v1-0123456789abcdef0123456789abcdef"
+SAMPLE_KEY = "test-key-aaaaaaaaaaaaaaaaaaaaaaaa"
 
 
 @pytest.fixture
