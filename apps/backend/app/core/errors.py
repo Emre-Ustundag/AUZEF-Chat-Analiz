@@ -8,7 +8,13 @@ kullanıcı yanlış Türkçe mesajı görür; parity `contract-openapi.test.ts`
 """
 
 from enum import StrEnum
-from typing import Final
+from typing import TYPE_CHECKING, Final
+from uuid import uuid4
+
+if TYPE_CHECKING:
+    from fastapi.responses import JSONResponse
+
+    from app.schemas.common import ProblemDetails
 
 
 class ErrorCode(StrEnum):
@@ -74,14 +80,15 @@ ERROR_TITLES: Final[dict[ErrorCode, str]] = {
 }
 
 
-def error_type_uri(code: ErrorCode) -> str:
+def error_type_uri(code: ErrorCode | str) -> str:
     """RFC 9457 `type` alanı.
 
     Mock'un `problem()` fabrikası ile karakter karakter aynı üretim kuralı
     (`apps/web/src/mocks/store.ts`). İki dil arasındaki en ucuz invariant;
     frontend bu alanı doğrulamasa da iki taraftan da test edilir.
     """
-    return f"/errors/{code.value.lower().replace('_', '-')}"
+    resolved = ErrorCode(code)
+    return f"/errors/{resolved.value.lower().replace('_', '-')}"
 
 
 class AppError(Exception):
@@ -126,6 +133,68 @@ class AppError(Exception):
     @property
     def type_uri(self) -> str:
         return error_type_uri(self.code)
+
+
+class ApiError(AppError):
+    """Dinamik kod alan eski route çağrıları için AppError uyumluluk katmanı."""
+
+    def __init__(
+        self,
+        code: ErrorCode | str,
+        detail: str,
+        *,
+        errors: list[tuple[str | None, str]] | None = None,
+        retry_after: float | None = None,
+    ) -> None:
+        self.code = ErrorCode(code)
+        super().__init__(detail, errors=errors, retry_after=retry_after)
+
+    @property
+    def status_code(self) -> int:
+        return self.status
+
+    def to_problem(self) -> "ProblemDetails":
+        return build_problem(
+            self.code,
+            self.detail,
+            errors=self.errors,
+            retry_after=self.retry_after,
+        )
+
+
+def build_problem(
+    code: ErrorCode | str,
+    detail: str,
+    *,
+    errors: list[tuple[str | None, str]] | None = None,
+    retry_after: float | None = None,
+) -> "ProblemDetails":
+    """Worker ve eski API kodu için merkezi ProblemDetails fabrikası."""
+    from app.schemas.common import ErrorItem, ProblemDetails
+
+    resolved = ErrorCode(code)
+    return ProblemDetails(
+        type=error_type_uri(resolved),
+        title=ERROR_TITLES[resolved],
+        status=ERROR_STATUS[resolved],
+        code=resolved,
+        detail=detail,
+        trace_id=uuid4(),
+        errors=[ErrorItem(field=field, message=message) for field, message in (errors or [])],
+        retry_after=retry_after,
+    )
+
+
+def problem_response(problem: "ProblemDetails") -> "JSONResponse":
+    """Problem nesnesini RFC 9457 JSON cevabına dönüştürür."""
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        status_code=problem.status,
+        content=problem.to_wire(),
+        media_type="application/problem+json",
+        headers={"X-Trace-Id": str(problem.trace_id)},
+    )
 
 
 ERROR_SUBCLASSES: Final[dict[ErrorCode, type[AppError]]] = {}
@@ -209,3 +278,12 @@ class ServiceNotReadyError(AppError):
 
 class InternalError(AppError):
     code = ErrorCode.INTERNAL_ERROR
+
+
+def __getattr__(name: str) -> object:
+    """Eski `core.errors.ProblemDetails` importunu döngü yaratmadan destekler."""
+    if name == "ProblemDetails":
+        from app.schemas.common import ProblemDetails
+
+        return ProblemDetails
+    raise AttributeError(name)

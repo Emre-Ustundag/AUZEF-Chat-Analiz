@@ -17,6 +17,8 @@ from app.schemas.analysis import PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
+REPORT_SCHEMA_VERSION: Literal["1.0"] = "1.0"
+
 
 def percentage_half_up(count: int, total: int) -> float:
     """`count / total * 100` değerini bir ondalığa half-up yuvarlar.
@@ -121,7 +123,7 @@ class AnalysisReport(ApiModel):
 
     #: Rapor GÖVDESİNİ sürümler; API `/api/v1` + openapi.info.version ile
     #: sürümlenir (ADR-0002 #12).
-    schema_version: Literal["1.0"]
+    schema_version: Literal["1.0"] = REPORT_SCHEMA_VERSION
     analysis_id: UUID
     status: Literal["completed"] = "completed"
     generated_at: UtcDateTime

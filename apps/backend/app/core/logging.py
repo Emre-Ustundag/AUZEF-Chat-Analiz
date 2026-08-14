@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import sys
 from collections.abc import Mapping
 from time import perf_counter
@@ -12,7 +13,7 @@ import structlog
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from structlog.typing import EventDict, Processor, WrappedLogger
 
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.core.tracing import current_trace_id
 
 REDACTED: Final = "[REDACTED]"
@@ -27,6 +28,25 @@ _SENSITIVE_EXACT: Final = frozenset(
     }
 )
 _SENSITIVE_PARTS: Final = ("api-key", "message-text", "password", "secret", "token")
+
+#: Serbest METİNDE anahtar benzeri dizileri yakalayan desenler.
+#:
+#: Anahtar bazlı maskeleme (`_SENSITIVE_EXACT`) yalnızca sözlük ANAHTARINA
+#: bakar; anahtarın kendisi bir istisna metnine ya da `event` dizesine
+#: düştüğünde yakalamaz. ADR-0001 §9 "API anahtarı loglara ASLA yazılmaz"
+#: diyor ve o cümle değerin nereden geldiğine bakmıyor.
+_SECRET_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
+    re.compile(r"(?i)\b(x-openrouter-key|authorization)\b\s*[:=]\s*\S+"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._\-]+"),
+    re.compile(r"\bsk-[A-Za-z0-9._\-]{8,}"),
+)
+
+
+def redact_text(text: str) -> str:
+    """Serbest metindeki anahtar benzeri dizileri maskeler."""
+    for pattern in _SECRET_PATTERNS:
+        text = pattern.sub(REDACTED, text)
+    return text
 
 
 class _DynamicStdoutHandler(logging.StreamHandler[TextIO]):
@@ -52,6 +72,10 @@ def _redact(value: object) -> object:
         return [_redact(item) for item in value]
     if isinstance(value, tuple):
         return tuple(_redact(item) for item in value)
+    if isinstance(value, str):
+        # Anahtar bazlı maskelemenin göremediği yer: değerin KENDİSİ. Bir
+        # istisna metni ya da `event` dizesi anahtarı taşıyorsa burada silinir.
+        return redact_text(value)
     return value
 
 
@@ -64,8 +88,9 @@ def redact_sensitive(
     return cast(EventDict, _redact(event_dict))
 
 
-def configure_logging(settings: Settings) -> None:
+def configure_logging(settings: Settings | None = None) -> None:
     """Process logging'ini doğrulanmış settings ile tek biçime getirir."""
+    settings = settings or get_settings()
     level = getattr(logging, settings.log_level)
 
     #: structlog ve stdlib kayıtlarının PAYLAŞTIĞI ön işlemler. Redaksiyonun
@@ -112,6 +137,20 @@ def configure_logging(settings: Settings) -> None:
     # yalnızca INFO gürültüsü susturulur, WARNING ve üstü görünür kalır.
     for http_client_logger in ("httpx", "httpx2"):
         logging.getLogger(http_client_logger).setLevel(logging.WARNING)
+
+
+def get_logger(name: str) -> structlog.stdlib.BoundLogger:
+    """Uygulama modülleri için yapılandırılmış logger döndürür."""
+    return cast(structlog.stdlib.BoundLogger, structlog.get_logger(name))
+
+
+class RedactionFilter(logging.Filter):
+    """Üçüncü taraf logging handler'larında da hassas alanları maskele."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        for key, value in tuple(record.__dict__.items()):
+            record.__dict__[key] = REDACTED if _is_sensitive_key(key) else _redact(value)
+        return True
 
 
 class RequestLoggingMiddleware:

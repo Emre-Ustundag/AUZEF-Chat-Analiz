@@ -2,6 +2,7 @@
 
 import json
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.core.errors import ErrorCode
@@ -176,13 +177,9 @@ def test_invalid_uuid_in_path_reports_path_field(client: TestClient) -> None:
     assert problem.errors[0].field == "path.analysis_id"
 
 
-def test_valid_body_reaches_the_stub(client: TestClient) -> None:
-    """Doğrulama stub'tan ÖNCE çalışır.
-
-    Bu yüzden bozuk gövde 422, geçerli gövde 501 verir — route gövdeleri
-    doldurunca yukarıdaki 422 iddiaları aynen geçerli kalır.
-    """
+@pytest.mark.integration
+def test_valid_body_reaches_business_logic(client: TestClient) -> None:
     status, body = _post(client)
 
-    assert status == 501
-    assert ProblemDetails.model_validate(body).code is ErrorCode.NOT_IMPLEMENTED
+    assert status == 404
+    assert ProblemDetails.model_validate(body).code is ErrorCode.JOB_NOT_FOUND

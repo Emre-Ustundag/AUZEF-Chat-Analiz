@@ -33,6 +33,22 @@ TERMINAL_ANALYSIS_STATUSES: frozenset[AnalysisStatus] = frozenset(
     {AnalysisStatus.COMPLETED, AnalysisStatus.FAILED, AnalysisStatus.CANCELLED}
 )
 
+# Worker ilerlemesi aşama sınırlarında bu tek tablodan yazılır.
+STAGE_PROGRESS: dict[AnalysisStatus, float] = {
+    AnalysisStatus.QUEUED: 0.0,
+    AnalysisStatus.VALIDATING: 5.0,
+    AnalysisStatus.PREPROCESSING: 20.0,
+    AnalysisStatus.ANALYZING: 40.0,
+    AnalysisStatus.AGGREGATING: 90.0,
+    AnalysisStatus.COMPLETED: 100.0,
+    AnalysisStatus.FAILED: 100.0,
+    AnalysisStatus.CANCELLED: 100.0,
+}
+
+# Faz 3/4 kodunun eski adları; public şema adları yukarıdaki dondurulmuş
+# sözleşmede kalır.
+TERMINAL_STATUSES = TERMINAL_ANALYSIS_STATUSES
+
 
 class ExportFormat(StrEnum):
     XLSX = "xlsx"
@@ -145,3 +161,7 @@ class ModelList(ApiModel):
         if self.default_model not in ids:
             raise ValueError("default_model whitelist içinde bulunmalı.")
         return self
+
+
+AnalysisCreate = AnalysisRequest
+AnalysisJobRead = AnalysisJob

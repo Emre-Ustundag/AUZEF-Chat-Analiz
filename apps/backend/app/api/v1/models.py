@@ -1,14 +1,15 @@
-"""Model whitelist ucu — ADR-0002 #1.
+"""`GET /api/v1/models` — plan §1.1.
 
-ADR-0001 §6 "model yalnızca backend whitelist'inden seçilebilir" diyordu ama
-listeyi döndüren endpoint'i tanımlamıyordu; frontend açılır listeyi
-dolduramadığı için configure ekranı hiç render olmuyordu. Bu kart ile
-`GET /api/v1/models` sözleşmeye girdi.
+ADR §6 "model yalnızca backend whitelist'inden seçilebilir" diyor ama listeyi
+döndüren endpoint tanımlamıyor. Bu boşluk plan §1.1'de karara bağlandı.
 """
+
+from __future__ import annotations
 
 from fastapi import APIRouter
 
 from app.api.v1.responses import MODELS_LIST
+from app.domain.model_catalog import get_model_list
 from app.schemas.analysis import ModelList
 
 router = APIRouter(tags=["models"])
@@ -18,12 +19,7 @@ router = APIRouter(tags=["models"])
     "/models",
     response_model=ModelList,
     responses=MODELS_LIST,
-    summary="İzin verilen modeller ve varsayılanlar",
-    description=(
-        "Yalnızca JSON Schema structured output desteği doğrulanmış modeller "
-        "listelenir. `default_model` ve `default_prompt_version` formun "
-        "başlangıç değerlerini besler."
-    ),
+    summary="Structured output desteği doğrulanmış model whitelist'i",
 )
 async def list_models() -> ModelList:
-    raise NotImplementedError
+    return get_model_list()

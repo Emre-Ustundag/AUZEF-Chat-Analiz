@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "analysis_id": "05a54f5f-486d-47be-92ca-5a9e5bd3a8a1",
+  "status": "completed",
+  "generated_at": "2026-08-12T10:22:15.726Z",
+  "source_summary": {
+    "filename": "valid_multi_sheet.xlsx",
+    "sheet_name": "Mesajlar",
+    "text_column": "mesaj",
+    "total_rows": 40
+  },
+  "preprocessing_summary": {
+    "analyzed_count": 40,
+    "discarded_count": 0,
+    "duplicate_count": 35,
+    "redacted_count": 0,
+    "unique_count": 5
+  },
+  "top_questions": [
+    {
+      "id": "q2",
+      "canonical_question": "Sınav ne zaman yapılacak?",
+      "count": 16,
+      "percentage": 40.0,
+      "confidence": 0.5,
+      "redacted_examples": [
+        "sınav tarihleri ne zaman açıklanacak acaba bilgi alabilir miyim",
+        "sınav yerimi nereden öğrenebilirim bilgi yok"
+      ]
+    },
+    {
+      "id": "q1",
+      "canonical_question": "Harç ücreti ne kadar?",
+      "count": 8,
+      "percentage": 20.0,
+      "confidence": 1.0,
+      "redacted_examples": ["harç ödemesini nasıl yaparım banka şubesinden mi"]
+    },
+    {
+      "id": "q3",
+      "canonical_question": "Kayıt işlemleri nasıl yapılır?",
+      "count": 8,
+      "percentage": 20.0,
+      "confidence": 1.0,
+      "redacted_examples": ["kayıt yenileme işlemi için son tarih ne zaman"]
+    },
+    {
+      "id": "q4",
+      "canonical_question": "Sınıflandırılamayan kayıtlar",
+      "count": 8,
+      "percentage": 20.0,
+      "confidence": 1.0,
+      "redacted_examples": ["ders materyallerine nereden ulaşabilirim linkler çalışmıyor"]
+    }
+  ],
+  "themes": [
+    {
+      "id": "t-sinav",
+      "name": "Sınav",
+      "count": 16,
+      "percentage": 40.0,
+      "related_question_ids": ["q2"]
+    },
+    {
+      "id": "t-diger",
+      "name": "Diğer",
+      "count": 8,
+      "percentage": 20.0,
+      "related_question_ids": ["q4"]
+    },
+    {
+      "id": "t-harc-ve-odeme",
+      "name": "Harç ve Ödeme",
+      "count": 8,
+      "percentage": 20.0,
+      "related_question_ids": ["q1"]
+    },
+    {
+      "id": "t-kayit-islemleri",
+      "name": "Kayıt İşlemleri",
+      "count": 8,
+      "percentage": 20.0,
+      "related_question_ids": ["q3"]
+    }
+  ],
+  "executive_summary": "Analize giren 40 mesajın %40.0 kadarı «Sınav ne zaman yapılacak?» başlığında toplanıyor. İlk üç soru analiz edilen mesajların %80.0 kadarını oluşturuyor. En büyük tema «Sınav» (16 mesaj, %40.0).",
+  "warnings": [
+    {
+      "code": "LLM_UNASSIGNED_RECORDS",
+      "message": "Model 1 kaydı hiçbir kategoriye eşlemedi; bu kayıtlar «Sınıflandırılamayan kayıtlar» başlığında toplandı."
+    }
+  ],
+  "model": "anthropic/claude-sonnet-5",
+  "prompt_version": "faq_analysis/v1",
+  "prompt_hash": "sha256:8d60cafb0b2a",
+  "token_usage": {
+    "prompt_tokens": 400,
+    "completion_tokens": 60,
+    "total_tokens": 460
+  },
+  "estimated_cost_usd": 0.0014
+}

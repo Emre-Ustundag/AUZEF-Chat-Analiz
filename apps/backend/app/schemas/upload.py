@@ -105,3 +105,6 @@ class UploadCreated(ApiModel):
 
     upload_id: UUID
     status: Literal[UploadStatus.QUEUED] = UploadStatus.QUEUED
+
+
+UploadRead = Upload

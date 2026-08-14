@@ -38,8 +38,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # boş bir adrese gitmektense çalışan bir demo üretmek daha yararlı. Gerçek
 # ortama çıkarken bu değer MUTLAKA verilmeli:
 #   docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/v1
-ARG NEXT_PUBLIC_API_BASE_URL=/api/mock/v1
+ARG NEXT_PUBLIC_API_BASE_URL=/api/v1
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
+# next.config.ts'teki rewrite hedefi. NEXT_PUBLIC_* ile aynı sebepten build
+# arg: rewrites() `next build` sırasında değerlendirilir ve sonuç
+# routes-manifest.json'a YAZILIR; runtime'da yeniden okunmaz. Verilmezse
+# hedef "undefined/api/v1/..." olarak imaja gömülür ve her API isteği çöker.
+ARG API_ORIGIN=http://api:8000
+ENV API_ORIGIN=$API_ORIGIN
 
 RUN npm run build
 

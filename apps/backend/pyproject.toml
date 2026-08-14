@@ -8,25 +8,31 @@ dependencies = [
   "fastapi>=0.121",
   "pydantic>=2.12",
   "pydantic-settings>=2.8",
-  # POST /uploads multipart; FastAPI multipart form desteği için zorunlu kılar.
+  "sqlalchemy[asyncio]>=2.0.36",
+  "alembic>=1.14",
+  "asyncpg>=0.30",
+  "celery[redis]>=5.4",
+  "redis>=5.2",
+  "boto3>=1.35",
+  "openpyxl>=3.1",
+  "polars>=1.17",
+  "pyarrow>=18.1",
   "python-multipart>=0.0.20",
+  "cryptography>=50.0.0",
+  "httpx>=0.28",
   "structlog>=25.5",
   "uvicorn[standard]>=0.38",
 ]
-
-# PostgreSQL, Celery, openpyxl ve Polars ilgili uygulama kartlarına kadar
-# bilinçli olarak eklenmez; bu paket yalnızca üretim FastAPI temelidir.
 
 [dependency-groups]
 dev = [
   "pytest>=8.4",
   "pytest-asyncio>=1.0",
-  # Starlette 1.6 TestClient httpx2 istiyor; httpx'i kullanmak
-  # StarletteDeprecationWarning üretiyor. OpenRouter adapter'ı geldiğinde
-  # uygun istemci ayrıca runtime bağımlılığına alınacak.
   "httpx2>=2.10",
   "ruff>=0.14",
   "mypy>=1.18",
+  "boto3-stubs[s3]>=1.35",
+  "types-openpyxl>=3.1",
 ]
 
 [build-system]
@@ -37,25 +43,19 @@ build-backend = "hatchling.build"
 packages = ["app"]
 
 [tool.ruff]
-# Prettier'ın printWidth: 100 değeriyle aynı: repo genelinde tek sarma genişliği.
 line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "ANN", "RUF", "TID"]
-ignore = [
-  # RUF001/002/003 Türkçe harfleri (ı, ş, ğ...) "belirsiz unicode" sayıyor.
-  # Bu repoda yorum ve docstring'ler Türkçe; kural burada yalnızca gürültü.
-  "RUF001",
-  "RUF002",
-  "RUF003",
-]
+ignore = ["RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.per-file-ignores]
-# FastAPI'nin `Depends()`/`File()` idiomu varsayılan argümanda çağrı gerektirir.
 "app/api/**" = ["B008"]
-# Fixture'lar ve openapi.json şemasız JSON; `Any` burada dürüst olan tip.
+"app/services/xlsx.py" = ["ANN401"]
+"alembic/*" = ["F401"]
 "tests/**" = ["ANN401"]
+"tests/factories.py" = ["E501"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
@@ -66,8 +66,20 @@ strict = true
 plugins = ["pydantic.mypy"]
 files = ["app", "scripts", "tests"]
 warn_unused_ignores = true
+exclude = ["^alembic/versions/"]
+
+[[tool.mypy.overrides]]
+module = ["celery.*", "kombu.*", "polars.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["alembic.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
 asyncio_mode = "auto"
+markers = [
+  "integration: Postgres/Redis/MinIO gerektiren uçtan uca testler",
+]

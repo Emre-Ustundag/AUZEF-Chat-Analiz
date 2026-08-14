@@ -16,6 +16,7 @@ from app.core.errors import (
 )
 from app.core.handlers import PROBLEM_MEDIA_TYPE, register_exception_handlers
 from app.core.tracing import TRACE_ID_HEADER, TraceIdMiddleware
+from app.schemas.analysis import ModelList
 from app.schemas.common import ProblemDetails
 
 SECRET_SENTINEL = "SENSITIVE_INPUT_SENTINEL_9472"
@@ -65,13 +66,11 @@ def test_every_error_produces_valid_problem(client: TestClient, code: ErrorCode)
     assert problem.type == f"/errors/{code.value.lower().replace('_', '-')}"
 
 
-def test_stub_routes_return_501(client: TestClient) -> None:
+def test_model_route_is_implemented(client: TestClient) -> None:
     response = client.get("/api/v1/models")
 
-    assert response.status_code == 501
-    problem = ProblemDetails.model_validate(response.json())
-    assert problem.code is ErrorCode.NOT_IMPLEMENTED
-    assert problem.trace_id
+    assert response.status_code == 200
+    ModelList.model_validate(response.json())
 
 
 def test_unhandled_exception_does_not_leak_internals(

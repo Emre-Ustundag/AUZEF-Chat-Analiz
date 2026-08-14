@@ -1,16 +1,226 @@
+# AUZEF Chat Analiz — geliştirme ortamı (ADR §2).
+#
+# Uzun ömürlü YEDİ servis: web, api, worker, beat, postgres, redis, minio.
+# Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
+# çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
+# Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
+# fazla API replikası aynı anda `alembic upgrade` çalıştırdığında yarışa
+# yol açardı.
+#
+# `beat` Faz 4'te eklendi (ADR §9 retention). ADR §2 altı servis sayıyor;
+# yedincisi bir mimari sapma DEĞİL, aynı worker imajının farklı komutla
+# koşan ikinci bir örneği — "API ve worker aynı kodu paylaşır" kuralı
+# bozulmuyor. Ayrı process olmasının sebebi `workers/celery_app.py`'de:
+# worker'a `--beat` vermek tek replika varsayardı ve iki worker aynı anda
+# zamanlayıcı koşturursa her süpürme iki kez kuyruğa girerdi.
+
 services:
+  # ------------------------------------------------------------- altyapı
+  postgres:
+    image: postgres:17-alpine
+    container_name: auzef-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-auzef}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auzef}
+      POSTGRES_DB: ${POSTGRES_DB:-auzef}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # `-d` olmadan pg_isready varsayılan veritabanına bakar ve asıl
+      # veritabanı hazır olmadan "sağlıklı" der.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-auzef} -d ${POSTGRES_DB:-auzef}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: auzef-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: auzef-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ------------------------------------------------- migration (tek seferlik)
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: api
+    image: auzef-backend:latest
+    container_name: auzef-migrate
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      AUZEF_DATABASE_URL: ${AUZEF_DATABASE_URL:-postgresql+asyncpg://auzef:auzef@postgres:5432/auzef}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ------------------------------------------------------------- backend
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: api
+    image: auzef-backend:latest
+    container_name: auzef-api
+    environment: &backend-env
+      AUZEF_ENVIRONMENT: ${AUZEF_ENVIRONMENT:-development}
+      AUZEF_LOG_LEVEL: ${AUZEF_LOG_LEVEL:-INFO}
+      AUZEF_DATABASE_URL: ${AUZEF_DATABASE_URL:-postgresql+asyncpg://auzef:auzef@postgres:5432/auzef}
+      AUZEF_REDIS_URL: ${AUZEF_REDIS_URL:-redis://redis:6379/0}
+      AUZEF_CELERY_BROKER_URL: ${AUZEF_CELERY_BROKER_URL:-redis://redis:6379/1}
+      AUZEF_CELERY_RESULT_BACKEND: ${AUZEF_CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+      AUZEF_S3_ENDPOINT_URL: ${AUZEF_S3_ENDPOINT_URL:-http://minio:9000}
+      AUZEF_S3_ACCESS_KEY: ${AUZEF_S3_ACCESS_KEY:-minioadmin}
+      AUZEF_S3_SECRET_KEY: ${AUZEF_S3_SECRET_KEY:-minioadmin}
+      AUZEF_S3_BUCKET: ${AUZEF_S3_BUCKET:-auzef-uploads}
+      # Upload ve satır sınırı tel sözleşmesinde donmuştur; yalnızca açılmış
+      # OOXML boyutu çalışma ortamından ayarlanabilir.
+      AUZEF_MAX_UNCOMPRESSED_BYTES: ${AUZEF_MAX_UNCOMPRESSED_BYTES:-1073741824}
+      # ADR §2: analiz hard timeout'u 45 dk, environment ile değiştirilebilir.
+      # BYOK anahtarının Redis TTL'i bundan TÜRETİLİR (+5 dk), ayrı ayarlanmaz.
+      AUZEF_ANALYSIS_TIMEOUT_SECONDS: ${AUZEF_ANALYSIS_TIMEOUT_SECONDS:-2700}
+      AUZEF_ANALYSIS_SOFT_TIMEOUT_SECONDS: ${AUZEF_ANALYSIS_SOFT_TIMEOUT_SECONDS:-2640}
+      # ADR §9: master encryption key yalnızca secret manager/environment'ta
+      # bulunur. Buradaki değer GELİŞTİRME içindir; üretimde MUTLAKA
+      # değiştirilmelidir.
+      AUZEF_BACKEND_MASTER_KEY: ${AUZEF_BACKEND_MASTER_KEY:-}
+      # ADR §9 retention: "rapor varsayılan 24 saat tutulur", "kaçak dosyalar
+      # için azami 24 saat". Kurum politikası onaylanınca burası değişir —
+      # kod değil (ADR §9 değişmez 7).
+      AUZEF_REPORT_RETENTION_HOURS: ${AUZEF_REPORT_RETENTION_HOURS:-24}
+      AUZEF_UPLOAD_RETENTION_HOURS: ${AUZEF_UPLOAD_RETENTION_HOURS:-24}
+      AUZEF_ORPHAN_OBJECT_RETENTION_HOURS: ${AUZEF_ORPHAN_OBJECT_RETENTION_HOURS:-24}
+      AUZEF_RETENTION_SWEEP_INTERVAL_SECONDS: ${AUZEF_RETENTION_SWEEP_INTERVAL_SECONDS:-3600}
+      # Sağlayıcı taban adresi de config (ADR §9 değişmez 7). Varsayılan
+      # gerçek OpenRouter; sahte bir sağlayıcıya yönlendirebilmek, elde
+      # anahtar yokken uçtan uca akışı doğrulamanın tek yolu.
+      AUZEF_OPENROUTER_BASE_URL: ${AUZEF_OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      # ADR §9 değişmez 7: sınırlar environment config'tir, sabit kodlanmaz.
+      # Üretimde frontend ve API aynı origin altında olduğu için bu liste
+      # BOŞALTILIR (`[]`) — reverse proxy işi tam olarak burayı değiştirecek.
+      AUZEF_CORS_ORIGINS: ${AUZEF_CORS_ORIGINS:-["http://localhost:3000"]}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: worker
+    image: auzef-worker:latest
+    container_name: auzef-worker
+    # API ile birebir aynı ortam: worker aynı bucket'ı ve aynı veritabanını
+    # kullanır (ADR §3, tek kod tabanı).
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  beat:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: worker
+    image: auzef-worker:latest
+    container_name: auzef-beat
+    # Aynı worker imajı, farklı komut: zamanlayıcı iş ÇALIŞTIRMAZ, yalnızca
+    # kuyruğa koyar. İşi yapan `worker` servisidir.
+    command: [
+        "celery",
+        "-A",
+        "app.workers.celery_app.celery_app",
+        "beat",
+        "--loglevel=info",
+        # Zamanlayıcı durumu /tmp'de: imaj katmanı salt okunur değil ama
+        # kalıcı da değil, ve süpürme idempotent olduğu için yeniden
+        # başlatmada durumu kaybetmek zararsız.
+        "--schedule=/tmp/celerybeat-schedule",
+      ]
+    # Worker imajının healthcheck'i `celery inspect ping` kullanıyor; beat
+    # o protokole cevap VERMEZ, dolayısıyla devralınan kontrol container'ı
+    # sonsuza kadar "unhealthy" gösterirdi.
+    healthcheck:
+      disable: true
+    environment: *backend-env
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ------------------------------------------------------------- frontend
   web:
     build:
       context: .
       dockerfile: infra/docker/web.Dockerfile
       args:
-        # Backend'in taban adresi istemci paketine build zamanında gömülür,
-        # runtime'da okunmaz. Varsayılan mock backend'i gösterir: bu imaj
-        # bugün gerçek veri değil, çalışan bir demo üretir.
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/mock/v1}
+        # NEXT_PUBLIC_* istemci paketine BUILD ZAMANINDA gömülür, runtime'da
+        # okunmaz. Mock'a dönmek için: /api/mock/v1 verip yeniden build alın.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
+        # next.config.ts'teki rewrite hedefi. rewrites() `next build`
+        # sırasında değerlendirilir; bu arg olmadan hedef "undefined/api/v1"
+        # olarak imaja gömülürdü.
+        API_ORIGIN: ${API_ORIGIN:-http://api:8000}
     container_name: auzef-web
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    depends_on:
+      - api
     restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:

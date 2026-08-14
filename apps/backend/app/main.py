@@ -1,12 +1,15 @@
 """FastAPI uygulama fabrikası ve process giriş noktası."""
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
-from app.core.config import Environment, get_settings
+from app.core.body_limit import BodySizeLimitMiddleware
+from app.core.config import MAX_UPLOAD_BYTES, Environment, get_settings
 from app.core.handlers import register_exception_handlers
 from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.openapi import install_openapi
@@ -21,7 +24,8 @@ def create_app(*, readiness_checks: Sequence[ReadinessCheck] = ()) -> FastAPI:
     expose_docs = settings.environment is not Environment.PRODUCTION
 
     app = FastAPI(
-        title="AUZEF Chat Analiz API",
+        title=settings.app_name,
+        version=settings.contract_version,
         docs_url="/docs" if expose_docs else None,
         redoc_url=None,
         openapi_url="/openapi.json" if expose_docs else None,
@@ -41,23 +45,25 @@ def create_app(*, readiness_checks: Sequence[ReadinessCheck] = ()) -> FastAPI:
                 "X-OpenRouter-Key",
                 TRACE_ID_HEADER,
             ],
-            # Bu olmadan tarayıcı `X-Trace-Id`'yi JS'e HİÇ göstermez: CORS
-            # yalnızca safelist header'ları okunabilir kılar. Frontend
-            # `toApiError()` içinde header'dan okuyor (`ApiError.traceId`) ve
-            # gövde bozukken sunucu logunu bulmanın tek yolu o.
             expose_headers=[TRACE_ID_HEADER],
         )
 
-    # FastAPI son eklenen middleware'i en dışta çalıştırır. Trace context'i
-    # request logu ve exception handler'larından önce hazır olmalıdır.
+    # Starlette son eklenen middleware'i en dışta çalıştırır. Trace context,
+    # request logu ve exception handler'larından önce kurulmalıdır.
     app.add_middleware(
         RequestLoggingMiddleware,
         environment=settings.environment.value,
     )
     app.add_middleware(TraceIdMiddleware)
+    app.add_middleware(BodySizeLimitMiddleware, max_bytes=MAX_UPLOAD_BYTES)
 
     register_exception_handlers(app)
     app.include_router(api_router)
+
+    @app.get("/health", include_in_schema=False)
+    async def compose_health() -> dict[str, str]:
+        return {"status": "ok"}
+
     install_openapi(app)
     return app
 

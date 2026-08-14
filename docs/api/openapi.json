@@ -131,8 +131,7 @@
         "tags": [
           "uploads"
         ],
-        "summary": "Dosya yükle",
-        "description": "Multipart `.xlsx` yükler ve doğrulama/profil job'ını kuyruğa alır. Opsiyonel `Idempotency-Key` header'ı desteklenir.",
+        "summary": "Dosya yükle ve profil işini kuyruğa al",
         "operationId": "create_upload_api_v1_uploads_post",
         "requestBody": {
           "content": {
@@ -438,7 +437,7 @@
         "tags": [
           "uploads"
         ],
-        "summary": "Upload durumu ve profili",
+        "summary": "Yükleme durumu ve hazırsa profil",
         "operationId": "get_upload_api_v1_uploads__upload_id__get",
         "parameters": [
           {
@@ -919,7 +918,7 @@
         "tags": [
           "uploads"
         ],
-        "summary": "Upload'ı iptal et ve temizle",
+        "summary": "Yüklemeyi iptal et ve depolamayı temizle",
         "operationId": "delete_upload_api_v1_uploads__upload_id__delete",
         "parameters": [
           {
@@ -1119,8 +1118,7 @@
         "tags": [
           "models"
         ],
-        "summary": "İzin verilen modeller ve varsayılanlar",
-        "description": "Yalnızca JSON Schema structured output desteği doğrulanmış modeller listelenir. `default_model` ve `default_prompt_version` formun başlangıç değerlerini besler.",
+        "summary": "Structured output desteği doğrulanmış model whitelist'i",
         "operationId": "list_models_api_v1_models_get",
         "responses": {
           "200": {
@@ -1254,8 +1252,7 @@
         "tags": [
           "analyses"
         ],
-        "summary": "Analiz başlat",
-        "description": "Analizi kuyruğa alır. OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır; gövdeye veya sorgu parametresine asla konmaz, loglarda redakte edilir ve PostgreSQL'e yazılmaz.\n\nMaliyet ön tahmini `max_cost_usd` sınırını aşarsa istek burada `COST_LIMIT_EXCEEDED` ile reddedilir; çalışma sırasında aşılırsa aynı kod terminal job hatası olarak döner (ADR-0002 #10).",
+        "summary": "Analizi başlat ve job'ı kuyruğa al",
         "operationId": "create_analysis_api_v1_analyses_post",
         "parameters": [
           {
@@ -1595,8 +1592,7 @@
         "tags": [
           "analyses"
         ],
-        "summary": "Analiz durumu",
-        "description": "Frontend bu ucu 2,5 saniyede bir poll eder ve terminal durumda (`completed`/`failed`/`cancelled`) durur. `progress` düzenli artmayabilir: ilerleme her satırda değil, yalnızca aşama veya anlamlı yüzde değişiminde yazılır.",
+        "summary": "Analiz durumu ve ilerlemesi",
         "operationId": "get_analysis_api_v1_analyses__analysis_id__get",
         "parameters": [
           {
@@ -1846,7 +1842,6 @@
           "analyses"
         ],
         "summary": "Analizi iptal et",
-        "description": "Aktif job → 204 ve durum `cancelled`. Terminal job → 409 `JOB_CONFLICT`. Bilinmeyen id → 404 `JOB_NOT_FOUND` (ADR-0002 #9).",
         "operationId": "cancel_analysis_api_v1_analyses__analysis_id__delete",
         "parameters": [
           {
@@ -2082,8 +2077,7 @@
         "tags": [
           "analyses"
         ],
-        "summary": "Tamamlanmış rapor",
-        "description": "Yalnızca `status` `completed` iken 200 döner. Aksi hâlde 409 `JOB_CONFLICT`.",
+        "summary": "Tamamlanmış analizin raporu",
         "operationId": "get_analysis_result_api_v1_analyses__analysis_id__result_get",
         "parameters": [
           {
@@ -2619,8 +2613,8 @@
         "tags": [
           "analyses"
         ],
-        "summary": "Raporu dışa aktar",
-        "description": "Dosya adı her zaman `analiz-{analysis_id}.{format}` biçimindedir; kullanıcının yüklediği dosya adı kullanılmaz. Böylece `Content-Disposition` tanım gereği ASCII kalır ve RFC 5987 `filename*` gerekmez (ADR-0002 #11).",
+        "summary": "Raporu dosya olarak indir",
+        "description": "ADR §6: `?format=xlsx|json`.\n\nBİLİNMEYEN FORMAT 422 DEĞİL, `json`'dır. Sebep sözleşmede: mock\n`exportFormatSchema.catch(\"json\")` kullanıyor ve FastAPI'nin\n`Literal[...]` doğrulaması buradan `RequestValidationError`'a düşerdi —\no handler yol `/analyses` ile bitmediği için `UPLOAD_INVALID_TYPE`\n(415) üretir ve kullanıcı \"Desteklenmeyen dosya türü\" görürdü. Yüklediği\ndosyayla hiç ilgisi olmayan bir mesaj. Frontend zaten yalnızca iki\ngeçerli değerden birini gönderiyor.",
         "operationId": "export_analysis_api_v1_analyses__analysis_id__export_get",
         "parameters": [
           {
@@ -2639,13 +2633,13 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/ExportFormat",
-              "default": "xlsx"
+              "default": "json"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Rapor dosyası (`Content-Disposition: attachment`).",
             "content": {
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
                 "schema": {
@@ -3141,7 +3135,8 @@
           "schema_version": {
             "type": "string",
             "const": "1.0",
-            "title": "Schema Version"
+            "title": "Schema Version",
+            "default": "1.0"
           },
           "analysis_id": {
             "type": "string",
@@ -3307,7 +3302,10 @@
               "CHUNK_PARTIAL_FAILURE",
               "LOW_CONFIDENCE_THEMES",
               "PII_REDACTION_INCOMPLETE",
-              "COST_LIMIT_APPROACHED"
+              "COST_LIMIT_APPROACHED",
+              "LLM_UNKNOWN_RECORD_ID",
+              "LLM_DUPLICATE_ASSIGNMENT",
+              "LLM_UNASSIGNED_RECORDS"
             ]
           },
           "message": {

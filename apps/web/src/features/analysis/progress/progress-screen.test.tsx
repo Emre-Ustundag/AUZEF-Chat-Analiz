@@ -165,6 +165,31 @@ describe("ProgressScreen — terminal durumlar", () => {
     expect(screen.queryByText(/raw provider payload/)).not.toBeInTheDocument();
   });
 
+  it("maliyet sınırı aşımında ne yapılacağını söyleyen mesajı gösterir", async () => {
+    // Dondurulmuş COST_LIMIT_EXCEEDED kodunun VARLIK SEBEBİ
+    // bu: kullanıcı metni kod başına tutulduğu ve backend'in detail alanı
+    // gösterilmediği için, maliyet aşımı JOB_CONFLICT ile raporlansaydı
+    // kullanıcı "zaten devam eden bir analiz var" görürdü — durumuyla
+    // ilgisi olmayan bir mesaj.
+    getAnalysisJob.mockResolvedValue(
+      job({
+        status: "failed",
+        error: problem({
+          type: "/errors/cost-limit-exceeded",
+          title: "Maliyet sınırı aşıldı",
+          status: 422,
+          code: "COST_LIMIT_EXCEEDED",
+        }),
+      }),
+    );
+    renderScreen();
+
+    expect(await screen.findByText("Analiz tamamlanamadı")).toBeInTheDocument();
+    expect(screen.getByText(/Sınırı yükseltin/)).toBeInTheDocument();
+    // Yeniden denemek ayarlar değişmeden aynı sonucu verir.
+    expect(screen.queryByRole("link", { name: /Tekrar dene/ })).not.toBeInTheDocument();
+  });
+
   it("geçici sağlayıcı hatasında tekrar denemeyi önerir", async () => {
     getAnalysisJob.mockResolvedValue(
       job({

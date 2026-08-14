@@ -3,6 +3,7 @@
 Frontend aynası: `apps/web/src/lib/api/schemas/common.ts`.
 """
 
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Self
 from uuid import UUID
@@ -13,6 +14,13 @@ from pydantic_core import CoreSchema
 
 from app.core.errors import ERROR_STATUS, ErrorCode
 from app.schemas.base import ApiModel
+
+
+def to_iso_z(value: datetime) -> str:
+    """Datetime değerini frontend'in beklediği UTC `Z` biçimine çevirir."""
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 class WarningCode(StrEnum):
@@ -29,6 +37,9 @@ class WarningCode(StrEnum):
     LOW_CONFIDENCE_THEMES = "LOW_CONFIDENCE_THEMES"
     PII_REDACTION_INCOMPLETE = "PII_REDACTION_INCOMPLETE"
     COST_LIMIT_APPROACHED = "COST_LIMIT_APPROACHED"
+    LLM_UNKNOWN_RECORD_ID = "LLM_UNKNOWN_RECORD_ID"
+    LLM_DUPLICATE_ASSIGNMENT = "LLM_DUPLICATE_ASSIGNMENT"
+    LLM_UNASSIGNED_RECORDS = "LLM_UNASSIGNED_RECORDS"
 
 
 class ErrorItem(ApiModel):
@@ -78,6 +89,10 @@ class ProblemDetails(ApiModel):
     def to_wire(self) -> dict[str, Any]:
         """Gerçek HTTP/fixture gövdesi; `retry_after=None` otomatik düşer."""
         return self.model_dump(mode="json")
+
+    def to_payload(self) -> dict[str, Any]:
+        """Eski entegrasyon kodunun adı; tel çıktısı ile birebir aynıdır."""
+        return self.to_wire()
 
     @classmethod
     def __get_pydantic_json_schema__(

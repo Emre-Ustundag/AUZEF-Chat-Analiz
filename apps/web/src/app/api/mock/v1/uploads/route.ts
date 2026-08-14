@@ -3,12 +3,7 @@ import type { NextRequest } from "next/server";
 import { LIMITS } from "@/lib/api/schemas";
 import { uploadFingerprint } from "@/mocks/idempotency";
 import { jsonResponse, problemResponse } from "@/mocks/responses";
-import {
-  createUploadRecord,
-  lookupIdempotency,
-  problem,
-  rememberIdempotency,
-} from "@/mocks/store";
+import { createUploadRecord, lookupIdempotency, problem, rememberIdempotency } from "@/mocks/store";
 import { validateIdempotencyKey } from "@/mocks/validation";
 
 const PUBLIC_PATH = "/api/v1/uploads";
@@ -52,13 +47,9 @@ export async function POST(request: NextRequest) {
 
   if (!(file instanceof File)) {
     return problemResponse(
-      problem(
-        "REQUEST_VALIDATION",
-        422,
-        "Dosya bulunamadı",
-        "İstek gövdesinde 'file' alanı yok.",
-        { errors: [{ field: "file", message: "file alanı zorunludur." }] },
-      ),
+      problem("REQUEST_VALIDATION", 422, "Dosya bulunamadı", "İstek gövdesinde 'file' alanı yok.", {
+        errors: [{ field: "file", message: "file alanı zorunludur." }],
+      }),
     );
   }
 

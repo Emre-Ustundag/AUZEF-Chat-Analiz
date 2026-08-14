@@ -94,3 +94,6 @@ pnpm-debug.log*
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+
+# uv
+.uv-cache/
