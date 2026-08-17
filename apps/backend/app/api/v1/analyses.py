@@ -43,7 +43,7 @@ from app.api.v1.responses import (
     ANALYSIS_READ,
     ANALYSIS_RESULT,
 )
-from app.core.config import MAX_ROWS, Settings, get_settings
+from app.core.config import Settings, get_settings
 from app.core.db import get_session
 from app.core.errors import ApiError
 from app.core.logging import get_logger
@@ -173,8 +173,17 @@ async def create_analysis(
         # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
         # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
         # ayrıca denetler; bu ilk kapı kullanıcıya anında geri bildirim verir.
+        #
+        # KIRPMA YOK: burada eskiden `min(column.non_empty_count, MAX_ROWS)`
+        # yazıyordu, yani 100.000 satırın üstündeki her dosya SANKİ 100.000
+        # satırmış gibi fiyatlanıyordu. Analiz hiçbir zaman kırpmadığı için
+        # (bkz. `schemas/report.py` değişmezi) bu kapı büyük dosyalarda
+        # sistematik olarak DÜŞÜK tahmin veriyordu — üstelik tahmin zaten
+        # ayrı bir sebepten düşük (`pipeline/cost.py`
+        # `OUTPUT_TOKENS_PER_RECORD`, ölçülen sapma 5x). İki hata üst üste
+        # binince tavan kapısı büyük dosyalarda pratikte hiç kapanmıyordu.
         estimated_cost_usd = estimate_profile_cost(
-            min(column.non_empty_count, MAX_ROWS),
+            column.non_empty_count,
             column.avg_length,
             body.model,
         )
