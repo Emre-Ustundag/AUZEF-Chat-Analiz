@@ -1,6 +1,7 @@
 """Ayar kaynakları, ortam ayrımı ve fail-fast doğrulama."""
 
 import base64
+import os
 from pathlib import Path
 
 import pytest
@@ -153,3 +154,21 @@ def test_production_accepts_valid_master_key() -> None:
 
 def test_log_level_is_case_insensitive() -> None:
     assert Settings(_env_file=None, log_level="warning").log_level == "WARNING"
+
+
+def test_tests_are_isolated_from_the_developer_env_file() -> None:
+    """`.env` testlere SIZMAMALI — regresyon.
+
+    `core/config.py` repo kökündeki `.env`'i çalışma dizininden bağımsız
+    okuyor. Bu geliştirici kolaylığı doğru, ama testlere sızdığında
+    `test_master_key_degisirse_cozulemez` sessizce etkisizleşiyordu: `.env`
+    içindeki `AUZEF_BACKEND_MASTER_KEY` iki Settings örneğine de aynı anahtarı
+    türettiriyor ve "master key değişirse çözülemez" iddiası çözebiliyordu.
+
+    CI'da `.env` bulunmadığı için orası yeşil kalıyor; kusur yalnızca
+    `docker compose` çalıştıran geliştiricinin makinesinde görünüyordu. Bu
+    test yalıtımın kendisini bekçiler (`tests/conftest.py`).
+    """
+    assert Settings.model_config.get("env_file") is None
+    assert not [key for key in os.environ if key.startswith("AUZEF_BACKEND_MASTER_KEY")]
+    assert Settings().backend_master_key is None

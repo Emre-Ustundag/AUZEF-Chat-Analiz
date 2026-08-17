@@ -16,6 +16,36 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+# ---------------------------------------------------------------- izolasyon
+#
+# TESTLER GELİŞTİRİCİNİN ORTAMINDAN TAMAMEN YALITILIR.
+#
+# `core/config.py` repo kökündeki `.env`'i ÇALIŞMA DİZİNİNDEN BAĞIMSIZ olarak
+# okuyor (`_repo_env_file()`, modül yolundan türetiliyor). Bu geliştirici
+# kolaylığı olarak doğru ama testlere sızıyordu ve bir GÜVENLİK testini
+# sessizce etkisizleştiriyordu:
+#
+#   `test_master_key_degisirse_cozulemez` iki farklı master key ile aynı
+#   kaydın çözülemediğini iddia ediyor. Ama ikinci Settings'i
+#   `secret_encryption_key=...` ile kuruyor ve `config.py` `backend_master_key`
+#   alanına ÖNCELİK veriyor. `.env` içinde `AUZEF_BACKEND_MASTER_KEY` varsa
+#   (yani `docker compose` çalıştıran her geliştiricide) iki taraf da aynı
+#   anahtarı türetiyor, kayıt çözülüyor ve test düşüyordu.
+#
+# CI'da `.env` olmadığı için orası yeşil kalıyordu; kırmızı olan yalnızca
+# yerel makineydi. İki yönlü temizlik yapılıyor:
+#
+#   1. Kabuktan gelen `AUZEF_*` değişkenleri silinir (aşağıdaki
+#      `setdefault` çağrıları ancak böyle GERÇEKTEN varsayılan olur).
+#   2. `.env` dosyası devre dışı bırakılır.
+for _leaked in [key for key in os.environ if key.startswith("AUZEF_")]:
+    del os.environ[_leaked]
+
+from app.core.config import Settings, get_settings  # noqa: E402
+
+Settings.model_config["env_file"] = None
+get_settings.cache_clear()
+
 # Settings AUZEF_ önekini kullanır; uygulama modülleri import edilmeden önce
 # host makineden erişilebilen test adreslerini kur.
 os.environ.setdefault("AUZEF_DATABASE_URL", "postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef")
@@ -27,7 +57,7 @@ os.environ.setdefault("AUZEF_S3_BUCKET", "auzef-test")
 # Hiçbir test yanlışlıkla gerçek OpenRouter'a bağlanmasın.
 os.environ.setdefault("AUZEF_OPENROUTER_BASE_URL", "http://127.0.0.1:9/api/v1")
 
-from app.main import create_app
+from app.main import create_app  # noqa: E402
 
 
 def repo_root() -> Path:
