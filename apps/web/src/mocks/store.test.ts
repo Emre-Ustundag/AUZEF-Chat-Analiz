@@ -352,19 +352,16 @@ describe("satır sınırı senaryosu", () => {
     expect(upload.profile?.total_row_count).toBeGreaterThan(100_000);
   });
 
-  it("rapor kırpılmış kayıt sayısıyla ROW_LIMIT_TRUNCATED uyarısı taşır", () => {
+  it("rapor TÜM satırları sayar ve kırpma uyarısı taşımaz", () => {
     const { report } = rowLimitedReport();
 
     expect(analysisReportSchema.safeParse(report).success).toBe(true);
+    expect(report.source_summary.total_rows).toBeGreaterThan(100_000);
+    // Kesme yok: toplam 100.000'e DEĞİL, dosyanın kendi satır sayısına eşit.
     expect(
       report.preprocessing_summary.analyzed_count + report.preprocessing_summary.discarded_count,
-    ).toBe(100_000);
-    expect(report.source_summary.total_rows).toBeGreaterThan(100_000);
-
-    const warning = report.warnings.find((w) => w.code === "ROW_LIMIT_TRUNCATED");
-    expect(warning).toBeDefined();
-    // Uyarı mesajı kullanıcıya hazır Türkçe olmalı (ADR-0002 #2).
-    expect(warning!.message).toMatch(/satır/);
+    ).toBe(report.source_summary.total_rows);
+    expect(report.warnings.some((w) => w.code === "ROW_LIMIT_TRUNCATED")).toBe(false);
   });
 
   it("normal dosyada uyarı üretilmez", () => {

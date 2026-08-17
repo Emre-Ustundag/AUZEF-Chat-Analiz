@@ -29,7 +29,7 @@ from pydantic import ValidationError
 from sqlalchemy import CursorResult, Executable, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import MAX_ROWS, Settings, get_settings
+from app.core.config import Settings, get_settings
 from app.core.db import session_scope
 from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
@@ -636,17 +636,11 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         selected = next((s for s in profile.sheets if s.name == sheet_name), None)
         if selected is not None:
             expected_rows = selected.row_count
-        if profile.exceeds_row_limit:
-            # Plan §3.2 (g): satır sınırı aşımı işi DURDURMAZ, uyarı olur.
-            warnings.append(
-                AnalysisWarning(
-                    code="ROW_LIMIT_TRUNCATED",
-                    message=(
-                        f"Dosya {MAX_ROWS} satır sınırının üstünde; "
-                        "analiz tüm satırlar üzerinde çalıştı."
-                    ),
-                )
-            )
+        # `exceeds_row_limit` burada UYARIYA DÖNÜŞMÜYOR. Eskiden
+        # `ROW_LIMIT_TRUNCATED` üretiliyordu ama mesajı bile "analiz tüm
+        # satırlar üzerinde çalıştı" diyordu: kod adı ile içeriği çelişiyordu
+        # ve raporda kesme olduğunu ima ediyordu. Kesme yok; bayrak artık
+        # yalnızca yükleme ekranında "bu dosya büyük" bilgisi.
 
     # Geçici dizin `with` ile yönetiliyor: hata yolunda da kaynak dosya
     # diskte kalmasın (ADR §9 retention).

@@ -17,7 +17,7 @@ SAYISAL INVARIANT'LAR (ADR-0002 §3 #2/#5, `test_fixture_invariants.py`):
   * `exceeds_row_limit` == en az bir sheet MAX_ROWS'u aşıyor
   * her kolonda `non_empty_count + empty_count == sheet.row_count`
   * `source_summary.total_rows` == analiz edilen sheet'in satır sayısı
-  * `analyzed_count + discarded_count` == min(total_rows, MAX_ROWS)
+  * `analyzed_count + discarded_count` == total_rows (analiz KIRPMAZ)
   * `unique_count + duplicate_count == analyzed_count`
   * `total_tokens == prompt_tokens + completion_tokens`
   * `estimated_cost_usd` katalogdan hesaplanır
@@ -40,7 +40,7 @@ from app.schemas.analysis import (
     AnalysisRequest,
     AnalysisStatus,
 )
-from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
+from app.schemas.common import ErrorItem, ProblemDetails
 from app.schemas.health import LivenessResponse, ReadinessCheckResponse, ReadinessResponse
 from app.schemas.report import (
     AnalysisReport,
@@ -300,8 +300,11 @@ def build_report(
     Tema `count`/`percentage` TÜM mesajları yansıtır; yalnızca
     `related_question_ids` raporda gerçekten yer alan sorulara filtrelenir.
     """
-    # ADR-0002 #2: sınır aşılırsa iş reddedilmez, ilk MAX_ROWS satır işlenir.
-    considered = min(sheet_rows, MAX_ROWS)
+    # ADR-0002 #2: sınır aşılırsa iş reddedilmez. KIRPMA DA YOKTUR — analiz
+    # her zaman tüm satırları işler, dolayısıyla `considered` sheet'in kendi
+    # satır sayısıdır. Burada eskiden `min(sheet_rows, MAX_ROWS)` yazıyordu ve
+    # fixture'ı worker'ın hiç uygulamadığı bir semantiğe göre üretiyordu.
+    considered = sheet_rows
     discarded = EMPTY_MESSAGE_ROWS
     analyzed = considered - discarded
     # Normal fixture'daki 31.540 / 47.106 oranı büyük korpusta korunur.
@@ -373,18 +376,6 @@ def build_report(
         ),
         # Sabit yazılmaz: katalog fiyatı değişince sessizce yanlış olurdu.
         estimated_cost_usd=estimate_cost_usd(DEFAULT_MODEL, PROMPT_TOKENS, COMPLETION_TOKENS),
-    )
-
-
-def row_limit_warning(sheet_rows: int) -> AnalysisWarning:
-    return AnalysisWarning(
-        code=WarningCode.ROW_LIMIT_TRUNCATED,
-        # ADR-0002 #2: mesaj kullanıcıya hazır Türkçedir.
-        message=(
-            f"Sayfada {sheet_rows:,} satır bulundu; analiz ilk "
-            f"{MAX_ROWS:,} satırla sınırlandırıldı. Sonuçlar bu alt "
-            "küme üzerinden hesaplandı."
-        ).replace(",", "."),
     )
 
 
@@ -581,18 +572,21 @@ def build_cases() -> list[Case]:
             "AnalysisReport",
             build_report(top_n=8),
         ),
-        # Tek başına ADR-0002 #2 ve #5'in çalıştırılabilir spesifikasyonu.
+        # `MAX_ROWS` ÜSTÜ DOSYA — bizi kıran senaryoyu sözleşmeye kilitler.
+        #
+        # Eskiden "truncated" adıyla ve `ROW_LIMIT_TRUNCATED` uyarısıyla
+        # üretiliyordu; kesme hiçbir zaman uygulanmadığı için fixture gerçeği
+        # değil, varsayımı sabitliyordu. Şimdi 250.000 satırlık bir dosyada
+        # `analyzed + discarded == total_rows` olduğunu ve uyarı ÜRETİLMEDİĞİNİ
+        # doğruluyor. Bu case silinseydi, sınır üstü yol sözleşmede hiç
+        # temsil edilmez ve çelişki sessizce geri gelebilirdi.
         Case(
-            "analyses.result.200.truncated",
+            "analyses.result.200.over-row-limit",
             "GET",
             "/api/v1/analyses/{analysis_id}/result",
             200,
             "AnalysisReport",
-            build_report(
-                top_n=5,
-                sheet_rows=SHEET_ROWS_OVER_LIMIT,
-                warnings=[row_limit_warning(SHEET_ROWS_OVER_LIMIT)],
-            ),
+            build_report(top_n=5, sheet_rows=SHEET_ROWS_OVER_LIMIT),
         ),
     ]
 

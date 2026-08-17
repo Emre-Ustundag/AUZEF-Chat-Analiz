@@ -1,7 +1,6 @@
 import * as z from "zod";
 
 import { promptVersionSchema } from "./analysis";
-import { LIMITS } from "./common";
 
 /** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
 export function percentageHalfUp(count: number, total: number): number {
@@ -158,8 +157,13 @@ export const analysisReportSchema = z
   })
   .superRefine((report, ctx) => {
     const prep = report.preprocessing_summary;
-    const considered = Math.min(report.source_summary.total_rows, LIMITS.MAX_ROWS);
-    if (prep.analyzed_count + prep.discarded_count !== considered) {
+    // ANALİZ KIRPMAZ — backend aynası `schemas/report.py`.
+    //
+    // Burada eskiden `Math.min(total_rows, LIMITS.MAX_ROWS)` yazıyordu ve
+    // backend'deki aynı varsayımla birlikte 100.000 satırı aşan her raporu
+    // reddediyordu. Backend tek başına düzeltilseydi arayüz raporu yine
+    // reddederdi; iki tarafın birlikte değişmesi gerekiyordu.
+    if (prep.analyzed_count + prep.discarded_count !== report.source_summary.total_rows) {
       ctx.addIssue({
         code: "custom",
         path: ["preprocessing_summary"],
@@ -247,15 +251,10 @@ export const analysisReportSchema = z
       });
     });
 
-    const truncated = report.source_summary.total_rows > LIMITS.MAX_ROWS;
-    const hasWarning = report.warnings.some((warning) => warning.code === "ROW_LIMIT_TRUNCATED");
-    if (truncated !== hasWarning) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["warnings"],
-        message: "ROW_LIMIT_TRUNCATED uyarısı satır sınırıyla uyumlu olmalı.",
-      });
-    }
+    // `ROW_LIMIT_TRUNCATED` ↔ satır sınırı kontrolü KALDIRILDI: kesme
+    // olmadığı için backend uyarıyı üretmiyor. Kod `KNOWN_WARNING_CODES`
+    // içinde kalıyor — tüketici-açık taraf, eski raporlarda hâlâ bu kodu
+    // görebilir ve onları reddetmemeli.
   });
 
 export type AnalysisReport = z.infer<typeof analysisReportSchema>;

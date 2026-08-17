@@ -75,9 +75,10 @@ describe("UploadScreen", () => {
   it("sınırları kullanıcıya yükleme öncesi gösterir", () => {
     renderScreen();
 
-    // 150 MB ve 100.000 satır Türkçe biçimde görünmeli.
+    // 150 MB Türkçe biçimde görünmeli. Satır sınırı ARTIK GÖSTERİLMİYOR:
+    // analiz kırpmadığı için kullanıcıya bir satır tavanı vaat etmek yanlıştı.
     expect(screen.getByText(/150,0 MB/)).toBeInTheDocument();
-    expect(screen.getByText(/100\.000 satır/)).toBeInTheDocument();
+    expect(screen.queryByText(/100\.000 satır/)).not.toBeInTheDocument();
   });
 
   it("seçilen geçerli dosyanın adını ve boyutunu gösterir", async () => {

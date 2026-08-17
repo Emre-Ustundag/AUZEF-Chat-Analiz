@@ -12,7 +12,6 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from app.core.config import MAX_ROWS
 from app.schemas.analysis import PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
@@ -162,8 +161,16 @@ class AnalysisReport(ApiModel):
     @model_validator(mode="after")
     def _report_invariants(self) -> Self:
         prep = self.preprocessing_summary
-        considered = min(self.source_summary.total_rows, MAX_ROWS)
-        if prep.analyzed_count + prep.discarded_count != considered:
+        # ANALİZ KIRPMAZ. Bu satır daha önce `min(total_rows, MAX_ROWS)`
+        # diyordu ve `workers/tasks.py` ile çelişiyordu: worker her zaman TÜM
+        # satırları işliyor. Sonuç, 100.000 satırı aşan HER dosyada
+        # sınıflandırma bittikten (yani LLM parası harcandıktan) sonra
+        # doğrulama hatasıydı; kullanıcı yalnızca `INTERNAL_ERROR` görüyordu.
+        # 505.442 satırlık gerçek veriyle ölçüldü.
+        #
+        # `MAX_ROWS` artık kesme eşiği değil, `UploadProfile.exceeds_row_limit`
+        # üzerinden "bu dosya büyük, uzun sürer ve pahalıdır" uyarısının eşiği.
+        if prep.analyzed_count + prep.discarded_count != self.source_summary.total_rows:
             raise ValueError(
                 "analyzed_count + discarded_count, işlenen satır sayısına eşit olmalı."
             )
@@ -204,10 +211,9 @@ class AnalysisReport(ApiModel):
         ):
             raise ValueError("related_question_ids aynı soru id'sini tekrarlayamaz.")
 
-        truncated = self.source_summary.total_rows > MAX_ROWS
-        has_warning = any(
-            warning.code == WarningCode.ROW_LIMIT_TRUNCATED for warning in self.warnings
-        )
-        if truncated is not has_warning:
-            raise ValueError("ROW_LIMIT_TRUNCATED uyarısı satır sınırıyla uyumlu olmalı.")
+        # `ROW_LIMIT_TRUNCATED` ↔ satır sınırı değişmezi KALDIRILDI: kesme
+        # diye bir şey olmadığı için uyarı da üretilmiyor. Kod
+        # `WarningCode`'da bırakıldı — üretici-kapalı/tüketici-açık sözleşme
+        # (ADR-0002 #2) gereği bir kodu ÜRETMEYİ bırakmak kırıcı değil, ve
+        # eski raporlar hâlâ o kodu taşıyor olabilir.
         return self

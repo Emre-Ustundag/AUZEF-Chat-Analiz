@@ -137,7 +137,7 @@ describe("ADR-0002 #6 — retry_after yalnızca 429'da", () => {
 
 describe("ADR-0002 #5 — top_n kırpması ve related_question_ids", () => {
   const full = readFixture<Record<string, never>>("analyses.result.200.json");
-  const truncated = readFixture<Record<string, never>>("analyses.result.200.truncated.json");
+  const truncated = readFixture<Record<string, never>>("analyses.result.200.over-row-limit.json");
 
   // `parse` describe gövdesinde DEĞİL burada: modül seviyesinde çağrılırsa
   // bir sözleşme ayrışması suite'i yüklenirken çökertir ve vitest o dosyadaki
@@ -173,10 +173,15 @@ describe("ADR-0002 #5 — top_n kırpması ve related_question_ids", () => {
     }
   });
 
-  it("kırpılmış rapor ROW_LIMIT_TRUNCATED uyarısı taşır ve mesajı Türkçedir", () => {
-    const warning = parsedTruncated.warnings.find((w) => w.code === "ROW_LIMIT_TRUNCATED");
-    expect(warning).toBeDefined();
-    expect(warning!.message.length).toBeGreaterThan(20);
+  it("satır sınırı üstündeki rapor kırpılmaz ve uyarı taşımaz", () => {
+    // Kesme yok: tüm satırlar sayılır, dolayısıyla ROW_LIMIT_TRUNCATED de
+    // üretilmez. Bu iddia bizi kıran senaryoyu sözleşmede kilitliyor.
+    const prep = parsedTruncated.preprocessing_summary;
+    expect(parsedTruncated.source_summary.total_rows).toBeGreaterThan(LIMITS.MAX_ROWS);
+    expect(prep.analyzed_count + prep.discarded_count).toBe(
+      parsedTruncated.source_summary.total_rows,
+    );
+    expect(parsedTruncated.warnings.some((w) => w.code === "ROW_LIMIT_TRUNCATED")).toBe(false);
   });
 });
 

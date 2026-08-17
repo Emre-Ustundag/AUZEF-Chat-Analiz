@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
+from app.core.config import MAX_ROWS
 from app.schemas.analysis import AnalysisCreated, AnalysisJob, ModelList
 from app.schemas.report import AnalysisReport, AnalysisWarning, percentage_half_up
 from app.schemas.upload import Upload, UploadCreated
@@ -62,7 +63,7 @@ def test_model_list_defaults_are_consistent() -> None:
 
 
 def test_report_numeric_invariants() -> None:
-    report = read_fixture("analyses.result.200.truncated.json")
+    report = read_fixture("analyses.result.200.over-row-limit.json")
     prep = report["preprocessing_summary"]
 
     _invalid(
@@ -128,3 +129,56 @@ def test_percentage_rounding_is_exact_half_up() -> None:
 def test_warning_codes_are_producer_closed() -> None:
     with pytest.raises(ValidationError):
         AnalysisWarning(code="ROW_LMIT_TRUNCATED", message="Yazım hatalı kod")
+
+
+def test_report_accepts_files_over_the_row_limit() -> None:
+    """`MAX_ROWS` üstü dosyalar rapor üretebilmeli — REGRESYON.
+
+    Değişmez eskiden `analyzed + discarded == min(total_rows, MAX_ROWS)`
+    diyordu; `workers/tasks.py` ise TÜM satırları işliyordu. 100.000 satırı
+    aşan her dosyada sınıflandırma bittikten SONRA — yani kullanıcının LLM
+    parası harcandıktan sonra — bu doğrulama düşüyordu ve kullanıcı yalnızca
+    `INTERNAL_ERROR` görüyordu. 505.442 satırlık gerçek veriyle ölçüldü.
+
+    Testin 100 binlik bir xlsx üretmesine gerek yok: çelişki tamamen şema
+    seviyesindeydi, dolayısıyla raporu doğrudan kurmak yeterli. Bu ucuzluk
+    boşluğun neden yıllarca fark edilmediğini de açıklıyor — eşiği aşan tek
+    bir fixture yoktu.
+    """
+    report = read_fixture("analyses.result.200.over-row-limit.json")
+    prep = report["preprocessing_summary"]
+    total_rows = report["source_summary"]["total_rows"]
+
+    assert total_rows > MAX_ROWS, "fixture sınırın üstünde olmalı, yoksa test bir şey kanıtlamaz"
+    assert prep["analyzed_count"] + prep["discarded_count"] == total_rows
+
+    # Kesme YOK: rapor olduğu gibi geçerli olmalı.
+    parsed = AnalysisReport.model_validate(report)
+    assert parsed.source_summary.total_rows == total_rows
+
+    # Ve eski semantik artık REDDEDİLMELİ: `min(total, MAX_ROWS)` kadar satır
+    # sayan bir gövde, satırların geri kalanını sessizce kaybetmiş demektir.
+    truncated_prep = prep | {"analyzed_count": MAX_ROWS - prep["discarded_count"]}
+    _invalid(AnalysisReport, report | {"preprocessing_summary": truncated_prep})
+
+
+def test_row_limit_truncated_warning_is_no_longer_produced() -> None:
+    """Kesme olmadığı için uyarı da üretilmiyor.
+
+    Kod `WarningCode`'da BIRAKILDI: üretici-kapalı/tüketici-açık sözleşme
+    (ADR-0002 #2) bir kodu üretmeyi bırakmayı kırıcı saymaz ve eski raporlar
+    hâlâ onu taşıyor olabilir — okunabilir kalmalılar.
+    """
+    over_limit = read_fixture("analyses.result.200.over-row-limit.json")
+    assert not any(w["code"] == "ROW_LIMIT_TRUNCATED" for w in over_limit["warnings"])
+
+    # Tüketici tarafı: eski bir rapor hâlâ doğrulanabilmeli.
+    historical = AnalysisReport.model_validate(
+        over_limit
+        | {
+            "warnings": [
+                {"code": "ROW_LIMIT_TRUNCATED", "message": "Eski raporlardan gelen uyarı."}
+            ]
+        }
+    )
+    assert historical.warnings[0].code == "ROW_LIMIT_TRUNCATED"

@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
+from app.core.config import MAX_ROWS
 from app.schemas.analysis import AnalysisCreated, AnalysisJob, AnalysisRequest, ModelList
 from app.schemas.common import ProblemDetails
 from app.schemas.health import LivenessResponse, ReadinessResponse
@@ -89,22 +90,36 @@ def test_problem_fixtures_respect_retry_after_rule(
         assert "retry_after" not in raw, case_id
 
 
-def test_truncated_report_encodes_adr_0002_rules() -> None:
-    """ADR-0002 #2 ve #5'in tek dosyalık spesifikasyonu."""
+def test_over_row_limit_report_encodes_adr_0002_rules() -> None:
+    """ADR-0002 #2 ve #5'in tek dosyalık spesifikasyonu.
+
+    İki ayrı kırpma karıştırılmamalı:
+
+    * `top_n` kırpması GERÇEKTİR ve bu fixture'da var (#5) — `top_questions`
+      kısalır, tema `count`'ları kısalmaz.
+    * SATIR kırpması diye bir şey YOKTUR (#2). Fixture 250.000 satırlık bir
+      dosyayı temsil eder ve `analyzed + discarded == total_rows` olur.
+    """
     full = AnalysisReport.model_validate(read_fixture("analyses.result.200.json"))
-    truncated = AnalysisReport.model_validate(read_fixture("analyses.result.200.truncated.json"))
+    over_limit = AnalysisReport.model_validate(
+        read_fixture("analyses.result.200.over-row-limit.json")
+    )
 
-    assert len(truncated.top_questions) < len(full.top_questions)
+    assert len(over_limit.top_questions) < len(full.top_questions)
 
-    present = {q.id for q in truncated.top_questions}
-    for theme in truncated.themes:
+    present = {q.id for q in over_limit.top_questions}
+    for theme in over_limit.themes:
         assert set(theme.related_question_ids) <= present
 
-    # Tema büyüklüğü kırpmadan etkilenmez.
+    # Tema büyüklüğü `top_n` kırpmasından etkilenmez.
     full_counts = {t.id: t.count for t in full.themes}
-    assert {t.id: t.count for t in truncated.themes} == full_counts
+    assert {t.id: t.count for t in over_limit.themes} == full_counts
 
-    assert any(w.code == "ROW_LIMIT_TRUNCATED" for w in truncated.warnings)
+    # Satır sınırının üstünde ama kesme yok: uyarı da yok.
+    prep = over_limit.preprocessing_summary
+    assert over_limit.source_summary.total_rows > MAX_ROWS
+    assert prep.analyzed_count + prep.discarded_count == over_limit.source_summary.total_rows
+    assert not any(w.code == "ROW_LIMIT_TRUNCATED" for w in over_limit.warnings)
 
 
 def test_row_limit_upload_is_ready_not_rejected() -> None:

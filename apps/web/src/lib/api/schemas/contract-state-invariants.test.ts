@@ -76,7 +76,7 @@ describe("diğer çapraz alan kuralları", () => {
   });
 
   it("rapor sayısal invariant'larını zorlar", () => {
-    const report = readFixture<Record<string, unknown>>("analyses.result.200.truncated.json");
+    const report = readFixture<Record<string, unknown>>("analyses.result.200.over-row-limit.json");
     const prep = report.preprocessing_summary as Record<string, number>;
     const usage = report.token_usage as Record<string, number>;
     expect(

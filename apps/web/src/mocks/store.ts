@@ -9,7 +9,7 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
-import { ERROR_STATUS_BY_CODE, LIMITS, percentageHalfUp } from "@/lib/api/schemas";
+import { ERROR_STATUS_BY_CODE, percentageHalfUp } from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -49,7 +49,6 @@ export function scenarioFromFilename(filename: string): Scenario {
  * Sözleşmedeki tek kaynaktan geliyor — kendi kopyasını tutsaydı, mock'un
  * ürettiği gövdeler Zod invariant'larından sessizce ayrışabilirdi.
  */
-const MAX_ROWS = LIMITS.MAX_ROWS;
 const ROW_LIMIT_TOTAL_ROWS = 250_000;
 
 interface UploadRecord {
@@ -449,11 +448,12 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
   if (!record) return null;
   if (stageOf(record).status !== "completed") return null;
 
-  // ADR-0002 #2: satır sınırı aşılırsa iş reddedilmez; ilk MAX_ROWS satır
-  // işlenir ve rapora ROW_LIMIT_TRUNCATED uyarısı eklenir.
-  const truncated = record.scenario === "row-limit";
-  const totalRows = truncated ? ROW_LIMIT_TOTAL_ROWS : 48_213;
-  const considered = Math.min(totalRows, MAX_ROWS);
+  // ADR-0002 #2: satır sınırı aşılırsa iş reddedilmez. KIRPMA DA YOK —
+  // analiz her zaman tüm satırları işler, dolayısıyla `considered` dosyanın
+  // kendi satır sayısıdır ve uyarı üretilmez.
+  const overRowLimit = record.scenario === "row-limit";
+  const totalRows = overRowLimit ? ROW_LIMIT_TOTAL_ROWS : 48_213;
+  const considered = totalRows;
   const discarded = 1_107;
   const analyzed = considered - discarded;
   const unique = Math.round(analyzed * (31_540 / 47_106));
@@ -579,16 +579,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     }),
     executive_summary:
       "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
-    warnings: truncated
-      ? [
-          {
-            code: "ROW_LIMIT_TRUNCATED",
-            // ADR-0002 #2: uyarı mesajı KULLANICIYA HAZIR Türkçedir; kod
-            // serbest string olduğu için arayüz mesaj uyduramaz.
-            message: `Dosyada ${ROW_LIMIT_TOTAL_ROWS.toLocaleString("tr")} satır bulundu; analiz ilk ${MAX_ROWS.toLocaleString("tr")} satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı.`,
-          },
-        ]
-      : [],
+    warnings: [],
     model: record.request.model,
     prompt_version: record.request.prompt_version,
     prompt_hash: "sha256:2f8a1c9e4b7d",
