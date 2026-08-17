@@ -688,9 +688,12 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             # veriyor (gerekçe orada). Geniş handler'dan önce gelmek ZORUNDA:
             # `Exception` alt sınıfı olduğu için aksi hâlde yutulur.
             raise
-        except Exception:
+        except Exception as exc:
             # ADR §9: hata cevabına dosya içeriği veya iz sızmaz.
-            logger.exception("analysis_download_failed", extra={"analysis_id": str(analysis_id)})
+            logger.exception(
+                "analysis_download_failed",
+                extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
+            )
             return await _fail(analysis_id, "INTERNAL_ERROR", "Kaynak dosya alınamadı.")
 
         # --------------------------------------------------- preprocessing
@@ -725,8 +728,15 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             )
         except SoftTimeLimitExceeded:
             raise  # bkz. `run_analysis`
-        except Exception:
-            logger.exception("analysis_preprocess_failed", extra={"analysis_id": str(analysis_id)})
+        except Exception as exc:
+            logger.exception(
+                "analysis_preprocess_failed",
+                extra={
+                    "analysis_id": str(analysis_id),
+                    "exception_type": type(exc).__name__,
+                    "validation_locations": _validation_locations(exc),
+                },
+            )
             return await _fail(analysis_id, "INTERNAL_ERROR", "Veri hazırlanırken hata oluştu.")
 
     # Log satırında MESAJ İÇERİĞİ YOK; yalnızca sayaçlar (ADR §9).
@@ -870,7 +880,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen prompt sürümü tanımlı değil.",
         )
-    except Exception:
+    except Exception as exc:
         # Sınıflandırıcı KURULAMADI. Buradan bir istisnanın kaçmasına izin
         # verilemez: `run_analysis`'te yalnızca `finally` var, dolayısıyla
         # istisna Celery'ye kadar gider ve DB satırı sonsuza kadar
@@ -879,7 +889,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         # FIRLATMAZ".
         logger.exception(
             "analysis_classifier_build_failed",
-            extra={"analysis_id": str(analysis_id)},
+            extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
         )
         return await _fail(analysis_id, "INTERNAL_ERROR", "Analiz başlatılamadı.")
     finally:
@@ -922,8 +932,15 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         return await _fail(analysis_id, exc.code, exc.detail, retry_after=exc.retry_after)
     except SoftTimeLimitExceeded:
         raise  # bkz. `run_analysis`
-    except Exception:
-        logger.exception("analysis_classify_failed", extra={"analysis_id": str(analysis_id)})
+    except Exception as exc:
+        logger.exception(
+            "analysis_classify_failed",
+            extra={
+                "analysis_id": str(analysis_id),
+                "exception_type": type(exc).__name__,
+                "validation_locations": _validation_locations(exc),
+            },
+        )
         return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sınıflandırma tamamlanamadı.")
     finally:
         await asyncio.to_thread(_close_classifier, classifier)
@@ -964,15 +981,31 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             token_usage=token_usage,
             estimated_cost_usd=spent_usd,
         )
-    except AggregationError:
+    except AggregationError as exc:
         # Değişmez ihlali: sınıflandırıcı aynı kaydı iki kez eşlemiş olabilir.
         # Yanlış sayı göstermektense işi başarısız saymak doğrudur (ADR §4).
-        logger.exception("analysis_aggregation_invalid", extra={"analysis_id": str(analysis_id)})
+        logger.exception(
+            "analysis_aggregation_invalid",
+            extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
+        )
         return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sonuç doğrulanamadı.")
     except SoftTimeLimitExceeded:
         raise  # bkz. `run_analysis`
-    except Exception:
-        logger.exception("analysis_aggregate_failed", extra={"analysis_id": str(analysis_id)})
+    except Exception as exc:
+        # `run_upload_profiling` ile AYNI gerekçe: traceback loglanamıyor
+        # (`core/logging.py`), o yüzden tip ve şema konumları ayrı alanlara
+        # yazılır. Burada eksikti ve bedeli ölçüldü: rapor değişmezini ihlal
+        # eden bir `ValidationError` çıktıya yalnızca `"exc_info": true`
+        # olarak düştü, kök nedeni bulmak için boru hattını worker dışında
+        # yeniden koşturmak gerekti.
+        logger.exception(
+            "analysis_aggregate_failed",
+            extra={
+                "analysis_id": str(analysis_id),
+                "exception_type": type(exc).__name__,
+                "validation_locations": _validation_locations(exc),
+            },
+        )
         return await _fail(analysis_id, "INTERNAL_ERROR", "Sonuç üretilirken hata oluştu.")
 
     # --------------------------------------------------------- completed
