@@ -12,6 +12,7 @@ Boyut savunması İKİ katmanlıdır ve bu bilinçlidir:
 
 from __future__ import annotations
 
+import hashlib
 import tempfile
 import uuid
 from typing import Annotated
@@ -21,6 +22,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
+from app.api.v1.deps import (
+    IdempotencyKey,
+    claim_idempotency,
+    release_idempotency,
+    remember_idempotency,
+    replayed_response,
+)
 from app.api.v1.responses import UPLOAD_CREATE, UPLOAD_DELETE, UPLOAD_READ
 from app.core.body_limit import MULTIPART_ENVELOPE_ALLOWANCE
 from app.core.config import MAX_UPLOAD_BYTES, Settings, get_settings
@@ -30,7 +38,7 @@ from app.core.logging import get_logger
 from app.models.upload import Upload
 from app.schemas.common import ProblemDetails
 from app.schemas.upload import UploadCreated, UploadProfile, UploadRead, UploadStatus
-from app.services import storage
+from app.services import idempotency, storage
 from app.workers.tasks import profile_upload
 
 logger = get_logger(__name__)
@@ -91,7 +99,8 @@ async def create_upload(
     session: SessionDep,
     settings: SettingsDep,
     file: Annotated[UploadFile, File()],
-) -> UploadCreated:
+    idempotency_key: IdempotencyKey,
+) -> UploadCreated | Response:
     filename = _validate_filename(file.filename)
 
     # ---- Katman 1: gövdeyi okumadan önce Content-Length ----
@@ -111,45 +120,86 @@ async def create_upload(
     # Geçici dosya diskte tutulur; 130 MB'lık gövde belleğe ALINMAZ (ADR §2).
     with tempfile.NamedTemporaryFile(suffix=".xlsx") as spool:
         size_bytes = 0
+        # Idempotency fingerprint'i dosyanın SHA-256'sını istiyor (ADR-0002 #3).
+        # Hash AYNI geçişte hesaplanıyor: ikinci bir okuma 130 MB'ı diskten
+        # yeniden geçirmek demekti.
+        digest = hashlib.sha256()
         while chunk := await file.read(_CHUNK_SIZE):
             size_bytes += len(chunk)
             if size_bytes > MAX_UPLOAD_BYTES:
                 logger.info("upload_rejected_by_stream_counter")
                 raise _reject_too_large()
+            digest.update(chunk)
             spool.write(chunk)
 
         if size_bytes == 0:
             # Boş dosya OOXML olamaz; worker'a göndermeden eliyoruz.
             raise ApiError("UPLOAD_INVALID_TYPE", "Dosya boş.")
 
-        spool.flush()
-        spool.seek(0)
+        # ---- Idempotency (ADR-0002 #3) ----
+        # Kontrol S3 yazımından ve DB satırından ÖNCE: replay'in kaçındığı şey
+        # tam olarak ikinci bir ~130 MB'lık nesne ve ikinci bir worker job'ı.
+        # Baytların tel üstünden geçmesi kaçınılmaz — fingerprint dosyanın
+        # kendisinden türüyor.
+        claimed: idempotency.Claim | None = None
+        if idempotency_key is not None:
+            fingerprint = idempotency.upload_fingerprint(
+                file_sha256=digest.hexdigest(),
+                filename=filename,
+                mime_type=file.content_type or "",
+                size=size_bytes,
+            )
+            outcome = await claim_idempotency(request, idempotency_key, fingerprint, settings)
+            if isinstance(outcome, idempotency.StoredResponse):
+                logger.info("upload_idempotent_replay", extra={"size_bytes": size_bytes})
+                return replayed_response(outcome)
+            claimed = outcome
 
-        # boto3 senkron çalışıyor; event loop'u bloklamamak için thread'e
-        # taşınıyor. Aksi hâlde 130 MB'lık yükleme boyunca API hiçbir isteğe
-        # cevap veremezdi.
-        await run_in_threadpool(storage.ensure_bucket, settings)
-        await run_in_threadpool(storage.upload_stream, spool, storage_key, settings)
+        try:
+            spool.flush()
+            spool.seek(0)
 
-    upload = Upload(
-        id=upload_id,
-        status=UploadStatus.QUEUED,
-        filename=filename,
-        size_bytes=size_bytes,
-        storage_key=storage_key,
-    )
-    session.add(upload)
-    await session.commit()
+            # boto3 senkron çalışıyor; event loop'u bloklamamak için thread'e
+            # taşınıyor. Aksi hâlde 130 MB'lık yükleme boyunca API hiçbir isteğe
+            # cevap veremezdi.
+            await run_in_threadpool(storage.ensure_bucket, settings)
+            await run_in_threadpool(storage.upload_stream, spool, storage_key, settings)
 
-    # Kuyruğa alma DB commit'inden SONRA: worker'ın kaydı görebilmesi
-    # garanti olmalı, yoksa task "upload bulunamadı" ile boşa düşer.
-    profile_upload.delay(str(upload_id))
+            upload = Upload(
+                id=upload_id,
+                status=UploadStatus.QUEUED,
+                filename=filename,
+                size_bytes=size_bytes,
+                storage_key=storage_key,
+            )
+            session.add(upload)
+            await session.commit()
+
+            # Kuyruğa alma DB commit'inden SONRA: worker'ın kaydı görebilmesi
+            # garanti olmalı, yoksa task "upload bulunamadı" ile boşa düşer.
+            profile_upload.delay(str(upload_id))
+        except BaseException:
+            # 202 üretilmeyen her yol talebi bırakır (ADR-0002 #3: saklanan
+            # şey "ilk 202"dir). Aksi hâlde geçici bir S3 hatasından sonra
+            # AYNI dosyayı aynı anahtarla tekrar denemek 409 verirdi.
+            if claimed is not None:
+                await release_idempotency(claimed, settings)
+            raise
+
+    created = UploadCreated(upload_id=upload_id, status=UploadStatus.QUEUED)
+    if claimed is not None:
+        await remember_idempotency(
+            claimed,
+            created,
+            getattr(request.state, "trace_id", ""),
+            settings,
+        )
 
     logger.info(
         "upload_created",
         extra={"upload_id": str(upload_id), "size_bytes": size_bytes},
     )
-    return UploadCreated(upload_id=upload_id, status=UploadStatus.QUEUED)
+    return created
 
 
 async def _get_upload_or_404(session: AsyncSession, upload_id: uuid.UUID) -> Upload:

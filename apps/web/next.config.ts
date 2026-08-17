@@ -18,21 +18,29 @@ const nextConfig: NextConfig = {
     // Bu yüzden sınır backend'in kendi upload sınırının (150 MB) ÜSTÜNE
     // çekildi; aksi hâlde büyük dosyalar arayüzden hiç geçmezdi.
     //
-    // BEDELİ: Next eşzamanlı her upload için gövdeyi BELLEĞE alır. Tek
-    // kullanıcılı geliştirme ortamı için kabul edilebilir, üretim için
-    // DEĞİL — orada /api/v1'i FastAPI'ye ileten gerçek bir reverse proxy
-    // (nginx/caddy) Next'in önüne konmalı; ADR §2 zaten "aynı origin
-    // altındaki /api reverse proxy" diyor, Next'in rewrite'ını şart
-    // koşmuyor. Faz 2'ye devredilen açık iş.
+    // BEDELİ: Next eşzamanlı her upload için gövdeyi BELLEĞE alır.
+    //
+    // ÜRETİM YOLU ARTIK BU DEĞİL: compose'a Caddy tabanlı bir reverse proxy
+    // eklendi (`infra/docker/Caddyfile`) ve :3000 ona ait; `/api/v1/*`
+    // FastAPI'ye Next'e hiç uğramadan, tamponlanmadan gidiyor. Aşağıdaki
+    // rewrite yalnızca `npm run dev` içindir — proxy'siz çalışan tek ortam
+    // orası ve orada tek kullanıcı vardır.
+    //
+    // Sınır 150 MB'lık sözleşme sınırının üstünde tutuluyor ki dev
+    // ortamında da sözleşmeye uygun 413'ü backend üretsin.
     proxyClientMaxBodySize: "160mb",
   },
   // npm workspaces hoists node_modules to the repo root. Without this, the
   // standalone trace starts at apps/web and misses the hoisted dependencies.
   outputFileTracingRoot: path.join(__dirname, "../.."),
 
-  // ADR §2: frontend ve API aynı origin altında çalışır; tarayıcı /api/v1'e
+  // GELİŞTİRME İÇİN aynı origin: `npm run dev` sırasında tarayıcı /api/v1'e
   // gider, Next isteği FastAPI'ye geçirir. Böylece CORS gerekmez ve
   // NEXT_PUBLIC_API_BASE_URL göreli (/api/v1) kalabilir.
+  //
+  // compose'da bu rewrite'a HİÇ ULAŞILMAZ: :3000 Caddy'ye ait ve /api/v1'i
+  // o karşılıyor (ADR §2, `infra/docker/Caddyfile`). `web` servisi portunu
+  // yayınlamıyor, yani tarayıcı Next'e doğrudan gidemez.
   //
   // ⚠️ API_ORIGIN BUILD ZAMANINDA okunur. rewrites() `next build` sırasında
   // değerlendirilip routes-manifest.json'a yazılır; runtime'da tekrar

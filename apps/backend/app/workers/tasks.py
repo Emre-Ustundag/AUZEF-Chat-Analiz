@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from celery.exceptions import SoftTimeLimitExceeded
+from pydantic import ValidationError
 from sqlalchemy import CursorResult, Executable, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,6 +62,22 @@ from app.services.xlsx import (
 from app.workers.celery_app import celery_app
 
 logger = get_logger(__name__)
+
+
+def _validation_locations(exc: BaseException) -> list[str] | None:
+    """`ValidationError`'ın `loc` yollarını döndürür; başka istisnada `None`.
+
+    YALNIZCA `loc` ve hata `type`'ı alınır: `msg` ve özellikle `input`
+    kullanıcı verisi (hücre içeriği, kolon adı) taşıyabilir ve ADR §9 bunun
+    loglara girmesini yasaklıyor. `loc` ise şema yolundan gelir — "sheets.0"
+    gibi — ve dosyadan hiçbir şey içermez.
+    """
+    if not isinstance(exc, ValidationError):
+        return None
+    return [
+        f"{'.'.join(str(part) for part in error['loc'])}:{error['type']}"
+        for error in exc.errors(include_url=False, include_input=False)
+    ]
 
 
 async def run_upload_profiling(upload_id: uuid.UUID) -> str:
@@ -109,10 +126,25 @@ async def run_upload_profiling(upload_id: uuid.UUID) -> str:
                 "UPLOAD_CORRUPT_OR_ENCRYPTED",
                 "Dosya okunamadı. Bozuk, şifrelenmiş veya makro içeren dosyalar desteklenmez.",
             ).to_payload()
-        except Exception:
+        except Exception as exc:
             # ADR §9: hata cevabına dosya içeriği veya iz sızmaz. İstisna
             # yalnızca loglanır, kullanıcıya genel bir mesaj gider.
-            logger.exception("upload_profiling_failed", extra={"upload_id": str(upload_id)})
+            #
+            # Log kaydı istisna TİPİNİ ve varsa şema doğrulama KONUMLARINI da
+            # taşır. Sebebi ölçülmüş: yük testinde bu satır tek başına
+            # `{"event": "upload_profiling_failed", "exc_info": true}`
+            # üretiyordu ve kök nedeni (bir `ValidationError`) bulmak için
+            # hatayı yerelde yeniden üretmek gerekti. Traceback loglanamaz
+            # (`core/logging.py`: istisna mesajı sır taşıyabilir), ama tip ve
+            # `loc` yolu kullanıcı verisi içermez ve teşhis için yeterli.
+            logger.exception(
+                "upload_profiling_failed",
+                extra={
+                    "upload_id": str(upload_id),
+                    "exception_type": type(exc).__name__,
+                    "validation_locations": _validation_locations(exc),
+                },
+            )
             problem_payload = build_problem(
                 "INTERNAL_ERROR",
                 "Dosya işlenirken beklenmeyen bir hata oluştu.",

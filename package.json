@@ -19,7 +19,10 @@
     "backend:test": "uv run --locked --project apps/backend pytest apps/backend",
     "openapi": "uv run --locked --project apps/backend python apps/backend/scripts/export_openapi.py",
     "fixtures": "uv run --locked --project apps/backend python apps/backend/scripts/export_fixtures.py",
-    "contract": "npm run openapi -- --check && npm run fixtures -- --check && npm run test:contract"
+    "contract": "npm run openapi -- --check && npm run fixtures -- --check && npm run test:contract",
+    "e2e": "playwright test --config tests/e2e/playwright.config.ts",
+    "e2e:mock": "playwright test --config tests/e2e/playwright.config.ts --project=mock",
+    "e2e:stack": "playwright test --config tests/e2e/playwright.config.ts --project=stack"
   },
   "devDependencies": {
     "prettier": "^3.9.6"

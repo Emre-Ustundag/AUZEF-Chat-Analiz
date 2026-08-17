@@ -341,11 +341,25 @@ def _profile_sheet(worksheet: Any, settings: Settings) -> tuple[dict[str, Any], 
             continue
 
         if row_count >= settings.profile_max_scan_rows:
-            # Taranan satır sayısına tavan: satır sınırının çok üstündeki bir
-            # dosyada worker'ın saatlerce dönmesini engeller. Sayım devam eder
-            # ki `exceeds_row_limit` doğru hesaplansın.
-            row_count += 1
-            continue
+            # Taranan satır sayısına son çare tavanı — `break`, `continue`
+            # DEĞİL.
+            #
+            # Eskiden `continue` idi ve sayacı artırmaya devam ediyordu
+            # ("`exceeds_row_limit` doğru hesaplansın" diye). Sonuç: kolon
+            # istatistikleri ilk N satırı, `row_count` ise dosyanın tamamını
+            # anlatıyordu ve `UploadProfile`'ın değişmezi
+            # (`non_empty_count + empty_count == row_count`) İHLAL EDİLİYORDU.
+            # Pydantic doğrulaması patlıyor, kullanıcı `INTERNAL_ERROR`
+            # alıyordu — yani tavanı aşan HER dosya profillenemiyordu. Yük
+            # testi (ADR §10 risk 1) bunu 2,8 M satırlık gerçek bir dosyada
+            # yakaladı; ADR-0002 #13 ise "dosya tam profillenir, reddedilmez"
+            # diyor.
+            #
+            # `break` ile profil, GERÇEKTEN taranmış satırları anlatır ve
+            # değişmez yapı gereği doğru kalır. Tavan `MAX_ROWS`'un çok
+            # üstünde tutulduğu için (config doğrulaması bunu zorunlu kılıyor)
+            # `exceeds_row_limit` yine doğru işaretlenir.
+            break
 
         # Tamamen boş satırlar Excel'in "kullanılmış aralık" şişmesi yüzünden
         # sıkça görülür; satır sayısına katılmazlar.

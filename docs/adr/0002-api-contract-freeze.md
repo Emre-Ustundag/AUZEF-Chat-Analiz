@@ -120,6 +120,19 @@ diriltirdi.
 Frontend şu an bu header'ı göndermiyor; OpenAPI belgeliyor ve backend
 destekliyor, dolayısıyla sonradan eklemek kırılma yaratmaz.
 
+Uygulama: backend `apps/backend/app/services/idempotency.py` (kayıt Redis'te,
+TTL `Settings.idempotency_ttl_seconds`), mock `apps/web/src/mocks/idempotency.ts`.
+Fingerprint kuralı iki dilde ayrı yazıldığı ve fingerprint'ler tel üstünde
+karşılaşmadığı için `tests/fixtures/contract/idempotency.fingerprints.json`
+üretiliyor: Python'un hesapladığı hash'ler TypeScript tarafında da doğrulanıyor
+(`contract-idempotency.test.ts`).
+
+Talep İKİ FAZLI tutulur (`SET NX` ile "pending", 202'de gövde): tek fazlı bir
+kayıt, aynı anahtarla EŞZAMANLI gelen iki isteğin ikisini birden geçirirdi.
+Yalnızca 202 saklanır; hata ile biten istek talebi bırakır — aksi hâlde
+`COST_LIMIT_EXCEEDED` alan kullanıcı, hatanın önerdiği düzeltmeyi
+(`max_cost_usd`'yi yükseltmek) uygulayınca gövdesi değiştiği için 409 alırdı.
+
 ### #4 — Tarihler: çıkışta yalnızca `…Z`
 
 Çıktı biçimi **her zaman** `YYYY-MM-DDTHH:MM:SS.sssZ`. Girişte her RFC 3339

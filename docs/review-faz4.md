@@ -2,6 +2,41 @@
 
 Tarih: 14 Ağustos 2026 · Hedef: `main` ← `feat/backend-faz4` (31 commit, ~13.900 eklenen satır)
 
+> ## ⚠️ TARİHSEL BELGE — `main` bu dalı OLDUĞU GİBİ almadı
+>
+> Bu inceleme `feat/backend-faz4` ve onun üzerine kurulan
+> `integration/faz4-polling` dalını değerlendiriyor. `main` farklı bir soy
+> izledi: iş squash edilerek geldi ve aşağıdaki commit SHA'larının
+> (`df8eb0f`, `e60e89e`, `be99066`, `33660ca`, `5dd6201` …) hiçbiri `main`'de
+> **yok**.
+>
+> En görünür içerik farkı §10'un son bölümünde: orada anlatılan
+> `ANALYSIS_COST_LIMIT_EXCEEDED` / `ANALYSIS_COST_LIMIT_STOPPED` ayrımı
+> **`main`'de uygulanmadı**. `main`, ADR-0002 #10'un lafzına uyuyor ve tek bir
+> `COST_LIMIT_EXCEEDED` kodunu hem uçuş öncesi hem koşu içi tavan için
+> kullanıyor; hata kodu kümesi 17 üyeli (`app/core/errors.py`). Bulguların
+> kendisi (B1–B10) `main`'de kapalı, ama uygulama ayrıntıları için bu belgeye
+> değil koda bakın.
+>
+> ### §5'teki K maddelerinin bugünkü durumu
+>
+> | Madde                              | Durum                                                                                                                  |
+> | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+> | K1 — reverse proxy                 | **Kapandı.** Caddy compose'a eklendi (`infra/docker/Caddyfile`); :3000 proxy'ye ait, ADR §2 servis listesi güncellendi |
+> | K2 — 130 MB yük testi              | **Kapandı ve KUSUR BULDU.** Ölçüm ve bulgu: [`docs/yuk-testi.md`](./yuk-testi.md)                                      |
+> | K3 — `Idempotency-Key`             | **Kapandı.** Backend'de uygulandı; `app/services/idempotency.py`                                                       |
+> | K4 — Playwright E2E                | **Kapandı.** `tests/e2e/`; `mock` projesi CI'da, `stack` projesi gerçek yığına karşı                                   |
+> | K5 — mock'ların kaderi             | **Karara bağlandı:** kalıcı. README "Mock backend" bölümü                                                              |
+> | K6 — ADR §3 iskelet sapması        | **Kapandı.** ADR §3 gerçeğe göre düzeltildi ve sapmanın gerekçesi yazıldı                                              |
+> | K7 — "TS client otomatik üretilir" | **Kapandı.** ADR §6 Zod şemalarının elle yazıldığını söylüyor                                                          |
+> | K8 — yerelde sessiz skip           | **Açık, belgelendi.** README "Açık işler" §1                                                                           |
+>
+> Bunların dışında incelemede HİÇ GEÇMEYEN iki kusur daha bulundu ve
+> kapatıldı: `docker compose up` container yerleşiminde `config.py`'nin sabit
+> `parents[4]` indeksi yüzünden dört Python servisini birden düşürüyordu; ve
+> `/api/v1/health/ready` hiçbir bağımlılık kontrolü kayıtlı olmadığı için her
+> zaman `503` dönüyordu.
+
 ## 1. Dal topolojisi — doğrulandı
 
 `faz1 ⊂ faz2 ⊂ faz3 ⊂ faz4` **içerik olarak** doğru, SHA olarak değil. Her fazın

@@ -54,8 +54,13 @@ FROM base AS api
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
-  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status==200 else 1)"
+# `/api/v1/health/ready` — basit `/health` DEĞİL. Sözleşmedeki readiness ucu
+# Postgres, Redis ve object storage'a gerçekten dokunuyor; container'ı ona
+# bağlamak, "ayakta ama bağımlılıkları yok" durumundaki bir API'ye compose'un
+# `service_healthy` demesini engeller. Süre bütçesi uçta zaten var
+# (`services/health.py`: kontrol başına 2 sn), bu yüzden probe asılı kalmaz.
+HEALTHCHECK --interval=10s --timeout=8s --start-period=20s --retries=5 \
+  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=6).status==200 else 1)"
 
 # Migration'lar burada DEĞİL, compose'daki ayrı `migrate` servisinde çalışır:
 # birden fazla API replikası aynı anda `alembic upgrade` çalıştırırsa yarışır.

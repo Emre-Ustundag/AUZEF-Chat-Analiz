@@ -61,7 +61,17 @@ class TraceIdMiddleware:
 
         async def send_with_trace_id(message: Message) -> None:
             if message["type"] == "http.response.start":
-                MutableHeaders(scope=message)[TRACE_ID_HEADER] = trace_id
+                headers = MutableHeaders(scope=message)
+                # Cevapta zaten bir trace id VARSA üzerine yazılmaz. Tek
+                # yazan yer `Idempotency-Key` replay'i (ADR-0002 #3): saklanan
+                # şey "ilk 202'nin status/body/header metadata'sı", yani
+                # replay orijinal trace id ile döner. Mock aynı kuralı
+                # uyguluyor (`src/mocks/responses.ts` → `headersWithTrace`).
+                #
+                # Gelen İSTEK header'ının UUID guard'ı (`_sanitize`) bundan
+                # etkilenmez: o girişi, bu çıkışı ilgilendirir.
+                if TRACE_ID_HEADER not in headers:
+                    headers[TRACE_ID_HEADER] = trace_id
             await send(message)
 
         try:

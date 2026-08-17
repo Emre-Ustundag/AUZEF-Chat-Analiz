@@ -44,7 +44,7 @@ _STATUS_TO_CODE: dict[int, ErrorCode] = {
 #: Kullanıcıya/istemciye giden sabit metinler. ADR-0001 §7 ham provider
 #: yanıtını, anahtarı ve mesaj içeriğini hata gövdesinde yasaklıyor.
 _UNEXPECTED_DETAIL = "Beklenmeyen bir sunucu hatası oluştu."
-_NOT_IMPLEMENTED_DETAIL = "Bu uç nokta henüz uygulanmadı (BE-02)."
+_NOT_IMPLEMENTED_DETAIL = "Bu uç nokta henüz uygulanmadı."
 _RESPONSE_INVALID_DETAIL = "Sunucu cevabı iç sözleşmeye uymadı."
 _REQUEST_INVALID_DETAIL = "İstek gövdesi veya parametreleri doğrulanamadı."
 
@@ -222,7 +222,14 @@ async def http_exception_handler(request: Request, exc: Exception) -> Response:
 
 
 async def not_implemented_handler(request: Request, exc: Exception) -> Response:
-    """BE-01 route stub'ları — public NOT_IMPLEMENTED/501."""
+    """`NotImplementedError` -> public NOT_IMPLEMENTED/501.
+
+    BE-01'de route stub'ları bu yolu kullanıyordu; bugün tüm uçlar uygulandı
+    ve buraya düşen bir istek KALMADI. Handler yine de duruyor: kayıt
+    kaldırılsaydı ileride eklenecek bir stub, sözleşmede yeri olan 501 yerine
+    500 `INTERNAL_ERROR` üretirdi. `responses.py` 501'i her uçta belgelemeye
+    devam ediyor, bu yüzden sözleşme ile davranış tutarlı.
+    """
     assert isinstance(exc, NotImplementedError)
     return problem_response(
         ErrorCode.NOT_IMPLEMENTED,

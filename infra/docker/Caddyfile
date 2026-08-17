@@ -1,0 +1,92 @@
+# AUZEF Chat Analiz — üretim reverse proxy'si (ADR §2).
+#
+# ADR §2: "frontend ve API üretimde aynı origin altında çalışır". Bunu bugüne
+# kadar Next.js rewrite'ı sağlıyordu ve `next.config.ts` o çözümün sınırını
+# kendi içinde belgeliyor: Next 16.3.0 harici rewrite'larda da gövdeyi BELLEĞE
+# klonluyor. Tek kullanıcılı geliştirme için kabul edilebilir; eşzamanlı
+# 130 MB'lık upload'lar için değil. Bu dosya o katmanın yerine geçiyor.
+#
+# Dört kısıt ADR ve plan §3.2k'dan geliyor; her biri aşağıda uygulanıyor:
+#
+#   1. Gövde tamponlaması KAPALI  — tamponlayan bir katman 130 MB'lık upload'ı
+#      belleğe alır ya da sessizce kırpar.
+#   2. Gövde sınırı               — 150 MB sözleşme sınırının biraz üstünde.
+#   3. `X-OpenRouter-Key` proxy'nin KENDİ loglarında redakte (ADR §6 bu görevi
+#      açıkça proxy'ye veriyor).
+#   4. Timeout ≥ 45 dk            — ADR §2 analiz hard timeout'u.
+
+{
+	# Yönetim API'si kapalı: container içinde kimsenin ihtiyacı yok ve açık
+	# bırakmak proxy'yi çalışma anında yeniden yapılandırılabilir yapar.
+	admin off
+
+	# Konteyner logları zaten toplanıyor; Caddy'nin kendi dosya yazması
+	# gereksiz.
+	log {
+		output stdout
+		format json
+	}
+}
+
+:80 {
+	# ---- Kısıt 3: BYOK anahtarı proxy loglarına GİRMEZ ----
+	#
+	# Caddy varsayılan olarak istek header'larını loglar ve yalnızca
+	# `Authorization`, `Cookie`, `Set-Cookie` alanlarını redakte eder.
+	# `X-OpenRouter-Key` bu listede DEĞİL: filtre olmadan kullanıcının
+	# OpenRouter anahtarı her istekte düz metin olarak container loguna
+	# düşerdi. ADR §9 "anahtar loglara yazılmaz" diyor ve backend kendi
+	# tarafında bunu zaten uyguluyor — proxy katmanı ayrı bir sızıntı yolu.
+	log {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request>headers>X-Openrouter-Key delete
+				request>headers>Cookie delete
+				request>headers>Authorization delete
+			}
+		}
+	}
+
+	# ---- Kısıt 2: gövde sınırı ----
+	#
+	# Sözleşme sınırı 150 MB (`MAX_UPLOAD_BYTES`). Buradaki değer BİLEREK
+	# biraz yukarıda: tam sınırdaki bir dosya + multipart zarfı proxy'de
+	# kesilseydi kullanıcı RFC 9457 gövdesi olmayan çıplak bir 413 görürdü.
+	# Sözleşmeye uygun 413'ü üreten taraf backend olmalı (`core/body_limit.py`);
+	# buradaki sınır yalnızca dış ağ.
+	request_body {
+		max_size 160MB
+	}
+
+	# ---- API ----
+	handle /api/v1/* {
+		reverse_proxy api:8000 {
+			# ---- Kısıt 1: tamponlama kapalı ----
+			# `flush_interval -1` cevabı anında akıtır (tamponlamaz).
+			# Caddy İSTEK gövdesini zaten tamponlamaz, akıtır: bu satır
+			# simetriyi tamamlıyor ve ileride bir stream/SSE ucu eklenirse
+			# davranış değişmiyor.
+			flush_interval -1
+
+			transport http {
+				# ---- Kısıt 4: uzun işler ----
+				# ADR §2 hard timeout 45 dk. Değerler bilerek üstünde:
+				# proxy, backend'in kendi timeout'undan ÖNCE kesmemeli,
+				# yoksa kullanıcı sözleşmedeki `PROVIDER_TIMEOUT` yerine
+				# proxy'nin 504'ünü görür.
+				dial_timeout 10s
+				read_timeout 46m
+				write_timeout 46m
+			}
+		}
+	}
+
+	# ---- Frontend ----
+	handle {
+		reverse_proxy web:3000 {
+			flush_interval -1
+		}
+	}
+}

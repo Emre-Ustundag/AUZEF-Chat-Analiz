@@ -39,15 +39,30 @@ export function analysisFingerprint(request: AnalysisRequest): string {
   return sha256(canonicalJson(request));
 }
 
+/** ADR-0002 #3'teki iki aşamalı upload fingerprint'inin İKİNCİ aşaması.
+ *
+ * `uploadFingerprint`'ten ayrı duruyor çünkü backend dosya hash'ini yükleme
+ * akışının içinde hesaplıyor (`apps/backend/app/api/v1/uploads.py`) ve elinde
+ * bir `File` nesnesi olmuyor. İki dilin AYNI metadata'dan aynı hash'i
+ * ürettiği `contract-idempotency.test.ts` içinde doğrulanıyor.
+ */
+export function uploadMetadataFingerprint(metadata: {
+  file_sha256: string;
+  filename: string;
+  mime_type: string;
+  size: number;
+}): string {
+  return sha256(canonicalJson(metadata));
+}
+
 /** ADR-0002 #3'teki iki aşamalı upload fingerprint'i. */
 export async function uploadFingerprint(file: File): Promise<string> {
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const metadata = {
+
+  return uploadMetadataFingerprint({
     file_sha256: sha256(bytes),
     filename: file.name,
     mime_type: file.type,
     size: file.size,
-  };
-
-  return sha256(canonicalJson(metadata));
+  });
 }

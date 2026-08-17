@@ -12,8 +12,35 @@ from typing import Annotated, Final, Literal, Self
 from pydantic import AnyHttpUrl, BeforeValidator, Field, SecretStr, TypeAdapter, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-#: apps/backend/app/core/config.py -> repo kökü (core, app, backend, apps).
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+
+def _repo_env_file() -> Path | None:
+    """Repo kökündeki `.env` — YALNIZCA geliştirici kolaylığı.
+
+    Checkout'ta bu dosya `apps/backend/app/core/config.py`'den dört seviye
+    yukarıdadır (core, app, backend, apps). Container'da DEĞİLDİR:
+    `infra/docker/api.Dockerfile` `apps/backend/` içeriğini `/app`'e
+    kopyalıyor, yani modülün yolu `/app/app/core/config.py` ve yalnızca dört
+    parent'ı var.
+
+    Bu yüzden `parents[4]` sabit indeksi container'da `IndexError` veriyordu
+    ve import zincirinin en başında olduğu için `migrate`, `api`, `worker` ve
+    `beat` servislerinin DÖRDÜNÜ birden düşürüyordu — `docker compose up`
+    hiçbir şey başlatamıyordu. Ölçüldü: `alembic upgrade head`,
+    `config.py:16`'da `IndexError: 4` ile çıkıyordu.
+
+    Dosyanın yokluğu container'da NORMAL: ortam değişkenleri compose'dan
+    geliyor. Bulunamazsa `None` döner ve pydantic-settings yalnızca gerçek
+    ortam değişkenlerini okur.
+    """
+    parents = Path(__file__).resolve().parents
+    if len(parents) <= 4:
+        return None
+
+    candidate = parents[4] / ".env"
+    return candidate if candidate.is_file() else None
+
+
+_ENV_FILE = _repo_env_file()
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -39,7 +66,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="AUZEF_",
         extra="ignore",
-        env_file=_REPO_ROOT / ".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
     )
 
@@ -61,9 +88,41 @@ class Settings(BaseSettings):
     s3_bucket: str = "auzef-uploads"
     s3_region: str = "us-east-1"
 
-    max_uncompressed_bytes: int = Field(default=1024 * 1024 * 1024, gt=0)
+    #: OOXML açılmış toplam boyut tavanı — ZIP bomba savunmasının İKİNCİL
+    #: katmanı.
+    #:
+    #: 1 GiB'ti ve YÜK TESTİNDE DÜŞTÜ (ADR §10 risk 1'in istediği ölçüm,
+    #: `scripts/load_test.py`). Ölçülen: 130,9 MB'lık gerçekçi bir dosya
+    #: (2,8 M satır, 6 kolon, Türkçe metin) 1,12 GB'a açılıyor ve
+    #: `declared_uncompressed_size_exceeds_limit` ile REDDEDİLİYORDU.
+    #: Sıkıştırma oranı yalnızca 8,7 — bomba eşiğinin (200) çok altında,
+    #: yani reddedilen şey meşru bir dosyaydı.
+    #:
+    #: Sözleşmenin iki sayısı birbiriyle çelişiyordu: 150 MB sıkıştırılmış
+    #: upload sınırı, OOXML'in ~9x genişlemesiyle ~1,3 GB eder. İkisi aynı
+    #: anda doğru olamazdı.
+    #:
+    #: 4 GiB, donmuş 150 MB sınırında ~27x genişlemeye izin verir — gerçek
+    #: dosyaların üst sınırının rahatça üstünde. Asıl bomba savunması bu
+    #: mutlak tavan DEĞİL, üye başına sıkıştırma oranı (200) ve akış
+    #: sırasında sayan gerçek bayt kontrolüdür (`services/xlsx.py`); bu
+    #: sayı yalnızca ikincil bir tavan.
+    max_uncompressed_bytes: int = Field(default=4 * 1024 * 1024 * 1024, gt=0)
     max_compression_ratio: float = Field(default=200.0, gt=0)
-    profile_max_scan_rows: int = Field(default=200_000, gt=0)
+    #: Profillemede taranacak azami satır — SON ÇARE tavanı.
+    #:
+    #: 200.000'di ve gerçek işi bozuyordu: satır sınırının (100.000) hemen
+    #: üstündeki her dosya kırpılıyor, kolon istatistikleri ile `row_count`
+    #: ayrışıyor ve profil şema doğrulamasından geçemiyordu (ayrıntı
+    #: `services/xlsx.py`). ADR-0002 #13 ise dosyanın TAM profillenmesini
+    #: şart koşuyor.
+    #:
+    #: Asıl bound bu sayı değil, açılmış boyut tavanı: 4 GiB ≈ 9,5 M satır
+    #: ve ölçülen hız ~18.600 satır/sn (2,8 M satır → 151 sn), yani en kötü
+    #: hâlde ~8,5 dakika — Celery soft time limit'inin (900 sn) altında.
+    #: Buradaki 10 M yalnızca patolojik bir dosyada worker'ın süresiz
+    #: dönmesini engeller.
+    profile_max_scan_rows: int = Field(default=10_000_000, gt=0)
     sample_values_per_column: int = Field(default=3, ge=0)
     sample_value_max_length: int = Field(default=80, gt=0)
 
@@ -113,6 +172,15 @@ class Settings(BaseSettings):
 
         if self.analysis_soft_timeout_seconds >= self.analysis_timeout_seconds:
             raise ValueError("analysis_soft_timeout_seconds hard timeout'tan küçük olmalıdır.")
+
+        # Tarama tavanı satır sınırının ALTINA düşerse `exceeds_row_limit`
+        # sessizce yalan söyler: profil tavanda kesilir, `row_count` tavana
+        # eşit kalır ve sınır aşımı hiç işaretlenmez. Sözleşmenin donmuş
+        # satır sınırı (ADR-0002 #13) buna bağlı.
+        if self.profile_max_scan_rows <= MAX_ROWS:
+            raise ValueError(
+                f"profile_max_scan_rows satır sınırından ({MAX_ROWS}) büyük olmalıdır."
+            )
 
         if self.environment is Environment.PRODUCTION:
             if self.backend_master_key is None:

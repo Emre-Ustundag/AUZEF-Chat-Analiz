@@ -216,7 +216,17 @@ def build_openapi(app: FastAPI) -> dict[str, Any]:
                     }
 
             if method == "post" and path in IDEMPOTENT_POST_PATHS:
-                operation.setdefault("parameters", []).append(
+                # Header artık gerçek bir dependency (`api/v1/deps.py`), yani
+                # FastAPI onu kendisi de belgeliyor — ama açıklamasız ve
+                # örneksiz. Otomatik kaydı ATIYORUZ ve aşağıdaki küratörlü
+                # kaydı koyuyoruz; ikisi birden kalsaydı sözleşme aynı
+                # parametreyi iki kez tanımlardı.
+                operation["parameters"] = [
+                    parameter
+                    for parameter in operation.get("parameters", [])
+                    if parameter.get("name") != "Idempotency-Key"
+                ]
+                operation["parameters"].append(
                     {
                         "name": "Idempotency-Key",
                         "in": "header",

@@ -34,10 +34,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # oluştuktan sonra runtime'da ayarlamak hiçbir şeyi değiştirmez. Bu yüzden
 # build arg olarak alınıyor.
 #
-# Varsayılan bilinçli olarak mock backend: repoda henüz FastAPI yok ve sessizce
-# boş bir adrese gitmektense çalışan bir demo üretmek daha yararlı. Gerçek
-# ortama çıkarken bu değer MUTLAKA verilmeli:
-#   docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/v1
+# Varsayılan GERÇEK backend: compose'da `api` servisi ayakta ve `web` ona
+# bağımlı. Repodaki mock'a dönmek isteyen (backend'siz demo, arayüz
+# geliştirme) bu değeri açıkça vermeli:
+#   docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/mock/v1
 ARG NEXT_PUBLIC_API_BASE_URL=/api/v1
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 

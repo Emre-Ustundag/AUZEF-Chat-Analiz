@@ -417,7 +417,16 @@ def build_cases() -> list[Case]:
             "/api/v1/health/ready",
             200,
             "ReadinessResponse",
-            ReadinessResponse(checks=[ReadinessCheckResponse(name="example-dependency")]),
+            # İsimler `services/readiness.py::default_readiness_checks` ile
+            # aynı ve aynı sırada: örnek, çalışan API'nin gerçekten döndürdüğü
+            # gövde olmalı — uydurma bir "example-dependency" değil.
+            ReadinessResponse(
+                checks=[
+                    ReadinessCheckResponse(name="postgres"),
+                    ReadinessCheckResponse(name="redis"),
+                    ReadinessCheckResponse(name="object-storage"),
+                ]
+            ),
         ),
         Case(
             "health.ready.503",

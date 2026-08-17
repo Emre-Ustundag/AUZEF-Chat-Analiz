@@ -121,6 +121,19 @@ def configure_logging(settings: Settings | None = None) -> None:
             foreign_pre_chain=shared_processors,
             processors=[
                 structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                # `format_exc_info` BİLEREK YOK: traceback metni istisna
+                # mesajını da taşır ve o mesaj sağlayıcı URL'i (api_key query
+                # parametresiyle), veritabanı DSN'i veya dosya içeriği
+                # içerebilir. ADR §7/§9 bunu yasaklıyor ve
+                # `test_logging.py::test_unhandled_exception_log_does_not_include_raw_message`
+                # kuralı bekçilik ediyor.
+                #
+                # Bedeli teşhis edilebilirlik: `logger.exception(...)` çıktıya
+                # yalnızca `"exc_info": true` yazar. Bu yüzden istisna
+                # yakalayan yerler istisna TİPİNİ ve varsa doğrulama
+                # konumlarını AYRI, güvenli alanlar olarak loglamak
+                # zorundadır (bkz. `core/handlers.py` ve
+                # `workers/tasks.py::run_upload_profiling`).
                 structlog.processors.JSONRenderer(sort_keys=True),
             ],
         )

@@ -3,23 +3,23 @@
 ADR §9: "Token ve tahmini maliyet üst sınırı aşılırsa LLM çağrısı başlamadan
 iş güvenli biçimde durur."
 
-FAZ 2'DE NE OLUYOR — bunu açıkça yazmak gerekiyor çünkü kolayca yanlış
-anlaşılır:
+Tavan ÜÇ ayrı noktada uygulanıyor ve üçü farklı soruya cevap veriyor:
 
-* Tahmin GERÇEKTEN hesaplanıyor. Benzersiz kayıtların karakter sayısından
-  token tahmini çıkarılıyor ve whitelist'teki model fiyatıyla çarpılıyor.
-  Bu kod Faz 3'te olduğu gibi kullanılacak.
-* Ama Faz 2'de OpenRouter'a HİÇBİR ÇAĞRI YAPILMIYOR, dolayısıyla harcanan
-  gerçek para SIFIR. Tavanı aşan bir dosyada işi DURDURMAK yanlış olurdu:
-  ortada durdurulacak bir çağrı yok ve kullanıcı hiç oluşmayan bir maliyet
-  yüzünden analizden mahrum kalırdı. Bu yüzden Faz 2 aşımı rapora bir
-  UYARI olarak yazar.
-* Faz 3'te `CostDecision.exceeds` değeri, LLM çağrıları başlamadan işi
-  `failed` ile durduracak. Değişecek tek şey karar noktasıdır; tahmin
-  matematiği ve arayüz aynı kalır.
+1. `POST /analyses` — profildeki kolon istatistiklerinden yapılan senkron ön
+   tahmin. Pahalı olduğu baştan belli olan istek job ve Redis secret
+   oluşturmadan `422 COST_LIMIT_EXCEEDED` alır (ADR-0002 #10).
+2. Worker, gerçek hücreleri okuyup tekilleştirdikten SONRA — dedupe'in
+   etkisini gören daha doğru tahmin. LLM çağrıları henüz başlamadı.
+3. Her map chunk'ından sonra, sağlayıcının `usage` bloğundan okunan GERÇEK
+   tutara göre. Kontrolün chunk'tan SONRA olması bilinçli: harcanmış para
+   geri alınamaz, yapılabilecek tek şey kalan chunk'ları göndermemek.
 
-Raporlanan `token_usage` ve `estimated_cost_usd` Faz 2'de 0'dır (plan §4):
-tahmin, harcanan değildir ve ikisini karıştırmak raporu yalancı yapardı.
+Üçü de aynı `COST_LIMIT_EXCEEDED` kodunu kullanır (ADR-0002 #10); 1 senkron
+HTTP hatası, 2 ve 3 terminal job hatasıdır.
+
+TAHMİN, HARCANAN DEĞİLDİR: rapordaki `token_usage` ve `estimated_cost_usd`
+sağlayıcının bildirdiği gerçek tüketimden gelir, buradaki tahminden değil.
+İkisini karıştırmak raporu yalancı yapardı.
 """
 
 from __future__ import annotations

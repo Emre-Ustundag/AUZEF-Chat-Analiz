@@ -29,6 +29,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
+from app.api.v1.deps import (
+    IdempotencyKey,
+    claim_idempotency,
+    release_idempotency,
+    remember_idempotency,
+    replayed_response,
+)
 from app.api.v1.responses import (
     ANALYSIS_CANCEL,
     ANALYSIS_CREATE,
@@ -55,7 +62,7 @@ from app.schemas.analysis import (
 from app.schemas.common import ProblemDetails
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import ColumnProfile, UploadProfile, UploadStatus
-from app.services import report_export, secret_store
+from app.services import idempotency, report_export, secret_store
 
 logger = get_logger(__name__)
 
@@ -114,8 +121,9 @@ async def create_analysis(
     body: AnalysisCreate,
     session: SessionDep,
     settings: SettingsDep,
+    idempotency_key: IdempotencyKey,
     x_openrouter_key: OpenRouterKeyDep = None,
-) -> AnalysisCreated:
+) -> AnalysisCreated | Response:
     # ---- anahtar: gövdede DEĞİL, header'da (ADR §6/§9) ----
     api_key = (x_openrouter_key or "").strip()
     if not api_key:
@@ -124,81 +132,116 @@ async def create_analysis(
             "X-OpenRouter-Key header'ı zorunludur.",
         )
 
-    # ADR §9 değişmezi 4: model yalnızca backend whitelist'inden seçilebilir.
-    if not is_allowed_model(body.model):
-        raise ApiError(
-            "SHEET_OR_COLUMN_NOT_FOUND",
-            "Seçilen model kullanılabilir modeller listesinde yok.",
-        )
+    # ---- Idempotency (ADR-0002 #3) ----
+    # Anahtar kontrolünden SONRA (kimliksiz istek her hâlükârda reddedilir),
+    # doğrulamaların ve job oluşturmanın ÖNCESİNDE. Replay bu noktadan
+    # döndüğü için `secret_store.store_key`'e hiç ulaşılmaz: istekle gelen
+    # YENİ anahtar orijinal job'ınkini ezmez — sözleşmenin "replay yeni
+    # X-OpenRouter-Key'i yok sayar" cümlesi mekanik olarak bu.
+    #
+    # Fingerprint DOĞRULANMIŞ gövdeden türüyor ve header'ları içermiyor.
+    claimed: idempotency.Claim | None = None
+    if idempotency_key is not None:
+        fingerprint = idempotency.analysis_fingerprint(body)
+        outcome = await claim_idempotency(request, idempotency_key, fingerprint, settings)
+        if isinstance(outcome, idempotency.StoredResponse):
+            logger.info("analysis_idempotent_replay")
+            return replayed_response(outcome)
+        claimed = outcome
 
-    upload = await session.scalar(select(Upload).where(Upload.id == body.upload_id))
-    if upload is None:
-        raise ApiError("JOB_NOT_FOUND", "Analiz edilecek yükleme bulunamadı.")
-
-    if upload.status is not UploadStatus.READY or upload.profile is None:
-        raise ApiError(
-            "JOB_CONFLICT",
-            "Yükleme henüz analiz edilebilir durumda değil.",
-        )
-
-    column = _validate_selection(upload.profile, body)
-
-    # ADR-0002 #10: pahalı olduğu profilden belli olan istek job ve Redis
-    # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
-    # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
-    # ayrıca denetler; bu ilk kapı kullanıcıya anında geri bildirim verir.
-    estimated_cost_usd = estimate_profile_cost(
-        min(column.non_empty_count, MAX_ROWS),
-        column.avg_length,
-        body.model,
-    )
-    if estimated_cost_usd > body.max_cost_usd:
-        raise ApiError(
-            "COST_LIMIT_EXCEEDED",
-            f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
-            f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
-            "yükseltin ya da daha ucuz bir model seçin.",
-        )
-
-    analysis_id = uuid.uuid4()
-    analysis = Analysis(
-        id=analysis_id,
-        upload_id=upload.id,
-        status=AnalysisStatus.QUEUED,
-        progress=0.0,
-        cancel_requested=False,
-        sheet_name=body.sheet_name,
-        text_column=body.text_column,
-        model=body.model,
-        prompt_version=body.prompt_version,
-        top_n=body.top_n,
-        max_cost_usd=body.max_cost_usd,
-    )
-    session.add(analysis)
-    await session.commit()
-
-    # ---- anahtarı şifreli ve TTL'li olarak Redis'e yaz ----
-    # DB commit'inden SONRA: kayıt yoksa saklanacak bir anahtar da yoktur.
-    # `redis-py` senkron; event loop'u bloklamamak için thread'e taşınıyor.
     try:
-        ttl = await run_in_threadpool(secret_store.store_key, analysis_id, api_key, settings)
-    except Exception:
-        # Anahtar saklanamadıysa iş başlatılamaz. Kaydı geri alıyoruz ki
-        # kullanıcı asla ilerlemeyecek bir job'ı poll etmesin.
-        logger.exception("openrouter_key_store_failed", extra={"analysis_id": str(analysis_id)})
-        await session.delete(analysis)
+        # ADR §9 değişmezi 4: model yalnızca backend whitelist'inden seçilebilir.
+        if not is_allowed_model(body.model):
+            raise ApiError(
+                "SHEET_OR_COLUMN_NOT_FOUND",
+                "Seçilen model kullanılabilir modeller listesinde yok.",
+            )
+
+        upload = await session.scalar(select(Upload).where(Upload.id == body.upload_id))
+        if upload is None:
+            raise ApiError("JOB_NOT_FOUND", "Analiz edilecek yükleme bulunamadı.")
+
+        if upload.status is not UploadStatus.READY or upload.profile is None:
+            raise ApiError(
+                "JOB_CONFLICT",
+                "Yükleme henüz analiz edilebilir durumda değil.",
+            )
+
+        column = _validate_selection(upload.profile, body)
+
+        # ADR-0002 #10: pahalı olduğu profilden belli olan istek job ve Redis
+        # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
+        # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
+        # ayrıca denetler; bu ilk kapı kullanıcıya anında geri bildirim verir.
+        estimated_cost_usd = estimate_profile_cost(
+            min(column.non_empty_count, MAX_ROWS),
+            column.avg_length,
+            body.model,
+        )
+        if estimated_cost_usd > body.max_cost_usd:
+            raise ApiError(
+                "COST_LIMIT_EXCEEDED",
+                f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
+                f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
+                "yükseltin ya da daha ucuz bir model seçin.",
+            )
+
+        analysis_id = uuid.uuid4()
+        analysis = Analysis(
+            id=analysis_id,
+            upload_id=upload.id,
+            status=AnalysisStatus.QUEUED,
+            progress=0.0,
+            cancel_requested=False,
+            sheet_name=body.sheet_name,
+            text_column=body.text_column,
+            model=body.model,
+            prompt_version=body.prompt_version,
+            top_n=body.top_n,
+            max_cost_usd=body.max_cost_usd,
+        )
+        session.add(analysis)
         await session.commit()
-        raise ApiError(
-            "INTERNAL_ERROR",
-            "Analiz başlatılamadı.",
-        ) from None
 
-    # Import burada: `workers.tasks` Celery uygulamasını yükler ve API'nin
-    # import zincirinde döngü oluşturmasını istemiyoruz.
-    from app.workers.tasks import run_analysis_task
+        # ---- anahtarı şifreli ve TTL'li olarak Redis'e yaz ----
+        # DB commit'inden SONRA: kayıt yoksa saklanacak bir anahtar da yoktur.
+        # `redis-py` senkron; event loop'u bloklamamak için thread'e taşınıyor.
+        try:
+            ttl = await run_in_threadpool(secret_store.store_key, analysis_id, api_key, settings)
+        except Exception:
+            # Anahtar saklanamadıysa iş başlatılamaz. Kaydı geri alıyoruz ki
+            # kullanıcı asla ilerlemeyecek bir job'ı poll etmesin.
+            logger.exception("openrouter_key_store_failed", extra={"analysis_id": str(analysis_id)})
+            await session.delete(analysis)
+            await session.commit()
+            raise ApiError(
+                "INTERNAL_ERROR",
+                "Analiz başlatılamadı.",
+            ) from None
 
-    # ADR §10 risk 7: task payload'ında düz anahtar YOK, yalnızca kimlik.
-    run_analysis_task.delay(str(analysis_id))
+        # Import burada: `workers.tasks` Celery uygulamasını yükler ve API'nin
+        # import zincirinde döngü oluşturmasını istemiyoruz.
+        from app.workers.tasks import run_analysis_task
+
+        # ADR §10 risk 7: task payload'ında düz anahtar YOK, yalnızca kimlik.
+        run_analysis_task.delay(str(analysis_id))
+    except BaseException:
+        # 202 DIŞINDA her sonuç talebi bırakır. En görünür senaryo
+        # COST_LIMIT_EXCEEDED: hatanın kendi metni "sınırı yükseltin ya da
+        # daha ucuz bir model seçin" diyor — talep tutulsaydı kullanıcı tam
+        # da bunu yapınca gövdesi değiştiği için 409 alırdı.
+        if claimed is not None:
+            await release_idempotency(claimed, settings)
+        raise
+
+    created = AnalysisCreated(analysis_id=analysis_id, status=AnalysisStatus.QUEUED)
+    if claimed is not None:
+        await remember_idempotency(
+            claimed,
+            created,
+            getattr(request.state, "trace_id", ""),
+            settings,
+        )
 
     logger.info(
         "analysis_created",
@@ -210,7 +253,7 @@ async def create_analysis(
             "trace_id": getattr(request.state, "trace_id", None),
         },
     )
-    return AnalysisCreated(analysis_id=analysis_id, status=AnalysisStatus.QUEUED)
+    return created
 
 
 def _estimated_seconds_remaining(analysis: Analysis, settings: Settings) -> float | None:

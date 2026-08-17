@@ -220,3 +220,45 @@ def test_profil_sozlesme_semasina_uyar(settings: Settings) -> None:
 
     assert parsed.total_row_count == profile["total_row_count"]
     assert len(parsed.sheets) == 3
+
+
+def test_tarama_tavani_asildiginda_profil_hala_semaya_uyar(
+    settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Tavan aşıldığında profil KENDİ İÇİNDE tutarlı kalmalı.
+
+    REGRESYON: tavan `continue` ile uygulanıyordu, yani kolon istatistikleri
+    ilk N satırı sayarken `row_count` dosyanın tamamını sayıyordu. Sonuç
+    `UploadProfile`'ın değişmezini (`non_empty_count + empty_count ==
+    row_count`) ihlal ediyor, Pydantic patlıyor ve kullanıcı tavanı aşan HER
+    dosyada `INTERNAL_ERROR` alıyordu — oysa ADR-0002 #13 dosyanın
+    profillenmesini ve yalnızca işaretlenmesini şart koşuyor.
+
+    Bu 2,8 M satırlık gerçek bir dosyada bulundu (ADR §10 risk 1 yük testi);
+    burada tavan küçültülerek aynı kod yolu saniyeler içinde zorlanıyor.
+    """
+    from app.schemas.upload import UploadProfile
+
+    scan_cap = 4
+    monkeypatch.setattr(settings, "profile_max_scan_rows", scan_cap)
+
+    profile = validate_and_profile(FIXTURES / "valid_multi_sheet.xlsx", settings)
+    parsed = UploadProfile.model_validate(profile)
+
+    for sheet in parsed.sheets:
+        assert sheet.row_count <= scan_cap
+        for column in sheet.columns:
+            assert column.non_empty_count + column.empty_count == sheet.row_count
+
+
+def test_tarama_tavani_satir_sinirinin_altina_indirilemez() -> None:
+    """Tavan `MAX_ROWS`'un altına düşerse `exceeds_row_limit` yalan söylerdi.
+
+    Profil tavanda kesildiği için `row_count` tavana eşit kalır; tavan satır
+    sınırının altındaysa sınır aşımı HİÇ işaretlenmez ve kullanıcı kırpılmış
+    bir analizi tam sanır. Config bu yüzden fail-fast doğruluyor.
+    """
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, profile_max_scan_rows=1000)

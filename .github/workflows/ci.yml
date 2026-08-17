@@ -144,6 +144,48 @@ jobs:
           AUZEF_S3_SECRET_KEY: minioadmin
           AUZEF_S3_BUCKET: auzef-test
 
+  e2e:
+    name: End-to-end (browser, mock backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # `needs:` yok — `web` job'ıyla paralel koşuyor. E2E en yavaş sinyal;
+    # lint'i beklemesi toplam süreyi uzatır, bir şey kazandırmaz.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Yalnızca chromium: üç tarayıcıyı da kurmak indirme süresini üçe
+      # katlar ve buradaki testler tarayıcıya özgü davranış ölçmüyor.
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      # Yalnızca `mock` projesi. `stack` projesi çalışan bir docker compose
+      # yığını ister; CI'da o yolu koşturmak imaj derlemesi + sekiz servis
+      # demek ve `backend` job'ı zaten aynı entegrasyonu servislere karşı
+      # ölçüyor. `stack` yerelde `npm run e2e:stack` ile koşulur.
+      - name: Run end-to-end tests
+        run: npm run e2e:mock
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
   contract:
     name: Contract drift (openapi + fixtures + cross-validation)
     runs-on: ubuntu-latest

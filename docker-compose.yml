@@ -1,11 +1,16 @@
 # AUZEF Chat Analiz — geliştirme ortamı (ADR §2).
 #
-# Uzun ömürlü YEDİ servis: web, api, worker, beat, postgres, redis, minio.
-# Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini bitirip
-# çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)" görünür.
-# Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak, birden
-# fazla API replikası aynı anda `alembic upgrade` çalıştırdığında yarışa
-# yol açardı.
+# Uzun ömürlü SEKİZ servis: proxy, web, api, worker, beat, postgres, redis,
+# minio. Bunlara ek olarak tek seferlik bir `migrate` servisi var; işini
+# bitirip çıkar, bu yüzden `docker compose ps` çıktısında "Exited (0)"
+# görünür. Bu bir hata DEĞİLDİR — migration'ları API entrypoint'ine koymak,
+# birden fazla API replikası aynı anda `alembic upgrade` çalıştırdığında
+# yarışa yol açardı.
+#
+# TEK GİRİŞ NOKTASI `proxy` (:3000). Tarayıcı yalnızca onunla konuşur;
+# `/api/v1/*` FastAPI'ye, gerisi Next'e gider. ADR §2'nin "aynı origin"
+# kuralını uygulayan katman budur — Next rewrite'ı değil. Gerekçe ve dört
+# kısıt `infra/docker/Caddyfile` içinde.
 #
 # `beat` Faz 4'te eklendi (ADR §9 retention). ADR §2 altı servis sayıyor;
 # yedincisi bir mimari sapma DEĞİL, aynı worker imajının farklı komutla
@@ -107,7 +112,7 @@ services:
       AUZEF_S3_BUCKET: ${AUZEF_S3_BUCKET:-auzef-uploads}
       # Upload ve satır sınırı tel sözleşmesinde donmuştur; yalnızca açılmış
       # OOXML boyutu çalışma ortamından ayarlanabilir.
-      AUZEF_MAX_UNCOMPRESSED_BYTES: ${AUZEF_MAX_UNCOMPRESSED_BYTES:-1073741824}
+      AUZEF_MAX_UNCOMPRESSED_BYTES: ${AUZEF_MAX_UNCOMPRESSED_BYTES:-4294967296}
       # ADR §2: analiz hard timeout'u 45 dk, environment ile değiştirilebilir.
       # BYOK anahtarının Redis TTL'i bundan TÜRETİLİR (+5 dk), ayrı ayarlanmaz.
       AUZEF_ANALYSIS_TIMEOUT_SECONDS: ${AUZEF_ANALYSIS_TIMEOUT_SECONDS:-2700}
@@ -212,12 +217,41 @@ services:
         # olarak imaja gömülürdü.
         API_ORIGIN: ${API_ORIGIN:-http://api:8000}
     container_name: auzef-web
-    ports:
-      - "3000:3000"
+    # Port YAYINLANMIYOR: tarayıcı `web`'e doğrudan gitmemeli, yoksa aynı
+    # origin kuralı delinir ve `/api/v1` istekleri Next'in rewrite'ına
+    # (tamponlayan yola) düşer. Tek giriş `proxy`.
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
     depends_on:
       - api
+    restart: unless-stopped
+
+  # -------------------------------------------------------- reverse proxy
+  proxy:
+    image: caddy:2.10-alpine
+    container_name: auzef-proxy
+    # Konfigürasyon salt okunur bağlanıyor: proxy'nin kendi kurallarını
+    # çalışma anında değiştirebilmesi için bir sebep yok.
+    volumes:
+      - ./infra/docker/Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      # Dışarıdaki port 3000 KORUNUYOR: README, .env.example ve CORS
+      # allowlist'i bu adresi gösteriyor. Değişen tek şey, 3000'in artık
+      # Next'e değil proxy'ye ait olması.
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
     restart: unless-stopped
 
 volumes:

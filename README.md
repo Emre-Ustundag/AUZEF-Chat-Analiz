@@ -4,7 +4,20 @@ AUZEF Chat Analiz, büyük hacimli kullanıcı mesajlarında tekrar eden sorular
 
 Projenin ilk kullanım senaryosu, AUZEF chatbot mesajlarından gerçek kullanıcı ifadelerine dayalı sık sorulan sorular (SSS/FAQ) çıkarmaktır. Uygulama; Excel dosyasındaki mesajları temizlemeyi, benzer soruları gruplamayı, konu dağılımlarını hesaplamayı ve sonuçları anlaşılır bir dashboard üzerinde sunmayı hedefler.
 
-> **Proje durumu:** Erken geliştirme aşamasındadır. Next.js web uygulamasına ek olarak FastAPI uygulama temeli, API sözleşmesi, RFC 9457 hata yönetimi, güvenli loglama ve health endpoint'leri çalışır durumdadır. Asenkron worker, veri katmanı ve analiz pipeline'ı sonraki kartlardadır.
+> **Proje durumu:** MVP akışı uçtan uca çalışıyor. `docker compose up` ile sekiz
+> uzun ömürlü servis (`proxy`, `web`, `api`, `worker`, `beat`, `postgres`,
+> `redis`, `minio`) ve tek seferlik `migrate`
+> ayağa kalkar; tarayıcıdan yüklenen bir `.xlsx` profillenir, kolon seçilir,
+> analiz OpenRouter üzerinden koşar ve rapor dashboard'da görüntülenip xlsx/JSON
+> olarak dışa aktarılır. Job durumu, iptal, maliyet tavanı, PII redaksiyonu ve
+> retention süpürücüsü de yerinde.
+>
+> Uçtan uca akış gerçek bir tarayıcıda test ediliyor (`tests/e2e/`), aynı
+> origin'i Caddy tabanlı bir reverse proxy sağlıyor ve 130 MB'lık gerçek bir
+> dosyayla yük testi yapılmış durumda: [raporu](docs/yuk-testi.md) ÜÇ kusur
+> ortaya çıkardı ve üçü de düzeltildi — o boyuttaki dosyalar önceden hiç
+> işlenemiyordu. Kalan maddeler
+> [Açık işler ve bilinen sınırlar](#açık-işler-ve-bilinen-sınırlar) bölümünde.
 
 ## Neden bu proje?
 
@@ -79,7 +92,9 @@ Yaklaşık 130 MB büyüklüğündeki gerçek Excel dosyalarının tek bir HTTP 
 
 ```mermaid
 flowchart LR
-    U["Next.js web"] -->|"/api reverse proxy"| A["FastAPI"]
+    B["Tarayıcı"] --> X["Caddy reverse proxy :3000"]
+    X -->|"/api/v1/*"| A["FastAPI"]
+    X -->|"diğer yollar"| U["Next.js web"]
     A -->|"dosyayı stream et"| S["S3 / MinIO"]
     A -->|"job oluştur"| P[("PostgreSQL")]
     A -->|"kuyruğa al"| R[("Redis")]
@@ -87,19 +102,24 @@ flowchart LR
     W --> S
     W --> O["OpenRouter"]
     W -->|"durum ve rapor"| P
-    U -->|"polling"| A
+    B -->|"polling"| X
 ```
+
+Tarayıcı yalnızca proxy ile konuşur; `web` servisi portunu yayınlamaz. Aynı
+origin kuralını (ADR §2) uygulayan katman budur, Next.js rewrite'ı değil —
+gerekçe ve dört kısıt `infra/docker/Caddyfile` içinde.
 
 ### Bileşenler
 
-| Bileşen       | Sorumluluk                                                                    |
-| ------------- | ----------------------------------------------------------------------------- |
-| Next.js web   | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard               |
-| FastAPI       | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları |
-| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı         |
-| PostgreSQL    | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu     |
-| Redis         | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı    |
-| S3 / MinIO    | Ham upload ve Parquet ara dosyaları için geçici object storage                |
+| Bileşen       | Sorumluluk                                                                     |
+| ------------- | ------------------------------------------------------------------------------ |
+| Caddy proxy   | Tek giriş noktası: aynı origin, gövde tamponlamasız geçiş, anahtar redaksiyonu |
+| Next.js web   | Dosya yükleme, sheet/kolon seçimi, ilerleme durumu ve dashboard                |
+| FastAPI       | Upload ve analiz API'leri, doğrulama, job oluşturma ve güvenli hata cevapları  |
+| Celery worker | Excel profilleme, ön işleme, PII redaksiyonu ve LLM analiz pipeline'ı          |
+| PostgreSQL    | Kalıcı job durumu, metadata, maliyet/token bilgisi ve JSONB analiz raporu      |
+| Redis         | Celery kuyruğu, kısa süreli lock ve şifreli/TTL süreli OpenRouter anahtarı     |
+| S3 / MinIO    | Ham upload ve Parquet ara dosyaları için geçici object storage                 |
 
 ### İki aşamalı işlem modeli
 
@@ -127,6 +147,7 @@ AUZEF-Chat-Analiz/
 │   │   └── src/lib/api/
 │   └── backend/
 │       ├── pyproject.toml          # uv projesi, ruff/mypy/pytest config
+│       ├── alembic/versions/       # şema migration'ları
 │       ├── app/api/v1/
 │       ├── app/core/               # errors, handlers, tracing, openapi
 │       ├── app/domain/
@@ -137,19 +158,18 @@ AUZEF-Chat-Analiz/
 │       ├── app/workers/
 │       ├── app/prompts/faq_analysis/
 │       ├── scripts/                # openapi ve fixture üreticileri
-│       └── tests/
+│       └── tests/                  # birim + entegrasyon, tek yerde
 ├── tests/
-│   ├── fixtures/
-│   │   └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
-│   ├── integration/
-│   └── e2e/
+│   ├── e2e/                        # Playwright: tarayıcıdan tüm yığına
+│   └── fixtures/
+│       └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
 ├── infra/
-│   ├── docker/
-│   └── scripts/
+│   └── docker/                     # api/web Dockerfile'ları + Caddyfile
 ├── docs/
 │   ├── mimari.md                   # ADR-0001
 │   ├── adr/0002-api-contract-freeze.md
 │   ├── adr/0003-fastapi-production-foundation.md
+│   ├── yuk-testi.md                # 130 MB ölçümü (ADR §10 risk 1)
 │   └── api/openapi.json            # üretilmiş sözleşme artefaktı
 ├── docker-compose.yml
 ├── Makefile
@@ -227,7 +247,7 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 - Backend üzerinde çalışacaksanız [uv](https://docs.astral.sh/uv/)
   (`curl -LsSf https://astral.sh/uv/install.sh | sh`). Python sürümü
   `apps/backend/.python-version` ile sabitlendi.
-- Tam MVP altyapısı eklendiğinde Docker ve Docker Compose
+- Tüm yığını çalıştırmak ve entegrasyon/E2E testleri için Docker ve Docker Compose
 
 ### Kurulum
 
@@ -264,26 +284,33 @@ uv run uvicorn app.main:app --reload --port 8000
 
 API dokümanı development/test ortamında [http://localhost:8000/docs](http://localhost:8000/docs),
 liveness ve readiness kontrolleri sırasıyla `/api/v1/health/live` ve
-`/api/v1/health/ready` adreslerindedir. Readiness, hiç bağımlılık kontrolü
-kayıtlı değilse güvenli `503 SERVICE_NOT_READY` döndürür. Backend ortam
+`/api/v1/health/ready` adreslerindedir. Readiness Postgres, Redis ve object
+storage'a gerçekten dokunur (`app/services/readiness.py`); biri cevap
+vermezse `503 SERVICE_NOT_READY` döner ve container healthcheck'i de bu uca
+bağlıdır. Kontroller `create_app`'e enjekte edilir — testler kendi sahtelerini
+geçirebilsin diye varsayılan boştur ve gerçek kontroller yalnızca process
+giriş noktasında kayıtlıdır. Backend ortam
 değişkenleri ve kalite komutları için [backend README](apps/backend/README.md)
 dosyasına bakın.
 
 ### Kullanılabilir komutlar
 
-| Komut                  | Açıklama                                                  |
-| ---------------------- | --------------------------------------------------------- |
-| `npm run dev`          | Geliştirme sunucusunu başlatır                            |
-| `npm run build`        | Üretim derlemesi oluşturur                                |
-| `npm run start`        | Üretim sunucusunu başlatır                                |
-| `npm run lint`         | ESLint kontrollerini çalıştırır                           |
-| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir          |
-| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder       |
-| `npm run typecheck`    | Yol tiplerini üretip TypeScript kontrolü yapar            |
-| `npm test`             | Vitest test paketini çalıştırır                           |
-| `make contract`        | API sözleşmesi drift kontrolü                             |
-| `make generate`        | `openapi.json` ve sözleşme fixture'larını üretir          |
-| `make check`           | CI'ın tamamı (lint + typecheck + test + contract + build) |
+| Komut                  | Açıklama                                                        |
+| ---------------------- | --------------------------------------------------------------- |
+| `npm run dev`          | Geliştirme sunucusunu başlatır                                  |
+| `npm run build`        | Üretim derlemesi oluşturur                                      |
+| `npm run start`        | Üretim sunucusunu başlatır                                      |
+| `npm run lint`         | ESLint kontrollerini çalıştırır                                 |
+| `npm run format`       | Desteklenen dosyaları Prettier ile biçimlendirir                |
+| `npm run format:check` | Dosyaların format kurallarına uyduğunu kontrol eder             |
+| `npm run typecheck`    | Yol tiplerini üretip TypeScript kontrolü yapar                  |
+| `npm test`             | Vitest test paketini çalıştırır                                 |
+| `make e2e`             | Playwright, mock backend'e karşı (Docker gerekmez)              |
+| `make e2e-stack`       | Playwright, çalışan yığına karşı (`docker compose up -d`)       |
+| `make loadtest`        | 130 MB yük testi (ADR §10 risk 1) — çalışan yığın ister         |
+| `make contract`        | API sözleşmesi drift kontrolü                                   |
+| `make generate`        | `openapi.json` ve sözleşme fixture'larını üretir                |
+| `make check`           | CI'ın tamamı (lint + typecheck + test + contract + build + e2e) |
 
 `make help` tüm hedefleri listeler. Bu komutların tamamı her push ve pull
 request'te GitHub Actions üzerinde de çalışır (`.github/workflows/ci.yml`).
@@ -314,28 +341,46 @@ enum'larıyla karşılaştırılır. Kararlar ve gerekçeleri
 
 ## Docker ile çalıştırma
 
-Mevcut Next.js uygulamasını production modunda derleyip başlatmak için:
+Tüm yığını production modunda derleyip başlatmak için:
 
 ```bash
 docker compose up --build
 ```
 
-Ardından [http://localhost:3000](http://localhost:3000) adresini açın.
+Ardından [http://localhost:3000](http://localhost:3000) adresini açın. Bu adres
+Caddy'ye ait: `/api/v1/*` FastAPI'ye, geri kalan her şey Next'e gider. Aynı
+origin olduğu için ayrı bir adres yapılandırmak ve CORS gerekmez.
 
-Servisi durdurmak için:
+Ayağa kalkan servisler:
+
+| Servis     | Rol                                                                    |
+| ---------- | ---------------------------------------------------------------------- |
+| `proxy`    | Caddy: tek giriş noktası (`:3000`), aynı origin, `/api/v1` yönlendirme |
+| `web`      | Next.js arayüzü (port yayınlamaz; yalnızca proxy erişir)               |
+| `api`      | FastAPI (`:8000`), upload/analiz uçları ve health kontrolleri          |
+| `worker`   | Celery worker: profilleme, ön işleme, LLM pipeline, export             |
+| `beat`     | Celery beat: periyodik retention süpürücüsü                            |
+| `migrate`  | Tek seferlik `alembic upgrade head`, `api`'den önce koşar              |
+| `postgres` | Job durumu, metadata ve JSONB rapor                                    |
+| `redis`    | Celery kuyruğu, BYOK secret'ı ve idempotency kayıtları                 |
+| `minio`    | S3 uyumlu object storage (ham upload ve ara dosyalar)                  |
+
+Servisleri durdurmak için:
 
 ```bash
 docker compose down
 ```
 
-Hedef MVP Docker Compose ortamı `web`, `api`, `worker`, `postgres`, `redis` ve `minio` servislerinden oluşacaktır. Bu servislerin tamamı henüz mevcut repo iskeletine eklenmemiştir.
+Backend entegrasyon testleri de bu servisleri kullanır: `docker compose up -d`
+çalışmadan `pytest` koşarsanız Postgres/Redis/MinIO isteyen testler açık bir
+mesajla ATLANIR (bkz. [Açık işler](#açık-işler-ve-bilinen-sınırlar)).
 
 ## Güvenlik ve veri gizliliği
 
 Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağı için aşağıdaki ilkeler MVP mimarisinin parçasıdır:
 
 - Yalnızca `.xlsx` desteklenir; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosyalar reddedilir.
-- Varsayılan upload sınırı 150 MB, açılmış OOXML sınırı 1 GB ve satır sınırı 100.000'dir; bu değerler ortam ayarıdır.
+- Varsayılan upload sınırı 150 MB, açılmış OOXML tavanı 4 GiB ve satır sınırı 100.000'dir. Upload ve satır sınırı sözleşmede donmuştur; açılmış boyut tavanı ortam ayarıdır (ZIP bomba savunmasının ikincil katmanı — asıl savunma sıkıştırma oranı ve akış sırasında sayan gerçek bayt kontrolüdür).
 - OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır ve loglarda redakte edilir.
 - Anahtar PostgreSQL'e yazılmaz; AES-GCM ile şifrelenmiş, kısa ömürlü bir Redis kaydında tutulur ve işlem sonunda silinir.
 - Telefon, e-posta, T.C. ve öğrenci numarası gibi bilinen PII desenleri LLM çağrısından önce maskelenir.
@@ -345,45 +390,66 @@ Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağ
 - Job başına maliyet sınırı LLM çağrıları başlamadan kontrol edilir.
 - Gerçek kurum verisi kullanılmadan önce SSO/erişim kontrolü ve AUZEF veri işleme onayı zorunludur.
 
-Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutulmalı ve Git'e eklenmemelidir. Örnek değerler için `apps/web/.env.example` dosyasına bakın.
+Geliştirme sırasında kullanılacak gizli değerler `.env` dosyalarında tutulmalı ve
+Git'e eklenmemelidir. Backend ve compose değişkenleri için kökteki `.env.example`,
+web uygulaması için `apps/web/.env.example` dosyasına bakın. `.env.example`'da
+bilerek bir `OPENROUTER_API_KEY` satırı **yoktur**: model BYOK'tur, anahtar
+yalnızca istekle gelir.
 
-Web uygulamasının bugün kullandığı tek değişken:
+Web uygulamasının kullandığı iki değişken:
 
-| Değişken                   | Varsayılan     | Açıklama                                                            |
-| -------------------------- | -------------- | ------------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL` | `/api/mock/v1` | Backend'in taban adresi. FastAPI devreye girince `/api/v1` yapılır. |
+| Değişken                   | Varsayılan        | Açıklama                                                                      |
+| -------------------------- | ----------------- | ----------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL` | `/api/v1`         | Backend'in taban adresi. `/api/mock/v1` verildiğinde repodaki mock kullanılır |
+| `API_ORIGIN`               | `http://api:8000` | `next.config.ts` rewrite'ının hedefi; tarayıcıya değil Next sunucusuna ait    |
 
-`NEXT_PUBLIC_` ile başlayan değişkenler istemci paketine **build zamanında**
-gömülür; imaj üretildikten sonra runtime'da değiştirilemezler. Docker ile
-gerçek bir backend'e bağlanırken değer build arg olarak verilmelidir:
+Her ikisi de **build zamanında** okunur ve imaj üretildikten sonra runtime'da
+değiştirilemez: `NEXT_PUBLIC_` değişkenleri istemci paketine gömülür, `rewrites()`
+ise `next build` sırasında değerlendirilip `routes-manifest.json`'a yazılır. Bu
+yüzden compose ikisini de build arg olarak geçiriyor:
 
 ```bash
-docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/v1
+docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=/api/mock/v1
 ```
 
-Varsayılan değer mock backend'i gösterir; `docker compose up` ile ayağa kalkan
-imaj gerçek veri değil, çalışan bir demo sunar.
+> Kod içindeki yedek (`src/lib/api/client.ts`) `/api/mock/v1`'dir: değişken hiç
+> tanımlanmadan çalıştırılan bir kopya, boş bir adrese gitmek yerine çalışan bir
+> demo sunar. Compose ve `web.Dockerfile` gerçek backend'i (`/api/v1`) gösterir.
+
+### Mock backend
+
+`src/mocks/` ve `src/app/api/mock/` **kalıcıdır**, geçici bir iskele değil.
+`NEXT_PUBLIC_API_BASE_URL=/api/mock/v1` ile tüm akış (upload, kolon seçimi,
+polling, rapor, export, `Idempotency-Key`) backend, Postgres, Redis ve MinIO
+olmadan çalışır. Arayüz üzerinde çalışan biri için en kısa yol budur.
+
+Mock'lar bilerek `/api/mock/v1` altında: Next'te route handler'lar rewrite'lardan
+önce eşleşir, aynı yolu paylaşsalardı gerçek backend'i sessizce gölgelerlerdi.
 
 ## Yol haritası
 
 ### MVP
 
-- [ ] Excel dosyası yükleme ve doğrulama
-- [ ] Metin kolonu algılama ve seçme
-- [ ] Veri temizleme ve normalizasyon
-- [ ] Büyük veri kümelerini parçalara ayırma
-- [ ] OpenRouter entegrasyonu
-- [ ] Sistem promptu ve analiz ayarları
-- [ ] Benzer soruları ve temaları gruplama
-- [ ] Adet ve oran hesaplama
-- [ ] Analiz dashboard'u
-- [ ] FAQ ve özet rapor dışa aktarma
+- [x] Excel dosyası yükleme ve doğrulama
+- [x] Metin kolonu algılama ve seçme
+- [x] Veri temizleme ve normalizasyon
+- [x] Büyük veri kümelerini parçalara ayırma
+- [x] OpenRouter entegrasyonu
+- [x] Sistem promptu ve analiz ayarları
+- [x] Benzer soruları ve temaları gruplama
+- [x] Adet ve oran hesaplama
+- [x] Analiz dashboard'u
+- [x] FAQ ve özet rapor dışa aktarma
 - [x] FastAPI temeli, RFC 9457 hata yönetimi ve health endpoint'leri
-- [ ] İşlem durumu takibi
-- [ ] Celery ve Redis job altyapısı
-- [ ] PostgreSQL ve object storage entegrasyonu
-- [ ] PII redaksiyonu ve veri saklama politikaları
-- [ ] Backend, frontend ve uçtan uca test altyapısı
+- [x] İşlem durumu takibi ve iptal
+- [x] Celery ve Redis job altyapısı
+- [x] PostgreSQL ve object storage entegrasyonu
+- [x] PII redaksiyonu ve veri saklama politikaları
+- [x] `Idempotency-Key` desteği (ADR-0002 #3)
+- [x] Backend ve frontend test altyapısı (pytest + vitest + sözleşme drift kontrolü)
+- [x] Uçtan uca (tarayıcı) test altyapısı — Playwright, `tests/e2e/`
+- [x] 130 MB'lık gerçek dosyayla yük testi — [rapor](docs/yuk-testi.md)
+- [x] Aynı origin reverse proxy (Caddy) ve readiness kontrolleri
 
 ### Sonraki faz
 
@@ -396,6 +462,54 @@ imaj gerçek veri değil, çalışan bir demo sunar.
 - [ ] Kayıtlı analiz geçmişi ve rapor karşılaştırma
 
 Hata bildirimleri ve özellik önerileri için [GitHub Issues](https://github.com/Emre-Ustundag/AUZEF-Chat-Analiz/issues) kullanılabilir.
+
+## Açık işler ve bilinen sınırlar
+
+### 1. Yerelde testlerin bir kısmı sessizce atlanıyor
+
+Postgres/Redis/MinIO kapalıyken entegrasyon testleri `conftest.py` tarafından
+açık bir mesajla atlanır ama `pytest` yine de **yeşil** görünür.
+`docker compose up -d` olmadan koşan biri entegrasyon regresyonunu göremez.
+CI'da sorun yok: `ci.yml` servisleri kaldırdığı için orada tam koşuyor.
+
+### 2. Uçtan uca testin `stack` projesi CI'da koşmuyor
+
+`npm run e2e:mock` her PR'da koşuyor (Docker gerekmez). `npm run e2e:stack`
+gerçek yığına karşı koşan projedir ve CI'da devre dışı: imaj derlemesi +
+sekiz servis demek ve `backend` job'ı aynı entegrasyonu servislere karşı
+zaten ölçüyor. Yerelde `docker compose up -d` sonrası koşulmalı.
+
+### 3. Analiz adımı otomatik uçtan uca testte kapsanmıyor
+
+`stack` projesi upload → profilleme → kolon ekranına kadar gidiyor ve
+BİLEREK durup analiz başlatmıyor: o adım gerçek bir OpenRouter çağrısı ve
+kullanıcının parası. Arayüz tarafındaki analiz akışı (ilerleme → rapor →
+dışa aktarma) mock backend'e karşı kapsanıyor; kapsanmayan şey gerçek bir
+LLM koşusunun uçtan uca otomatik doğrulanması.
+
+### 4. Gerçek kurum verisi için ön koşullar
+
+ADR §9: public deployment yapılmaz ve gerçek AUZEF verisi kullanılmadan önce
+SSO/erişim kontrolü ile veri işleme onayı zorunludur. Bugünkü kurulumda
+kimlik doğrulama YOK — uygulama yalnızca anonim örnek veriyle çalıştırılmak
+üzere tasarlandı.
+
+## Kapanmış olan riskler
+
+Aşağıdakiler bir dönem açık maddeydi. Nasıl kapandıkları kayıt olarak
+duruyor çünkü üçü gerçek kusur ortaya çıkardı — biri `docker compose up`'ı
+tamamen çalışmaz hâlde bırakan, biri 130 MB'lık dosyaları işlenemez kılan,
+biri de yeniden denenen bir isteğin kullanıcının parasını ikinci kez
+harcamasına izin veren.
+
+| Madde                     | Durum                                                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 130 MB yük testi          | Ölçüldü ve **üç kusur buldu** — ayrıntı [yük testi raporunda](docs/yuk-testi.md). `make loadtest` ile yeniden koşar.         |
+| Playwright E2E            | `tests/e2e/` — `mock` projesi CI'da, `stack` projesi gerçek yığına karşı yerelde                                             |
+| Reverse proxy             | Caddy compose'a eklendi (`infra/docker/Caddyfile`); :3000 artık proxy'ye ait, Next rewrite'ı yalnızca `npm run dev`          |
+| `/health/ready` hep 503   | Postgres/Redis/object storage kontrolleri kaydedildi; container healthcheck'i de bu uca bağlandı                             |
+| `Idempotency-Key`         | Backend'de uygulandı (`app/services/idempotency.py`); fingerprint'ler iki dilde doğrulanıyor                                 |
+| `docker compose up` kırık | `config.py` sabit `parents[4]` indeksi container yerleşiminde `IndexError` veriyor, dört Python servisini birden düşürüyordu |
 
 ## Katkıda bulunma
 

@@ -13,10 +13,10 @@ ADR §10 risk 7: "Kuyrukta API key — yalnızca şifreli TTL secret reference;
 task payload içinde düz anahtar yok." Bu yüzden Celery task'ına giden tek
 şey `analysis_id`'dir; worker anahtara ihtiyaç duyduğunda onu buradan okur.
 
-FAZ 2 NOTU — ÖNEMLİ: bu fazda anahtar SAKLANIR ve SİLİNİR ama KULLANILMAZ.
-OpenRouter'a hiçbir çağrı yapılmaz (plan §4). Okuyan taraf (`load_key`) yine
-de yazılıp test edildi; Faz 3'te yalnızca çağrı yeri eklenecek, saklama
-yolu değişmeyecek.
+Akış: `POST /analyses` anahtarı burada şifreleyip Redis'e yazar, Celery
+task'ına yalnızca `analysis_id` gider, worker LLM çağrısından hemen önce
+`load_key` ile okur ve iş biter bitmez `delete_key` çağrılır — başarı, hata
+ve iptal fark etmeksizin (`workers/tasks.py`).
 
 Şifreleme tasarımı:
 

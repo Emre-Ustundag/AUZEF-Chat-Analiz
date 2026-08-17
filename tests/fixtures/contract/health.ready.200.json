@@ -2,7 +2,15 @@
   "status": "ready",
   "checks": [
     {
-      "name": "example-dependency",
+      "name": "postgres",
+      "status": "ok"
+    },
+    {
+      "name": "redis",
+      "status": "ok"
+    },
+    {
+      "name": "object-storage",
       "status": "ok"
     }
   ]

@@ -15,10 +15,17 @@ from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.core.openapi import install_openapi
 from app.core.tracing import TRACE_ID_HEADER, TraceIdMiddleware
 from app.services.health import ReadinessCheck
+from app.services.readiness import default_readiness_checks
 
 
 def create_app(*, readiness_checks: Sequence[ReadinessCheck] = ()) -> FastAPI:
-    """Doğrulanmış config ile izole FastAPI uygulaması oluşturur."""
+    """Doğrulanmış config ile izole FastAPI uygulaması oluşturur.
+
+    `readiness_checks` VARSAYILAN OLARAK BOŞTUR ve öyle kalmalı: testlerin
+    büyük kısmı `create_app()` ile uygulama kuruyor ve gerçek kontrollerin
+    varsayılan olması hepsini Postgres/Redis/MinIO'ya bağımlı yapardı.
+    Gerçek kontroller process giriş noktasında (dosyanın sonu) enjekte edilir.
+    """
     settings = get_settings()
     configure_logging(settings)
     expose_docs = settings.environment is not Environment.PRODUCTION
@@ -68,4 +75,8 @@ def create_app(*, readiness_checks: Sequence[ReadinessCheck] = ()) -> FastAPI:
     return app
 
 
-app = create_app()
+#: `uvicorn app.main:app` bunu yükler. Gerçek bağımlılık kontrolleri YALNIZCA
+#: burada kayıtlı: `/api/v1/health/ready` çalışan bir process'te Postgres,
+#: Redis ve object storage'a gerçekten dokunur ve hiçbiri cevap vermiyorsa
+#: `503 SERVICE_NOT_READY` döner.
+app = create_app(readiness_checks=default_readiness_checks())

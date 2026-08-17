@@ -6,7 +6,7 @@ BACKEND := apps/backend
 UV := uv run --locked --project $(BACKEND)
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev lint format typecheck test build contract openapi fixtures generate check clean
+.PHONY: help install dev lint format typecheck test e2e e2e-stack build contract openapi fixtures generate check clean loadtest
 
 help: ## Komutları listele
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -37,6 +37,12 @@ test: ## Tüm testler
 	npm test
 	cd $(BACKEND) && uv run --locked pytest
 
+e2e: ## Uçtan uca testler (tarayıcı, mock backend — Docker gerekmez)
+	npm run e2e:mock
+
+e2e-stack: ## Uçtan uca testler çalışan yığına karşı (`docker compose up -d` gerekir)
+	npm run e2e:stack
+
 build: ## Frontend production build
 	NEXT_TELEMETRY_DISABLED=1 npm run build
 
@@ -53,9 +59,16 @@ contract: ## Sözleşme drift kontrolü (CI'ın çalıştırdığı)
 	$(UV) python $(BACKEND)/scripts/export_fixtures.py --check
 	npm run test:contract
 
-check: lint typecheck test contract build ## CI'ın tamamı
+check: lint typecheck test contract build e2e ## CI'ın tamamı
+
+# Yük testi `check`'e DÂHİL DEĞİL: ~130 MB'lık bir fixture üretip işliyor,
+# dakikalar sürüyor ve çalışan bir yığın istiyor. ADR §10 risk 1'in istediği
+# ölçüm bu; sonuçları docs/yuk-testi.md içinde.
+loadtest: ## 130 MB yük testi (`docker compose up -d` gerekir)
+	$(UV) python $(BACKEND)/scripts/load_test.py
 
 clean: ## Üretilmiş çıktıları temizle
 	rm -rf apps/web/.next apps/web/coverage
+	rm -rf test-results playwright-report
 	rm -rf $(BACKEND)/.pytest_cache $(BACKEND)/.mypy_cache $(BACKEND)/.ruff_cache
 	find $(BACKEND) -type d -name __pycache__ -prune -exec rm -rf {} +

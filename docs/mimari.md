@@ -52,7 +52,9 @@ Gerçek örnek dosya yaklaşık 130 MB olabildiği için dosya okuma ve LLM anal
 - PostgreSQL: upload/analysis metadata, durum, hata, token-maliyet ve yapılandırılmış sonuç JSONB
 - S3 uyumlu object storage: geliştirmede MinIO, üretimde kurumun S3 uyumlu servisi
 - Redis: Celery kuyruğu, idempotency lock ve şifreli kısa ömürlü OpenRouter anahtarı
-- Docker Compose: `web`, `api`, `worker`, `postgres`, `redis` ve `minio` servisleri
+- Docker Compose: `proxy`, `web`, `api`, `worker`, `beat`, `postgres`, `redis` ve `minio` servisleri; bunlara ek olarak tek seferlik bir `migrate` servisi
+  - `beat` ve `proxy` bu listeye sonradan eklendi. `beat`, aynı worker imajının farklı komutla koşan ikinci örneğidir (ADR §9 retention süpürücüsü); worker'a `--beat` vermek tek replika varsayardı.
+  - `proxy` (Caddy) **tek giriş noktasıdır** ve aşağıdaki "aynı origin" kuralını uygulayan katmandır. Next.js rewrite'ı yalnızca `npm run dev` yolunda kalır: ölçüldü, Next 16.3.0 harici rewrite'larda da istek gövdesini belleğe klonluyor ve 130 MB'lık upload'lar için uygun değil. Kısıtlar `infra/docker/Caddyfile` içinde tek tek uygulanmıştır: gövde tamponlaması kapalı, gövde sınırı sözleşme sınırının hemen üstünde (RFC 9457 cevabını backend üretsin diye), `X-OpenRouter-Key` proxy loglarında redakte, timeout hard timeout'un üstünde.
 
 ### Test ve kalite
 
@@ -74,6 +76,7 @@ AUZEF-Chat-Analiz/
 │   │   └── src/lib/api/
 │   └── backend/
 │       ├── pyproject.toml          # uv projesi, ruff/mypy/pytest config
+│       ├── alembic/versions/       # şema migration'ları
 │       ├── app/api/v1/
 │       ├── app/core/               # errors, handlers, tracing, openapi
 │       ├── app/domain/
@@ -84,15 +87,12 @@ AUZEF-Chat-Analiz/
 │       ├── app/workers/
 │       ├── app/prompts/faq_analysis/
 │       ├── scripts/                # openapi ve fixture üreticileri
-│       └── tests/
+│       └── tests/                  # birim + entegrasyon, tek yerde
 ├── tests/
-│   ├── fixtures/
-│   │   └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
-│   ├── integration/
-│   └── e2e/
+│   └── fixtures/
+│       └── contract/               # üretilmiş, iki dilde doğrulanan gövdeler
 ├── infra/
-│   ├── docker/
-│   └── scripts/
+│   └── docker/
 ├── docs/
 │   ├── mimari.md                   # bu ADR (ADR-0001)
 │   ├── adr/0002-api-contract-freeze.md
@@ -101,6 +101,17 @@ AUZEF-Chat-Analiz/
 ├── Makefile
 └── README.md
 ```
+
+Bu ağaç ilk taslaktan iki noktada AYRILDI ve gerçek olan burada yazılıdır:
+
+- **Backend testleri `apps/backend/tests/` altında toplandı.** Kök
+  `tests/integration/` ve `tests/e2e/` açılmadı: entegrasyon testleri
+  uygulamanın kendi fixture'larını, `conftest.py`'sini ve `uv` ortamını
+  kullanıyor, dolayısıyla uygulamanın yanında durmaları daha doğru. Kök
+  `tests/` yalnızca **iki dilin ortak** artefaktını (üretilmiş sözleşme
+  gövdeleri) barındırıyor.
+- **`infra/scripts/` açılmadı.** Geliştirme komutları kökteki `Makefile`'da
+  toplandı; ikinci bir betik dizini aynı işi iki yerde tarif ederdi.
 
 Backend API ve Celery worker aynı Python domain/pipeline kodunu paylaşır; ayrı mikroservis kod tabanları oluşturulmaz.
 
@@ -194,6 +205,7 @@ Terminal durumlar: `failed`, `cancelled`.
 - kayıt 24 saat saklanır
 - replay, istekle gelen yeni `X-OpenRouter-Key` header'ını yok sayar; anahtar orijinal job'a bağlıdır
 - analiz fingerprint'i doğrulanmış request'in canonical JSON SHA-256'sıdır; upload fingerprint'i dosya SHA-256 + filename + MIME + size canonical JSON SHA-256'sıdır; secret/header'lar fingerprint'e girmez
+- kayıt Redis'te tutulur (`app/services/idempotency.py`); TTL `AUZEF_IDEMPOTENCY_TTL_SECONDS` ile ayarlanır. Yalnızca `202` saklanır: hata ile biten istek talebini bırakır, aksi hâlde hatanın önerdiği düzeltmeyi uygulamak 409 üretirdi
 
 OpenAPI şeması backend'den üretilir ve `docs/api/openapi.json` olarak commit edilir. Frontend client'ının bu şemadan otomatik üretilmesi halef karardır; MVP'de sözleşme uyumu iki dilli fixture doğrulamasıyla zorlanır (ADR-0002 §4).
 
@@ -266,7 +278,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 
 - MVP yalnızca `.xlsx` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir
 - Sözleşmede donmuş sıkıştırılmış upload sınırı: 150 MB
-- OOXML açılmış toplam boyut sınırı: 1 GB
+- OOXML açılmış toplam boyut tavanı: 4 GiB. **1 GiB'ti ve yük testinde düştü** (§10 risk 1'in istediği ölçüm): 130,9 MB'lık gerçekçi bir dosya 1,12 GB'a açılıyor ve reddediliyordu. Sıkıştırma oranı 8,7 — bomba eşiğinin (200) çok altında, yani reddedilen şey meşru bir dosyaydı. 150 MB'lık donmuş upload sınırı ile 1 GiB tavan aynı anda doğru olamazdı. Asıl ZIP bomba savunması bu mutlak tavan DEĞİL, üye başına sıkıştırma oranı ve akış sırasında sayan gerçek bayt kontrolüdür; tavan ikincil bir nettir
 - Boyut ve süre sınırları environment config'tir (`AUZEF_` öneki); satır sınırı DEĞİLDİR
 - Satır sınırı: 100.000, sözleşmede donmuştur (ADR-0002 #13) — hem Pydantic hem Zod cevap invariant'larında kullanıldığı için env ile oynatmak backend'in doğru ürettiği cevapları frontend'e reddettirirdi. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)
 - OpenRouter key PostgreSQL'e veya loglara yazılmaz

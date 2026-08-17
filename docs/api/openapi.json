@@ -67,7 +67,15 @@
                       "status": "ready",
                       "checks": [
                         {
-                          "name": "example-dependency",
+                          "name": "postgres",
+                          "status": "ok"
+                        },
+                        {
+                          "name": "redis",
+                          "status": "ok"
+                        },
+                        {
+                          "name": "object-storage",
                           "status": "ok"
                         }
                       ]
@@ -133,7 +141,21 @@
         ],
         "summary": "Dosya yükle ve profil işini kuyruğa al",
         "operationId": "create_upload_api_v1_uploads_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Opsiyonel. Aynı anahtar + aynı gövde ile tekrarlanan istek, ilk isteğin 202 cevabını aynen döndürür (replay). Aynı anahtar + FARKLI gövde ise 409 `JOB_CONFLICT` üretir. Kayıt 24 saat saklanır.\n\nReplay, orijinal 202'yi döndürür ve istekle gelen yeni `X-OpenRouter-Key` header'ını YOK SAYAR: anahtar orijinal job'a bağlıdır. Aksi hâlde anahtar rotasyonundan sonraki bir retry, ölmüş bir job'ı sessizce diriltirdi.\n\nFingerprint ve saklama anahtarı ADR-0002 #3'te byte seviyesinde tanımlıdır; secret/header değerleri fingerprint'e girmez.",
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "example": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c"
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
@@ -148,8 +170,7 @@
                 }
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "202": {
@@ -182,6 +203,9 @@
           },
           "409": {
             "description": "RFC 9457 Problem Details — olası kodlar: JOB_CONFLICT",
+            "x-error-codes": [
+              "JOB_CONFLICT"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -202,9 +226,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "JOB_CONFLICT"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -218,6 +239,9 @@
           },
           "413": {
             "description": "RFC 9457 Problem Details — olası kodlar: UPLOAD_TOO_LARGE",
+            "x-error-codes": [
+              "UPLOAD_TOO_LARGE"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -238,9 +262,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "UPLOAD_TOO_LARGE"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -254,6 +275,9 @@
           },
           "415": {
             "description": "RFC 9457 Problem Details — olası kodlar: UPLOAD_INVALID_TYPE",
+            "x-error-codes": [
+              "UPLOAD_INVALID_TYPE"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -274,9 +298,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "UPLOAD_INVALID_TYPE"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -290,6 +311,9 @@
           },
           "422": {
             "description": "RFC 9457 Problem Details — olası kodlar: REQUEST_VALIDATION",
+            "x-error-codes": [
+              "REQUEST_VALIDATION"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -330,9 +354,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "REQUEST_VALIDATION"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -346,6 +367,9 @@
           },
           "500": {
             "description": "RFC 9457 Problem Details — olası kodlar: INTERNAL_ERROR",
+            "x-error-codes": [
+              "INTERNAL_ERROR"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -366,9 +390,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "INTERNAL_ERROR"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -382,6 +403,9 @@
           },
           "501": {
             "description": "RFC 9457 Problem Details — olası kodlar: NOT_IMPLEMENTED",
+            "x-error-codes": [
+              "NOT_IMPLEMENTED"
+            ],
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -402,9 +426,6 @@
                 }
               }
             },
-            "x-error-codes": [
-              "NOT_IMPLEMENTED"
-            ],
             "headers": {
               "X-Trace-Id": {
                 "description": "Bu isteğin izleme kimliği; hata gövdesindeki trace_id ile aynı.",
@@ -416,20 +437,7 @@
               }
             }
           }
-        },
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": false,
-            "description": "Opsiyonel. Aynı anahtar + aynı gövde ile tekrarlanan istek, ilk isteğin 202 cevabını aynen döndürür (replay). Aynı anahtar + FARKLI gövde ise 409 `JOB_CONFLICT` üretir. Kayıt 24 saat saklanır.\n\nReplay, orijinal 202'yi döndürür ve istekle gelen yeni `X-OpenRouter-Key` header'ını YOK SAYAR: anahtar orijinal job'a bağlıdır. Aksi hâlde anahtar rotasyonundan sonraki bir retry, ölmüş bir job'ı sessizce diriltirdi.\n\nFingerprint ve saklama anahtarı ADR-0002 #3'te byte seviyesinde tanımlıdır; secret/header değerleri fingerprint'e girmez.",
-            "schema": {
-              "type": "string",
-              "maxLength": 255
-            },
-            "example": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c"
-          }
-        ]
+        }
       }
     },
     "/api/v1/uploads/{upload_id}": {
