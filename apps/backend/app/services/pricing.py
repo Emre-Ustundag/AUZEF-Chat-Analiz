@@ -46,7 +46,7 @@ def get_model_list(settings: Settings) -> ModelList:
 
     cached = _read_cached(settings)
     if cached is not None and _is_fresh(cached, settings):
-        return cached
+        return _with_current_defaults(cached)
 
     try:
         live = _fetch_live_model_list(settings)
@@ -55,10 +55,25 @@ def get_model_list(settings: Settings) -> ModelList:
             "pricing_catalog_refresh_failed",
             extra={"exception_type": type(exc).__name__, "has_stale_cache": cached is not None},
         )
-        return cached or MODEL_LIST
+        return _with_current_defaults(cached) if cached is not None else MODEL_LIST
 
     _write_cached(live, settings)
-    return live
+    return _with_current_defaults(live)
+
+
+def _with_current_defaults(catalog: ModelList) -> ModelList:
+    """Fiyat cache'inin uygulama sürüm seçimini geri almasını engeller.
+
+    Redis snapshot'ı yalnızca canlı fiyatları taşır. ``default_prompt_version``
+    ise deploy edilen uygulama sözleşmesidir; eski bir cache yeni prompt
+    sürümünü bir saat boyunca v2'ye düşürmemelidir.
+    """
+    return catalog.model_copy(
+        update={
+            "default_model": DEFAULT_MODEL,
+            "default_prompt_version": DEFAULT_PROMPT_VERSION,
+        }
+    )
 
 
 def get_pricing_snapshot(model_id: str | ModelId, settings: Settings) -> PricingSnapshot:

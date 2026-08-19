@@ -38,7 +38,7 @@ from app.pipeline.cost import (
 )
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
 from app.prompts.faq_analysis import V1, V2
-from app.schemas.report import AnalysisReport
+from app.schemas.report import AnalysisReport, percentage_half_up
 
 
 @pytest.fixture
@@ -325,9 +325,35 @@ def test_oranlar_adetlerden_turetilir(settings: Settings) -> None:
 
     assert analyzed == 200
     for question in report.top_questions:
-        assert question.percentage == pytest.approx(round(question.count / analyzed * 100, 1))
+        assert question.percentage == percentage_half_up(question.count, analyzed)
     for theme in report.themes:
-        assert theme.percentage == pytest.approx(round(theme.count / analyzed * 100, 1))
+        assert theme.percentage == percentage_half_up(theme.count, analyzed)
+
+
+def test_half_up_esitlik_yuzdesi_rapor_uretmesini_engellemez(settings: Settings) -> None:
+    """2.400 satırdaki %2,25, şemanın beklediği şekilde %2,3 olmalı.
+
+    Python ``round(2.25, 1)`` half-even ile 2,2 döndürür. Bu fark daha önce
+    rapor şemasının doğrulamasını patlatıp LLM işi tamamlandıktan sonra analizi
+    başarısız kılıyordu.
+    """
+    report = aggregate(
+        analysis_id=uuid.uuid4(),
+        preprocess_result=_build({"a": 54, "b": 846, "c": 800, "d": 700}),
+        classification=_classification(),
+        filename="veri.xlsx",
+        sheet_name="Mesajlar",
+        text_column="mesaj",
+        model="anthropic/claude-sonnet-4.6",
+        prompt_version="faq_analysis/v3",
+        classifier_id="test/v1",
+        top_n=10,
+        settings=settings,
+    )
+
+    question = next(question for question in report.top_questions if question.id == "q1")
+    assert question.count == 54
+    assert question.percentage == 2.3
 
 
 def test_tema_toplami_analiz_edilen_kaydi_asmaz(settings: Settings) -> None:

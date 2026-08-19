@@ -44,6 +44,7 @@ from app.schemas.report import (
     Theme,
     TokenUsage,
     TopQuestion,
+    percentage_half_up,
 )
 
 
@@ -59,10 +60,10 @@ class AggregationError(Exception):
 
 def _percentage(count: int, total: int) -> float:
     """Oranı adetten türetir. Tek yer burasıdır; hiçbir yüzde elle yazılmaz."""
-    if total <= 0:
-        return 0.0
-    # Bir ondalık: frontend `formatPercentage` da bu hassasiyeti gösteriyor.
-    return round(count / total * 100, 1)
+    # Rapor şemasının değişmeziyle aynı, float sınır vakalarından bağımsız
+    # half-up kuralı. Python ``round`` eşitlikte half-even kullandığı için
+    # 54 / 2400 gibi değerlerde şema doğrulamasını bozabiliyordu.
+    return percentage_half_up(count, total)
 
 
 def _prompt_hash(classifier_id: str, prompt_version: str) -> str:

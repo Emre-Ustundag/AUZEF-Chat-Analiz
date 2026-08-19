@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 import httpx
 import pytest
 
-from app.core.catalog import MODEL_LIST
+from app.core.catalog import DEFAULT_MODEL, DEFAULT_PROMPT_VERSION, MODEL_LIST
 from app.core.config import Settings
 from app.pipeline.cost import cost_for_usage
 from app.schemas.analysis import ModelId
@@ -93,7 +93,10 @@ def test_yenileme_hatasinda_bayat_cache_kullanilir(monkeypatch: pytest.MonkeyPat
         lambda settings: (_ for _ in ()).throw(httpx.ConnectError("offline")),
     )
 
-    assert pricing.get_model_list(_settings()) is stale
+    resolved = pricing.get_model_list(_settings())
+    assert resolved.models == stale.models
+    assert resolved.default_model == DEFAULT_MODEL
+    assert resolved.default_prompt_version == DEFAULT_PROMPT_VERSION
 
 
 def test_cache_tokenlari_ayri_oranlarla_hesaplanir() -> None:
