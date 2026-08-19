@@ -48,7 +48,8 @@ tamamen ilgisiz bir bağlamda görürdü.
 whitelist'ten seçilmesini şart koşuyordu ama listeyi döndüren ucu
 tanımlamıyordu; frontend o uç olmadan configure ekranını hiç render edemiyor.
 
-Whitelist ve varsayılanlar `app/core/catalog.py` içinde tek kaynaktır:
+Whitelist, context window ve kesinti durumunda kullanılan yedek fiyatlar
+`app/core/catalog.py` içinde tek kaynaktır:
 
 | Model                         | Girdi / 1M token | Çıktı / 1M token | Context window |
 | ----------------------------- | ---------------: | ---------------: | -------------: |
@@ -56,15 +57,19 @@ Whitelist ve varsayılanlar `app/core/catalog.py` içinde tek kaynaktır:
 | `openai/gpt-4.1-mini`         |          0,4 USD |          1,6 USD |      1.047.576 |
 | `google/gemini-2.5-flash`     |          0,3 USD |          2,5 USD |      1.048.576 |
 
-Bu değerler 12 Ağustos 2026 tarihinde
-[OpenRouter'ın resmi model kataloğuyla](https://openrouter.ai/api/v1/models)
-doğrulandı. Üç whitelist üyesinin de `structured_outputs` desteği zorunludur;
+Normal çalışmada fiyatlar public
+[OpenRouter model kataloğundan](https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties)
+bir saatlik Redis cache ile yenilenir. Yenileme başarısızsa yedi güne kadar
+son bilinen snapshot, o da yoksa tablodaki yedekler kullanılır. Dış katalog
+yalnızca fiyatları günceller; whitelist'e kendiliğinden model ekleyemez.
+Üç whitelist üyesinin de `structured_outputs` desteği zorunludur;
 bu nedenle bu kabiliyeti yayımlamayan eski `anthropic/claude-sonnet-4`
 yerine `anthropic/claude-sonnet-4.6` seçildi.
 
 Daha düşük katalog fiyatı nedeniyle varsayılan model
-`google/gemini-2.5-flash`, varsayılan ve bilinen prompt sürümü
-`faq_analysis/v1`'dir. Fixture üreticisi bu kataloğu doğrudan okur;
+`google/gemini-2.5-flash`, varsayılan prompt sürümü
+`faq_analysis/v2`'dir. `v1` tarihsel sonuçlar için kayıtlı kalır. Fixture
+üreticisi yedek kataloğu doğrudan okur;
 TypeScript mock kataloğu üretilmiş `models.list.200.json` ile CI'da birebir
 karşılaştırılır.
 
@@ -73,12 +78,14 @@ Model ve prompt kimlikleri tel şemasında serbest `string` değildir:
 raporun tamamında aynı exact whitelist'i zorlar. Geçersiz, boş olmayan model
 ve prompt değerleri sırasıyla `INVALID_MODEL` ve `INVALID_PROMPT` olur.
 
-### #2 — Satır sınırı: uyar + kırp, reddetme
+### #2 — Büyük veri eşiği: uyar, kıpma
 
 Upload **her zaman** tam profillenir ve `profile.exceeds_row_limit` set
-edilir. Analiz ilk `MAX_ROWS` (100.000) satırı işler ve rapora
-`ROW_LIMIT_TRUNCATED` uyarısı ekler. Yeni bir hata kodu gerekmez.
-Sınırın kendisi env düğmesi değil, sözleşme sabitidir — bkz. #13.
+edilir. `MAX_ROWS` (100.000) artık kesme veya ret sınırı değil, kullanıcıya
+dosyanın uzun sürebileceğini ve pahalı olabileceğini bildiren bir eşiktir.
+Worker filtrelerden sonra kalan tüm satırları işler; raporda kesme uyarısı
+üretmez. Maliyet güvenliğini satır kesmek değil, analiz öncesi ve koşu
+sırasındaki `max_cost_usd` kapıları sağlar.
 
 Uyarı sözlüğü (`WarningCode`) **üretici-kapalı, tüketici-açık**: backend
 yalnızca sözlükteki üyeleri yayabilir ama tel üstündeki alan `str` kalır. Zod
@@ -281,7 +288,7 @@ artırmaz; bir alanı kaldırmak veya yeniden adlandırmak ikisini de artırır.
 `openapi.info.version` paket sürümünden bilerek ayrıdır: bir bağımlılık
 yükseltmesi kayıt artefaktını değiştirmemelidir.
 
-### #13 — Frontend'in uyguladığı limitler sözleşme sabitidir
+### #13 — Upload sınırı ve büyük veri eşiği sözleşme sabitidir
 
 `MAX_UPLOAD_BYTES` ve `MAX_ROWS`, `app/core/config.py` içinde modül seviyesinde
 `Final` sabitlerdir ve `.env.example`'da yer almaz. Diğer çalışma sınırları
@@ -289,16 +296,9 @@ yükseltmesi kayıt artefaktını değiştirmemelidir.
 `idempotency_ttl_seconds`) `Settings` içinde ve `AUZEF_` önekiyle
 environment'tan değiştirilebilir.
 
-Gerekçe: `MAX_ROWS` yalnızca bir limit değil, **iki dilde yazılmış cevap
-invariant'larının parçası** — `analyzed_count + discarded_count ==
-min(total_rows, MAX_ROWS)`, `profile.exceeds_row_limit` ve
-`ROW_LIMIT_TRUNCATED` uyarısının varlığı hepsi ona bağlı (#2). Frontend aynası
-`LIMITS.MAX_ROWS` bir derleme zamanı sabiti olduğu için, backend tarafını env
-ile oynatmak sunucunun **doğru** ürettiği cevapları Zod'a reddettirir;
-`apiRequest` bunu sentetik bir `INTERNAL_ERROR`'a çevirir ve kullanıcı upload
-ile rapor ekranlarında "Beklenmeyen bir hata" görür. Üstelik §4'teki dört
-katmanın hiçbiri kırmızıya dönmez, çünkü artefaktlar CI'da varsayılan env ile
-üretiliyor — yani drift üretime kadar görünmezdi. `MAX_UPLOAD_BYTES` da
+`MAX_ROWS`, backend `profile.exceeds_row_limit` işareti ile frontend'in büyük
+veri uyarısını aynı noktada üretmesi için iki tarafta aynı kalır; rapor sayım
+değişmezlerine girmez ve analizi kırpmaz. `MAX_UPLOAD_BYTES` ise
 frontend'in yükleme öncesi rejection ve kullanıcıya gösterilen metnini
 belirler: backend daha yüksekse browser geçerli dosyayı engeller, daha düşükse
 UI geçerli gösterdiği dosyayı ancak upload bittikten sonra 413 ile kaybeder.
@@ -309,15 +309,23 @@ karşı doğrular. Değeri değiştirmek bir sözleşme değişikliğidir:
 `config.py` sabiti + `contract_version` bump + `make generate` + ilgili
 frontend `LIMITS` sabiti birlikte güncellenir.
 
-### #14 — `estimated_cost_usd` cevap şemasında doğrulanmaz
+### #14 — Maliyet job başında sabitlenir, sağlayıcı tutarı önceliklidir
 
-`AnalysisReport.estimated_cost_usd` alanı yalnızca `ge=0` kısıtı taşır. Değer,
-raporun üretildiği andaki katalog fiyatlarıyla hesaplanır ve rapora yazılır;
-doğruluğu **yazma yolunda** (BE-02) garanti edilir.
+Analiz oluşturulurken seçilen canlı/yedek fiyatlar `analyses.pricing_snapshot`
+alanına yazılır. Kuyrukta beklerken katalog yenilense bile ön tahmin, worker
+tavanı ve fallback hesabı aynı fiyatlarla çalışır. OpenRouter yanıtı
+`usage.cost` taşıyorsa rapordaki tutar doğrudan bu gerçek borçlandırma
+değeridir (`cost_source=provider`). Alan yoksa prompt, completion, cache-read
+ve cache-write tokenları snapshot oranlarıyla hesaplanır
+(`cost_source=calculated`).
+
+`AnalysisReport.estimated_cost_usd` tarihsel adı geriye uyumluluk için korunur
+ve cevap şemasında yalnızca `ge=0` kısıtı taşır. `pricing_snapshot` rapora da
+eklenir; doğruluk **yazma yolunda** garanti edilir.
 
 Bunu bir `model_validator` içinde `catalog.estimate_cost_usd` ile yeniden
-hesaplayıp karşılaştırmak cazipti ama okuma yolunu dış dünyaya bağlardı:
-OpenRouter fiyatı değiştiği an `catalog.py` güncellenir ve daha önce üretilmiş
+hesaplayıp karşılaştırmak cazipti ama okuma yolunu değişken kataloğa bağlardı:
+OpenRouter fiyatı değiştiği an ve daha önce üretilmiş
 **tüm** raporlar cevap doğrulamasında düşerek kalıcı 500 verirdi
 (`GET /analyses/{id}/result`). Aynı gerekçeyle raporun `model` alanı aktif
 `ModelId` whitelist'inden ayrı, boş olmayan bir tarihsel kimliktir — bir modeli

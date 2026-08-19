@@ -169,7 +169,7 @@ describe("analysisRequestSchema", () => {
       false,
     );
     expect(
-      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v2" }).success,
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v3" }).success,
     ).toBe(false);
   });
 
@@ -303,12 +303,12 @@ describe("analysisReportSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("tarihsel model kimliğini kabul eder, prompt sürümünü dondurur", () => {
+  it("tarihsel model kimliğini kabul eder, bilinmeyen prompt sürümünü reddeder", () => {
     expect(analysisReportSchema.safeParse({ ...report, model: "retired/model-v1" }).success).toBe(
       true,
     );
     expect(
-      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v2" }).success,
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v3" }).success,
     ).toBe(false);
   });
 

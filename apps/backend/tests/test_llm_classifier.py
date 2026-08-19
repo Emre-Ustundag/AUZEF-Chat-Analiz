@@ -678,6 +678,9 @@ def test_maliyet_tavani_kosu_ortasinda_isi_durdurur(settings: Settings) -> None:
                     "prompt_tokens": 400_000,
                     "completion_tokens": 0,
                     "total_tokens": 400_000,
+                    # Token fiyatından hesaplamak yerine sağlayıcının
+                    # gerçek borçlandırma tutarı öncelikli olmalı.
+                    "cost": 1.2,
                 },
             },
         )
@@ -702,7 +705,7 @@ def test_maliyet_tavani_kosu_ortasinda_isi_durdurur(settings: Settings) -> None:
     with pytest.raises(CostLimitExceededError) as exc:
         classifier.classify(groups)
 
-    assert exc.value.spent_usd > 2.0
+    assert exc.value.spent_usd == pytest.approx(2.4)
     assert istek_sayaci["n"] == 2, (
         "tavan aşıldıktan sonra KALAN chunk'lara istek gitmemeli "
         f"(gönderilen: {istek_sayaci['n']}, toplam chunk: {len(chunks)})"

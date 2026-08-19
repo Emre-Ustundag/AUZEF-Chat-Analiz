@@ -62,7 +62,7 @@ from app.schemas.analysis import (
 from app.schemas.common import ProblemDetails
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import ColumnProfile, UploadProfile, UploadStatus
-from app.services import idempotency, report_export, secret_store
+from app.services import idempotency, pricing, report_export, secret_store
 
 logger = get_logger(__name__)
 
@@ -181,6 +181,15 @@ async def create_analysis(
 
         column = _validate_selection(upload.profile, body)
 
+        # Fiyat kataloğunun daha sonra yenilenmesi kuyruktaki işin maliyet
+        # hesabını değiştirmemeli. Bu yüzden seçilen oranlar job
+        # oluşturulurken sabitlenir ve worker'a PostgreSQL üzerinden taşınır.
+        pricing_snapshot = await run_in_threadpool(
+            pricing.get_pricing_snapshot,
+            body.model,
+            settings,
+        )
+
         # ADR-0002 #10: pahalı olduğu profilden belli olan istek job ve Redis
         # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
         # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
@@ -204,6 +213,7 @@ async def create_analysis(
                 column.non_empty_count,
                 column.avg_length,
                 body.model,
+                pricing_snapshot=pricing_snapshot,
             )
             if estimated_cost_usd > body.max_cost_usd:
                 raise ApiError(
@@ -224,6 +234,7 @@ async def create_analysis(
             text_column=body.text_column,
             row_filters=[row_filter.model_dump(mode="json") for row_filter in body.row_filters],
             model=body.model,
+            pricing_snapshot=pricing_snapshot.model_dump(mode="json"),
             prompt_version=body.prompt_version,
             top_n=body.top_n,
             max_cost_usd=body.max_cost_usd,

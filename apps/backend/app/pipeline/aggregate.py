@@ -28,12 +28,13 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, datetime
+from typing import Literal
 from uuid import UUID
 
 from app.core.config import Settings
 from app.pipeline.classifier import Classification
 from app.pipeline.preprocess import PreprocessResult, RecordGroup
-from app.schemas.analysis import RowFilter
+from app.schemas.analysis import PricingSnapshot, RowFilter
 from app.schemas.report import (
     REPORT_SCHEMA_VERSION,
     AnalysisReport,
@@ -108,6 +109,8 @@ def aggregate(
     extra_warnings: list[AnalysisWarning] | None = None,
     token_usage: TokenUsage | None = None,
     estimated_cost_usd: float = 0.0,
+    cost_source: Literal["provider", "calculated"] = "calculated",
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> AnalysisReport:
     """Gerçek frekanslardan raporu üretir.
 
@@ -230,6 +233,8 @@ def aggregate(
         # tahmin yazmak raporu yalancı yapardı.
         token_usage=token_usage or TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
         estimated_cost_usd=estimated_cost_usd,
+        cost_source=cost_source,
+        pricing_snapshot=pricing_snapshot,
     )
 
 

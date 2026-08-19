@@ -115,9 +115,38 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ("Prompt özeti", report.prompt_hash),
         ("Prompt token", report.token_usage.prompt_tokens),
         ("Yanıt token", report.token_usage.completion_tokens),
+        ("Cache'den okunan token", report.token_usage.cached_tokens),
+        ("Cache'e yazılan token", report.token_usage.cache_write_tokens),
         ("Toplam token", report.token_usage.total_tokens),
-        ("Tahmini maliyet (USD)", report.estimated_cost_usd),
+        ("Maliyet (USD)", report.estimated_cost_usd),
+        (
+            "Maliyet kaynağı",
+            "OpenRouter usage.cost"
+            if report.cost_source == "provider"
+            else "Fiyat snapshot hesabı",
+        ),
     ]
+    if report.pricing_snapshot is not None:
+        snapshot = report.pricing_snapshot
+        rows.extend(
+            [
+                ("Fiyat kataloğu", snapshot.source),
+                ("Girdi fiyatı (USD / 1M)", snapshot.input_cost_per_million),
+                ("Çıktı fiyatı (USD / 1M)", snapshot.output_cost_per_million),
+                (
+                    "Cache okuma fiyatı (USD / 1M)",
+                    snapshot.cache_read_cost_per_million
+                    if snapshot.cache_read_cost_per_million is not None
+                    else "Yok",
+                ),
+                (
+                    "Cache yazma fiyatı (USD / 1M)",
+                    snapshot.cache_write_cost_per_million
+                    if snapshot.cache_write_cost_per_million is not None
+                    else "Yok",
+                ),
+            ]
+        )
     for label, value in rows:
         sheet.append([label, value])
 

@@ -90,15 +90,37 @@ class Usage:
 
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    cached_tokens: int = 0
+    cache_write_tokens: int = 0
+    #: OpenRouter'ın bu çağrı için hesabı gerçekten borçlandırdığı
+    #: tutar. `None`, alanın yanıtta bulunmadığını ifade eder; 0.0
+    #: ise gerçek ve geçerli bir maliyettir.
+    cost_usd: float | None = None
 
     @property
     def total_tokens(self) -> int:
         return self.prompt_tokens + self.completion_tokens
 
     def __add__(self, other: Usage) -> Usage:
+        self_is_identity = self.total_tokens == 0 and self.cost_usd is None
+        other_is_identity = other.total_tokens == 0 and other.cost_usd is None
+        if self_is_identity:
+            combined_cost = other.cost_usd
+        elif other_is_identity:
+            combined_cost = self.cost_usd
+        elif self.cost_usd is not None and other.cost_usd is not None:
+            combined_cost = self.cost_usd + other.cost_usd
+        else:
+            # Gerçek çağrılardan birinde `usage.cost` yoksa kısmi
+            # sağlayıcı tutarını "toplam" diye raporlamayız. Çağıran,
+            # biriken tüm tokenları snapshot fiyatıyla hesaplar.
+            combined_cost = None
         return Usage(
             prompt_tokens=self.prompt_tokens + other.prompt_tokens,
             completion_tokens=self.completion_tokens + other.completion_tokens,
+            cached_tokens=self.cached_tokens + other.cached_tokens,
+            cache_write_tokens=self.cache_write_tokens + other.cache_write_tokens,
+            cost_usd=combined_cost,
         )
 
 
@@ -428,9 +450,17 @@ class OpenRouterClient:
             )
 
         raw_usage = payload.get("usage") or {}
+        if not isinstance(raw_usage, dict):
+            raw_usage = {}
+        prompt_details = raw_usage.get("prompt_tokens_details") or {}
+        if not isinstance(prompt_details, dict):
+            prompt_details = {}
         usage = Usage(
             prompt_tokens=_as_int(raw_usage.get("prompt_tokens")),
             completion_tokens=_as_int(raw_usage.get("completion_tokens")),
+            cached_tokens=_as_int(prompt_details.get("cached_tokens")),
+            cache_write_tokens=_as_int(prompt_details.get("cache_write_tokens")),
+            cost_usd=_as_float(raw_usage.get("cost")),
         )
         return content, usage
 
@@ -457,6 +487,17 @@ def _as_int(value: object) -> int:
     if isinstance(value, float):
         return max(0, int(value))
     return 0
+
+
+def _as_float(value: object) -> float | None:
+    """Sağlayıcı maliyetini güvenle float'a çevirir; yoksa `None`."""
+    if not isinstance(value, str | int | float) or isinstance(value, bool):
+        return None
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return None
+    return amount if amount >= 0 and amount < float("inf") else None
 
 
 def _retry_after(response: httpx.Response) -> float | None:

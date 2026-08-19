@@ -215,6 +215,10 @@ async def test_analiz_uctan_uca_calisir(client: AsyncClient) -> None:
         parsed.token_usage.prompt_tokens + parsed.token_usage.completion_tokens
     )
     assert parsed.estimated_cost_usd > 0.0
+    assert parsed.cost_source == "calculated"
+    assert parsed.pricing_snapshot is not None
+    assert parsed.pricing_snapshot.source == "fallback"
+    assert parsed.token_usage.cached_tokens == 0
     # Model gerçekten çağrıldı ve prompt sürümü rapora işlendi.
     assert parsed.prompt_version == "faq_analysis/v1"
     assert parsed.prompt_hash.startswith("sha256:")
@@ -238,6 +242,30 @@ async def test_satir_filtreleri_uctan_uca_uygulanir(client: AsyncClient) -> None
     assert parsed.preprocessing_summary.analyzed_count == 20
     assert parsed.preprocessing_summary.discarded_count == 20
     assert parsed.preprocessing_summary.unique_count == 5
+
+
+async def test_migration_oncesi_bos_fiyat_snapshot_yedekle_calisir(
+    client: AsyncClient,
+) -> None:
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    # Migration var olan job'lara `{}` yazar. Worker bunu model hatası
+    # saymamalı; sürümlenmiş yedek fiyatla devam etmeli.
+    async with session_scope() as session:
+        await session.execute(
+            text("UPDATE analyses SET pricing_snapshot='{}'::jsonb WHERE id=:i"),
+            {"i": str(analysis_id)},
+        )
+        await session.commit()
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+    result = await client.get(f"/api/v1/analyses/{analysis_id}/result")
+    parsed = AnalysisReport.model_validate(result.json())
+
+    assert parsed.pricing_snapshot is not None
+    assert parsed.pricing_snapshot.source == "fallback"
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 

@@ -1145,25 +1145,37 @@
                           "label": "Claude Sonnet 4.6",
                           "input_cost_per_million": 3.0,
                           "output_cost_per_million": 15.0,
-                          "context_window": 1000000
+                          "cache_read_cost_per_million": 0.3,
+                          "cache_write_cost_per_million": 3.75,
+                          "context_window": 1000000,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         },
                         {
                           "id": "openai/gpt-4.1-mini",
                           "label": "GPT-4.1 mini",
                           "input_cost_per_million": 0.4,
                           "output_cost_per_million": 1.6,
-                          "context_window": 1047576
+                          "cache_read_cost_per_million": 0.1,
+                          "cache_write_cost_per_million": null,
+                          "context_window": 1047576,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         },
                         {
                           "id": "google/gemini-2.5-flash",
                           "label": "Gemini 2.5 Flash",
                           "input_cost_per_million": 0.3,
                           "output_cost_per_million": 2.5,
-                          "context_window": 1048576
+                          "cache_read_cost_per_million": 0.03,
+                          "cache_write_cost_per_million": 0.0833333333333,
+                          "context_window": 1048576,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         }
                       ],
                       "default_model": "google/gemini-2.5-flash",
-                      "default_prompt_version": "faq_analysis/v1"
+                      "default_prompt_version": "faq_analysis/v2"
                     }
                   }
                 }
@@ -1303,7 +1315,7 @@
                       }
                     ],
                     "model": "google/gemini-2.5-flash",
-                    "prompt_version": "faq_analysis/v1",
+                    "prompt_version": "faq_analysis/v2",
                     "top_n": 8,
                     "max_cost_usd": 10.0
                   }
@@ -2273,14 +2285,25 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v2",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   },
                   "Satır sınırının üstünde dosya": {
@@ -2400,14 +2423,25 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v2",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   }
                 }
@@ -2829,14 +2863,25 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v2",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   }
                 }
@@ -3224,6 +3269,25 @@
             "type": "number",
             "minimum": 0.0,
             "title": "Estimated Cost Usd"
+          },
+          "cost_source": {
+            "type": "string",
+            "enum": [
+              "provider",
+              "calculated"
+            ],
+            "title": "Cost Source",
+            "default": "calculated"
+          },
+          "pricing_snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PricingSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3242,7 +3306,9 @@
           "prompt_version",
           "prompt_hash",
           "token_usage",
-          "estimated_cost_usd"
+          "estimated_cost_usd",
+          "cost_source",
+          "pricing_snapshot"
         ],
         "title": "AnalysisReport",
         "description": "GET /api/v1/analyses/{analysis_id}/result — yalnızca \"completed\" iken."
@@ -3546,10 +3612,55 @@
             "minimum": 0.0,
             "title": "Output Cost Per Million"
           },
+          "cache_read_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Cost Per Million"
+          },
+          "cache_write_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Cost Per Million"
+          },
           "context_window": {
             "type": "integer",
             "exclusiveMinimum": 0.0,
             "title": "Context Window"
+          },
+          "pricing_source": {
+            "type": "string",
+            "enum": [
+              "openrouter",
+              "fallback"
+            ],
+            "title": "Pricing Source",
+            "default": "fallback"
+          },
+          "pricing_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pricing Updated At"
           }
         },
         "type": "object",
@@ -3558,7 +3669,11 @@
           "label",
           "input_cost_per_million",
           "output_cost_per_million",
-          "context_window"
+          "cache_read_cost_per_million",
+          "cache_write_cost_per_million",
+          "context_window",
+          "pricing_source",
+          "pricing_updated_at"
         ],
         "title": "ModelOption",
         "description": "GET /api/v1/models öğesi.\n\nADR-0001 §6 \"model yalnızca backend whitelist'inden seçilebilir\" diyordu\nama listeyi döndüren endpoint'i tanımlamıyordu. ADR-0002 #1 ile\n`GET /api/v1/models` sözleşmeye dâhil edildi."
@@ -3600,6 +3715,75 @@
           "unique_count"
         ],
         "title": "PreprocessingSummary"
+      },
+      "PricingSnapshot": {
+        "properties": {
+          "input_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Input Cost Per Million"
+          },
+          "output_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Output Cost Per Million"
+          },
+          "cache_read_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Cost Per Million"
+          },
+          "cache_write_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Cost Per Million"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "openrouter",
+              "fallback"
+            ],
+            "title": "Source"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_cost_per_million",
+          "output_cost_per_million",
+          "cache_read_cost_per_million",
+          "cache_write_cost_per_million",
+          "source",
+          "fetched_at"
+        ],
+        "title": "PricingSnapshot",
+        "description": "Bir job oluşturulurken sabitlenen model fiyatları."
       },
       "ProblemDetails": {
         "properties": {
@@ -3656,7 +3840,8 @@
       "PromptVersion": {
         "type": "string",
         "enum": [
-          "faq_analysis/v1"
+          "faq_analysis/v1",
+          "faq_analysis/v2"
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."
@@ -3858,13 +4043,27 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Total Tokens"
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "cache_write_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cache Write Tokens",
+            "default": 0
           }
         },
         "type": "object",
         "required": [
           "prompt_tokens",
           "completion_tokens",
-          "total_tokens"
+          "total_tokens",
+          "cached_tokens",
+          "cache_write_tokens"
         ],
         "title": "TokenUsage"
       },

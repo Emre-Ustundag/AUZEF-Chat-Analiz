@@ -81,8 +81,19 @@ const report: AnalysisReport = {
     prompt_tokens: 1_284_000,
     completion_tokens: 96_400,
     total_tokens: 1_380_400,
+    cached_tokens: 0,
+    cache_write_tokens: 0,
   },
   estimated_cost_usd: 4.1412,
+  cost_source: "provider",
+  pricing_snapshot: {
+    input_cost_per_million: 3,
+    output_cost_per_million: 15,
+    cache_read_cost_per_million: 0.3,
+    cache_write_cost_per_million: 3.75,
+    source: "openrouter",
+    fetched_at: "2026-08-11T09:55:00Z",
+  },
 };
 
 function renderScreen() {
@@ -107,6 +118,8 @@ describe("ReportScreen", () => {
     expect(screen.getByText("47.106")).toBeInTheDocument();
     expect(screen.getByText("31.540")).toBeInTheDocument();
     expect(screen.getByText("$4,1412")).toBeInTheDocument();
+    expect(screen.getByText("Gerçek maliyet")).toBeInTheDocument();
+    expect(screen.getByText("OpenRouter canlı katalog")).toBeInTheDocument();
   });
 
   it("soruları oranlarıyla listeler", async () => {

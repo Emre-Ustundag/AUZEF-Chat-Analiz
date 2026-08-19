@@ -15,6 +15,7 @@ from app.schemas.analysis import (
     AnalysisRequest,
     ModelList,
     ModelOption,
+    PricingSnapshot,
 )
 from app.schemas.common import ErrorItem, ProblemDetails
 from app.schemas.report import (
@@ -95,10 +96,25 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
             "label",
             "input_cost_per_million",
             "output_cost_per_million",
+            "cache_read_cost_per_million",
+            "cache_write_cost_per_million",
             "context_window",
+            "pricing_source",
+            "pricing_updated_at",
         },
     ),
     (ModelList, {"models", "default_model", "default_prompt_version"}),
+    (
+        PricingSnapshot,
+        {
+            "input_cost_per_million",
+            "output_cost_per_million",
+            "cache_read_cost_per_million",
+            "cache_write_cost_per_million",
+            "source",
+            "fetched_at",
+        },
+    ),
     (SourceSummary, {"filename", "sheet_name", "text_column", "row_filters", "total_rows"}),
     (
         PreprocessingSummary,
@@ -115,7 +131,16 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
         {"id", "canonical_question", "count", "percentage", "confidence", "redacted_examples"},
     ),
     (Theme, {"id", "name", "count", "percentage", "related_question_ids"}),
-    (TokenUsage, {"prompt_tokens", "completion_tokens", "total_tokens"}),
+    (
+        TokenUsage,
+        {
+            "prompt_tokens",
+            "completion_tokens",
+            "total_tokens",
+            "cached_tokens",
+            "cache_write_tokens",
+        },
+    ),
     (AnalysisWarning, {"code", "message"}),
     (
         AnalysisReport,
@@ -135,6 +160,8 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
             "prompt_hash",
             "token_usage",
             "estimated_cost_usd",
+            "cost_source",
+            "pricing_snapshot",
         },
     ),
 ]

@@ -28,9 +28,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from app.core.config import Settings
-from app.domain.model_catalog import MODEL_WHITELIST
 from app.pipeline.preprocess import RecordGroup
 from app.prompts.faq_analysis import PromptBundle
+from app.schemas.analysis import PricingSnapshot
+from app.services.pricing import fallback_pricing_snapshot
 
 #: Karakter başına kabaca token. Türkçe metinde tokenizer'lar İngilizce'ye
 #: göre daha çok token üretiyor; 3 karakter/token temkinli bir tahmin.
@@ -44,7 +45,13 @@ OVERHEAD_TOKENS_PER_RECORD = 12
 OUTPUT_TOKENS_PER_RECORD = 8
 
 
-def cost_for_tokens(prompt_tokens: int, completion_tokens: int, model_id: str) -> float:
+def cost_for_tokens(
+    prompt_tokens: int,
+    completion_tokens: int,
+    model_id: str,
+    *,
+    pricing_snapshot: PricingSnapshot | None = None,
+) -> float:
     """Token sayılarını whitelist fiyatıyla USD tutara çevirir.
 
     FİYAT ARİTMETİĞİNİN TEK YERİ. Faz 3'te aynı çarpma iki yerde yapılıyordu
@@ -57,12 +64,47 @@ def cost_for_tokens(prompt_tokens: int, completion_tokens: int, model_id: str) -
     hatasıdır — API katmanı ve worker modeli zaten iki kez doğruluyor — ama
     fiyat bilinmediğinde uydurma bir sayı üretmek daha kötü olurdu.
     """
-    option = next((m for m in MODEL_WHITELIST if m.id == model_id), None)
-    if option is None:
+    try:
+        pricing = pricing_snapshot or fallback_pricing_snapshot(model_id)
+    except KeyError:
         return 0.0
     cost = (
-        prompt_tokens / 1_000_000 * option.input_cost_per_million
-        + completion_tokens / 1_000_000 * option.output_cost_per_million
+        prompt_tokens / 1_000_000 * pricing.input_cost_per_million
+        + completion_tokens / 1_000_000 * pricing.output_cost_per_million
+    )
+    return round(cost, 6)
+
+
+def cost_for_usage(
+    *,
+    prompt_tokens: int,
+    completion_tokens: int,
+    cached_tokens: int,
+    cache_write_tokens: int,
+    model_id: str,
+    pricing_snapshot: PricingSnapshot | None = None,
+) -> float:
+    """Provider ``usage.cost`` yoksa cache ayrıntılı token fallback hesabı."""
+    try:
+        pricing = pricing_snapshot or fallback_pricing_snapshot(model_id)
+    except KeyError:
+        return 0.0
+
+    cached = min(max(0, cached_tokens), max(0, prompt_tokens))
+    written = min(max(0, cache_write_tokens), max(0, prompt_tokens - cached))
+    regular = max(0, prompt_tokens - cached - written)
+    cache_read_rate = pricing.cache_read_cost_per_million
+    cache_write_rate = pricing.cache_write_cost_per_million
+
+    cost = (
+        regular / 1_000_000 * pricing.input_cost_per_million
+        + cached
+        / 1_000_000
+        * (cache_read_rate if cache_read_rate is not None else pricing.input_cost_per_million)
+        + written
+        / 1_000_000
+        * (cache_write_rate if cache_write_rate is not None else pricing.input_cost_per_million)
+        + completion_tokens / 1_000_000 * pricing.output_cost_per_million
     )
     return round(cost, 6)
 
@@ -71,6 +113,8 @@ def estimate_profile_cost(
     record_count: int,
     average_length: float,
     model_id: str,
+    *,
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> float:
     """Upload profilinden senkron analiz ön tahmini üretir.
 
@@ -87,7 +131,12 @@ def estimate_profile_cost(
     tokens_per_record = int(max(0.0, average_length) / CHARS_PER_TOKEN)
     prompt_tokens = record_count * (tokens_per_record + OVERHEAD_TOKENS_PER_RECORD)
     completion_tokens = record_count * OUTPUT_TOKENS_PER_RECORD
-    return cost_for_tokens(prompt_tokens, completion_tokens, model_id)
+    return cost_for_tokens(
+        prompt_tokens,
+        completion_tokens,
+        model_id,
+        pricing_snapshot=pricing_snapshot,
+    )
 
 
 @dataclass(frozen=True)
@@ -165,6 +214,7 @@ def estimate_cost(
     *,
     settings: Settings,
     prompt: PromptBundle,
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> CostDecision:
     """Benzersiz kayıtlardan tahmini maliyeti çıkarır.
 
@@ -216,6 +266,11 @@ def estimate_cost(
     return CostDecision(
         estimated_prompt_tokens=prompt_tokens,
         estimated_completion_tokens=completion_tokens,
-        estimated_cost_usd=cost_for_tokens(prompt_tokens, completion_tokens, model_id),
+        estimated_cost_usd=cost_for_tokens(
+            prompt_tokens,
+            completion_tokens,
+            model_id,
+            pricing_snapshot=pricing_snapshot,
+        ),
         max_cost_usd=max_cost_usd,
     )

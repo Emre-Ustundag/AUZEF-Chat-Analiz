@@ -306,6 +306,8 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "prompt_hash",
         "token_usage",
         "estimated_cost_usd",
+        "cost_source",
+        "pricing_snapshot",
     }
     assert payload["status"] == "completed"
     assert ISO_Z_PATTERN.match(payload["generated_at"])
@@ -342,6 +344,8 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "prompt_tokens",
         "completion_tokens",
         "total_tokens",
+        "cached_tokens",
+        "cache_write_tokens",
     }
 
 

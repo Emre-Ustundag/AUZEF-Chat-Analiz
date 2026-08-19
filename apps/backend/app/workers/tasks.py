@@ -22,7 +22,7 @@ import tempfile
 import uuid
 from itertools import islice
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from celery.exceptions import SoftTimeLimitExceeded
 from pydantic import ValidationError
@@ -38,7 +38,7 @@ from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.aggregate import AggregationError, aggregate
 from app.pipeline.classifier import RecordClassifier
-from app.pipeline.cost import cost_for_tokens, estimate_cost
+from app.pipeline.cost import cost_for_usage, estimate_cost
 from app.pipeline.llm_classifier import (
     ClassificationCancelledError,
     CostLimitExceededError,
@@ -47,11 +47,17 @@ from app.pipeline.llm_classifier import (
 )
 from app.pipeline.preprocess import Preprocessor, PreprocessResult
 from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
-from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus, RowFilter
+from app.schemas.analysis import (
+    STAGE_PROGRESS,
+    TERMINAL_STATUSES,
+    AnalysisStatus,
+    PricingSnapshot,
+    RowFilter,
+)
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import retention, secret_store, storage
-from app.services.openrouter import OpenRouterClient, OpenRouterError
+from app.services import pricing, retention, secret_store, storage
+from app.services.openrouter import OpenRouterClient, OpenRouterError, Usage
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
@@ -226,6 +232,7 @@ def build_classifier(
     settings: Settings,
     on_progress: ProgressCallback | None = None,
     max_cost_usd: float | None = None,
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> RecordClassifier:
     """Sınıflandırıcıyı kuran TEK değişim noktası (Faz 2 → Faz 3).
 
@@ -245,6 +252,7 @@ def build_classifier(
         settings=settings,
         on_progress=on_progress,
         max_cost_usd=max_cost_usd,
+        pricing_snapshot=pricing_snapshot,
     )
 
 
@@ -260,8 +268,12 @@ def _close_classifier(classifier: RecordClassifier) -> None:
         closer()
 
 
-def _actual_cost(usage: TokenUsage, model_id: str) -> float:
-    """GERÇEKTEN harcanan tahmini tutar — sağlayıcının token sayacından.
+def _actual_cost(
+    usage: Usage,
+    model_id: str,
+    pricing_snapshot: PricingSnapshot,
+) -> tuple[float, Literal["provider", "calculated"]]:
+    """Sağlayıcı tutarını, yoksa snapshot hesabını döndürür.
 
     `pipeline/cost.py`'deki `estimate_cost` ile karıştırılmamalı: o, çağrılar
     BAŞLAMADAN ÖNCE tavan kontrolü için bir tahmin üretir. Bu ise iş bitince,
@@ -273,7 +285,19 @@ def _actual_cost(usage: TokenUsage, model_id: str) -> float:
     hesap burada bir kez daha yazılıydı ve iki kopyanın ayrışması, tavan
     kontrolü ile raporlanan tutarı sessizce birbirinden koparabilirdi.
     """
-    return cost_for_tokens(usage.prompt_tokens, usage.completion_tokens, model_id)
+    if usage.cost_usd is not None:
+        return round(usage.cost_usd, 6), "provider"
+    return (
+        cost_for_usage(
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            cached_tokens=usage.cached_tokens,
+            cache_write_tokens=usage.cache_write_tokens,
+            model_id=model_id,
+            pricing_snapshot=pricing_snapshot,
+        ),
+        "calculated",
+    )
 
 
 def _chunk_progress_callback(
@@ -622,6 +646,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         text_column = analysis.text_column
         row_filters = [RowFilter.model_validate(item) for item in analysis.row_filters]
         model = analysis.model
+        pricing_snapshot_payload = analysis.pricing_snapshot
         prompt_version = analysis.prompt_version
         top_n = analysis.top_n
         max_cost_usd = analysis.max_cost_usd
@@ -769,6 +794,18 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "Seçilen model artık kullanılabilir modeller listesinde değil.",
         )
 
+    try:
+        pricing_snapshot = PricingSnapshot.model_validate(pricing_snapshot_payload)
+    except ValidationError:
+        # Migration öncesi oluşturulmuş/kuyrukta kalmış job'lar boş JSON
+        # taşıyabilir. Fiyat bilinmiyor diye tavanı 0 USD'ye düşürmek
+        # yerine kodla birlikte sürümlenen fallback kullanılır.
+        pricing_snapshot = pricing.fallback_pricing_snapshot(model)
+        logger.warning(
+            "analysis_pricing_snapshot_fallback",
+            extra={"analysis_id": str(analysis_id), "model": model},
+        )
+
     # ---- prompt'u BURADA çöz ----
     # Maliyet tahmini prompt'un boyutunu bilmek zorunda: map system prompt'u
     # her chunk'ta yeniden gönderiliyor ve tahminin en büyük eksik kalemi
@@ -796,6 +833,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         max_cost_usd,
         settings=settings,
         prompt=prompt_bundle,
+        pricing_snapshot=pricing_snapshot,
     )
     logger.info(
         "analysis_cost_estimated",
@@ -869,6 +907,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             # kullanıcının kendi anahtarından çıktığı için tavan harcandıkça
             # da bakılıyor.
             max_cost_usd=max_cost_usd,
+            pricing_snapshot=pricing_snapshot,
         )
     except UnknownPromptVersionError:
         logger.warning(
@@ -947,17 +986,16 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
 
     # Gerçek token tüketimi sağlayıcının `usage` bloğundan geliyor; modelin
     # metninden DEĞİL (ADR §4). Faz 2'de burada 0 raporlanıyordu.
-    usage = getattr(classifier, "usage", None)
-    token_usage = (
-        TokenUsage(
-            prompt_tokens=usage.prompt_tokens,
-            completion_tokens=usage.completion_tokens,
-            total_tokens=usage.total_tokens,
-        )
-        if usage is not None
-        else TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+    raw_usage = getattr(classifier, "usage", None)
+    usage = raw_usage if isinstance(raw_usage, Usage) else Usage()
+    token_usage = TokenUsage(
+        prompt_tokens=usage.prompt_tokens,
+        completion_tokens=usage.completion_tokens,
+        total_tokens=usage.total_tokens,
+        cached_tokens=usage.cached_tokens,
+        cache_write_tokens=usage.cache_write_tokens,
     )
-    spent_usd = _actual_cost(token_usage, model)
+    spent_usd, cost_source = _actual_cost(usage, model, pricing_snapshot)
 
     # ------------------------------------------------------- aggregating
     async with session_scope() as session:
@@ -981,6 +1019,8 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             extra_warnings=warnings,
             token_usage=token_usage,
             estimated_cost_usd=spent_usd,
+            cost_source=cost_source,
+            pricing_snapshot=pricing_snapshot,
         )
     except AggregationError as exc:
         # Değişmez ihlali: sınıflandırıcı aynı kaydı iki kez eşlemiş olabilir.

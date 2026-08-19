@@ -61,10 +61,11 @@ from app.pipeline.classifier import (
     QuestionAssignment,
     ThemeAssignment,
 )
-from app.pipeline.cost import build_chunks, cost_for_tokens
+from app.pipeline.cost import build_chunks, cost_for_usage
 from app.pipeline.preprocess import RecordGroup
 from app.prompts.faq_analysis import PromptBundle
 from app.prompts.faq_analysis.v1 import escape_record_text
+from app.schemas.analysis import PricingSnapshot
 from app.services.openrouter import OpenRouterClient, Usage
 
 logger = get_logger(__name__)
@@ -164,6 +165,7 @@ class OpenRouterClassifier:
         settings: Settings,
         on_progress: ProgressCallback | None = None,
         max_cost_usd: float | None = None,
+        pricing_snapshot: PricingSnapshot | None = None,
     ) -> None:
         self._client = client
         self._prompt = prompt
@@ -174,6 +176,7 @@ class OpenRouterClassifier:
         #: tahmin kontrolü geçerlidir (Faz 2 vekil sınıflandırıcı bunu
         #: kullanmıyor).
         self._max_cost_usd = max_cost_usd
+        self._pricing_snapshot = pricing_snapshot
         self._usage = Usage()
         self._repairs = 0
 
@@ -328,14 +331,22 @@ class OpenRouterClassifier:
     def _guard_cost(self) -> None:
         """Gerçek tüketim tavanı aştıysa koşuyu keser.
 
-        `cost_for_tokens` fiyat aritmetiğinin tek yeri; tavan kontrolü ile
-        rapordaki tutarın ayrışmaması için burada da o kullanılıyor.
+        OpenRouter `usage.cost` döndürüyorsa gerçek borçlandırma tutarı
+        esastır. Eski/eksik bir sağlayıcı yanıtında tokenlar, job
+        oluşturulurken sabitlenen fiyat snapshot'ıyla hesaplanır.
         """
         if self._max_cost_usd is None:
             return
-        spent = cost_for_tokens(
-            self._usage.prompt_tokens, self._usage.completion_tokens, self._model
-        )
+        spent = self._usage.cost_usd
+        if spent is None:
+            spent = cost_for_usage(
+                prompt_tokens=self._usage.prompt_tokens,
+                completion_tokens=self._usage.completion_tokens,
+                cached_tokens=self._usage.cached_tokens,
+                cache_write_tokens=self._usage.cache_write_tokens,
+                model_id=self._model,
+                pricing_snapshot=self._pricing_snapshot,
+            )
         if spent > self._max_cost_usd:
             logger.warning(
                 "llm_cost_limit_reached",

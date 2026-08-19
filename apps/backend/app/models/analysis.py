@@ -71,6 +71,13 @@ class Analysis(Base):
         server_default=text("'[]'::jsonb"),
     )
     model: Mapped[str] = mapped_column(String(256), nullable=False)
+    #: API job'ı oluştururken alınan canlı/fallback fiyat snapshot'ı.
+    pricing_snapshot: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default=text("'{}'::jsonb"),
+    )
     prompt_version: Mapped[str] = mapped_column(String(128), nullable=False)
     top_n: Mapped[int] = mapped_column(Integer, nullable=False)
     max_cost_usd: Mapped[float] = mapped_column(Float, nullable=False)

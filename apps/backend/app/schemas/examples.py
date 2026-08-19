@@ -39,6 +39,7 @@ from app.schemas.analysis import (
     AnalysisJob,
     AnalysisRequest,
     AnalysisStatus,
+    PricingSnapshot,
     RowFilter,
 )
 from app.schemas.common import ErrorItem, ProblemDetails
@@ -329,6 +330,8 @@ def build_report(
             )
         )
 
+    model_option = next(model for model in MODEL_LIST.models if model.id == DEFAULT_MODEL)
+
     return AnalysisReport(
         schema_version="1.0",
         analysis_id=ANALYSIS_ID,
@@ -377,6 +380,15 @@ def build_report(
         ),
         # Sabit yazılmaz: katalog fiyatı değişince sessizce yanlış olurdu.
         estimated_cost_usd=estimate_cost_usd(DEFAULT_MODEL, PROMPT_TOKENS, COMPLETION_TOKENS),
+        cost_source="calculated",
+        pricing_snapshot=PricingSnapshot(
+            input_cost_per_million=model_option.input_cost_per_million,
+            output_cost_per_million=model_option.output_cost_per_million,
+            cache_read_cost_per_million=model_option.cache_read_cost_per_million,
+            cache_write_cost_per_million=model_option.cache_write_cost_per_million,
+            source=model_option.pricing_source,
+            fetched_at=model_option.pricing_updated_at,
+        ),
     )
 
 

@@ -56,6 +56,9 @@ os.environ.setdefault("AUZEF_S3_ENDPOINT_URL", "http://127.0.0.1:9000")
 os.environ.setdefault("AUZEF_S3_BUCKET", "auzef-test")
 # Hiçbir test yanlışlıkla gerçek OpenRouter'a bağlanmasın.
 os.environ.setdefault("AUZEF_OPENROUTER_BASE_URL", "http://127.0.0.1:9/api/v1")
+# Birim/entegrasyon testleri dış fiyat kataloğuna bağlanmaz. Canlı
+# katalog davranışı `test_pricing.py` içinde MockTransport ile ayrı test edilir.
+os.environ.setdefault("AUZEF_PRICING_REFRESH_ENABLED", "false")
 
 from app.main import create_app  # noqa: E402
 

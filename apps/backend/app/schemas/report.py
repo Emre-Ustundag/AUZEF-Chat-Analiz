@@ -12,7 +12,7 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from app.schemas.analysis import PromptVersion, RowFilter
+from app.schemas.analysis import PricingSnapshot, PromptVersion, RowFilter
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -84,6 +84,8 @@ class TokenUsage(ApiModel):
     prompt_tokens: int = Field(ge=0)
     completion_tokens: int = Field(ge=0)
     total_tokens: int = Field(ge=0)
+    cached_tokens: int = Field(default=0, ge=0)
+    cache_write_tokens: int = Field(default=0, ge=0)
 
 
 class AnalysisWarning(ApiModel):
@@ -158,6 +160,9 @@ class AnalysisReport(ApiModel):
     whitelist'te olma şartı için de geçerli — bir modeli kullanımdan
     kaldırmak, onunla üretilmiş raporları silmek anlamına gelmemeli.
     """
+    cost_source: Literal["provider", "calculated"] = "calculated"
+    """`provider`: OpenRouter `usage.cost`; `calculated`: snapshot fallback'ı."""
+    pricing_snapshot: PricingSnapshot | None = None
 
     @model_validator(mode="after")
     def _report_invariants(self) -> Self:
@@ -183,6 +188,8 @@ class AnalysisReport(ApiModel):
         usage = self.token_usage
         if usage.total_tokens != usage.prompt_tokens + usage.completion_tokens:
             raise ValueError("total_tokens, prompt_tokens + completion_tokens olmalı.")
+        if usage.cached_tokens + usage.cache_write_tokens > usage.prompt_tokens:
+            raise ValueError("Cache tokenları prompt_tokens değerini aşamaz.")
 
         question_ids = [question.id for question in self.top_questions]
         if len(question_ids) != len(set(question_ids)):

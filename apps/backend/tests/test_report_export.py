@@ -195,8 +195,10 @@ def test_ozet_sayaclari_da_sayi() -> None:
     assert_numeric(values["Toplam satır"], "toplam satır")
     assert_numeric(values["Analiz edilen kayıt"], "analiz edilen")
     assert_numeric(values["Toplam token"], "toplam token")
-    assert_numeric(values["Tahmini maliyet (USD)"], "maliyet")
-    assert values["Tahmini maliyet (USD)"] == 0.00825
+    assert_numeric(values["Maliyet (USD)"], "maliyet")
+    assert_numeric(values["Cache'den okunan token"], "cache okuma token")
+    assert_numeric(values["Cache'e yazılan token"], "cache yazma token")
+    assert values["Maliyet (USD)"] == 0.00825
 
 
 def test_ozet_satir_filtrelerini_yeniden_uretilebilir_bicimde_yazar() -> None:

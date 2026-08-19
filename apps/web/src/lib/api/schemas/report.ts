@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { promptVersionSchema, rowFilterSchema } from "./analysis";
+import { pricingSnapshotSchema, promptVersionSchema, rowFilterSchema } from "./analysis";
 
 /** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
 export function percentageHalfUp(count: number, total: number): number {
@@ -88,6 +88,8 @@ export const tokenUsageSchema = z.object({
   prompt_tokens: z.int().nonnegative(),
   completion_tokens: z.int().nonnegative(),
   total_tokens: z.int().nonnegative(),
+  cached_tokens: z.int().nonnegative().default(0),
+  cache_write_tokens: z.int().nonnegative().default(0),
 });
 
 export type TokenUsage = z.infer<typeof tokenUsageSchema>;
@@ -155,6 +157,8 @@ export const analysisReportSchema = z
 
     token_usage: tokenUsageSchema,
     estimated_cost_usd: z.number().nonnegative(),
+    cost_source: z.enum(["provider", "calculated"]).default("calculated"),
+    pricing_snapshot: pricingSnapshotSchema.nullable().default(null),
   })
   .superRefine((report, ctx) => {
     const prep = report.preprocessing_summary;
@@ -188,6 +192,13 @@ export const analysisReportSchema = z
     const usage = report.token_usage;
     if (usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens) {
       ctx.addIssue({ code: "custom", path: ["token_usage"], message: "Token toplamı tutarsız." });
+    }
+    if (usage.cached_tokens + usage.cache_write_tokens > usage.prompt_tokens) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["token_usage"],
+        message: "Cache tokenları prompt_tokens değerini aşamaz.",
+      });
     }
 
     const questionIdList = report.top_questions.map((question) => question.id);

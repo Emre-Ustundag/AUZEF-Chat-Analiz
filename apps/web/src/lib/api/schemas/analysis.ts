@@ -72,7 +72,7 @@ export const modelIdSchema = z.enum([
 export type ModelId = z.infer<typeof modelIdSchema>;
 
 /** BE-01'de dondurulan, sürümlenmiş prompt whitelist'i. */
-export const promptVersionSchema = z.enum(["faq_analysis/v1"]);
+export const promptVersionSchema = z.enum(["faq_analysis/v1", "faq_analysis/v2"]);
 
 export type PromptVersion = z.infer<typeof promptVersionSchema>;
 
@@ -183,10 +183,25 @@ export const modelOptionSchema = z.object({
   /** 1M girdi tokenı başına USD; maliyet tahmini için. */
   input_cost_per_million: z.number().nonnegative(),
   output_cost_per_million: z.number().nonnegative(),
+  cache_read_cost_per_million: z.number().nonnegative().nullable().default(null),
+  cache_write_cost_per_million: z.number().nonnegative().nullable().default(null),
   context_window: z.int().positive(),
+  pricing_source: z.enum(["openrouter", "fallback"]).default("fallback"),
+  pricing_updated_at: z.iso.datetime().nullable().default(null),
 });
 
 export type ModelOption = z.infer<typeof modelOptionSchema>;
+
+export const pricingSnapshotSchema = z.object({
+  input_cost_per_million: z.number().nonnegative(),
+  output_cost_per_million: z.number().nonnegative(),
+  cache_read_cost_per_million: z.number().nonnegative().nullable().default(null),
+  cache_write_cost_per_million: z.number().nonnegative().nullable().default(null),
+  source: z.enum(["openrouter", "fallback"]),
+  fetched_at: z.iso.datetime().nullable().default(null),
+});
+
+export type PricingSnapshot = z.infer<typeof pricingSnapshotSchema>;
 
 export const modelListSchema = z
   .object({

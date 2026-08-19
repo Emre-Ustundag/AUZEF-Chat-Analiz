@@ -15,7 +15,7 @@ from typing import Final
 from app.schemas.analysis import ModelId, ModelList, ModelOption, PromptVersion
 
 DEFAULT_MODEL: Final = ModelId.GEMINI_2_5_FLASH
-DEFAULT_PROMPT_VERSION: Final = PromptVersion.FAQ_ANALYSIS_V1
+DEFAULT_PROMPT_VERSION: Final = PromptVersion.FAQ_ANALYSIS_V2
 
 #: Backend'de sürümlenmiş prompt'lar (ADR-0001 §9).
 KNOWN_PROMPT_VERSIONS: Final[tuple[PromptVersion, ...]] = tuple(PromptVersion)
@@ -26,6 +26,8 @@ MODEL_CATALOG: Final[tuple[ModelOption, ...]] = (
         label="Claude Sonnet 4.6",
         input_cost_per_million=3,
         output_cost_per_million=15,
+        cache_read_cost_per_million=0.3,
+        cache_write_cost_per_million=3.75,
         context_window=1_000_000,
     ),
     ModelOption(
@@ -33,6 +35,7 @@ MODEL_CATALOG: Final[tuple[ModelOption, ...]] = (
         label="GPT-4.1 mini",
         input_cost_per_million=0.4,
         output_cost_per_million=1.6,
+        cache_read_cost_per_million=0.1,
         context_window=1_047_576,
     ),
     ModelOption(
@@ -40,6 +43,8 @@ MODEL_CATALOG: Final[tuple[ModelOption, ...]] = (
         label="Gemini 2.5 Flash",
         input_cost_per_million=0.3,
         output_cost_per_million=2.5,
+        cache_read_cost_per_million=0.03,
+        cache_write_cost_per_million=0.0833333333333,
         context_window=1_048_576,
     ),
 )

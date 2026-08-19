@@ -50,6 +50,20 @@ def test_defaults_match_adr_limits() -> None:
     assert settings.max_uncompressed_bytes == 4 * 1024 * 1024 * 1024
     assert settings.analysis_timeout_seconds == 45 * 60
     assert settings.idempotency_ttl_seconds == 24 * 60 * 60
+    # Test süreci gerçek ağa çıkmasın diye conftest bu alanı env'den
+    # kapatır; üretim varsayılanını alan tanımından doğruluyoruz.
+    assert Settings.model_fields["pricing_refresh_enabled"].default is True
+    assert settings.pricing_cache_ttl_seconds == 60 * 60
+    assert settings.pricing_stale_ttl_seconds == 7 * 24 * 60 * 60
+
+
+def test_pricing_stale_cache_taze_cacheden_kisa_olamaz() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            pricing_cache_ttl_seconds=3_600,
+            pricing_stale_ttl_seconds=60,
+        )
 
 
 #: Ölçülmüş OOXML genişleme oranı. 130,9 MB'lık gerçekçi bir dosyanın

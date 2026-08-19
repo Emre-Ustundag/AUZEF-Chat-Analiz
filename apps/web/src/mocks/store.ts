@@ -588,7 +588,11 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       prompt_tokens: 1_284_000,
       completion_tokens: 96_400,
       total_tokens: 1_380_400,
+      cached_tokens: 0,
+      cache_write_tokens: 0,
     },
     estimated_cost_usd: estimateCostUsd(record.request.model),
+    cost_source: "calculated",
+    pricing_snapshot: null,
   };
 }

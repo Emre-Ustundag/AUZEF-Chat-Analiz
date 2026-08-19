@@ -67,6 +67,7 @@ class PromptVersion(StrEnum):
     """Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."""
 
     FAQ_ANALYSIS_V1 = "faq_analysis/v1"
+    FAQ_ANALYSIS_V2 = "faq_analysis/v2"
 
 
 class RowFilter(ApiRequestModel):
@@ -183,7 +184,22 @@ class ModelOption(ApiModel):
     #: 1M girdi tokenı başına USD.
     input_cost_per_million: float = Field(ge=0)
     output_cost_per_million: float = Field(ge=0)
+    cache_read_cost_per_million: float | None = Field(default=None, ge=0)
+    cache_write_cost_per_million: float | None = Field(default=None, ge=0)
     context_window: int = Field(gt=0)
+    pricing_source: Literal["openrouter", "fallback"] = "fallback"
+    pricing_updated_at: UtcDateTime | None = None
+
+
+class PricingSnapshot(ApiModel):
+    """Bir job oluşturulurken sabitlenen model fiyatları."""
+
+    input_cost_per_million: float = Field(ge=0)
+    output_cost_per_million: float = Field(ge=0)
+    cache_read_cost_per_million: float | None = Field(default=None, ge=0)
+    cache_write_cost_per_million: float | None = Field(default=None, ge=0)
+    source: Literal["openrouter", "fallback"]
+    fetched_at: UtcDateTime | None = None
 
 
 class ModelList(ApiModel):
