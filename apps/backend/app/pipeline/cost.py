@@ -306,9 +306,7 @@ def _estimated_reduce_usage(
     # Gerçek reducer, olağandışı uzun tek kategoriyi tek başına taşıyıp
     # diğer ikili/çoklu partileri yine çağırır. Tahmin de en az iki kategori
     # kapasiteli bir normal parti varsayarak bu çağrıları sıfır saymaz.
-    capacity = max(
-        2, settings.llm_reduce_max_prompt_tokens // REDUCE_PROMPT_TOKENS_PER_CATEGORY
-    )
+    capacity = max(2, settings.llm_reduce_max_prompt_tokens // REDUCE_PROMPT_TOKENS_PER_CATEGORY)
     overhead = _template_tokens(prompt.reduce_system) + _template_tokens(
         prompt.reduce_user_template
     )
@@ -327,8 +325,7 @@ def _estimated_reduce_usage(
 
         sent_categories = sum(callable_sizes)
         prompt_tokens += (
-            overhead * len(callable_sizes)
-            + sent_categories * REDUCE_PROMPT_TOKENS_PER_CATEGORY
+            overhead * len(callable_sizes) + sent_categories * REDUCE_PROMPT_TOKENS_PER_CATEGORY
         )
         completion_tokens += (
             REDUCE_COMPLETION_BASE_TOKENS * len(callable_sizes)

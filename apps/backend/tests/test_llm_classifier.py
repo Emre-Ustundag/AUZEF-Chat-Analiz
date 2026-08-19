@@ -345,13 +345,9 @@ def test_reduce_kategorileri_token_butcesiyle_hiyerarsik_birlestirir(settings: S
         update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
     )
     groups = _groups(*[(f"{letter} sorusu", 1) for letter in "ABCDEF"])
-    labels = {
-        f"c{index}": (f"{letter}?", "Tema")
-        for index, letter in enumerate("ABC", start=1)
-    }
+    labels = {f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("ABC", start=1)}
     second_labels = {
-        f"c{index}": (f"{letter}?", "Tema")
-        for index, letter in enumerate("DEF", start=1)
+        f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("DEF", start=1)
     }
     provider = _Provider(
         map_responses=[
@@ -415,9 +411,7 @@ def test_reduce_coklu_partide_hic_kuculmezse_kalite_uyarisi_verir(settings: Sett
         update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
     )
     groups = _groups(*[(f"{letter} sorusu", 1) for letter in "ABCDEF"])
-    labels = {
-        f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("ABC", start=1)
-    }
+    labels = {f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("ABC", start=1)}
     second_labels = {
         f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("DEF", start=1)
     }
