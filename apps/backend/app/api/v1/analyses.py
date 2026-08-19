@@ -51,6 +51,7 @@ from app.domain.model_catalog import is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.cost import estimate_profile_cost
+from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import (
     TERMINAL_STATUSES,
     AnalysisCreate,
@@ -200,9 +201,9 @@ async def create_analysis(
         # satırmış gibi fiyatlanıyordu. Analiz hiçbir zaman kırpmadığı için
         # (bkz. `schemas/report.py` değişmezi) bu kapı büyük dosyalarda
         # sistematik olarak DÜŞÜK tahmin veriyordu — üstelik tahmin zaten
-        # ayrı bir sebepten düşük (`pipeline/cost.py`
-        # `OUTPUT_TOKENS_PER_RECORD`, ölçülen sapma 5x). İki hata üst üste
-        # binince tavan kapısı büyük dosyalarda pratikte hiç kapanmıyordu.
+        # ayrı bir sebepten düşük (completion JSON'unun sabit yükü ve reduce
+        # çıktısı sayılmıyordu). İki hata üst üste binince tavan kapısı büyük
+        # dosyalarda pratikte hiç kapanmıyordu.
         # Profil filtre kombinasyonunun kaç satır tuttuğunu bilmez. Filtreli
         # isteği filtresiz `non_empty_count` ile reddetmek, tam da maliyeti
         # azaltan özelliği kullanılamaz hale getirirdi. Bu durumda senkron
@@ -210,9 +211,11 @@ async def create_analysis(
         # kesin tahmini, İLK model çağrısından önce zaten zorlar.
         if not body.row_filters:
             estimated_cost_usd = estimate_profile_cost(
-                column.non_empty_count,
+                column.unique_count,
                 column.avg_length,
                 body.model,
+                settings=settings,
+                prompt=get_prompt(body.prompt_version),
                 pricing_snapshot=pricing_snapshot,
             )
             if estimated_cost_usd > body.max_cost_usd:

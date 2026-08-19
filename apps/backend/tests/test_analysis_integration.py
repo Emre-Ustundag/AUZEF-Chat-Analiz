@@ -22,6 +22,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
+from app.api.v1 import analyses as analyses_api
 from app.core.config import get_settings
 from app.core.db import dispose_engine, session_scope
 from app.main import create_app
@@ -522,6 +523,51 @@ async def test_iptal_de_anahtari_siler(client: AsyncClient) -> None:
 # =====================================================================
 # FAZ 3 — LLM yolları (hepsi sahte transport üzerinden, GERÇEK AĞ YOK)
 # =====================================================================
+
+
+async def test_api_on_tahmini_benzersiz_deger_sayisini_kullanir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def capture_estimate(
+        record_count: int,
+        average_length: float,
+        model_id: str,
+        **kwargs: Any,
+    ) -> float:
+        captured.update(
+            record_count=record_count,
+            average_length=average_length,
+            model_id=model_id,
+            settings=kwargs.get("settings"),
+            prompt=kwargs.get("prompt"),
+        )
+        return 0.0
+
+    monkeypatch.setattr(analyses_api, "estimate_profile_cost", capture_estimate)
+    upload_id, profile = await _ready_upload(client)
+
+    created = await _create(client, upload_id)
+    assert created.status_code == 202
+
+    message_column = next(
+        column
+        for sheet in profile["sheets"]
+        if sheet["name"] == "Mesajlar"
+        for column in sheet["columns"]
+        if column["name"] == "mesaj"
+    )
+    assert message_column["non_empty_count"] == 40
+    assert message_column["unique_count"] == 5
+    assert captured["record_count"] == 5
+    assert captured["settings"] is not None
+    assert getattr(captured["prompt"], "version", None) == "faq_analysis/v1"
+
+    analysis_id = created.json()["analysis_id"]
+    await client.delete(f"/api/v1/analyses/{analysis_id}")
+    await client.delete(f"/api/v1/uploads/{upload_id}")
 
 
 async def test_maliyet_tavani_asiminda_istek_reddedilir_ve_hic_cagri_yapilmaz(

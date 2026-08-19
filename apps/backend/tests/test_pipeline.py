@@ -29,9 +29,9 @@ from app.pipeline.classifier import (
     ThemeAssignment,
     _signature_tokens,
 )
-from app.pipeline.cost import CostDecision, estimate_cost, estimate_profile_cost
+from app.pipeline.cost import CostDecision, cost_for_tokens, estimate_cost, estimate_profile_cost
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
-from app.prompts.faq_analysis import V1
+from app.prompts.faq_analysis import V1, V2
 from app.schemas.report import AnalysisReport
 
 
@@ -452,16 +452,79 @@ def test_ucucu_ol_ucu_uctan_uca_gercek_veriyle(settings: Settings) -> None:
 # ------------------------------------------------------------- maliyet tavanı
 
 
-def test_profil_maliyet_tahmini_kayit_sayisiyla_artar() -> None:
-    one = estimate_profile_cost(1, 120.0, "anthropic/claude-sonnet-4.6")
-    hundred = estimate_profile_cost(100, 120.0, "anthropic/claude-sonnet-4.6")
+def test_profil_maliyet_tahmini_kayit_sayisiyla_artar(settings: Settings) -> None:
+    one = estimate_profile_cost(
+        1,
+        120.0,
+        "anthropic/claude-sonnet-4.6",
+        settings=settings,
+        prompt=V1,
+    )
+    hundred = estimate_profile_cost(
+        100,
+        120.0,
+        "anthropic/claude-sonnet-4.6",
+        settings=settings,
+        prompt=V1,
+    )
 
     assert one > 0
-    assert hundred == round(one * 100, 6)
+    assert hundred > one
+    # Çağrı başına sabit JSON/prompt yükü var; bu yüzden maliyet tam doğrusal
+    # değildir ve tek kaydın maliyetini 100'le çarpmak fazla tahmin verir.
+    assert hundred < one * 100
 
 
-def test_profil_maliyet_tahmini_bos_kolonda_sifirdir() -> None:
-    assert estimate_profile_cost(0, 120.0, "anthropic/claude-sonnet-4.6") == 0.0
+def test_profil_maliyet_tahmini_bos_kolonda_sifirdir(settings: Settings) -> None:
+    assert (
+        estimate_profile_cost(
+            0,
+            120.0,
+            "anthropic/claude-sonnet-4.6",
+            settings=settings,
+            prompt=V1,
+        )
+        == 0.0
+    )
+
+
+def test_gercek_smoke_completion_olcumune_yakin_tahmin(settings: Settings) -> None:
+    """2026-08-19 gerçek Gemini çağrısı: 905 input, 469 output token."""
+    values = [
+        "sınav tarihleri ne zaman açıklanacak acaba bilgi alabilir miyim",
+        "ders materyallerine nereden ulaşabilirim linkler çalışmıyor",
+        "harç ödemesini nasıl yaparım banka şubesinden mi",
+        "kayıt yenileme işlemi için son tarih ne zaman",
+        "sınav yerimi nereden öğrenebilirim bilgi yok",
+    ]
+    result = preprocess(values, settings)
+    decision = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=5.0,
+        settings=settings,
+        prompt=V2,
+    )
+
+    actual_cost = cost_for_tokens(905, 469, "google/gemini-2.5-flash")
+
+    assert decision.estimated_completion_tokens == 500
+    assert actual_cost <= decision.estimated_cost_usd <= round(actual_cost * 1.20, 6)
+
+
+def test_coklu_chunk_completion_tahmini_reduce_yukunu_icerir(settings: Settings) -> None:
+    dar = settings.model_copy(update={"llm_chunk_max_records": 3})
+    result = preprocess([f"benzersiz soru numarası {index}" for index in range(7)], dar)
+    decision = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=5.0,
+        settings=dar,
+        prompt=V2,
+    )
+
+    # 3 map çağrısı: 3×200 sabit + 7×60 kayıt; reduce: 200 + 7×50.
+    assert decision.estimated_completion_tokens == 1_570
 
 
 def test_maliyet_tahmini_benzersiz_kayitlardan_hesaplanir(settings: Settings) -> None:

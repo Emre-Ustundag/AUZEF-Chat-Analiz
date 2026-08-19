@@ -839,6 +839,8 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         "analysis_cost_estimated",
         extra={
             "analysis_id": str(analysis_id),
+            "estimated_prompt_tokens": decision.estimated_prompt_tokens,
+            "estimated_completion_tokens": decision.estimated_completion_tokens,
             "estimated_cost_usd": decision.estimated_cost_usd,
             "max_cost_usd": decision.max_cost_usd,
         },
@@ -1073,6 +1075,10 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "analysis_id": str(analysis_id),
             "questions": len(report.top_questions),
             "themes": len(report.themes),
+            "estimated_prompt_tokens": decision.estimated_prompt_tokens,
+            "estimated_completion_tokens": decision.estimated_completion_tokens,
+            "actual_prompt_tokens": token_usage.prompt_tokens,
+            "actual_completion_tokens": token_usage.completion_tokens,
         },
     )
     return AnalysisStatus.COMPLETED.value
