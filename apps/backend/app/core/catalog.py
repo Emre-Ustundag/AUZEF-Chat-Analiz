@@ -15,7 +15,7 @@ from typing import Final
 from app.schemas.analysis import ModelId, ModelList, ModelOption, PromptVersion
 
 DEFAULT_MODEL: Final = ModelId.GEMINI_2_5_FLASH
-DEFAULT_PROMPT_VERSION: Final = PromptVersion.FAQ_ANALYSIS_V2
+DEFAULT_PROMPT_VERSION: Final = PromptVersion.FAQ_ANALYSIS_V3
 
 #: Backend'de sürümlenmiş prompt'lar (ADR-0001 §9).
 KNOWN_PROMPT_VERSIONS: Final[tuple[PromptVersion, ...]] = tuple(PromptVersion)

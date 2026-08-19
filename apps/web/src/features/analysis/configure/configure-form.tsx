@@ -346,7 +346,8 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                 <p className="text-sm text-destructive">{errors.max_cost_usd.message}</p>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Tahmini maliyet bu sınırı aşarsa iş, model çağrıları başlamadan durdurulur.
+                  Tahmin; veri, model çıktısı ve kategori birleşimine göre bir aralıktır. Seçtiğiniz
+                  tavan hem başlamadan önce hem de işlem sırasında gerçek kullanımla denetlenir.
                 </p>
               )}
             </div>

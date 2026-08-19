@@ -86,9 +86,11 @@ class _Provider:
         self,
         map_responses: list[dict[str, Any]],
         reduce_response: dict[str, Any] | None = None,
+        reduce_responses: list[dict[str, Any]] | None = None,
     ) -> None:
         self.map_responses = map_responses
         self.reduce_response = reduce_response
+        self.reduce_responses = reduce_responses
         self.map_calls: list[dict[str, Any]] = []
         self.reduce_calls: list[dict[str, Any]] = []
 
@@ -100,6 +102,8 @@ class _Provider:
             self.map_calls.append(body)
             return _ok(self.map_responses[index])
         self.reduce_calls.append(body)
+        if self.reduce_responses is not None:
+            return _ok(self.reduce_responses[len(self.reduce_calls) - 1])
         assert self.reduce_response is not None, "reduce beklenmiyordu"
         return _ok(self.reduce_response)
 
@@ -119,7 +123,7 @@ def _classifier(
     )
     return OpenRouterClassifier(
         client=client,
-        prompt=V1,
+        prompt=kwargs.pop("prompt", V1),
         model="google/gemini-2.5-flash",
         settings=settings,
         **kwargs,
@@ -295,6 +299,10 @@ def test_modelin_atladigi_kayitlar_diger_kovasina_duser(settings: Settings) -> N
 
     fallback = next(q for q in classification.questions if q.record_ids == ("r2", "r3"))
     assert fallback.canonical_question == "Sınıflandırılamayan kayıtlar"
+    fallback_theme = next(
+        theme for theme in classification.themes if theme.theme_id == fallback.theme_id
+    )
+    assert fallback_theme.question_ids == (fallback.question_id,)
     kodlar = {code for code, _ in classification.warnings}
     assert "LLM_UNASSIGNED_RECORDS" in kodlar
 
@@ -329,6 +337,105 @@ def test_reduce_atladigi_kategoriyi_koruyoruz(settings: Settings) -> None:
 
     tum_kayitlar = {rid for q in classification.questions for rid in q.record_ids}
     assert tum_kayitlar == {"r1", "r2", "r3", "r4"}
+
+
+def test_reduce_kategorileri_token_butcesiyle_hiyerarsik_birlestirir(settings: Settings) -> None:
+    """Leftover, nihai sonuca değil bir sonraki reduce turuna taşınır."""
+    narrow_reduce = settings.model_copy(
+        update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
+    )
+    groups = _groups(*[(f"{letter} sorusu", 1) for letter in "ABCDEF"])
+    labels = {
+        f"c{index}": (f"{letter}?", "Tema")
+        for index, letter in enumerate("ABC", start=1)
+    }
+    second_labels = {
+        f"c{index}": (f"{letter}?", "Tema")
+        for index, letter in enumerate("DEF", start=1)
+    }
+    provider = _Provider(
+        map_responses=[
+            _map({"r1": "c1", "r2": "c2", "r3": "c3"}, labels),
+            _map({"r4": "c1", "r5": "c2", "r6": "c3"}, second_labels),
+        ],
+        # İlk tur: AB,C (C leftover) | DE,F (F leftover). İkinci tur: ABC,DE
+        # ve son tur: tüm kategori. C'nin sonraki turlara taşınması, yalnızca
+        # kayıt kaybı değil tema birleştirme kapsaması için de gereklidir.
+        reduce_responses=[
+            {
+                "groups": [
+                    {
+                        "canonical_question": "AB?",
+                        "theme": "Tema",
+                        "member_category_ids": ["c0", "c1"],
+                    }
+                ]
+            },
+            {
+                "groups": [
+                    {
+                        "canonical_question": "DE?",
+                        "theme": "Tema",
+                        "member_category_ids": ["c0", "c1"],
+                    }
+                ]
+            },
+            {
+                "groups": [
+                    {
+                        "canonical_question": "ABC?",
+                        "theme": "Tema",
+                        "member_category_ids": ["c0", "c1"],
+                    }
+                ]
+            },
+            {
+                "groups": [
+                    {
+                        "canonical_question": "Hepsi?",
+                        "theme": "Tema",
+                        "member_category_ids": ["c0", "c1", "c2"],
+                    }
+                ]
+            },
+        ],
+    )
+
+    classification = _classifier(narrow_reduce, provider).classify(groups)
+
+    assert len(provider.reduce_calls) == 4
+    later_prompts = "\n".join(call["messages"][1]["content"] for call in provider.reduce_calls[2:])
+    assert "C?" in later_prompts, "leftover sonraki reduce turunda yeniden görülmeli"
+    assert len(classification.questions) == 1
+    assert set(classification.questions[0].record_ids) == {f"r{index}" for index in range(1, 7)}
+
+
+def test_reduce_coklu_partide_hic_kuculmezse_kalite_uyarisi_verir(settings: Settings) -> None:
+    narrow_reduce = settings.model_copy(
+        update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
+    )
+    groups = _groups(*[(f"{letter} sorusu", 1) for letter in "ABCDEF"])
+    labels = {
+        f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("ABC", start=1)
+    }
+    second_labels = {
+        f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("DEF", start=1)
+    }
+    provider = _Provider(
+        map_responses=[
+            _map({"r1": "c1", "r2": "c2", "r3": "c3"}, labels),
+            _map({"r4": "c1", "r5": "c2", "r6": "c3"}, second_labels),
+        ],
+        reduce_response={"groups": []},
+    )
+
+    classification = _classifier(narrow_reduce, provider).classify(groups)
+
+    assert len(provider.reduce_calls) == 2
+    assert {code for code, _ in classification.warnings} == {"LLM_REDUCE_PARTIAL_COVERAGE"}
+    assert {rid for q in classification.questions for rid in q.record_ids} == {
+        f"r{index}" for index in range(1, 7)
+    }
 
 
 # ------------------------------------------------------------- ADR §4 koruması

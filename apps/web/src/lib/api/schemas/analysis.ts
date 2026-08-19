@@ -72,7 +72,7 @@ export const modelIdSchema = z.enum([
 export type ModelId = z.infer<typeof modelIdSchema>;
 
 /** BE-01'de dondurulan, sürümlenmiş prompt whitelist'i. */
-export const promptVersionSchema = z.enum(["faq_analysis/v1", "faq_analysis/v2"]);
+export const promptVersionSchema = z.enum(["faq_analysis/v1", "faq_analysis/v2", "faq_analysis/v3"]);
 
 export type PromptVersion = z.infer<typeof promptVersionSchema>;
 

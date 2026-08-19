@@ -179,6 +179,8 @@ class OpenRouterClassifier:
         self._pricing_snapshot = pricing_snapshot
         self._usage = Usage()
         self._repairs = 0
+        self._reduce_bucket_serial = 0
+        self._reduce_partial_coverage = False
 
     @property
     def identifier(self) -> str:
@@ -359,24 +361,121 @@ class OpenRouterClassifier:
             raise CostLimitExceededError(spent, self._max_cost_usd)
 
     def _reduce(self, buckets: list[_Bucket]) -> list[_Bucket]:
-        """Chunk kategorilerini birleştirir.
+        """Kategorileri token-bütçeli hiyerarşik turlarda birleştirir.
 
-        Birleştirmede DE kayıt kaybı olmamalı: modelin gruplamada atladığı
-        kova, kendi başına bir grup olarak korunur.
+        Tek dev reduce çağrısı, modelin prompt'ta binlerce kategoriyi
+        kapsayamamasına ve bahsedilmeyen kovaların nihai sonuca doğrudan
+        ``leftover`` olarak eklenmesine yol açıyordu. Burada her turun tüm
+        çıktısı (leftover'lar dahil) bir sonraki tura taşınır. Böylece veri
+        kaybolmaz ve bir turda görülemeyen kova, sonraki turda yeniden
+        birleştirme şansı bulur.
 
-        PROMPT'A KONUMSAL KİMLİK BASILIYOR (`c0`, `c1`, …), `bucket.key`
-        DEĞİL. `key` = f"{chunk_index}:{category_id}" ve `category_id` MODEL
-        ÜRETİMİ; kaçırılmadan basıldığında `<kategori>` delimiter'ından
-        çıkılabiliyordu (ölçüldü: iki kova için 4 `<kategori` açılışı).
-        Savunma katmanı 1-2 (bkz. `prompts/faq_analysis/v1.py`) kendi içinde
-        tutarsızdı: aynı satırdaki `theme` ve `canonical_question`
-        kaçırılıyordu ama `key` kaçırılmıyordu.
+        Bir tur hiç küçülme üretmezse tekrar denemek sonsuz döngü olur. O
+        durumda eldeki kayıpsız sonuç döner ve gözlemlenebilir bir kalite
+        uyarısı bırakır.
+        """
+        current = buckets
+        level = 0
 
-        SADECE KAÇIRMAK YETMEZDİ: `key` aynı zamanda modelin geri yansıttığı
-        değerle eşleşen lookup anahtarıydı. Kaçırılmış hâli geri yansıtılınca
-        eşleşme tutmaz, kovalar "modelin bahsetmediği" sayılıp leftover'a
-        düşer ve birleştirme sessizce çalışmaz olurdu. Konumsal kimlikte
-        modelin ürettiği dize prompt'a hiç girmiyor.
+        while len(current) > 1:
+            batches = self._reduce_batches(current)
+
+            # Tüm eldeki kategoriler artık tek çağrıya sığıyorsa bu nihai
+            # turdur. Çıktıyı yeniden aynı prompt'a vermek fayda sağlamaz;
+            # modelin farklı adlar üretmesiyle gereksiz ek çağrı ve maliyet
+            # yaratır.
+            if len(batches) == 1:
+                final = self._reduce_batch(batches[0], level, 0)
+                self._guard_cost()
+                if self._on_progress is not None and not self._on_progress(1, 1):
+                    raise ClassificationCancelledError
+                logger.info(
+                    "llm_reduce_level_completed",
+                    extra={
+                        "model": self._model,
+                        "level": level,
+                        "input_categories": len(current),
+                        "batches": 1,
+                        "output_categories": len(final),
+                    },
+                )
+                return final
+
+            next_level: list[_Bucket] = []
+
+            for batch_index, batch in enumerate(batches):
+                # Tek, olağandışı uzun bir kategori token bütçesini tek
+                # başına aşabilir. Kayıt kaybetmemek için çağrı yapmadan
+                # taşınır; diğer partiler yine birleştirilmeye devam eder.
+                if len(batch) == 1:
+                    next_level.extend(batch)
+                    continue
+
+                next_level.extend(self._reduce_batch(batch, level, batch_index))
+                self._guard_cost()
+                if self._on_progress is not None and not self._on_progress(1, 1):
+                    raise ClassificationCancelledError
+
+            logger.info(
+                "llm_reduce_level_completed",
+                extra={
+                    "model": self._model,
+                    "level": level,
+                    "input_categories": len(current),
+                    "batches": len(batches),
+                    "output_categories": len(next_level),
+                },
+            )
+
+            if len(next_level) >= len(current):
+                # Tek batch'e sığan ama gerçekten farklı kategoriler bu yola
+                # doğal olarak düşebilir; sonuç doğru ve kayıpsızdır. Ancak
+                # birden fazla batch varken artık üst turda ortak tema
+                # arayamayacağımız için raporda görünür kılmak gerekir.
+                if len(batches) > 1:
+                    self._reduce_partial_coverage = True
+                    logger.warning(
+                        "llm_reduce_no_progress",
+                        extra={
+                            "model": self._model,
+                            "level": level,
+                            "categories": len(current),
+                            "batches": len(batches),
+                        },
+                    )
+                return next_level
+
+            current = next_level
+            level += 1
+
+        return current
+
+    def _reduce_batches(self, buckets: list[_Bucket]) -> list[list[_Bucket]]:
+        """Kategori metinlerini tek reduce çağrısının token bütçesine böler."""
+        max_tokens = max(1, self._settings.llm_reduce_max_prompt_tokens)
+        batches: list[list[_Bucket]] = []
+        current: list[_Bucket] = []
+        current_tokens = 0
+
+        for bucket in buckets:
+            tokens = _reduce_bucket_tokens(bucket)
+            if current and current_tokens + tokens > max_tokens:
+                batches.append(current)
+                current = []
+                current_tokens = 0
+            current.append(bucket)
+            current_tokens += tokens
+
+        if current:
+            batches.append(current)
+        return batches
+
+    def _reduce_batch(self, buckets: list[_Bucket], level: int, batch_index: int) -> list[_Bucket]:
+        """Bir hiyerarşi turunun tek token-sınırlı reduce çağrısı.
+
+        Prompt'a yalnızca konumsal kimlik basılır. Model üretimi olan
+        ``bucket.key`` hiç prompt'a girmez; böylece delimiter kaçışı veya
+        batch'ler arası anahtar çakışması eşleştirmeyi bozamaz.
         """
         # Konum → kova. Sıra `buckets` listesinin sırası; model yalnızca bu
         # kimlikleri görüyor ve yalnızca bunları geri yansıtabiliyor.
@@ -396,25 +495,25 @@ class OpenRouterClassifier:
         self._usage = self._usage + completion.usage
         self._repairs += completion.repair_attempts
 
-        used: set[str] = set()
+        used_positions: set[str] = set()
         merged: list[_Bucket] = []
 
-        for position, group in enumerate(completion.data.groups):
+        for group in completion.data.groups:
             members = [
                 by_position[position_id]
                 for position_id in group.member_category_ids
-                if position_id in by_position and by_position[position_id].key not in used
+                if position_id in by_position and position_id not in used_positions
             ]
             if not members:
                 continue
-            used.update(member.key for member in members)
+            used_positions.update(group.member_category_ids)
 
             record_ids: list[str] = []
             for member in members:
                 record_ids.extend(member.record_ids)
             merged.append(
                 _Bucket(
-                    key=f"m{position}",
+                    key=self._next_reduce_bucket_key(),
                     canonical_question=_trim(group.canonical_question),
                     theme=_trim(group.theme),
                     record_ids=record_ids,
@@ -423,14 +522,28 @@ class OpenRouterClassifier:
 
         # Modelin hiç bahsetmediği kovalar. ATLANAMAZ: içlerindeki kayıtlar
         # yoksa rapordaki yüzdeler tutmaz.
-        leftovers = [bucket for bucket in buckets if bucket.key not in used]
+        leftovers = [
+            bucket
+            for position_id, bucket in by_position.items()
+            if position_id not in used_positions
+        ]
         if leftovers:
             logger.info(
                 "llm_reduce_leftover_categories",
-                extra={"model": self._model, "count": len(leftovers)},
+                extra={
+                    "model": self._model,
+                    "level": level,
+                    "batch": batch_index,
+                    "count": len(leftovers),
+                },
             )
         merged.extend(leftovers)
         return merged
+
+    def _next_reduce_bucket_key(self) -> str:
+        key = f"reduce:{self._reduce_bucket_serial}"
+        self._reduce_bucket_serial += 1
+        return key
 
     # ----------------------------------------------------------------- birleştirme
 
@@ -474,6 +587,14 @@ class OpenRouterClassifier:
             )
             theme_members.setdefault(theme_id, []).append(question_id)
             theme_names.setdefault(theme_id, FALLBACK_THEME)
+        if self._reduce_partial_coverage:
+            warnings.append(
+                (
+                    "LLM_REDUCE_PARTIAL_COVERAGE",
+                    "Kategori birleştirme ölçek sınırında tüm partileri ortak bir turda "
+                    "birleştiremedi; kayıtlar korunarak ayrı kategoriler bırakıldı.",
+                )
+            )
 
         themes = [
             ThemeAssignment(
@@ -534,6 +655,17 @@ class OpenRouterClassifier:
 
 def _identity(buckets: dict[str, _Bucket]) -> list[_Bucket]:
     return list(buckets.values())
+
+
+def _reduce_bucket_tokens(bucket: _Bucket) -> int:
+    """Bir reduce kategori bloğunun yaklaşık prompt token maliyeti.
+
+    Modelin gördüğü metin tema + kanonik sorudur; konumsal kimlik ve XML
+    ayraçları da sabit bir yük taşır. Aynı 3 karakter/token varsayımı map
+    chunk hesabıyla tutarlıdır; yalnızca parti seçimi içindir, faturalama
+    ölçümü değildir.
+    """
+    return max(1, int((len(bucket.theme) + len(bucket.canonical_question)) / 3.0) + 12)
 
 
 def _trim(text: str, limit: int = 120) -> str:

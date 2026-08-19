@@ -29,7 +29,13 @@ from app.pipeline.classifier import (
     ThemeAssignment,
     _signature_tokens,
 )
-from app.pipeline.cost import CostDecision, cost_for_tokens, estimate_cost, estimate_profile_cost
+from app.pipeline.cost import (
+    CostDecision,
+    cost_for_tokens,
+    estimate_cost,
+    estimate_profile_cost,
+    estimate_profile_cost_range,
+)
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
 from app.prompts.faq_analysis import V1, V2
 from app.schemas.report import AnalysisReport
@@ -486,6 +492,26 @@ def test_profil_maliyet_tahmini_bos_kolonda_sifirdir(settings: Settings) -> None
         )
         == 0.0
     )
+
+
+def test_hiyerarsik_reduce_maliyet_tahmini_aralik_dondurur(settings: Settings) -> None:
+    narrow = settings.model_copy(
+        update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
+    )
+    forecast = estimate_profile_cost_range(
+        30,
+        60.0,
+        "google/gemini-2.5-flash",
+        settings=narrow,
+        prompt=V2,
+        max_cost_usd=0.0001,
+    )
+
+    assert forecast.estimated_cost_usd > 0
+    assert forecast.upper_cost_usd > forecast.estimated_cost_usd
+    assert forecast.upper_prompt_tokens > forecast.estimated_prompt_tokens
+    assert forecast.cost_range_usd == (forecast.estimated_cost_usd, forecast.upper_cost_usd)
+    assert forecast.exceeds is True
 
 
 def test_gercek_smoke_completion_olcumune_yakin_tahmin(settings: Settings) -> None:

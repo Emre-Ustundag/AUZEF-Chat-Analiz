@@ -17,7 +17,7 @@
     }
   ],
   "model": "google/gemini-2.5-flash",
-  "prompt_version": "faq_analysis/v2",
+  "prompt_version": "faq_analysis/v3",
   "top_n": 8,
   "max_cost_usd": 10.0
 }

@@ -169,7 +169,7 @@ describe("analysisRequestSchema", () => {
       false,
     );
     expect(
-      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v3" }).success,
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v4" }).success,
     ).toBe(false);
   });
 
@@ -307,7 +307,7 @@ describe("analysisReportSchema", () => {
       true,
     );
     expect(
-      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v3" }).success,
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v4" }).success,
     ).toBe(false);
   });
 

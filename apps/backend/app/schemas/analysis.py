@@ -68,6 +68,7 @@ class PromptVersion(StrEnum):
 
     FAQ_ANALYSIS_V1 = "faq_analysis/v1"
     FAQ_ANALYSIS_V2 = "faq_analysis/v2"
+    FAQ_ANALYSIS_V3 = "faq_analysis/v3"
 
 
 class RowFilter(ApiRequestModel):

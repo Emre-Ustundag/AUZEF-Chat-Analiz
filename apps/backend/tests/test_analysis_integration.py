@@ -26,6 +26,7 @@ from app.api.v1 import analyses as analyses_api
 from app.core.config import get_settings
 from app.core.db import dispose_engine, session_scope
 from app.main import create_app
+from app.pipeline.cost import CostDecision
 from app.pipeline.llm_classifier import OpenRouterClassifier
 from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import AnalysisJobRead
@@ -536,7 +537,7 @@ async def test_api_on_tahmini_benzersiz_deger_sayisini_kullanir(
         average_length: float,
         model_id: str,
         **kwargs: Any,
-    ) -> float:
+    ) -> CostDecision:
         captured.update(
             record_count=record_count,
             average_length=average_length,
@@ -544,9 +545,17 @@ async def test_api_on_tahmini_benzersiz_deger_sayisini_kullanir(
             settings=kwargs.get("settings"),
             prompt=kwargs.get("prompt"),
         )
-        return 0.0
+        return CostDecision(
+            estimated_prompt_tokens=0,
+            estimated_completion_tokens=0,
+            estimated_cost_usd=0.0,
+            max_cost_usd=0.0,
+            upper_prompt_tokens=0,
+            upper_completion_tokens=0,
+            upper_cost_usd=0.0,
+        )
 
-    monkeypatch.setattr(analyses_api, "estimate_profile_cost", capture_estimate)
+    monkeypatch.setattr(analyses_api, "estimate_profile_cost_range", capture_estimate)
     upload_id, profile = await _ready_upload(client)
 
     created = await _create(client, upload_id)

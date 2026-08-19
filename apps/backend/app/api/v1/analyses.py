@@ -50,7 +50,7 @@ from app.core.logging import get_logger
 from app.domain.model_catalog import is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
-from app.pipeline.cost import estimate_profile_cost
+from app.pipeline.cost import estimate_profile_cost_range
 from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import (
     TERMINAL_STATUSES,
@@ -210,18 +210,21 @@ async def create_analysis(
         # kapı atlanır; worker filtreyi uygulayıp dedupe ettikten sonra daha
         # kesin tahmini, İLK model çağrısından önce zaten zorlar.
         if not body.row_filters:
-            estimated_cost_usd = estimate_profile_cost(
+            profile_forecast = estimate_profile_cost_range(
                 column.unique_count,
                 column.avg_length,
                 body.model,
                 settings=settings,
                 prompt=get_prompt(body.prompt_version),
                 pricing_snapshot=pricing_snapshot,
+                max_cost_usd=body.max_cost_usd,
             )
-            if estimated_cost_usd > body.max_cost_usd:
+            if profile_forecast.exceeds:
                 raise ApiError(
                     "COST_LIMIT_EXCEEDED",
-                    f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
+                    "Tahmini maliyet aralığı "
+                    f"({profile_forecast.estimated_cost_usd:.4f}–"
+                    f"{profile_forecast.upper_cost_usd:.4f} USD) belirlediğiniz "
                     f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
                     "yükseltin ya da daha ucuz bir model seçin.",
                 )

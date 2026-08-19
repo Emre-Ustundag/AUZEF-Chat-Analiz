@@ -1175,7 +1175,7 @@
                         }
                       ],
                       "default_model": "google/gemini-2.5-flash",
-                      "default_prompt_version": "faq_analysis/v2"
+                      "default_prompt_version": "faq_analysis/v3"
                     }
                   }
                 }
@@ -1315,7 +1315,7 @@
                       }
                     ],
                     "model": "google/gemini-2.5-flash",
-                    "prompt_version": "faq_analysis/v2",
+                    "prompt_version": "faq_analysis/v3",
                     "top_n": 8,
                     "max_cost_usd": 10.0
                   }
@@ -2277,7 +2277,7 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v2",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
@@ -2410,7 +2410,7 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v2",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
@@ -2842,7 +2842,7 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v2",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
@@ -3820,7 +3820,8 @@
         "type": "string",
         "enum": [
           "faq_analysis/v1",
-          "faq_analysis/v2"
+          "faq_analysis/v2",
+          "faq_analysis/v3"
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."

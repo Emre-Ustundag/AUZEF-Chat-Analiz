@@ -46,11 +46,12 @@ export const MOCK_MODELS: readonly ModelOption[] = [
 ];
 
 export const DEFAULT_MODEL: ModelId = "google/gemini-2.5-flash";
-export const DEFAULT_PROMPT_VERSION: PromptVersion = "faq_analysis/v2";
+export const DEFAULT_PROMPT_VERSION: PromptVersion = "faq_analysis/v3";
 
-/** Backend'de sürümlenmiş prompt'lar; mock tek sürüm tanıyor. */
+/** Backend'de sürümlenmiş prompt'lar; mock varsayılan ve tarihsel sürümleri tanır. */
 export const KNOWN_PROMPT_VERSIONS: readonly PromptVersion[] = [
   "faq_analysis/v1",
+  "faq_analysis/v2",
   DEFAULT_PROMPT_VERSION,
 ];
 

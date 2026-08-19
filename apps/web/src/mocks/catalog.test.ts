@@ -10,7 +10,7 @@ it("mock model kataloğu backend'in ürettiği whitelist fixture'ıyla birebir a
   expect(MOCK_MODEL_LIST).toEqual(generated);
   expect(KNOWN_PROMPT_VERSIONS).toEqual(promptVersionSchema.options);
   expect(generated.models.map((model) => model.id)).toEqual(modelIdSchema.options);
-  expect(generated.default_prompt_version).toBe("faq_analysis/v2");
+  expect(generated.default_prompt_version).toBe("faq_analysis/v3");
 });
 
 it("dondurulmuş model kimlikleri, fiyatlar ve context window değerleri exact", () => {
@@ -51,6 +51,6 @@ it("dondurulmuş model kimlikleri, fiyatlar ve context window değerleri exact",
       },
     ],
     default_model: "google/gemini-2.5-flash",
-    default_prompt_version: "faq_analysis/v2",
+    default_prompt_version: "faq_analysis/v3",
   });
 });

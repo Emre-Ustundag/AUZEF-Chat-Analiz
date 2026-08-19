@@ -842,6 +842,9 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "estimated_prompt_tokens": decision.estimated_prompt_tokens,
             "estimated_completion_tokens": decision.estimated_completion_tokens,
             "estimated_cost_usd": decision.estimated_cost_usd,
+            "upper_prompt_tokens": decision.upper_prompt_tokens,
+            "upper_completion_tokens": decision.upper_completion_tokens,
+            "upper_cost_usd": decision.upper_cost_usd,
             "max_cost_usd": decision.max_cost_usd,
         },
     )
@@ -867,13 +870,16 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             extra={
                 "analysis_id": str(analysis_id),
                 "estimated_cost_usd": decision.estimated_cost_usd,
+                "upper_cost_usd": decision.upper_cost_usd,
                 "max_cost_usd": decision.max_cost_usd,
             },
         )
         return await _fail(
             analysis_id,
             "COST_LIMIT_EXCEEDED",
-            f"Tahmini maliyet ({decision.estimated_cost_usd:.4f} USD) belirlediğiniz "
+            "Tahmini maliyet aralığı "
+            f"({decision.estimated_cost_usd:.4f}–{decision.upper_cost_usd:.4f} USD) "
+            f"belirlediğiniz "
             f"{decision.max_cost_usd} USD sınırının üzerinde. Analiz başlatılmadı. "
             "Maliyet sınırını yükseltebilir veya daha ucuz bir model seçebilirsiniz.",
         )

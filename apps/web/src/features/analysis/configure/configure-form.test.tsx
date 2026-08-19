@@ -89,7 +89,7 @@ const models: ModelList = {
     },
   ],
   default_model: "google/gemini-2.5-flash",
-  default_prompt_version: "faq_analysis/v2",
+  default_prompt_version: "faq_analysis/v3",
 };
 
 function renderForm() {

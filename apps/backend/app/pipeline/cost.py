@@ -52,8 +52,8 @@ MAP_COMPLETION_BASE_TOKENS = 200
 #: %6,6 üzerinde, yani tavan kontrolü için küçük bir güvenlik payıyla yakın.
 MAP_COMPLETION_TOKENS_PER_RECORD = 60
 
-#: Birden çok chunk varsa reduce yanıtının sabit JSON yükü ve girdi kategori
-#: başına büyüyen grup/member listesi ayrıca fiyatlanır.
+#: Bir reduce yanıtının sabit JSON yükü ve girdi kategori başına büyüyen
+#: grup/member listesi ayrıca fiyatlanır.
 REDUCE_COMPLETION_BASE_TOKENS = 200
 REDUCE_COMPLETION_TOKENS_PER_CATEGORY = 50
 
@@ -63,6 +63,18 @@ REDUCE_COMPLETION_TOKENS_PER_CATEGORY = 50
 #: maliyetini sıfır saymıyor. Koşu içi gerçek maliyet koruması sapmayı her map
 #: çağrısından sonra ayrıca durdurur.
 ESTIMATED_CATEGORIES_PER_CHUNK = 20
+
+#: Reduce prompt'unda bir kategori için tema, kanonik soru, konumsal kimlik
+#: ve XML ayraçları taşınır. Çağrı öncesinde gerçek map kategorileri henüz
+#: bilinmediğinden bu, hiyerarşi planlamasında kullanılan temkinli ortalamadır.
+REDUCE_PROMPT_TOKENS_PER_CATEGORY = 24
+
+#: Tahmin aralığının iki senaryosu. "Beklenen" senaryo her reduce turunda
+#: anlamlı bir sıkışma bekler; "temkinli" senaryo çok daha az sıkışma bekler.
+#: Bunlar harcama garantisi değildir: gerçek kullanım provider usage'ından
+#: okunur ve koşu içi tavan kontrolü ayrıca uygulanır.
+EXPECTED_REDUCE_RETAIN_RATIO = 0.50
+CONSERVATIVE_REDUCE_RETAIN_RATIO = 0.80
 
 
 def cost_for_tokens(
@@ -147,23 +159,14 @@ def estimate_profile_cost(
     daha adildir. Worker, gerçek ön işleme sonrasında kesin chunk listesini
     kullanarak kontrolü ayrıca uygular.
     """
-    if record_count <= 0:
-        return 0.0
-
-    tokens_per_record = int(max(0.0, average_length) / CHARS_PER_TOKEN) + OVERHEAD_TOKENS_PER_RECORD
-    chunk_sizes = _profile_chunk_sizes(record_count, tokens_per_record, settings)
-    prompt_tokens = _estimated_prompt_tokens(
-        record_tokens_total=record_count * tokens_per_record,
-        chunk_count=len(chunk_sizes),
-        prompt=prompt,
-    )
-    completion_tokens = _estimated_completion_tokens(chunk_sizes)
-    return cost_for_tokens(
-        prompt_tokens,
-        completion_tokens,
+    return estimate_profile_cost_range(
+        record_count,
+        average_length,
         model_id,
+        settings=settings,
+        prompt=prompt,
         pricing_snapshot=pricing_snapshot,
-    )
+    ).estimated_cost_usd
 
 
 @dataclass(frozen=True)
@@ -172,10 +175,18 @@ class CostDecision:
     estimated_completion_tokens: int
     estimated_cost_usd: float
     max_cost_usd: float
+    upper_prompt_tokens: int
+    upper_completion_tokens: int
+    upper_cost_usd: float
 
     @property
     def exceeds(self) -> bool:
         return self.estimated_cost_usd > self.max_cost_usd
+
+    @property
+    def cost_range_usd(self) -> tuple[float, float]:
+        """Kullanıcıya gösterilebilecek beklenen-temkinli maliyet aralığı."""
+        return (self.estimated_cost_usd, self.upper_cost_usd)
 
 
 def build_chunks(groups: Sequence[RecordGroup], settings: Settings) -> list[list[RecordGroup]]:
@@ -252,7 +263,7 @@ def _profile_chunk_sizes(
     return sizes
 
 
-def _estimated_prompt_tokens(
+def _estimated_map_prompt_tokens(
     *,
     record_tokens_total: int,
     chunk_count: int,
@@ -261,30 +272,178 @@ def _estimated_prompt_tokens(
     if chunk_count == 0:
         return 0
     map_overhead = _template_tokens(prompt.map_system) + _template_tokens(prompt.map_user_template)
-    reduce_overhead = (
-        _template_tokens(prompt.reduce_system) + _template_tokens(prompt.reduce_user_template)
-        if chunk_count > 1
-        else 0
-    )
-    return record_tokens_total + map_overhead * chunk_count + reduce_overhead
+    return record_tokens_total + map_overhead * chunk_count
 
 
-def _estimated_completion_tokens(chunk_sizes: Sequence[int]) -> int:
-    """Map ve olası reduce JSON çıktılarının completion-token tahmini."""
+def _estimated_map_completion_tokens(chunk_sizes: Sequence[int]) -> int:
+    """Yalnızca map JSON çıktılarının completion-token tahmini."""
     if not chunk_sizes:
         return 0
 
     map_tokens = sum(
         MAP_COMPLETION_BASE_TOKENS + MAP_COMPLETION_TOKENS_PER_RECORD * size for size in chunk_sizes
     )
-    if len(chunk_sizes) == 1:
-        return map_tokens
+    return map_tokens
 
-    estimated_categories = sum(min(size, ESTIMATED_CATEGORIES_PER_CHUNK) for size in chunk_sizes)
-    reduce_tokens = (
-        REDUCE_COMPLETION_BASE_TOKENS + REDUCE_COMPLETION_TOKENS_PER_CATEGORY * estimated_categories
+
+def _estimated_reduce_usage(
+    category_count: int,
+    *,
+    settings: Settings,
+    prompt: PromptBundle,
+    retain_ratio: float,
+) -> tuple[int, int]:
+    """Hiyerarşik reduce çağrılarının prompt ve completion tahmini.
+
+    Bir turda kategoriler token bütçeli partilere bölünür. Çoklu partinin
+    çıktısı, bir sonraki tura taşınır; tek partiye inildiğinde son bir çağrı
+    yapılır. Map sonucu henüz bilinmediği için kategori sayısı ve sıkışma
+    oranı senaryo varsayımlarıdır; bu fonksiyon kesin fatura hesabı değildir.
+    """
+    if category_count <= 1:
+        return (0, 0)
+
+    # Gerçek reducer, olağandışı uzun tek kategoriyi tek başına taşıyıp
+    # diğer ikili/çoklu partileri yine çağırır. Tahmin de en az iki kategori
+    # kapasiteli bir normal parti varsayarak bu çağrıları sıfır saymaz.
+    capacity = max(
+        2, settings.llm_reduce_max_prompt_tokens // REDUCE_PROMPT_TOKENS_PER_CATEGORY
     )
-    return map_tokens + reduce_tokens
+    overhead = _template_tokens(prompt.reduce_system) + _template_tokens(
+        prompt.reduce_user_template
+    )
+    current = category_count
+    prompt_tokens = 0
+    completion_tokens = 0
+
+    while current > 1:
+        full_batches, remainder = divmod(current, capacity)
+        batch_sizes = [capacity] * full_batches
+        if remainder:
+            batch_sizes.append(remainder)
+        callable_sizes = [size for size in batch_sizes if size > 1]
+        if not callable_sizes:
+            break
+
+        sent_categories = sum(callable_sizes)
+        prompt_tokens += (
+            overhead * len(callable_sizes)
+            + sent_categories * REDUCE_PROMPT_TOKENS_PER_CATEGORY
+        )
+        completion_tokens += (
+            REDUCE_COMPLETION_BASE_TOKENS * len(callable_sizes)
+            + REDUCE_COMPLETION_TOKENS_PER_CATEGORY * sent_categories
+        )
+
+        # Tek çağrı, hiyerarşinin son turudur: çıkış ne kadar küçülürse
+        # küçülsün yeniden aynı prompt'a gönderilmez.
+        if len(batch_sizes) == 1:
+            break
+
+        # Her partide en az bir çıktı kalır. Bu alt sınır, "her şey tek
+        # temaya iner" gibi gerçekçi olmayan bir maliyet tahmini vermeyi
+        # engeller.
+        current = max(len(batch_sizes), int(current * retain_ratio + 0.999))
+
+    return (prompt_tokens, completion_tokens)
+
+
+def _cost_decision_from_chunk_sizes(
+    *,
+    record_tokens_total: int,
+    chunk_sizes: Sequence[int],
+    model_id: str,
+    max_cost_usd: float,
+    settings: Settings,
+    prompt: PromptBundle,
+    pricing_snapshot: PricingSnapshot | None,
+) -> CostDecision:
+    chunk_count = len(chunk_sizes)
+    map_prompt_tokens = _estimated_map_prompt_tokens(
+        record_tokens_total=record_tokens_total,
+        chunk_count=chunk_count,
+        prompt=prompt,
+    )
+    map_completion_tokens = _estimated_map_completion_tokens(chunk_sizes)
+
+    # Beklenen durumda map'in her chunk'ta kompakt bir kategori sözlüğü
+    # ürettiği varsayılır. Temkinli durumda her benzersiz kayıt ayrı
+    # kategori olabilir; bu, aralığın özellikle büyük dosyada neden geniş
+    # olduğunu dürüstçe gösterir.
+    expected_categories = (
+        sum(min(size, ESTIMATED_CATEGORIES_PER_CHUNK) for size in chunk_sizes)
+        if chunk_count > 1
+        else 0
+    )
+    upper_categories = sum(chunk_sizes) if chunk_count > 1 else 0
+    expected_reduce_prompt, expected_reduce_completion = _estimated_reduce_usage(
+        expected_categories,
+        settings=settings,
+        prompt=prompt,
+        retain_ratio=EXPECTED_REDUCE_RETAIN_RATIO,
+    )
+    upper_reduce_prompt, upper_reduce_completion = _estimated_reduce_usage(
+        upper_categories,
+        settings=settings,
+        prompt=prompt,
+        retain_ratio=CONSERVATIVE_REDUCE_RETAIN_RATIO,
+    )
+
+    expected_prompt = map_prompt_tokens + expected_reduce_prompt
+    expected_completion = map_completion_tokens + expected_reduce_completion
+    upper_prompt = map_prompt_tokens + upper_reduce_prompt
+    upper_completion = map_completion_tokens + upper_reduce_completion
+    expected_cost = cost_for_tokens(
+        expected_prompt,
+        expected_completion,
+        model_id,
+        pricing_snapshot=pricing_snapshot,
+    )
+    upper_cost = max(
+        expected_cost,
+        cost_for_tokens(
+            upper_prompt,
+            upper_completion,
+            model_id,
+            pricing_snapshot=pricing_snapshot,
+        ),
+    )
+    return CostDecision(
+        estimated_prompt_tokens=expected_prompt,
+        estimated_completion_tokens=expected_completion,
+        estimated_cost_usd=expected_cost,
+        max_cost_usd=max_cost_usd,
+        upper_prompt_tokens=upper_prompt,
+        upper_completion_tokens=upper_completion,
+        upper_cost_usd=upper_cost,
+    )
+
+
+def estimate_profile_cost_range(
+    record_count: int,
+    average_length: float,
+    model_id: str,
+    *,
+    settings: Settings,
+    prompt: PromptBundle,
+    pricing_snapshot: PricingSnapshot | None = None,
+    max_cost_usd: float | None = None,
+) -> CostDecision:
+    """Yükleme profilinden beklenen-temkinli maliyet aralığı üretir."""
+    ceiling = max_cost_usd if max_cost_usd is not None else float("inf")
+    if record_count <= 0:
+        return CostDecision(0, 0, 0.0, ceiling, 0, 0, 0.0)
+    tokens_per_record = int(max(0.0, average_length) / CHARS_PER_TOKEN) + OVERHEAD_TOKENS_PER_RECORD
+    chunk_sizes = _profile_chunk_sizes(record_count, tokens_per_record, settings)
+    return _cost_decision_from_chunk_sizes(
+        record_tokens_total=record_count * tokens_per_record,
+        chunk_sizes=chunk_sizes,
+        model_id=model_id,
+        max_cost_usd=ceiling,
+        settings=settings,
+        prompt=prompt,
+        pricing_snapshot=pricing_snapshot,
+    )
 
 
 def estimate_cost(
@@ -332,21 +491,12 @@ def estimate_cost(
     chunks = build_chunks(groups, settings)
 
     record_total = sum(record_tokens(group) for group in groups)
-    prompt_tokens = _estimated_prompt_tokens(
+    return _cost_decision_from_chunk_sizes(
         record_tokens_total=record_total,
-        chunk_count=len(chunks),
-        prompt=prompt,
-    )
-    completion_tokens = _estimated_completion_tokens([len(chunk) for chunk in chunks])
-
-    return CostDecision(
-        estimated_prompt_tokens=prompt_tokens,
-        estimated_completion_tokens=completion_tokens,
-        estimated_cost_usd=cost_for_tokens(
-            prompt_tokens,
-            completion_tokens,
-            model_id,
-            pricing_snapshot=pricing_snapshot,
-        ),
+        chunk_sizes=[len(chunk) for chunk in chunks],
+        model_id=model_id,
         max_cost_usd=max_cost_usd,
+        settings=settings,
+        prompt=prompt,
+        pricing_snapshot=pricing_snapshot,
     )

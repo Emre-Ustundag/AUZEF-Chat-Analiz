@@ -147,6 +147,10 @@ class Settings(BaseSettings):
     openrouter_max_repair_attempts: int = Field(default=2, ge=0)
     llm_chunk_max_records: int = Field(default=120, gt=0)
     llm_chunk_max_prompt_tokens: int = Field(default=12_000, gt=0)
+    #: Reduce aşamasında tek çağrıya gönderilecek kategori metninin yaklaşık
+    #: token bütçesi. Map chunk sınırından ayrı tutulur: kayıt ve kategori
+    #: şemalarının bağlam maliyeti farklıdır.
+    llm_reduce_max_prompt_tokens: int = Field(default=12_000, gt=0)
 
     report_retention_hours: int = Field(default=24, gt=0)
     upload_retention_hours: int = Field(default=24, gt=0)

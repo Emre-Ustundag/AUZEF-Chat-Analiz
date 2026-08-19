@@ -140,7 +140,7 @@
   "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
   "warnings": [],
   "model": "google/gemini-2.5-flash",
-  "prompt_version": "faq_analysis/v2",
+  "prompt_version": "faq_analysis/v3",
   "prompt_hash": "sha256:2f8a1c9e4b7d",
   "token_usage": {
     "prompt_tokens": 1284000,
