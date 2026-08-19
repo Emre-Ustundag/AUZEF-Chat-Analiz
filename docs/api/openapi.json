@@ -1288,6 +1288,20 @@
                     "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
                     "sheet_name": "Mesajlar",
                     "text_column": "mesaj",
+                    "row_filters": [
+                      {
+                        "column": "direction",
+                        "allowed_values": [
+                          "Kullanıcı"
+                        ]
+                      },
+                      {
+                        "column": "message_type",
+                        "allowed_values": [
+                          "text"
+                        ]
+                      }
+                    ],
                     "model": "google/gemini-2.5-flash",
                     "prompt_version": "faq_analysis/v1",
                     "top_n": 8,
@@ -2118,6 +2132,7 @@
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
@@ -2278,6 +2293,7 @@
                         "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 250000
                       },
                       "preprocessing_summary": {
@@ -2672,6 +2688,7 @@
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
@@ -3247,6 +3264,14 @@
             "minLength": 1,
             "title": "Text Column"
           },
+          "row_filters": {
+            "items": {
+              "$ref": "#/components/schemas/RowFilter"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Row Filters"
+          },
           "model": {
             "$ref": "#/components/schemas/ModelId"
           },
@@ -3680,6 +3705,33 @@
         ],
         "title": "ReadinessResponse"
       },
+      "RowFilter": {
+        "properties": {
+          "column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Column"
+          },
+          "allowed_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Allowed Values"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "column",
+          "allowed_values"
+        ],
+        "title": "RowFilter",
+        "description": "Bir kolonda izin verilen değerler — filtreler arası AND, değerler arası OR.\n\nFiltre karşılaştırması XLSX hücresinin metne çevrilmiş ve kenar boşlukları\ntemizlenmiş hâliyle TAM eşleşmedir. Regex/substring bilinçli olarak yok:\nkullanıcı verisine karşı tahmin edilemez veya pahalı bir ifade motoru\nçalıştırmıyoruz."
+      },
       "SheetProfile": {
         "properties": {
           "name": {
@@ -3727,6 +3779,13 @@
             "type": "string",
             "title": "Text Column"
           },
+          "row_filters": {
+            "items": {
+              "$ref": "#/components/schemas/RowFilter"
+            },
+            "type": "array",
+            "title": "Row Filters"
+          },
           "total_rows": {
             "type": "integer",
             "minimum": 0.0,
@@ -3738,6 +3797,7 @@
           "filename",
           "sheet_name",
           "text_column",
+          "row_filters",
           "total_rows"
         ],
         "title": "SourceSummary"

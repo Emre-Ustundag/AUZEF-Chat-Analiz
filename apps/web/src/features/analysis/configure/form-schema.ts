@@ -29,6 +29,7 @@ export function toAnalysisRequest(uploadId: string, values: ConfigureFormValues)
     upload_id: uploadId,
     sheet_name: values.sheet_name,
     text_column: values.text_column,
+    row_filters: values.row_filters,
     model: values.model,
     prompt_version: values.prompt_version,
     top_n: values.top_n,

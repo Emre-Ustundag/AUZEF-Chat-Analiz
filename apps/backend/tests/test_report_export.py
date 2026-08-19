@@ -20,6 +20,7 @@ from io import BytesIO
 
 from openpyxl import load_workbook
 
+from app.schemas.analysis import RowFilter
 from app.schemas.report import (
     AnalysisReport,
     AnalysisWarning,
@@ -196,6 +197,27 @@ def test_ozet_sayaclari_da_sayi() -> None:
     assert_numeric(values["Toplam token"], "toplam token")
     assert_numeric(values["Tahmini maliyet (USD)"], "maliyet")
     assert values["Tahmini maliyet (USD)"] == 0.00825
+
+
+def test_ozet_satir_filtrelerini_yeniden_uretilebilir_bicimde_yazar() -> None:
+    report = build_report()
+    report = report.model_copy(
+        update={
+            "source_summary": report.source_summary.model_copy(
+                update={
+                    "row_filters": [
+                        RowFilter(column="direction", allowed_values=["Kullanıcı"]),
+                        RowFilter(column="message_type", allowed_values=["text", "free-text"]),
+                    ]
+                }
+            )
+        }
+    )
+
+    sheet = load(report)["Özet"]  # type: ignore[index]
+    values = {row[0]: row[1] for row in sheet.iter_rows(min_row=2, values_only=True)}
+
+    assert values["Satır filtreleri"] == ("direction = Kullanıcı; message_type = text | free-text")
 
 
 def test_oranlar_rapordaki_degerlerle_tutar() -> None:

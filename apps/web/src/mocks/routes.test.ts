@@ -68,6 +68,7 @@ function analysisRequestFor(uploadId: string): AnalysisRequest {
     upload_id: uploadId,
     sheet_name: "Mesajlar",
     text_column: "mesaj",
+    row_filters: [],
     model: MOCK_MODEL_LIST.default_model,
     prompt_version: MOCK_MODEL_LIST.default_prompt_version,
     top_n: 8,

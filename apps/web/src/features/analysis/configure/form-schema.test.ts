@@ -9,6 +9,7 @@ const UPLOAD_ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
 const validValues = {
   sheet_name: "Mesajlar",
   text_column: "mesaj",
+  row_filters: [],
   model: "anthropic/claude-sonnet-4.6",
   prompt_version: "faq_analysis/v1",
   top_n: 20,
@@ -35,6 +36,21 @@ describe("configureFormSchema", () => {
     expect(configureFormSchema.safeParse({ ...validValues, text_column: "" }).success).toBe(false);
   });
 
+  it("satır filtrelerini doğrular", () => {
+    expect(
+      configureFormSchema.safeParse({
+        ...validValues,
+        row_filters: [{ column: "direction", allowed_values: ["Kullanıcı"] }],
+      }).success,
+    ).toBe(true);
+    expect(
+      configureFormSchema.safeParse({
+        ...validValues,
+        row_filters: [{ column: "direction", allowed_values: [] }],
+      }).success,
+    ).toBe(false);
+  });
+
   it("upload_id istemez", () => {
     // URL'den geliyor; formda sorulması kullanıcıya anlamsız bir alan olurdu.
     expect(configureFormSchema.safeParse(validValues).success).toBe(true);
@@ -46,6 +62,14 @@ describe("toAnalysisRequest", () => {
     const request = toAnalysisRequest(UPLOAD_ID, validValues);
     expect(analysisRequestSchema.safeParse(request).success).toBe(true);
     expect(request.upload_id).toBe(UPLOAD_ID);
+    expect(request.row_filters).toEqual([]);
+  });
+
+  it("satır filtrelerini istek gövdesine taşır", () => {
+    const rowFilters = [{ column: "direction", allowed_values: ["Kullanıcı", "Temsilci"] }];
+    const request = toAnalysisRequest(UPLOAD_ID, { ...validValues, row_filters: rowFilters });
+
+    expect(request.row_filters).toEqual(rowFilters);
   });
 
   it("API anahtarını gövdeye KOYMAZ", () => {

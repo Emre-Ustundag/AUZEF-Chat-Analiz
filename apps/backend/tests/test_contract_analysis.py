@@ -94,6 +94,7 @@ def _valid_request() -> dict[str, object]:
         "upload_id": str(uuid4()),
         "sheet_name": "Mesajlar",
         "text_column": "mesaj",
+        "row_filters": [],
         "model": "anthropic/claude-sonnet-4.6",
         "prompt_version": "faq_analysis/v1",
         "top_n": 20,
@@ -103,6 +104,36 @@ def _valid_request() -> dict[str, object]:
 
 def test_gecerli_istek_kabul_edilir() -> None:
     assert AnalysisCreate.model_validate(_valid_request())
+
+
+def test_satir_filtreleri_normalize_edilir() -> None:
+    payload = _valid_request() | {
+        "row_filters": [
+            {"column": " direction ", "allowed_values": [" Kullanıcı ", "Temsilci"]},
+            {"column": "message_type", "allowed_values": ["text"]},
+        ]
+    }
+    parsed = AnalysisCreate.model_validate(payload)
+
+    assert parsed.row_filters[0].column == "direction"
+    assert parsed.row_filters[0].allowed_values == ["Kullanıcı", "Temsilci"]
+
+
+@pytest.mark.parametrize(
+    "row_filters",
+    [
+        [{"column": "direction", "allowed_values": []}],
+        [{"column": "direction", "allowed_values": [""]}],
+        [{"column": "direction", "allowed_values": ["Kullanıcı", "Kullanıcı"]}],
+        [
+            {"column": "direction", "allowed_values": ["Kullanıcı"]},
+            {"column": "direction", "allowed_values": ["Bot"]},
+        ],
+    ],
+)
+def test_gecersiz_satir_filtreleri_reddedilir(row_filters: list[dict[str, object]]) -> None:
+    with pytest.raises(ValidationError):
+        AnalysisCreate.model_validate(_valid_request() | {"row_filters": row_filters})
 
 
 @pytest.mark.parametrize(
@@ -134,6 +165,7 @@ def test_istek_govdesinde_api_anahtari_alani_yok() -> None:
         "upload_id",
         "sheet_name",
         "text_column",
+        "row_filters",
         "model",
         "prompt_version",
         "top_n",
@@ -281,6 +313,7 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "filename",
         "sheet_name",
         "text_column",
+        "row_filters",
         "total_rows",
     }
     assert set(payload["preprocessing_summary"]) == {

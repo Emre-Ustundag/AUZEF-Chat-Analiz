@@ -47,7 +47,7 @@ from app.pipeline.llm_classifier import (
 )
 from app.pipeline.preprocess import Preprocessor, PreprocessResult
 from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
-from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
+from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus, RowFilter
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
 from app.services import retention, secret_store, storage
@@ -416,6 +416,7 @@ async def _preprocess_in_batches(
     local_path: Path,
     sheet_name: str,
     text_column: str,
+    row_filters: list[RowFilter],
     expected_rows: int,
     settings: Settings,
 ) -> PreprocessResult:
@@ -434,7 +435,10 @@ async def _preprocess_in_batches(
     taşınıyor; aksi hâlde event loop dakikalarca bloklanırdı.
     """
     preprocessor = Preprocessor(settings)
-    values = iter_column_values(local_path, sheet_name, text_column)
+    filter_map = {
+        row_filter.column: frozenset(row_filter.allowed_values) for row_filter in row_filters
+    }
+    values = iter_column_values(local_path, sheet_name, text_column, filter_map)
 
     start = STAGE_PROGRESS[AnalysisStatus.PREPROCESSING]
     end = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
@@ -616,6 +620,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
 
         sheet_name = analysis.sheet_name
         text_column = analysis.text_column
+        row_filters = [RowFilter.model_validate(item) for item in analysis.row_filters]
         model = analysis.model
         prompt_version = analysis.prompt_version
         top_n = analysis.top_n
@@ -701,6 +706,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
                 local_path=local_path,
                 sheet_name=sheet_name,
                 text_column=text_column,
+                row_filters=row_filters,
                 expected_rows=expected_rows,
                 settings=settings,
             )
@@ -966,6 +972,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             filename=filename,
             sheet_name=sheet_name,
             text_column=text_column,
+            row_filters=row_filters,
             model=model,
             prompt_version=prompt_version,
             classifier_id=classifier.identifier,

@@ -92,6 +92,10 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
 
     source = report.source_summary
     pre = report.preprocessing_summary
+    serialized_filters = "; ".join(
+        f"{row_filter.column} = {' | '.join(row_filter.allowed_values)}"
+        for row_filter in source.row_filters
+    )
 
     rows: list[tuple[str, str | int | float]] = [
         ("Analiz kimliği", str(report.analysis_id)),
@@ -99,6 +103,7 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ("Dosya", source.filename),
         ("Sayfa", source.sheet_name),
         ("Kolon", source.text_column),
+        ("Satır filtreleri", serialized_filters or "Yok"),
         ("Toplam satır", source.total_rows),
         ("Analiz edilen kayıt", pre.analyzed_count),
         ("Elenen kayıt", pre.discarded_count),

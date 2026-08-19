@@ -33,6 +33,7 @@ from uuid import UUID
 from app.core.config import Settings
 from app.pipeline.classifier import Classification
 from app.pipeline.preprocess import PreprocessResult, RecordGroup
+from app.schemas.analysis import RowFilter
 from app.schemas.report import (
     REPORT_SCHEMA_VERSION,
     AnalysisReport,
@@ -103,6 +104,7 @@ def aggregate(
     classifier_id: str,
     top_n: int,
     settings: Settings,
+    row_filters: list[RowFilter] | None = None,
     extra_warnings: list[AnalysisWarning] | None = None,
     token_usage: TokenUsage | None = None,
     estimated_cost_usd: float = 0.0,
@@ -205,6 +207,7 @@ def aggregate(
             filename=filename,
             sheet_name=sheet_name,
             text_column=text_column,
+            row_filters=list(row_filters or []),
             total_rows=preprocess_result.total_rows,
         ),
         preprocessing_summary=PreprocessingSummary(

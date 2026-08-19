@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { promptVersionSchema } from "./analysis";
+import { promptVersionSchema, rowFilterSchema } from "./analysis";
 
 /** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
 export function percentageHalfUp(count: number, total: number): number {
@@ -25,6 +25,7 @@ export const sourceSummarySchema = z.object({
   filename: z.string(),
   sheet_name: z.string(),
   text_column: z.string(),
+  row_filters: z.array(rowFilterSchema).default([]),
   total_rows: z.int().nonnegative(),
 });
 

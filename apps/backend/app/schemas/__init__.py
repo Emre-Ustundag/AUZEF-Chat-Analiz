@@ -11,6 +11,7 @@ from app.schemas.analysis import (
     ModelList,
     ModelOption,
     PromptVersion,
+    RowFilter,
 )
 from app.schemas.base import ApiModel, ApiRequestModel, UtcDateTime
 from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
@@ -55,6 +56,7 @@ __all__ = [
     "PromptVersion",
     "ReadinessCheckResponse",
     "ReadinessResponse",
+    "RowFilter",
     "SheetProfile",
     "SourceSummary",
     "Theme",

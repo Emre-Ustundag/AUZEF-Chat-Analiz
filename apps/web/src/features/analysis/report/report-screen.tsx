@@ -77,6 +77,14 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
             {src.filename} · {src.sheet_name} · {src.text_column} kolonu ·{" "}
             {formatDateTime(report.generated_at)}
           </p>
+          {src.row_filters.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Filtreler:{" "}
+              {src.row_filters
+                .map((rowFilter) => `${rowFilter.column} = ${rowFilter.allowed_values.join(" | ")}`)
+                .join("; ")}
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">

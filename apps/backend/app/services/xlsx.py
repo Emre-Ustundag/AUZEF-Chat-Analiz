@@ -24,7 +24,7 @@ Tehdit modeli — buraya gelen dosya GÜVENİLMEYEN kullanıcı girdisidir:
 from __future__ import annotations
 
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -413,6 +413,7 @@ def iter_column_values(
     path: Path,
     sheet_name: str,
     text_column: str,
+    row_filters: Mapping[str, frozenset[str]] | None = None,
 ) -> Iterator[str | None]:
     """Seçilen sayfanın seçilen kolonundaki hücreleri SATIR SATIR üretir.
 
@@ -427,6 +428,12 @@ def iter_column_values(
 
     Boş hücreler `None` olarak ÜRETİLİR, atlanmaz: `discarded_count` ve
     `total_rows` sayımlarının doğru olması için toplam satır sayısı gerekli.
+
+    Filtre dışı satırlar da ATLANMAZ, `None` üretilir. Böylece ilerleme
+    dosyanın gerçek satır sayısıyla ilerler ve rapor değişmezi
+    `analyzed_count + discarded_count == total_rows` korunur. Filtreler
+    arası AND, tek filtrenin izin verilen değerleri arası OR'dur; hücre
+    değeri metne çevrilip kenar boşlukları temizlendikten sonra TAM eşleşir.
     """
     try:
         workbook = load_workbook(path, read_only=True, data_only=True, keep_links=False)
@@ -439,15 +446,26 @@ def iter_column_values(
 
         worksheet = workbook[sheet_name]
         column_index = -1
+        filter_indexes: dict[int, frozenset[str]] = {}
+        requested_filters = dict(row_filters or {})
+        resolved_filter_columns: set[str] = set()
 
         for row_number, row in enumerate(worksheet.iter_rows(values_only=True)):
             if row_number == 0:
                 for index, value in enumerate(row):
-                    if _column_name(value, index) == text_column:
+                    column_name = _column_name(value, index)
+                    if column_name == text_column and column_index < 0:
                         column_index = index
-                        break
+                    if (
+                        column_name in requested_filters
+                        and column_name not in resolved_filter_columns
+                    ):
+                        filter_indexes[index] = requested_filters[column_name]
+                        resolved_filter_columns.add(column_name)
                 if column_index < 0:
                     raise SheetOrColumnNotFoundError("column_not_found")
+                if resolved_filter_columns != set(requested_filters):
+                    raise SheetOrColumnNotFoundError("filter_column_not_found")
                 continue
 
             # Profillemeyle aynı kural: tamamen boş satırlar Excel'in
@@ -455,6 +473,16 @@ def iter_column_values(
             if all(
                 value is None or (isinstance(value, str) and not value.strip()) for value in row
             ):
+                continue
+
+            matches_filters = all(
+                index < len(row)
+                and row[index] is not None
+                and str(row[index]).strip() in allowed_values
+                for index, allowed_values in filter_indexes.items()
+            )
+            if not matches_filters:
+                yield None
                 continue
 
             if column_index >= len(row):

@@ -12,7 +12,7 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from app.schemas.analysis import PromptVersion
+from app.schemas.analysis import PromptVersion, RowFilter
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -36,6 +36,7 @@ class SourceSummary(ApiModel):
     filename: str
     sheet_name: str
     text_column: str
+    row_filters: list[RowFilter] = Field(default_factory=list)
     total_rows: int = Field(ge=0)
 
 

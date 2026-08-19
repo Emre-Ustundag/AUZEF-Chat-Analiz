@@ -116,6 +116,10 @@ def _fingerprint_cases() -> list[dict[str, object]]:
             "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
             "sheet_name": "Mesajlar",
             "text_column": "mesaj",
+            "row_filters": [
+                {"column": "direction", "allowed_values": ["Kullanıcı"]},
+                {"column": "message_type", "allowed_values": ["text"]},
+            ],
             "model": "anthropic/claude-sonnet-4.6",
             "prompt_version": "faq_analysis/v1",
             "top_n": 20,
@@ -125,6 +129,7 @@ def _fingerprint_cases() -> list[dict[str, object]]:
             "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
             "sheet_name": "Sayfa 1",
             "text_column": "soru metni",
+            "row_filters": [],
             "model": "google/gemini-2.5-flash",
             "prompt_version": "faq_analysis/v1",
             "top_n": 1,

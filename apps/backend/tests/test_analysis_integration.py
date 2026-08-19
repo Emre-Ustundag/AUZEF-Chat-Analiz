@@ -219,6 +219,26 @@ async def test_analiz_uctan_uca_calisir(client: AsyncClient) -> None:
     assert parsed.prompt_version == "faq_analysis/v1"
     assert parsed.prompt_hash.startswith("sha256:")
 
+
+async def test_satir_filtreleri_uctan_uca_uygulanir(client: AsyncClient) -> None:
+    upload_id, _ = await _ready_upload(client)
+    filters = [{"column": "kanal", "allowed_values": ["web"]}]
+
+    created = await _create(client, upload_id, row_filters=filters)
+    assert created.status_code == 202
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    result = await client.get(f"/api/v1/analyses/{analysis_id}/result")
+    parsed = AnalysisReport.model_validate(result.json())
+
+    # Kaynak toplamı değişmez; 20 mobil satır filtre tarafından elenir.
+    assert parsed.source_summary.total_rows == 40
+    assert [row_filter.model_dump() for row_filter in parsed.source_summary.row_filters] == filters
+    assert parsed.preprocessing_summary.analyzed_count == 20
+    assert parsed.preprocessing_summary.discarded_count == 20
+    assert parsed.preprocessing_summary.unique_count == 5
+
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
 
@@ -268,6 +288,20 @@ async def test_whitelist_disi_model_reddedilir(client: AsyncClient) -> None:
 async def test_olmayan_kolon_reddedilir(client: AsyncClient) -> None:
     upload_id, _ = await _ready_upload(client)
     response = await _create(client, upload_id, text_column="olmayan_kolon")
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_olmayan_filtre_kolonu_reddedilir(client: AsyncClient) -> None:
+    upload_id, _ = await _ready_upload(client)
+    response = await _create(
+        client,
+        upload_id,
+        row_filters=[{"column": "olmayan", "allowed_values": ["x"]}],
+    )
 
     assert response.status_code == 422
     assert response.json()["code"] == "SHEET_OR_COLUMN_NOT_FOUND"

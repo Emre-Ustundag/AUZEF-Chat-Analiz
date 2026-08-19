@@ -99,6 +99,18 @@ def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen kolon bu sayfada bulunamadı.",
         )
+
+    available_columns = {profile_column.name for profile_column in sheet.columns}
+    missing_filter_columns = [
+        row_filter.column
+        for row_filter in body.row_filters
+        if row_filter.column not in available_columns
+    ]
+    if missing_filter_columns:
+        raise ApiError(
+            "SHEET_OR_COLUMN_NOT_FOUND",
+            "Satır filtresinde seçilen kolon bu sayfada bulunamadı.",
+        )
     return column
 
 
@@ -182,18 +194,24 @@ async def create_analysis(
         # ayrı bir sebepten düşük (`pipeline/cost.py`
         # `OUTPUT_TOKENS_PER_RECORD`, ölçülen sapma 5x). İki hata üst üste
         # binince tavan kapısı büyük dosyalarda pratikte hiç kapanmıyordu.
-        estimated_cost_usd = estimate_profile_cost(
-            column.non_empty_count,
-            column.avg_length,
-            body.model,
-        )
-        if estimated_cost_usd > body.max_cost_usd:
-            raise ApiError(
-                "COST_LIMIT_EXCEEDED",
-                f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
-                f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
-                "yükseltin ya da daha ucuz bir model seçin.",
+        # Profil filtre kombinasyonunun kaç satır tuttuğunu bilmez. Filtreli
+        # isteği filtresiz `non_empty_count` ile reddetmek, tam da maliyeti
+        # azaltan özelliği kullanılamaz hale getirirdi. Bu durumda senkron
+        # kapı atlanır; worker filtreyi uygulayıp dedupe ettikten sonra daha
+        # kesin tahmini, İLK model çağrısından önce zaten zorlar.
+        if not body.row_filters:
+            estimated_cost_usd = estimate_profile_cost(
+                column.non_empty_count,
+                column.avg_length,
+                body.model,
             )
+            if estimated_cost_usd > body.max_cost_usd:
+                raise ApiError(
+                    "COST_LIMIT_EXCEEDED",
+                    f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
+                    f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
+                    "yükseltin ya da daha ucuz bir model seçin.",
+                )
 
         analysis_id = uuid.uuid4()
         analysis = Analysis(
@@ -204,6 +222,7 @@ async def create_analysis(
             cancel_requested=False,
             sheet_name=body.sheet_name,
             text_column=body.text_column,
+            row_filters=[row_filter.model_dump(mode="json") for row_filter in body.row_filters],
             model=body.model,
             prompt_version=body.prompt_version,
             top_n=body.top_n,

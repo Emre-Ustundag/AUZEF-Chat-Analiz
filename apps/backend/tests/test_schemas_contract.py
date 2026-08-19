@@ -68,6 +68,7 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
             "upload_id",
             "sheet_name",
             "text_column",
+            "row_filters",
             "model",
             "prompt_version",
             "top_n",
@@ -98,7 +99,7 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
         },
     ),
     (ModelList, {"models", "default_model", "default_prompt_version"}),
-    (SourceSummary, {"filename", "sheet_name", "text_column", "total_rows"}),
+    (SourceSummary, {"filename", "sheet_name", "text_column", "row_filters", "total_rows"}),
     (
         PreprocessingSummary,
         {

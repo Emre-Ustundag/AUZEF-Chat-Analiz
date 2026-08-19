@@ -53,6 +53,7 @@ function analysisRequestFor(uploadId: string): AnalysisRequest {
     upload_id: uploadId,
     sheet_name: "Mesajlar",
     text_column: "mesaj",
+    row_filters: [],
     model: "anthropic/claude-sonnet-4.6",
     prompt_version: "faq_analysis/v1",
     top_n: 8,

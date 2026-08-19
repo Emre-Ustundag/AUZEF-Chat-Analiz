@@ -7,6 +7,7 @@
     "filename": "auzef-chatbot-mesajlari.xlsx",
     "sheet_name": "Mesajlar",
     "text_column": "mesaj",
+    "row_filters": [],
     "total_rows": 48213
   },
   "preprocessing_summary": {

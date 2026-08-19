@@ -141,6 +141,7 @@ describe("analysisRequestSchema", () => {
     upload_id: ID,
     sheet_name: "Sayfa1",
     text_column: "mesaj",
+    row_filters: [],
     model: "anthropic/claude-sonnet-4.6",
     prompt_version: "faq_analysis/v1",
     top_n: 20,

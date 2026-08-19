@@ -8,13 +8,27 @@
         "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
         "sheet_name": "Mesajlar",
         "text_column": "mesaj",
+        "row_filters": [
+          {
+            "column": "direction",
+            "allowed_values": [
+              "Kullanıcı"
+            ]
+          },
+          {
+            "column": "message_type",
+            "allowed_values": [
+              "text"
+            ]
+          }
+        ],
         "model": "anthropic/claude-sonnet-4.6",
         "prompt_version": "faq_analysis/v1",
         "top_n": 20,
         "max_cost_usd": 5.0
       },
-      "canonical_json": "{\"max_cost_usd\":5,\"model\":\"anthropic/claude-sonnet-4.6\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Mesajlar\",\"text_column\":\"mesaj\",\"top_n\":20,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
-      "fingerprint": "8edfb3a323d93696f17b9744bcd38d935a4c0a065c868513b1e61ad7fa26a7ae"
+      "canonical_json": "{\"max_cost_usd\":5,\"model\":\"anthropic/claude-sonnet-4.6\",\"prompt_version\":\"faq_analysis/v1\",\"row_filters\":[{\"allowed_values\":[\"Kullanıcı\"],\"column\":\"direction\"},{\"allowed_values\":[\"text\"],\"column\":\"message_type\"}],\"sheet_name\":\"Mesajlar\",\"text_column\":\"mesaj\",\"top_n\":20,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
+      "fingerprint": "fafcd404eed59a9c3a8aa7f9a142dd3a65e5fa6175a49fd352d36b796bc42c88"
     },
     {
       "id": "analyses.fingerprint.1",
@@ -23,13 +37,14 @@
         "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
         "sheet_name": "Sayfa 1",
         "text_column": "soru metni",
+        "row_filters": [],
         "model": "google/gemini-2.5-flash",
         "prompt_version": "faq_analysis/v1",
         "top_n": 1,
         "max_cost_usd": 2.5
       },
-      "canonical_json": "{\"max_cost_usd\":2.5,\"model\":\"google/gemini-2.5-flash\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Sayfa 1\",\"text_column\":\"soru metni\",\"top_n\":1,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
-      "fingerprint": "03038bf27d6d519f5fc79033b15d94f0e4bf5ba457ddefc19fbdde81da970f75"
+      "canonical_json": "{\"max_cost_usd\":2.5,\"model\":\"google/gemini-2.5-flash\",\"prompt_version\":\"faq_analysis/v1\",\"row_filters\":[],\"sheet_name\":\"Sayfa 1\",\"text_column\":\"soru metni\",\"top_n\":1,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
+      "fingerprint": "da516ca5fa553228070b0eea009b07d15ac5551fea17d1d184c8d228a3a2afdb"
     },
     {
       "id": "uploads.fingerprint.0",

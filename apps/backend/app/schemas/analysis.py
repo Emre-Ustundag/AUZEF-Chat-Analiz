@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.schemas.base import ApiModel, ApiRequestModel, UtcDateTime
 from app.schemas.common import ProblemDetails
@@ -69,6 +69,39 @@ class PromptVersion(StrEnum):
     FAQ_ANALYSIS_V1 = "faq_analysis/v1"
 
 
+class RowFilter(ApiRequestModel):
+    """Bir kolonda izin verilen değerler — filtreler arası AND, değerler arası OR.
+
+    Filtre karşılaştırması XLSX hücresinin metne çevrilmiş ve kenar boşlukları
+    temizlenmiş hâliyle TAM eşleşmedir. Regex/substring bilinçli olarak yok:
+    kullanıcı verisine karşı tahmin edilemez veya pahalı bir ifade motoru
+    çalıştırmıyoruz.
+    """
+
+    column: str = Field(min_length=1, max_length=512)
+    allowed_values: list[str] = Field(min_length=1, max_length=20)
+
+    @field_validator("column")
+    @classmethod
+    def _strip_column(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Filtre kolonu boş olamaz.")
+        return stripped
+
+    @field_validator("allowed_values")
+    @classmethod
+    def _normalize_allowed_values(cls, values: list[str]) -> list[str]:
+        normalized = [value.strip() for value in values]
+        if any(not value for value in normalized):
+            raise ValueError("Filtre değerleri boş olamaz.")
+        if any(len(value) > 512 for value in normalized):
+            raise ValueError("Filtre değerleri en fazla 512 karakter olabilir.")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("Aynı filtre değeri tekrarlanamaz.")
+        return normalized
+
+
 class AnalysisRequest(ApiRequestModel):
     """POST /api/v1/analyses gövdesi.
 
@@ -81,11 +114,20 @@ class AnalysisRequest(ApiRequestModel):
     upload_id: UUID
     sheet_name: str = Field(min_length=1)
     text_column: str = Field(min_length=1)
+    row_filters: list[RowFilter] = Field(default_factory=list, max_length=5)
     model: ModelId
     prompt_version: PromptVersion
     top_n: int = Field(ge=1, le=100)
     #: gt, ge değil: Zod tarafı `.positive()`.
     max_cost_usd: float = Field(gt=0, le=100)
+
+    @field_validator("row_filters")
+    @classmethod
+    def _filter_columns_are_unique(cls, filters: list[RowFilter]) -> list[RowFilter]:
+        columns = [row_filter.column for row_filter in filters]
+        if len(columns) != len(set(columns)):
+            raise ValueError("Aynı kolon için birden fazla filtre tanımlanamaz.")
+        return filters
 
 
 class AnalysisCreated(ApiModel):

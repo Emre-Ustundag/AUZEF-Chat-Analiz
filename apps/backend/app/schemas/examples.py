@@ -39,6 +39,7 @@ from app.schemas.analysis import (
     AnalysisJob,
     AnalysisRequest,
     AnalysisStatus,
+    RowFilter,
 )
 from app.schemas.common import ErrorItem, ProblemDetails
 from app.schemas.health import LivenessResponse, ReadinessCheckResponse, ReadinessResponse
@@ -385,6 +386,10 @@ ANALYSIS_REQUEST = AnalysisRequest(
     upload_id=UPLOAD_ID,
     sheet_name="Mesajlar",
     text_column="mesaj",
+    row_filters=[
+        RowFilter(column="direction", allowed_values=["Kullanıcı"]),
+        RowFilter(column="message_type", allowed_values=["text"]),
+    ],
     model=DEFAULT_MODEL,
     prompt_version=DEFAULT_PROMPT_VERSION,
     top_n=8,

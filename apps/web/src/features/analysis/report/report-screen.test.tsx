@@ -34,6 +34,7 @@ const report: AnalysisReport = {
     filename: "mesajlar.xlsx",
     sheet_name: "Mesajlar",
     text_column: "mesaj",
+    row_filters: [],
     total_rows: 48_213,
   },
   preprocessing_summary: {
@@ -124,6 +125,25 @@ describe("ReportScreen", () => {
     expect(await screen.findByText("anthropic/claude-sonnet-4.6")).toBeInTheDocument();
     expect(screen.getByText("faq_analysis/v1")).toBeInTheDocument();
     expect(screen.getByText("sha256:2f8a1c9e4b7d")).toBeInTheDocument();
+  });
+
+  it("uygulanan satır filtrelerini kaynak künyesinde gösterir", async () => {
+    getAnalysisReport.mockResolvedValue({
+      ...report,
+      source_summary: {
+        ...report.source_summary,
+        row_filters: [
+          { column: "direction", allowed_values: ["Kullanıcı"] },
+          { column: "message_type", allowed_values: ["text"] },
+        ],
+      },
+    });
+
+    renderScreen();
+
+    expect(
+      await screen.findByText("Filtreler: direction = Kullanıcı; message_type = text"),
+    ).toBeInTheDocument();
   });
 
   it("dışa aktarmayı istenen formatla çalıştırır", async () => {

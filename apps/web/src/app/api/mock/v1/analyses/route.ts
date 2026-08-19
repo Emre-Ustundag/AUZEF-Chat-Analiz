@@ -188,10 +188,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const availableColumns = new Set(sheet.columns.map((column) => column.name));
+  if (parsed.data.row_filters.some((rowFilter) => !availableColumns.has(rowFilter.column))) {
+    return problemResponse(
+      problem(
+        "SHEET_OR_COLUMN_NOT_FOUND",
+        422,
+        "Filtre kolonu bulunamadı",
+        "Satır filtresinde seçilen kolon upload profilinde bulunmuyor.",
+        { errors: [{ field: "row_filters", message: "Filtre kolonu bu sayfada bulunmuyor." }] },
+      ),
+    );
+  }
+
   // ADR-0002 #10: maliyet tavanı iki noktada kontrol edilir; bu, LLM çağrısı
   // hiç başlamadan submit anındaki senkron ön tahmin.
   const estimated = estimateCostUsd(model);
-  if (estimated > max_cost_usd) {
+  if (parsed.data.row_filters.length === 0 && estimated > max_cost_usd) {
     return problemResponse(
       problem(
         "COST_LIMIT_EXCEEDED",

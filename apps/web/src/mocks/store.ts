@@ -537,6 +537,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       filename: uploads.get(record.request.upload_id)?.filename ?? "veri.xlsx",
       sheet_name: record.request.sheet_name,
       text_column: record.request.text_column,
+      row_filters: record.request.row_filters,
       total_rows: totalRows,
     },
     preprocessing_summary: {
