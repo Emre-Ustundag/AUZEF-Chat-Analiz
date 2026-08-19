@@ -57,8 +57,6 @@ class TopQuestion(ApiModel):
     count: int = Field(ge=0)
     #: 0-100 aralığında; `preprocessing_summary.analyzed_count`'a göre hesaplanır.
     percentage: float = Field(ge=0, le=100)
-    #: 0-1 aralığında model güven skoru.
-    confidence: float = Field(ge=0, le=1)
     #: PII redakte edilmiş, kırpılmış gerçek kullanıcı mesajları.
     redacted_examples: list[str] = Field(default_factory=list)
 

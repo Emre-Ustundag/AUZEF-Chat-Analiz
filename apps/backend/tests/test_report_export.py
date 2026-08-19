@@ -57,7 +57,6 @@ def build_report() -> AnalysisReport:
                 canonical_question="Sınav tarihleri ne zaman açıklanacak?",
                 count=25,
                 percentage=62.5,
-                confidence=0.92,
                 redacted_examples=[
                     "sınav tarihleri ne zaman açıklanacak",
                     "[EPOSTA] adresinden yazdım, sınav tarihi?",
@@ -68,7 +67,6 @@ def build_report() -> AnalysisReport:
                 canonical_question="Harç ödemesi nasıl yapılır?",
                 count=15,
                 percentage=37.5,
-                confidence=0.5,
                 redacted_examples=["harç ödemesini nasıl yaparım"],
             ),
         ],
@@ -117,7 +115,6 @@ def test_sorular_sayfasinin_basligi_ve_satir_sayisi() -> None:
         "Soru",
         "Adet",
         "Oran (%)",
-        "Güven",
         "Örnek mesajlar (redakte)",
     ]
     # Başlık + her soru için bir satır. Fazlası kırpma/tekrar hatası demek.
@@ -157,7 +154,7 @@ def assert_numeric(value: object, label: str) -> None:
 
 
 def test_sayilar_hucrede_sayi_olarak_durur() -> None:
-    """Adet/oran/güven hücreleri METİN OLMAMALI (plan §4 Faz 4).
+    """Adet/oran hücreleri METİN OLMAMALI (plan §4 Faz 4).
 
     Değer eşitliği tek başına yetmez: `"62,5"` veya `"62.5"` dizesi de
     gözle doğru görünür ama Excel onunla toplama, sıralama, grafik ve
@@ -170,10 +167,8 @@ def test_sayilar_hucrede_sayi_olarak_durur() -> None:
     for row, question in zip(questions.iter_rows(min_row=2), report.top_questions, strict=True):
         assert_numeric(row[2].value, "adet")
         assert_numeric(row[3].value, "oran")
-        assert_numeric(row[4].value, "güven")
         assert row[2].value == question.count
         assert row[3].value == question.percentage
-        assert row[4].value == question.confidence
 
     themes = workbook["Temalar"]  # type: ignore[index]
     for row, theme in zip(themes.iter_rows(min_row=2), report.themes, strict=True):
@@ -241,7 +236,7 @@ def test_ornek_mesajlar_redakte_hâliyle_gider() -> None:
     report = build_report()
     sheet = load(report)["Sorular"]  # type: ignore[index]
 
-    examples = [row[5] for row in sheet.iter_rows(min_row=2, values_only=True)]
+    examples = [row[4] for row in sheet.iter_rows(min_row=2, values_only=True)]
     assert all(text for text in examples), "örnek hücresi boş kalmamalı"
 
     birlesik = "\n".join(str(text) for text in examples)

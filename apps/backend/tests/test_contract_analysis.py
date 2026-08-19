@@ -270,7 +270,6 @@ def _report() -> AnalysisReport:
                 canonical_question="Sınav ne zaman?",
                 count=45,
                 percentage=50.0,
-                confidence=0.9,
                 redacted_examples=["sınav ne zaman"],
             )
         ],
@@ -330,7 +329,6 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "canonical_question",
         "count",
         "percentage",
-        "confidence",
         "redacted_examples",
     }
     assert set(payload["themes"][0]) == {
@@ -349,6 +347,15 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
     }
 
 
+def test_tarihsel_confidence_alani_yok_sayilir() -> None:
+    payload = _report().model_dump(mode="json")
+    payload["top_questions"][0]["confidence"] = 0.9
+
+    parsed = AnalysisReport.model_validate(payload).model_dump(mode="json")
+
+    assert "confidence" not in parsed["top_questions"][0]
+
+
 def test_rapor_yalnizca_completed_durumunu_tasir() -> None:
     """Frontend `z.literal("completed")`; başka bir değer Zod'da hata."""
     payload = _report().model_dump(mode="json")
@@ -361,14 +368,13 @@ def test_rapor_yalnizca_completed_durumunu_tasir() -> None:
 @pytest.mark.parametrize(
     ("path", "value"),
     [
-        (("top_questions", 0, "confidence"), 92),
         (("top_questions", 0, "percentage"), 148),
         (("themes", 0, "percentage"), -1),
         (("top_questions", 0, "count"), -5),
     ],
 )
 def test_sayisal_sinirlar_zod_ile_ayni(path: tuple[object, ...], value: object) -> None:
-    """Zod: confidence 0-1, percentage 0-100, count >= 0."""
+    """Zod: percentage 0-100, count >= 0."""
     payload = _report().model_dump(mode="json")
     target: object = payload
     for key in path[:-1]:

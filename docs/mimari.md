@@ -262,7 +262,7 @@ Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve lo
 - `schema_version`, `analysis_id`, `status`, `generated_at`
 - `source_summary`: dosya, sheet ve satır özeti
 - `preprocessing_summary`: analiz edilen, elenen, tekrar ve redakte edilen kayıt sayıları
-- `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `confidence`, `redacted_examples`
+- `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `redacted_examples`
 - `themes[]`: `id`, `name`, `count`, `percentage`, `related_question_ids`
   - `related_question_ids`, `top_n` kırpması sonrası raporda gerçekten yer alan sorulara filtrelenir; `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya devam eder (ADR-0002 #5)
   - soru/tema id'leri benzersiz, `count <= analyzed_count`; `percentage`, bir ondalığa exact half-up yuvarlanmış gerçek orandır

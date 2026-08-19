@@ -23,7 +23,6 @@
       "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
       "count": 11680,
       "percentage": 4.7,
-      "confidence": 0.94,
       "redacted_examples": [
         "sınav tarihleri belli mi",
         "vize ne zaman"
@@ -34,7 +33,6 @@
       "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
       "count": 8102,
       "percentage": 3.3,
-      "confidence": 0.91,
       "redacted_examples": [
         "ders kitabı nerede",
         "pdf'leri bulamıyorum"
@@ -45,7 +43,6 @@
       "canonical_question": "Harç ödemesini nasıl yaparım?",
       "count": 5748,
       "percentage": 2.3,
-      "confidence": 0.89,
       "redacted_examples": [
         "harç yatırma",
         "ödeme yapamıyorum"
@@ -56,7 +53,6 @@
       "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
       "count": 4523,
       "percentage": 1.8,
-      "confidence": 0.87,
       "redacted_examples": [
         "kayıt yenilemedim ne olur"
       ]
@@ -66,7 +62,6 @@
       "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
       "count": 3311,
       "percentage": 1.3,
-      "confidence": 0.85,
       "redacted_examples": [
         "sınav yeri",
         "hangi binada"

@@ -166,7 +166,7 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
 def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
     _write_header(
         sheet,
-        ["Kimlik", "Soru", "Adet", "Oran (%)", "Güven", "Örnek mesajlar (redakte)"],
+        ["Kimlik", "Soru", "Adet", "Oran (%)", "Örnek mesajlar (redakte)"],
     )
     for question in report.top_questions:
         sheet.append(
@@ -176,15 +176,14 @@ def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
                 # ---- ham sayılar: `int` ve `float`, dize DEĞİL ----
                 question.count,
                 question.percentage,
-                question.confidence,
                 _EXAMPLE_SEPARATOR.join(question.redacted_examples),
             ]
         )
-        sheet.cell(row=sheet.max_row, column=6).alignment = Alignment(
+        sheet.cell(row=sheet.max_row, column=5).alignment = Alignment(
             wrap_text=True, vertical="top"
         )
 
-    _autosize(sheet, [16, 60, 10, 12, 10, 70])
+    _autosize(sheet, [16, 60, 10, 12, 70])
 
 
 def _build_themes_sheet(sheet: Worksheet, report: AnalysisReport) -> None:

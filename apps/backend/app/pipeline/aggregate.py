@@ -128,7 +128,6 @@ def aggregate(
     # ---- soru adetleri: yalnızca RecordGroup.count toplamları ----
     question_counts: dict[str, int] = {}
     question_examples: dict[str, list[str]] = {}
-    question_confidence: dict[str, float] = {}
 
     for question in classification.questions:
         members = [groups[record_id] for record_id in question.record_ids]
@@ -147,13 +146,6 @@ def aggregate(
                 break
         question_examples[question.question_id] = examples
 
-        # Güven skoru DETERMİNİSTİK türetiliyor: grubun en baskın kaydının
-        # toplam içindeki payı. Faz 2'de model yok, dolayısıyla "model güven
-        # skoru" yerine küme tutarlılığı raporlanıyor — bu bir SAPMA DEĞİL,
-        # aynı alanın vekil karşılığı (rapor `prompt_hash` ile işaretli).
-        dominant = max((member.count for member in members), default=0)
-        question_confidence[question.question_id] = round(dominant / total, 2) if total > 0 else 0.0
-
     # ---- Top N kırpması ----
     ordered_questions = sorted(
         classification.questions,
@@ -168,7 +160,6 @@ def aggregate(
             canonical_question=question.canonical_question,
             count=question_counts[question.question_id],
             percentage=_percentage(question_counts[question.question_id], analyzed),
-            confidence=question_confidence[question.question_id],
             redacted_examples=question_examples[question.question_id],
         )
         for question in included

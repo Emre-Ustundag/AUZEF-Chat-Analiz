@@ -128,7 +128,7 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
     ),
     (
         TopQuestion,
-        {"id", "canonical_question", "count", "percentage", "confidence", "redacted_examples"},
+        {"id", "canonical_question", "count", "percentage", "redacted_examples"},
     ),
     (Theme, {"id", "name", "count", "percentage", "related_question_ids"}),
     (

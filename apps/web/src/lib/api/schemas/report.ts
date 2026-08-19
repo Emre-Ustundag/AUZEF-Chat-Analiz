@@ -56,8 +56,6 @@ export const topQuestionSchema = z.object({
   count: z.int().nonnegative(),
   /** 0-100 aralığında yüzde. Biçimlendirme için lib/format formatPercentage kullanılır. */
   percentage: z.number().min(0).max(100),
-  /** 0-1 aralığında model güven skoru. */
-  confidence: z.number().min(0).max(1),
   /** PII redakte edilmiş, kırpılmış gerçek kullanıcı mesajları. */
   redacted_examples: z.array(z.string()).default([]),
 });

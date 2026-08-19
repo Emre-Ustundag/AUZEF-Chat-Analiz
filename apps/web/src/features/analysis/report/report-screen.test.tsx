@@ -50,7 +50,6 @@ const report: AnalysisReport = {
       canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
       count: 11_680,
       percentage: 24.8,
-      confidence: 0.94,
       redacted_examples: ["sınav ne zaman"],
     },
     {
@@ -58,7 +57,6 @@ const report: AnalysisReport = {
       canonical_question: "Ders materyallerine nereden ulaşabilirim?",
       count: 8_102,
       percentage: 17.2,
-      confidence: 0.55,
       redacted_examples: ["pdf bulamıyorum"],
     },
   ],
@@ -192,13 +190,6 @@ describe("ReportScreen", () => {
     expect(await screen.findByText("Dosya indirilemedi")).toBeInTheDocument();
     expect(screen.getByText(/zaten devam eden bir analiz var/)).toBeInTheDocument();
     expect(screen.queryByText(/completed analyses/)).not.toBeInTheDocument();
-  });
-
-  it("düşük güven skorunu sayıyla birlikte gösterir", async () => {
-    // Renk tek başına anlam taşımamalı; yüzde her zaman yazılı olmalı.
-    renderScreen();
-
-    expect(await screen.findByText("%55,0")).toBeInTheDocument();
   });
 
   it("tema dağılımını metin olarak da erişilebilir kılar", async () => {

@@ -245,7 +245,6 @@ describe("analysisReportSchema", () => {
         canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
         count: 1240,
         percentage: 25.8,
-        confidence: 0.92,
         redacted_examples: ["sınav ne zaman"],
       },
     ],
@@ -275,20 +274,20 @@ describe("analysisReportSchema", () => {
     expect(analysisReportSchema.safeParse(report).success).toBe(true);
   });
 
+  it("tarihsel raporlardaki confidence alanını yok sayar", () => {
+    const parsed = analysisReportSchema.parse({
+      ...report,
+      top_questions: [{ ...report.top_questions[0], confidence: 0.92 }],
+    });
+
+    expect(parsed.top_questions[0]).not.toHaveProperty("confidence");
+  });
+
   it("yalnızca completed durumunu kabul eder", () => {
     // /result endpoint'i tamamlanmamış job için rapor dönmemeli.
     const result = analysisReportSchema.safeParse({
       ...report,
       status: "analyzing",
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it("güven skorunu 0-1 aralığıyla sınırlar", () => {
-    const result = analysisReportSchema.safeParse({
-      ...report,
-      top_questions: [{ ...report.top_questions[0], confidence: 92 }],
     });
 
     expect(result.success).toBe(false);
