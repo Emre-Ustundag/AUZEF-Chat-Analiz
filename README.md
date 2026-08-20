@@ -503,6 +503,46 @@ SSO/erişim kontrolü ile veri işleme onayı zorunludur. Bugünkü kurulumda
 kimlik doğrulama YOK — uygulama yalnızca anonim örnek veriyle çalıştırılmak
 üzere tasarlandı.
 
+### 5. Büyük veri kümelerinde süre ve 45 dakikalık tavan
+
+> Bu bölümün ilk iki paragrafı **eşzamanlı map gönderimini** varsayar. O
+> değişiklik ayrı bir dalda ilerliyor; birleşmeden önce ayar adının
+> (`AUZEF_LLM_MAP_CONCURRENCY`) ve buradaki sürelerin uygulamayla
+> karşılaştırılması gerekir. Önbellek (üçüncü paragraf) bu daldan bağımsızdır
+> ve bugün çalışır durumdadır.
+
+Gerçek AUZEF dökümüyle ölçüldü: 505.442 satırlık dosya, `direction=Kullanıcı`
+ve `message_type=text` filtreleriyle 63.285 kayda, tekilleştirmeden sonra
+**43.816 benzersiz kayda** iniyor — 120 kayıtlık chunk sınırıyla **366 map
+çağrısı**. Gerçek `gemini-2.5-flash` koşusunda chunk başına ölçülen süre
+~26 saniye.
+
+Map çağrıları **eşzamanlı** gönderilir (`AUZEF_LLM_MAP_CONCURRENCY`,
+varsayılan 8); bu veri kümesi böylece 45 dakikalık hard timeout'un altında,
+~20 dakikada biter. Eşzamanlılık 1'e düşürülürse aynı iş ~2,6 saat sürer ve
+`PROVIDER_TIMEOUT` ile kapanır. **Chunk'ı büyütmek çözmez:** üretilen toplam
+completion token sabit olduğu için duvar saati de kabaca sabit kalır
+(~0,22 sn/kayıt).
+
+Tamamlanmış map chunk'ları Redis'te önbelleklenir
+(`apps/backend/app/services/map_cache.py`, TTL = `report_retention_hours`).
+Bir koşu zaman aşımı veya maliyet tavanı yüzünden yarıda kalırsa, aynı
+dosyayla açılan **yeni** analiz o chunk'lar için tekrar ücretlendirilmez —
+önbellek anahtarı `analysis_id` taşımaz. Önbellek isabeti rapordaki token ve
+maliyet alanlarına EKLENMEZ: o alanlar sağlayıcının bildirdiği gerçek
+tüketimdir. Kapatmak için `AUZEF_LLM_MAP_CACHE_ENABLED=false`.
+
+Uçuş öncesi maliyet tahmini önbelleği hesaba katmaz (chunk'lar istek anında
+kurulmuyor); tahmin tam fiyattan yapılır ve koşu tahminden ucuza bitebilir.
+
+### 6. CSV desteklenmiyor — yalnızca `.xlsx`
+
+Yükleme hem uzantıyı hem ZIP magic byte'ını doğruluyor; `.csv` dosyalar temiz
+bir hata ile reddedilir (çökme yok). Elinizdeki döküm CSV ise analizden önce
+`.xlsx`'e çevirin — büyük dosyalarda `openpyxl`'in `write_only` kipi bellek
+tüketmeden yazar. Doğrudan CSV kabulü MVP kapsamı dışında: profil, satır
+sayımı ve ZIP bomba savunmasının tamamı OOXML akışına bağlı.
+
 ## Kapanmış olan riskler
 
 Aşağıdakiler bir dönem açık maddeydi. Nasıl kapandıkları kayıt olarak

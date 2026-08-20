@@ -162,6 +162,16 @@ services:
       target: worker
     image: auzef-worker:latest
     container_name: auzef-worker
+    # Ölçülmüş sayıdan türetilen tavan (`docs/yuk-testi.md`): 130 MB'lık bir
+    # dosyayı openpyxl `read_only` ile işlerken worker tepesi 596 MB;
+    # Dockerfile'daki `--concurrency=2` ile iki eşzamanlı iş ~1,2 GB ister.
+    # 2 GB, o tepenin üstünde makul bir pay bırakır ve KAÇAK bir işin
+    # host belleğini tüketmesini engeller: limit aşılırsa yalnızca worker
+    # container'ı OOM ile ölür, makine değil.
+    #
+    # Bu bir compose (v2 `mem_limit`) ayarıdır; Swarm `deploy.resources`
+    # bloğu `docker compose up` tarafından YOK SAYILIR, o yüzden kullanılmadı.
+    mem_limit: 2g
     # API ile birebir aynı ortam: worker aynı bucket'ı ve aynı veritabanını
     # kullanır (ADR §3, tek kod tabanı).
     environment: *backend-env
