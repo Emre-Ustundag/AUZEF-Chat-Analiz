@@ -253,6 +253,69 @@ describe("ConfigureForm", () => {
     ]);
   });
 
+  it("virgül yazarken 'boş değer' hatası ÇIKARMAZ", async () => {
+    // Eski tek kutulu alanda virgüle basmak diziyi ["Kullanıcı", ""] yapıyor
+    // ve Zod anında "Filtre değeri boş olamaz." diyordu; kullanıcı daha ikinci
+    // değeri yazmaya başlamadan form kırmızıya dönüyordu.
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Filtre ekle" }));
+    await user.type(screen.getByLabelText("Kabul edilen değerler"), "Kullanıcı,");
+
+    expect(screen.queryByText(/boş olamaz/)).not.toBeInTheDocument();
+    // Tamamlanan değer etiket olarak duruyor, silinebilir hâlde.
+    expect(screen.getByRole("button", { name: "Kullanıcı değerini kaldır" })).toBeInTheDocument();
+  });
+
+  it("virgül İÇEREN bir değer girilebilir", async () => {
+    // Eski alanda ayraç ile verinin kendisi aynı karakterdi: "Ankara, Çankaya"
+    // gibi bir kolon değeri hiç girilemiyordu.
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Filtre ekle" }));
+    await user.click(screen.getByLabelText("Kolon"));
+    await user.click(await screen.findByRole("option", { name: "kullanici_id" }));
+
+    const values = screen.getByLabelText("Kabul edilen değerler");
+    await user.type(values, "Ankara{Enter}");
+    // Yazarken virgül ayraç; virgül İÇEREN değerin yolu yapıştırmadır ve
+    // yapıştırılan metin bölünmeden tek değer olarak tamamlanır.
+    await user.click(values);
+    await user.paste("İstanbul, Kadıköy");
+    await user.type(values, "{Enter}");
+
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.row_filters).toEqual([
+      { column: "kullanici_id", allowed_values: ["Ankara", "İstanbul, Kadıköy"] },
+    ]);
+  });
+
+  it("filtre değeri etiketi tek tek silinebilir", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Filtre ekle" }));
+    await user.click(screen.getByLabelText("Kolon"));
+    await user.click(await screen.findByRole("option", { name: "kullanici_id" }));
+    await user.type(screen.getByLabelText("Kabul edilen değerler"), "1001, 1002, 1003{Enter}");
+    await user.click(screen.getByRole("button", { name: "1002 değerini kaldır" }));
+
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.row_filters).toEqual([
+      { column: "kullanici_id", allowed_values: ["1001", "1003"] },
+    ]);
+  });
+
   it("API anahtarını gövdede DEĞİL, ayrı argümanda gönderir", async () => {
     const user = userEvent.setup();
     renderForm();

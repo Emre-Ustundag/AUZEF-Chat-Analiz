@@ -49,26 +49,115 @@ SYSTEM_MESSAGE_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"(?i)^\s*(null|n/?a|-{2,}|\.{2,})\s*$"),
 )
 
-#: Yalnızca nezaket bildiren, soru içermeyen kayıtlar. Tek başına bir SSS
-#: kategorisi oluşturmaları anlamsız olurdu.
+#: Soru İÇERMEYEN, tek başına bir SSS kategorisi oluşturması anlamsız olan
+#: kayıtlar. İki grup var: nezaket kalıpları ve içeriksiz doldurma
+#: ("evet", "cevap bekliyorum" gibi cevap/onay satırları).
+#:
+#: Liste TAHMİN DEĞİL, ölçüm: 67.036 gerçek kullanıcı mesajı üzerinde
+#: normalize edilmiş tam eşleşme sayıldı. Genişletme öncesi 1.278 kayıt
+#: eleniyordu, sonrasında 3.300 (%4,9) — yani ~2.000 kayıt boşuna
+#: sınıflandırılıp para harcıyordu.
+#:
+#: İKİ KURAL:
+#:
+#: 1. Buraya yazılan her değer `normalize()` çıktısı biçiminde olmalı
+#:    (Türkçe küçük harf, noktalama yok, tek boşluk). Aksi hâlde eşleşme
+#:    SESSİZCE hiç kurulmaz.
+#: 2. Eşleşme TAM METİN üzerindedir. Bu yüzden "evet" burada olsa da
+#:    "evet mezun oldum mu" elenmez. Ama liste büyüdükçe gerçek soruları
+#:    yutma riski artar: "mezuniyet", "diploma", "staj" gibi tek kelimelik
+#:    MEŞRU konular veride sık geçiyor (464 / 320 / 100 kez) ve buraya
+#:    asla girmemeli. Regresyon testi ikisini birlikte doğrular
+#:    (`test_pipeline.py::test_nezaket_listesi_gercek_konulari_yutmaz`).
 COURTESY_ONLY = frozenset(
     {
+        # ---- selamlama (merhabalar 146, hey 34, hadi 24, alo 18) ----
         "merhaba",
+        "merhabalar",
         "selam",
+        "selamlar",
+        "selamün aleyküm",
+        "selamunaleykum",
+        "hey",
+        "alo",
+        "hadi",
+        "hoşbuldum",
+        "hosbuldum",
+        "hoş buldum",
+        "hos buldum",
+        "hoşbulduk",
+        "hosbulduk",
+        "hoş bulduk",
+        "hoşgeldiniz",
+        # ---- teşekkür / vedalaşma ----
         "teşekkürler",
         "tesekkurler",
         "teşekkür ederim",
+        "teşekkur ederim",
+        "tesekkur ederim",
+        "teşekkürler ederim",
+        "çok teşekkürler",
+        "cok tesekkurler",
+        "çok teşekkür ederim",
+        "teşekkürler iyi günler",
+        "rica ederim",
         "sağolun",
         "sagolun",
-        "tamam",
-        "ok",
-        "okey",
-        "peki",
+        "sağ olun",
+        "sag olun",
+        "sağol",
+        "sagol",
+        "eyvallah",
         "iyi günler",
         "iyi gunler",
         "günaydın",
         "gunaydin",
-        "eyvallah",
+        "iyi akşamlar",
+        "iyi aksamlar",
+        "iyi geceler",
+        "iyi çalışmalar",
+        "iyi calismalar",
+        "kolay gelsin",
+        # ---- onay / ret (hayır 456+42, evet 257, okudum anladım 325+36) ----
+        "evet",
+        "hayır",
+        "hayir",
+        "olur",
+        "olmaz",
+        "tamam",
+        "tamamdır",
+        "tamamdir",
+        "ok",
+        "okey",
+        "peki",
+        "tabi",
+        "tabii",
+        "lütfen",
+        "lutfen",
+        "okudum",
+        "okudum anladım",
+        "okudum anladim",
+        "anladım",
+        "anladim",
+        "anlamadım",
+        "anlamadim",
+        # ---- cevap bekleme (cevap 165, cevap bekliyorum 71) ----
+        # Soru değil, önceki soruyu tekrar dürtme. Kendi başına kategori
+        # olursa raporun tepesine "cevap bekliyorum" diye anlamsız bir
+        # başlık çıkar.
+        "cevap",
+        "cevap ver",
+        "cevap verin",
+        "cevap verir misiniz",
+        "cevap bekliyorum",
+        "cevap alamadım",
+        "cevap alamadim",
+        "cevap yok",
+        "bekliyorum",
+        # ---- deneme satırları ----
+        "test",
+        "deneme",
+        "asdf",
     }
 )
 

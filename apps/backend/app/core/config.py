@@ -151,6 +151,21 @@ class Settings(BaseSettings):
     #: token bütçesi. Map chunk sınırından ayrı tutulur: kayıt ve kategori
     #: şemalarının bağlam maliyeti farklıdır.
     llm_reduce_max_prompt_tokens: int = Field(default=12_000, gt=0)
+    #: Aynı anda uçuşta olabilecek map/reduce çağrısı sayısı (bulgu A1).
+    #: Sırayla gönderim, 40 bin+ benzersiz kayıtta 45 dakikalık hard
+    #: timeout'a sığmıyordu. Çıktı eşzamanlılıktan ETKİLENMEZ: sonuçlar
+    #: her zaman chunk indeks sırasında birleştirilir
+    #: (`pipeline/llm_classifier.py::_run_in_order`).
+    #: Tavan 32: OpenRouter 429'u backoff ile karşılanıyor ama sağlayıcıyı
+    #: gereksiz yere zorlamanın kazancı yok.
+    llm_map_concurrency: int = Field(default=8, ge=1, le=32)
+    #: Tamamlanmış map chunk'larının Redis'te önbelleklenmesi (bulgu A3).
+    #: Açıkken zaman aşımına uğrayan bir koşunun tamamladığı chunk'lar,
+    #: aynı kayıt/model/prompt ile açılan YENİ analizde tekrar
+    #: ücretlendirilmez. TTL `report_retention_hours` ile aynıdır.
+    #: Kapatmak yalnızca sınıflandırmayı sıfırdan koşturmayı zorunlu kılar;
+    #: doğruluğu etkilemez (`services/map_cache.py`).
+    llm_map_cache_enabled: bool = True
 
     report_retention_hours: int = Field(default=24, gt=0)
     upload_retention_hours: int = Field(default=24, gt=0)

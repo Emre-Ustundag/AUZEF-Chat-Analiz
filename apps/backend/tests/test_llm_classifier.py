@@ -20,7 +20,10 @@ from __future__ import annotations
 
 import json
 import random
+import re
+import threading
 import uuid
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -38,8 +41,9 @@ from app.pipeline.llm_classifier import (
 )
 from app.pipeline.preprocess import ContextTurn, RecordGroup, preprocess
 from app.pipeline.record_rendering import render_record
-from app.prompts.faq_analysis import V1, V4
-from app.services.openrouter import OpenRouterClient
+from app.prompts.faq_analysis import V1, V2, V4
+from app.services.map_cache import MapCache, build_key
+from app.services.openrouter import OpenRouterClient, Usage
 from tests.fake_openrouter import FakeOpenRouter
 
 
@@ -53,6 +57,12 @@ def settings() -> Settings:
         openrouter_backoff_max_seconds=0.002,
         llm_chunk_max_records=3,
         llm_chunk_max_prompt_tokens=10_000,
+        # Bu dosyadaki sahte sağlayıcı yanıtları ÇAĞRI SIRASINA göre
+        # veriyor; eşzamanlı koşuda o sıra değişebilir ve testin kendisi
+        # belirsizleşir. Eşzamanlılığın kendisi aşağıdaki A1 testlerinde,
+        # içerik adresli bir sağlayıcıyla ve sıralı koşuyla karşılaştırarak
+        # doğrulanıyor.
+        llm_map_concurrency=1,
     )
 
 
@@ -111,7 +121,7 @@ class _Provider:
 
 def _classifier(
     settings: Settings,
-    provider: _Provider,
+    provider: Callable[[httpx.Request], httpx.Response],
     **kwargs: Any,
 ) -> OpenRouterClassifier:
     client = OpenRouterClient(
@@ -920,3 +930,421 @@ def test_maliyet_tavani_altinda_kalan_is_kesilmez(settings: Settings) -> None:
     assert {r for q in classification.questions for r in q.record_ids} == {
         g.record_id for g in groups
     }, "kayıt kaybı olmamalı"
+
+
+# ------------------------------------------- A3: tamamlanan map sonuçları saklanır
+
+
+class _FakeCacheBackend:
+    """Sözlük destekli map önbelleği — Redis GEREKTİRMEZ.
+
+    `MapCache` yalnızca `get`/`setex` kullanıyor; testin ilgilendiği şey
+    kayıtların gerçekten yazılıp okunduğu, Redis'in kendisi değil.
+    """
+
+    def __init__(self, *, fail: bool = False) -> None:
+        self.data: dict[str, str] = {}
+        self.fail = fail
+        self.reads = 0
+        self.writes = 0
+
+    def get(self, name: str) -> bytes | str | None:
+        self.reads += 1
+        if self.fail:
+            raise ConnectionError("redis yok")
+        return self.data.get(name)
+
+    def setex(self, name: str, time: int, value: str) -> object:
+        self.writes += 1
+        if self.fail:
+            raise ConnectionError("redis yok")
+        self.data[name] = value
+        return True
+
+
+def test_onbellekli_ikinci_kosu_saglayiciya_hic_gitmez(settings: Settings) -> None:
+    """A3: yarıda kalan bir koşunun ödenmiş chunk'ı ikinci kez ödenmez.
+
+    İkinci koşu YENİ bir sınıflandırıcı ve YENİ bir sağlayıcı ile kuruluyor —
+    anahtarda `analysis_id` olmadığı için bu, zaman aşımından sonra açılan
+    yeni bir analizin karşılığıdır. Sağlayıcının yanıt listesi BOŞ: bir çağrı
+    yapılsaydı test IndexError ile patlardı.
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1))
+    payload = _map({"r1": "c1", "r2": "c2"}, {"c1": ("Sınav?", "Sınav"), "c2": ("Harç?", "Harç")})
+
+    ilk_saglayici = _Provider(map_responses=[payload])
+    ilk = _classifier(settings, ilk_saglayici, map_cache=MapCache(settings, backend=backend))
+    ilk_sonuc = ilk.classify(groups)
+
+    assert len(ilk_saglayici.map_calls) == 1
+    assert backend.writes == 1
+
+    ikinci_saglayici = _Provider(map_responses=[])
+    ikinci = _classifier(settings, ikinci_saglayici, map_cache=MapCache(settings, backend=backend))
+    ikinci_sonuc = ikinci.classify(groups)
+
+    assert ikinci_saglayici.map_calls == []
+    assert ikinci_saglayici.reduce_calls == []
+    assert ikinci_sonuc == ilk_sonuc
+
+
+def test_coklu_chunkta_sicak_onbellek_ayni_raporu_uretir(settings: Settings) -> None:
+    """İki chunk'lık bir koşu tamamen önbellekten geldiğinde sonuç DEĞİŞMEZ.
+
+    Asıl korunan değişmez bu: önbellek yalnızca sağlayıcı çağrısını atlıyor,
+    kayıt eşleme muhasebesi (`assigned`, "ilk eşleme kazanır", uydurma/tekrar
+    sayaçları) her koşuda chunk SIRASINA göre yeniden işliyor. Tek chunk'lık
+    bir test bunu göstermez.
+
+    Reduce ÖNBELLEKLENMEZ; ikinci koşuda da bir reduce çağrısı beklenir.
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1), ("ders materyali", 1), ("d", 1))
+    map_yanitlari = [
+        # İkinci chunk'ta r1 tekrar eşleniyor: "ilk eşleme kazanır" kuralı
+        # sıcak önbellekte de aynı sonucu vermeli.
+        _map({"r1": "c1", "r2": "c1", "r3": "c2"}, {"c1": ("A?", "T"), "c2": ("B?", "T")}),
+        _map({"r4": "c1", "r1": "c1"}, {"c1": ("C?", "T")}),
+    ]
+    reduce_yaniti = {
+        "groups": [
+            {"canonical_question": "A?", "theme": "T", "member_category_ids": ["0:c1", "1:c1"]}
+        ]
+    }
+
+    ilk_saglayici = _Provider(map_responses=map_yanitlari, reduce_response=reduce_yaniti)
+    ilk = _classifier(settings, ilk_saglayici, map_cache=MapCache(settings, backend=backend))
+    ilk_sonuc = ilk.classify(groups)
+    assert len(ilk_saglayici.map_calls) == 2
+
+    ikinci_saglayici = _Provider(map_responses=[], reduce_response=reduce_yaniti)
+    ikinci = _classifier(settings, ikinci_saglayici, map_cache=MapCache(settings, backend=backend))
+    ikinci_sonuc = ikinci.classify(groups)
+
+    assert ikinci_saglayici.map_calls == []
+    assert len(ikinci_saglayici.reduce_calls) == 1
+    assert ikinci_sonuc == ilk_sonuc
+    assert ikinci_sonuc.warnings == ilk_sonuc.warnings
+
+
+def test_onbellek_isabeti_usage_a_eklenmez(settings: Settings) -> None:
+    """Rapor "sağlayıcının bildirdiği gerçek tüketim" demek zorunda.
+
+    Ödenmemiş bir çağrıyı ödenmiş gibi saymak, maliyet alanını doğrudan
+    yanlış yapardı (`pipeline/cost.py`).
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1))
+    payload = _map({"r1": "c1"}, {"c1": ("Sınav?", "Sınav")})
+
+    ilk = _classifier(
+        settings,
+        _Provider(map_responses=[payload]),
+        map_cache=MapCache(settings, backend=backend),
+    )
+    ilk.classify(groups)
+    assert ilk.usage.total_tokens == 60
+
+    ikinci = _classifier(
+        settings,
+        _Provider(map_responses=[]),
+        map_cache=MapCache(settings, backend=backend),
+    )
+    ikinci.classify(groups)
+
+    assert ikinci.usage.total_tokens == 0
+    assert ikinci.usage.cost_usd is None
+
+
+def test_onbellek_anahtari_model_prompt_ve_istek_metnine_baglidir(settings: Settings) -> None:
+    """Önbellek YANLIŞ isabet vermemeli: girdinin her parçası anahtarda.
+
+    Anahtar, sağlayıcıya giden `<kayit>` METNİNDEN türüyor; kayıt sırası da
+    o metnin içinde. Modelin çıktısı girdi sırasına duyarlı olduğu için
+    sıralı ve ters sıralı chunk aynı istek DEĞİLDİR.
+    """
+    kayitlar = ['<kayit id="r1">sınav ne zaman</kayit>', '<kayit id="r2">harç ne kadar</kayit>']
+    temel: dict[str, Any] = dict(
+        model="google/gemini-2.5-flash",
+        prompt_text_hash=V1.text_hash,
+        map_schema=V1.map_schema,
+        rendered_records="\n".join(kayitlar),
+    )
+    anahtar = build_key(**temel)
+
+    assert build_key(**{**temel, "model": "openai/gpt-4o-mini"}) != anahtar
+    assert build_key(**{**temel, "prompt_text_hash": V2.text_hash}) != anahtar
+    # V1 ve V2 aynı map şemasını kullanıyor; şemanın anahtara girdiğini
+    # göstermek için şemanın kendisi değiştiriliyor.
+    baska_sema = {**V1.map_schema, "additionalProperties": True}
+    assert build_key(**{**temel, "map_schema": baska_sema}) != anahtar
+    ters = "\n".join(reversed(kayitlar))
+    assert build_key(**{**temel, "rendered_records": ters}) != anahtar
+    assert build_key(**temel) == anahtar
+
+
+def test_onbellek_erisilemezse_analiz_yine_kosar(settings: Settings) -> None:
+    """Önbellek bir tasarruf katmanı; Redis çökerse analiz DÜŞMEZ.
+
+    İlk hatadan sonra önbellek kendini kapatır: 366 chunk'lık bir koşuda her
+    chunk için yeniden bağlanmayı denemek logu doldurur ve her seferinde
+    bağlantı zaman aşımı kadar bekletir.
+    """
+    backend = _FakeCacheBackend(fail=True)
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1), ("ders materyali", 1), ("d", 1))
+    provider = _Provider(
+        map_responses=[
+            _map({"r1": "c1", "r2": "c1", "r3": "c1"}, {"c1": ("A?", "T")}),
+            _map({"r4": "c1"}, {"c1": ("B?", "T")}),
+        ],
+        reduce_response={
+            "groups": [
+                {"canonical_question": "A?", "theme": "T", "member_category_ids": ["0:c1", "1:c1"]}
+            ]
+        },
+    )
+    cache = MapCache(settings, backend=backend)
+    classifier = _classifier(settings, provider, map_cache=cache)
+    result = classifier.classify(groups)
+
+    # Analiz normal şekilde tamamlandı: dört kaydın hepsi eşlendi.
+    assert sum(len(question.record_ids) for question in result.questions) == 4
+    assert len(provider.map_calls) == 2
+    # Kapanma: iki chunk'a rağmen tek okuma denemesi yapıldı.
+    assert backend.reads == 1
+    assert cache.hits == 0
+
+
+def test_bozuk_onbellek_kaydi_iska_sayilir(settings: Settings) -> None:
+    """Eski/bozuk bir kayıt analizi düşürmez, normal çağrı yoluna düşer."""
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1))
+    key = build_key(
+        model="google/gemini-2.5-flash",
+        prompt_text_hash=V1.text_hash,
+        map_schema=V1.map_schema,
+        rendered_records='<kayit id="r1">sınav ne zaman</kayit>',
+    )
+    backend.data[key] = '{"bu": "eski bir bicim"}'
+
+    provider = _Provider(map_responses=[_map({"r1": "c1"}, {"c1": ("Sınav?", "Sınav")})])
+    classifier = _classifier(settings, provider, map_cache=MapCache(settings, backend=backend))
+    result = classifier.classify(groups)
+
+    assert len(provider.map_calls) == 1
+    assert result.questions[0].canonical_question == "Sınav?"
+    # Bozuk kayıt geçerli olanla değiştirildi.
+    assert backend.data[key] != '{"bu": "eski bir bicim"}'
+
+
+# ------------------------------- A1: map çağrıları eşzamanlı, çıktı değişmez
+
+
+class _ContentProvider:
+    """İçerik ADRESLİ sahte sağlayıcı — yanıt çağrı sırasına bağlı DEĞİL.
+
+    Dosyanın geri kalanındaki `_Provider` yanıtları çağrı sırasına göre
+    veriyor; eşzamanlı koşuda o sıra değişeceği için testin kendisi
+    belirsizleşirdi. Burada yanıt yalnızca istek gövdesinin fonksiyonu.
+
+    `reorder=True` iken ilk chunk'ın yanıtı BİLEREK en sona bırakılır (dördüncü
+    chunk bir kapıyı açana kadar bekler). Böylece "sonuçlar geliş sırasına göre
+    işlenirse çıktı değişir mi" sorusu zamanlamaya değil, deterministik bir
+    kapıya bağlanır.
+    """
+
+    def __init__(self, *, reorder: bool = False) -> None:
+        self.reorder = reorder
+        self.lock = threading.Lock()
+        self.istek_sirasi: list[int] = []
+        self.tamamlanma_sirasi: list[int] = []
+        self.reduce_istekleri: list[str] = []
+        self._kapi = threading.Event()
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        user = body["messages"][1]["content"]
+        if body["response_format"]["json_schema"]["name"] == "faq_map":
+            return self._map(user)
+        return self._reduce(user)
+
+    def _map(self, user: str) -> httpx.Response:
+        kayitlar = re.findall(r'<kayit id="(r\d+)">(.*?)</kayit>', user)
+        chunk_index = (int(kayitlar[0][0][1:]) - 1) // 3
+        with self.lock:
+            self.istek_sirasi.append(chunk_index)
+
+        if self.reorder and chunk_index == 0:
+            self._kapi.wait(timeout=5)
+
+        temalar: dict[str, list[str]] = {}
+        for record_id, text in kayitlar:
+            temalar.setdefault(text.split()[0], []).append(record_id)
+
+        payload = {
+            "categories": [
+                {
+                    "category_id": f"c{n}",
+                    "canonical_question": f"{tema} nasıl yapılır?",
+                    "theme": tema,
+                }
+                for n, tema in enumerate(temalar)
+            ],
+            "assignments": [
+                {"record_id": record_id, "category_id": f"c{n}"}
+                for n, record_ids in enumerate(temalar.values())
+                for record_id in record_ids
+            ],
+        }
+
+        if self.reorder and chunk_index == 3:
+            self._kapi.set()
+        with self.lock:
+            self.tamamlanma_sirasi.append(chunk_index)
+        return _ok(payload)
+
+    def _reduce(self, user: str) -> httpx.Response:
+        kategoriler = re.findall(r'<kategori id="(c\d+)" tema="([^"]*)">(.*?)</kategori>', user)
+        with self.lock:
+            self.reduce_istekleri.append(user)
+
+        gruplar: dict[str, dict[str, Any]] = {}
+        for category_id, tema, soru in kategoriler:
+            grup = gruplar.setdefault(
+                tema, {"canonical_question": soru, "theme": tema, "member_category_ids": []}
+            )
+            members = grup["member_category_ids"]
+            assert isinstance(members, list)
+            members.append(category_id)
+        return _ok({"groups": list(gruplar.values())})
+
+
+_A1_TEMALAR = ("sınav", "harç", "ders")
+
+
+def _a1_groups() -> list[RecordGroup]:
+    """15 kayıt = 5 chunk (chunk sınırı 3); her chunk'ta üç tema birden."""
+    return _groups(*[(f"{_A1_TEMALAR[i % 3]} sorusu {i}", 1) for i in range(15)])
+
+
+def _a1_kosu(
+    settings: Settings, *, concurrency: int, reorder: bool = False, reduce_tokens: int | None = None
+) -> tuple[Classification, Usage, _ContentProvider, list[int]]:
+    guncel: dict[str, Any] = {"llm_map_concurrency": concurrency}
+    if reduce_tokens is not None:
+        guncel["llm_reduce_max_prompt_tokens"] = reduce_tokens
+    provider = _ContentProvider(reorder=reorder)
+    ilerleme: list[int] = []
+
+    def on_progress(done: int, total: int) -> bool:
+        ilerleme.append(done)
+        return True
+
+    classifier = _classifier(settings.model_copy(update=guncel), provider, on_progress=on_progress)
+    result = classifier.classify(_a1_groups())
+    return result, classifier.usage, provider, ilerleme
+
+
+def test_eszamanli_map_sirali_kosuyla_bit_bit_ayni_sonucu_verir(settings: Settings) -> None:
+    """A1'in tek koşulu: hız artsın, ÇIKTI DEĞİŞMESİN.
+
+    Eşzamanlı koşuda ilk chunk'ın yanıtı bilerek en sona bırakılıyor. Sonuçlar
+    geldikleri sırada işlenseydi kova sırası — dolayısıyla reduce'a giden
+    kategori sırası ve nihai raporun sıralaması — değişirdi.
+    """
+    sirali, sirali_usage, _, sirali_ilerleme = _a1_kosu(settings, concurrency=1)
+    eszamanli, eszamanli_usage, provider, eszamanli_ilerleme = _a1_kosu(
+        settings, concurrency=4, reorder=True
+    )
+
+    # Gerçekten sıra dışı tamamlandı: ilk chunk dördüncüden SONRA bitti.
+    assert provider.tamamlanma_sirasi.index(0) > provider.tamamlanma_sirasi.index(3)
+
+    assert eszamanli == sirali
+    assert eszamanli_usage == sirali_usage
+    # İlerleme birleştirme noktasında bildirildiği için MONOTON kalır:
+    # beş chunk sırayla 1..5, sondaki 1 reduce aşamasının kendi 1/1 raporu.
+    assert eszamanli_ilerleme[:5] == [1, 2, 3, 4, 5]
+    assert eszamanli_ilerleme == sirali_ilerleme
+
+
+def test_eszamanli_reduce_partileri_de_ayni_sonucu_verir(settings: Settings) -> None:
+    """Tur İÇİNDEKİ batch'ler eşzamanlı; turlar sıralı kalır.
+
+    Dar bir token bütçesiyle birden fazla batch'e zorlanıyor. Kova anahtarı
+    sayacı (`reduce:N`) birleştirme adımında ilerlediği için anahtarlar da
+    sıralı koşudakinin aynısı olmak zorunda.
+    """
+    sirali, _, sirali_provider, _ = _a1_kosu(settings, concurrency=1, reduce_tokens=60)
+    eszamanli, _, eszamanli_provider, _ = _a1_kosu(
+        settings, concurrency=4, reduce_tokens=60, reorder=True
+    )
+
+    assert len(sirali_provider.reduce_istekleri) > 1, "test çok partili reduce'u zorlamalı"
+    assert eszamanli == sirali
+    assert eszamanli_provider.reduce_istekleri == sirali_provider.reduce_istekleri
+
+
+def test_tavan_asilinca_yeni_is_gonderilmez_ucustakiler_beklenir(settings: Settings) -> None:
+    """Aşım payı EN FAZLA `concurrency` çağrıdır — bilinçli takas.
+
+    Sıralı koşuda tavan aşıldığında en fazla 1 fazladan çağrı ödenirdi.
+    Eşzamanlı koşuda uçuşta olan işler tamamlanır (para zaten harcandı,
+    yanıtı çöpe atmak kimseye kazanç sağlamaz) ama YENİ iş gönderilmez.
+    """
+    groups = _groups(*[(f"{i} numarali dersin sinav tarihi ne zaman?", 1) for i in range(400)])
+    eszamanlilik = 4
+    dar = settings.model_copy(update={"llm_map_concurrency": eszamanlilik})
+    chunks = build_chunks(groups, dar)
+    assert len(chunks) > eszamanlilik, "aşım payının ölçülebilmesi için fazladan chunk gerekiyor"
+
+    kilit = threading.Lock()
+    sayac = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        with kilit:
+            sayac["n"] += 1
+        body = json.loads(request.content)
+        ids = re.findall(r'<kayit id="(r\d+)">', body["messages"][1]["content"])
+        payload = {
+            "assignments": [{"record_id": r, "category_id": "c1"} for r in ids],
+            "categories": [
+                {"category_id": "c1", "canonical_question": "Sınav ne zaman?", "theme": "Sınav"}
+            ],
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps(payload, ensure_ascii=False)}}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 0, "cost": 1.2},
+            },
+        )
+
+    client = OpenRouterClient(
+        api_key="sk-or-v1-test",
+        model="anthropic/claude-sonnet-4.6",
+        settings=dar,
+        transport=httpx.MockTransport(handler),
+        sleeper=lambda _s: None,
+    )
+    classifier = OpenRouterClassifier(
+        client=client,
+        prompt=V1,
+        model="anthropic/claude-sonnet-4.6",
+        settings=dar,
+        # İlk chunk birleştiğinde 1,2 USD harcanmış olacak; tavan orada aşılır.
+        max_cost_usd=1.0,
+    )
+
+    with pytest.raises(CostLimitExceededError):
+        classifier.classify(groups)
+
+    # Üst sınır `concurrency`: ilk pencerenin dışına çıkılmaz. Alt sınır
+    # sabit değil — henüz BAŞLAMAMIŞ bir iş iptal edilebildiği için pencere
+    # bazen eksik harcanır. Garanti edilen şey tavan.
+    assert 1 <= sayac["n"] <= eszamanlilik, (
+        "tavan aşıldıktan sonra ilk pencerenin dışına çıkılmamalı "
+        f"(gönderilen: {sayac['n']}, eşzamanlılık: {eszamanlilik}, toplam chunk: {len(chunks)})"
+    )
