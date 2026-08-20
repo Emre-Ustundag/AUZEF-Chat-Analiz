@@ -35,10 +35,13 @@ const report: AnalysisReport = {
     sheet_name: "Mesajlar",
     text_column: "mesaj",
     row_filters: [],
+    analysis_mode: "message",
+    conversation_config: null,
     total_rows: 48_213,
   },
   preprocessing_summary: {
     analyzed_count: 47_106,
+    context_only_count: 0,
     discarded_count: 1_107,
     duplicate_count: 15_566,
     redacted_count: 2_841,

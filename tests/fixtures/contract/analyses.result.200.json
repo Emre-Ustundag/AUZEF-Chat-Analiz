@@ -8,10 +8,13 @@
     "sheet_name": "Mesajlar",
     "text_column": "mesaj",
     "row_filters": [],
+    "analysis_mode": "message",
+    "conversation_config": null,
     "total_rows": 48213
   },
   "preprocessing_summary": {
     "analyzed_count": 47106,
+    "context_only_count": 0,
     "discarded_count": 1107,
     "duplicate_count": 15566,
     "redacted_count": 2840,

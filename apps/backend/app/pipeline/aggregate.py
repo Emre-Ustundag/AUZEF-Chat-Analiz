@@ -34,7 +34,7 @@ from uuid import UUID
 from app.core.config import Settings
 from app.pipeline.classifier import Classification
 from app.pipeline.preprocess import PreprocessResult, RecordGroup
-from app.schemas.analysis import PricingSnapshot, RowFilter
+from app.schemas.analysis import AnalysisMode, ConversationConfig, PricingSnapshot, RowFilter
 from app.schemas.report import (
     REPORT_SCHEMA_VERSION,
     AnalysisReport,
@@ -101,6 +101,8 @@ def aggregate(
     filename: str,
     sheet_name: str,
     text_column: str,
+    analysis_mode: AnalysisMode = AnalysisMode.MESSAGE,
+    conversation_config: ConversationConfig | None = None,
     model: str,
     prompt_version: str,
     classifier_id: str,
@@ -203,10 +205,13 @@ def aggregate(
             sheet_name=sheet_name,
             text_column=text_column,
             row_filters=list(row_filters or []),
+            analysis_mode=analysis_mode,
+            conversation_config=conversation_config,
             total_rows=preprocess_result.total_rows,
         ),
         preprocessing_summary=PreprocessingSummary(
             analyzed_count=analyzed,
+            context_only_count=preprocess_result.context_only_count,
             discarded_count=preprocess_result.discarded_count,
             duplicate_count=preprocess_result.duplicate_count,
             redacted_count=preprocess_result.redacted_count,

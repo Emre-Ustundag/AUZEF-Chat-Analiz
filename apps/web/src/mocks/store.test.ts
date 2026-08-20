@@ -274,6 +274,48 @@ describe("analiz raporu mock'u", () => {
     expect(result.success).toBe(true);
   });
 
+  it("bağlamsal mod ayarlarını ve yalnız bağlam satırlarını rapora taşır", () => {
+    vi.setSystemTime(START);
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    const conversationConfig = {
+      session_id_column: "session_id",
+      message_order_column: "message_order",
+      role_column: "direction",
+      message_type_column: "message_type",
+      user_role_values: ["Kullanıcı"],
+      assistant_role_values: ["Bot"],
+      target_message_types: ["text", "quick_reply"],
+      context_message_types: ["text", "quick_reply", "single-choice"],
+      max_context_turns: 4,
+      max_context_tokens: 1000,
+    };
+    const { analysisId } = createAnalysisRecord({
+      ...analysisRequestFor(upload.uploadId),
+      text_column: "message_text_clean",
+      analysis_mode: "contextual_user_turns",
+      conversation_config: conversationConfig,
+      prompt_version: "faq_analysis/v4",
+    });
+    advance(40);
+
+    const report = getAnalysisReportRecord(analysisId)!;
+    expect(analysisReportSchema.safeParse(report).success).toBe(true);
+    expect(report.source_summary).toMatchObject({
+      analysis_mode: "contextual_user_turns",
+      conversation_config: conversationConfig,
+    });
+    expect(report.preprocessing_summary.context_only_count).toBeGreaterThan(0);
+    expect(
+      report.preprocessing_summary.analyzed_count +
+        report.preprocessing_summary.context_only_count +
+        report.preprocessing_summary.discarded_count,
+    ).toBe(report.source_summary.total_rows);
+  });
+
+  it("mesaj modunda yalnız bağlam satırı üretmez", () => {
+    expect(completedReport()?.preprocessing_summary.context_only_count).toBe(0);
+  });
+
   it("top_n kadar soru döner", () => {
     expect(completedReport(3)?.top_questions).toHaveLength(3);
   });

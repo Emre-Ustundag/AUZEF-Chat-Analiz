@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { analysisRequestSchema } from "@/lib/api/schemas";
+import { analysisConfigurationSchema } from "@/lib/api/schemas";
 import type { AnalysisRequest } from "@/lib/api/schemas";
 
 /**
@@ -10,11 +10,12 @@ import type { AnalysisRequest } from "@/lib/api/schemas";
  * sınırı, boş kolon reddi) tek yerde tanımlı kalsın. `upload_id` formda yok;
  * URL'den geliyor.
  */
-export const configureFormSchema = analysisRequestSchema.omit({ upload_id: true }).extend({
+export const configureFormSchema = analysisConfigurationSchema.safeExtend({
   openrouter_api_key: z.string().min(1, "OpenRouter API anahtarı gereklidir."),
 });
 
-export type ConfigureFormValues = z.infer<typeof configureFormSchema>;
+export type ConfigureFormInput = z.input<typeof configureFormSchema>;
+export type ConfigureFormValues = z.output<typeof configureFormSchema>;
 
 /**
  * Form değerlerinden istek gövdesini kurar.
@@ -30,6 +31,8 @@ export function toAnalysisRequest(uploadId: string, values: ConfigureFormValues)
     sheet_name: values.sheet_name,
     text_column: values.text_column,
     row_filters: values.row_filters,
+    analysis_mode: values.analysis_mode,
+    conversation_config: values.conversation_config,
     model: values.model,
     prompt_version: values.prompt_version,
     top_n: values.top_n,

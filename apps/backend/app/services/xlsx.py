@@ -33,6 +33,7 @@ from openpyxl import load_workbook
 
 from app.core.config import MAX_ROWS, Settings
 from app.core.logging import get_logger
+from app.schemas.analysis import ConversationConfig
 from app.services.redaction import sanitize_sample
 
 logger = get_logger(__name__)
@@ -409,6 +410,34 @@ class SheetOrColumnNotFoundError(Exception):
         self.reason = reason
 
 
+@dataclass(frozen=True)
+class ConversationRow:
+    """Contextual analiz için tek fiziksel XLSX satırından çıkarılan alanlar.
+
+    `included=False`, genel `row_filters` kapsamı dışında kalan ama ilerleme
+    ve kaynak satır toplamında korunması gereken bir satırı temsil eder.
+    """
+
+    source_row: int
+    included: bool
+    session_id: str | None
+    message_order: str | None
+    role: str | None
+    message_type: str | None
+    text: str | None
+
+
+def _cell_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = value.strip() if isinstance(value, str) else str(value).strip()
+    return text or None
+
+
+def _row_cell_text(row: tuple[Any, ...], index: int) -> str | None:
+    return _cell_text(row[index]) if index < len(row) else None
+
+
 def iter_column_values(
     path: Path,
     sheet_name: str,
@@ -496,6 +525,89 @@ def iter_column_values(
                 yield cell
             else:
                 yield str(cell)
+    finally:
+        workbook.close()
+
+
+def iter_conversation_rows(
+    path: Path,
+    sheet_name: str,
+    text_column: str,
+    config: ConversationConfig,
+    row_filters: Mapping[str, frozenset[str]] | None = None,
+) -> Iterator[ConversationRow]:
+    """Session/rol/sıra alanlarını metinle birlikte akışlı olarak üretir.
+
+    Workbook bütünü belleğe alınmaz. Konuşma sırasının gerçekten artıp
+    artmadığını contextual preprocessor denetler; burada yalnızca hücreler
+    kaynak satır sırasıyla çıkarılır. Böylece birbirine karışık session'lar
+    bile her session için ayrı geçmişle işlenebilir.
+    """
+    try:
+        workbook = load_workbook(path, read_only=True, data_only=True, keep_links=False)
+    except Exception as exc:
+        raise XlsxRejectedError("workbook_parse_failed") from exc
+
+    requested_columns = {
+        "text": text_column,
+        "session_id": config.session_id_column,
+        "message_order": config.message_order_column,
+        "role": config.role_column,
+        "message_type": config.message_type_column,
+    }
+    requested_filters = dict(row_filters or {})
+
+    try:
+        if sheet_name not in workbook.sheetnames:
+            raise SheetOrColumnNotFoundError("sheet_not_found")
+
+        worksheet = workbook[sheet_name]
+        indexes: dict[str, int] = {}
+        filter_indexes: dict[int, frozenset[str]] = {}
+        resolved_filter_columns: set[str] = set()
+
+        for row_number, row in enumerate(worksheet.iter_rows(values_only=True)):
+            if row_number == 0:
+                for index, value in enumerate(row):
+                    column_name = _column_name(value, index)
+                    for field_name, requested_name in requested_columns.items():
+                        if column_name == requested_name and field_name not in indexes:
+                            indexes[field_name] = index
+                    if (
+                        column_name in requested_filters
+                        and column_name not in resolved_filter_columns
+                    ):
+                        filter_indexes[index] = requested_filters[column_name]
+                        resolved_filter_columns.add(column_name)
+
+                if set(indexes) != set(requested_columns):
+                    raise SheetOrColumnNotFoundError("conversation_column_not_found")
+                if resolved_filter_columns != set(requested_filters):
+                    raise SheetOrColumnNotFoundError("filter_column_not_found")
+                continue
+
+            if all(
+                value is None or (isinstance(value, str) and not value.strip()) for value in row
+            ):
+                continue
+
+            matches_filters = all(
+                index < len(row)
+                and row[index] is not None
+                and str(row[index]).strip() in allowed_values
+                for index, allowed_values in filter_indexes.items()
+            )
+
+            yield ConversationRow(
+                # İnsanların gördüğü Excel satır numarası: header 1, ilk veri 2.
+                source_row=row_number + 1,
+                included=matches_filters,
+                session_id=_row_cell_text(row, indexes["session_id"]),
+                message_order=_row_cell_text(row, indexes["message_order"]),
+                role=_row_cell_text(row, indexes["role"]),
+                message_type=_row_cell_text(row, indexes["message_type"]),
+                text=_row_cell_text(row, indexes["text"]),
+            )
     finally:
         workbook.close()
 

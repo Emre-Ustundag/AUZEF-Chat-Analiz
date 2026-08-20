@@ -70,6 +70,22 @@ class Analysis(Base):
         default=list,
         server_default=text("'[]'::jsonb"),
     )
+    #: Analiz biriminin düz mesaj mı yoksa bağlamlı kullanıcı turn'ü mü
+    #: olduğunu belirtir. String tutulması bilinçli: API enum'u ileride yeni
+    #: modlarla genişlerse PostgreSQL enum migration'ı gerektirmez.
+    analysis_mode: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        default="message",
+        server_default=text("'message'"),
+    )
+    #: Yalnızca ``contextual_user_turns`` modunda doludur. İstek şemasındaki
+    #: ConversationConfig'in JSON karşılığıdır ve job oluşturulduktan sonra
+    #: değişmez.
+    conversation_config: Mapped[dict[str, Any] | None] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
     model: Mapped[str] = mapped_column(String(256), nullable=False)
     #: API job'ı oluştururken alınan canlı/fallback fiyat snapshot'ı.
     pricing_snapshot: Mapped[dict[str, Any]] = mapped_column(

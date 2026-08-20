@@ -1,6 +1,12 @@
 import * as z from "zod";
 
-import { pricingSnapshotSchema, promptVersionSchema, rowFilterSchema } from "./analysis";
+import {
+  analysisModeSchema,
+  conversationConfigSchema,
+  pricingSnapshotSchema,
+  promptVersionSchema,
+  rowFilterSchema,
+} from "./analysis";
 
 /** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
 export function percentageHalfUp(count: number, total: number): number {
@@ -21,13 +27,28 @@ export function percentageHalfUp(count: number, total: number): number {
  * bu sayıları yeniden hesaplamaz, olduğu gibi gösterir.
  */
 
-export const sourceSummarySchema = z.object({
-  filename: z.string(),
-  sheet_name: z.string(),
-  text_column: z.string(),
-  row_filters: z.array(rowFilterSchema).default([]),
-  total_rows: z.int().nonnegative(),
-});
+export const sourceSummarySchema = z
+  .object({
+    filename: z.string(),
+    sheet_name: z.string(),
+    text_column: z.string(),
+    row_filters: z.array(rowFilterSchema).default([]),
+    analysis_mode: analysisModeSchema.default("message"),
+    conversation_config: conversationConfigSchema.nullable().default(null),
+    total_rows: z.int().nonnegative(),
+  })
+  .superRefine((source, ctx) => {
+    if (
+      (source.analysis_mode === "contextual_user_turns") !==
+      (source.conversation_config !== null)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["conversation_config"],
+        message: "Rapor analiz modu ile konuşma ayarı uyumsuz.",
+      });
+    }
+  });
 
 export type SourceSummary = z.infer<typeof sourceSummarySchema>;
 
@@ -38,6 +59,8 @@ export type SourceSummary = z.infer<typeof sourceSummarySchema>;
 export const preprocessingSummarySchema = z.object({
   /** Analize giren kayıt sayısı (boş/sistem kayıtları elendikten sonra). */
   analyzed_count: z.int().nonnegative(),
+  /** Bağlama uygun olan, fakat hedef/sonuç sayımlarına girmeyen kayıtlar. */
+  context_only_count: z.int().nonnegative().default(0),
   /** Boş veya analiz dışı olduğu için elenen kayıtlar. */
   discarded_count: z.int().nonnegative(),
   /** Exact hash ile tekilleştirilen kayıt sayısı; frekansları korunur. */
@@ -166,11 +189,14 @@ export const analysisReportSchema = z
     // backend'deki aynı varsayımla birlikte 100.000 satırı aşan her raporu
     // reddediyordu. Backend tek başına düzeltilseydi arayüz raporu yine
     // reddederdi; iki tarafın birlikte değişmesi gerekiyordu.
-    if (prep.analyzed_count + prep.discarded_count !== report.source_summary.total_rows) {
+    if (
+      prep.analyzed_count + prep.context_only_count + prep.discarded_count !==
+      report.source_summary.total_rows
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["preprocessing_summary"],
-        message: "Analiz edilen ve elenen satır toplamı işlenen satır sayısıyla aynı olmalı.",
+        message: "Analiz, bağlam ve elenen satır toplamı işlenen satır sayısıyla aynı olmalı.",
       });
     }
     if (prep.unique_count + prep.duplicate_count !== prep.analyzed_count) {

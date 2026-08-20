@@ -12,10 +12,12 @@ from pathlib import Path
 import pytest
 
 from app.core.config import Settings
+from app.schemas.analysis import ConversationConfig
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
     iter_column_values,
+    iter_conversation_rows,
     profile_xlsx,
     validate_and_profile,
     validate_xlsx,
@@ -260,6 +262,70 @@ def test_bilinmeyen_filtre_kolonu_reddedilir() -> None:
         )
 
     assert exc_info.value.reason == "filter_column_not_found"
+
+
+def test_konusma_kolonlari_birlikte_ve_satir_sirasiyla_okunur(tmp_path: Path) -> None:
+    from openpyxl import Workbook
+
+    path = tmp_path / "conversation.xlsx"
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.title = "Chat"
+    sheet.append(["session_id", "message_order", "direction", "message_type", "message", "kanal"])
+    sheet.append(["s1", 1, "Bot", "text", "Size nasıl yardımcı olabilirim?", "web"])
+    sheet.append(["s1", 2, "Kullanıcı", "text", "Sınav ne zaman?", "web"])
+    sheet.append(["s2", 1, "Kullanıcı", "text", "Harç nasıl ödenir?", "mobil"])
+    workbook.save(path)
+
+    config = ConversationConfig(
+        session_id_column="session_id",
+        message_order_column="message_order",
+        role_column="direction",
+        message_type_column="message_type",
+    )
+    rows = list(
+        iter_conversation_rows(
+            path,
+            "Chat",
+            "message",
+            config,
+            {"kanal": frozenset({"web"})},
+        )
+    )
+
+    assert len(rows) == 3
+    assert rows[0].source_row == 2
+    assert rows[0].session_id == "s1"
+    assert rows[0].message_order == "1"
+    assert rows[1].role == "Kullanıcı"
+    assert rows[1].text == "Sınav ne zaman?"
+    # Filtre dışı satır toplam/ilerleme için korunur ama bağlama alınmaz.
+    assert rows[2].included is False
+
+
+def test_konusma_esleme_kolonu_yoksa_reddedilir(tmp_path: Path) -> None:
+    from openpyxl import Workbook
+
+    path = tmp_path / "missing-column.xlsx"
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.title = "Chat"
+    sheet.append(["session_id", "direction", "message_type", "message"])
+    sheet.append(["s1", "Kullanıcı", "text", "Sınav ne zaman?"])
+    workbook.save(path)
+
+    config = ConversationConfig(
+        session_id_column="session_id",
+        message_order_column="message_order",
+        role_column="direction",
+        message_type_column="message_type",
+    )
+    with pytest.raises(SheetOrColumnNotFoundError) as exc_info:
+        list(iter_conversation_rows(path, "Chat", "message", config))
+
+    assert exc_info.value.reason == "conversation_column_not_found"
 
 
 def test_profil_sozlesme_semasina_uyar(settings: Settings) -> None:

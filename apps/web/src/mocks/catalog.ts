@@ -53,6 +53,7 @@ export const KNOWN_PROMPT_VERSIONS: readonly PromptVersion[] = [
   "faq_analysis/v1",
   "faq_analysis/v2",
   DEFAULT_PROMPT_VERSION,
+  "faq_analysis/v4",
 ];
 
 export const MOCK_MODEL_LIST: ModelList = {

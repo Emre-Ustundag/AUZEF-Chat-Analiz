@@ -69,6 +69,94 @@ class PromptVersion(StrEnum):
     FAQ_ANALYSIS_V1 = "faq_analysis/v1"
     FAQ_ANALYSIS_V2 = "faq_analysis/v2"
     FAQ_ANALYSIS_V3 = "faq_analysis/v3"
+    FAQ_ANALYSIS_V4 = "faq_analysis/v4"
+
+
+class AnalysisMode(StrEnum):
+    """Bir LLM kaydının hangi kaynak birimini temsil ettiği."""
+
+    MESSAGE = "message"
+    CONTEXTUAL_USER_TURNS = "contextual_user_turns"
+
+
+class ConversationConfig(ApiRequestModel):
+    """Session bağlamlı kullanıcı-turn analizi için kolon/değer eşlemesi.
+
+    Kullanıcı turn'ü sınıflandırılan ve sayılan birimdir. Aynı session'daki
+    önceki kullanıcı/bot mesajları yalnızca bağlamdır; rapor adetlerine
+    girmez. Rol ve mesaj türü değerleri tam eşleşmeyle yorumlanır.
+    """
+
+    session_id_column: str = Field(min_length=1, max_length=512)
+    message_order_column: str = Field(min_length=1, max_length=512)
+    role_column: str = Field(min_length=1, max_length=512)
+    message_type_column: str = Field(min_length=1, max_length=512)
+    user_role_values: list[str] = Field(
+        default_factory=lambda: ["Kullanıcı"], min_length=1, max_length=20
+    )
+    assistant_role_values: list[str] = Field(
+        default_factory=lambda: ["Bot"], min_length=1, max_length=20
+    )
+    target_message_types: list[str] = Field(
+        # Quick-reply tıklamaları niyeti anlamada bağlam olabilir, fakat
+        # varsayılan SSS paydasını kullanıcı buton cevaplarıyla şişirmemeli.
+        default_factory=lambda: ["text"],
+        min_length=1,
+        max_length=20,
+    )
+    context_message_types: list[str] = Field(
+        default_factory=lambda: ["text", "quick_reply", "single-choice"],
+        min_length=1,
+        max_length=20,
+    )
+    max_context_turns: int = Field(default=4, ge=1, le=8)
+    max_context_tokens: int = Field(default=1000, ge=128, le=4000)
+
+    @field_validator(
+        "session_id_column",
+        "message_order_column",
+        "role_column",
+        "message_type_column",
+    )
+    @classmethod
+    def _strip_mapping_column(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Konuşma eşleme kolonu boş olamaz.")
+        return stripped
+
+    @field_validator(
+        "user_role_values",
+        "assistant_role_values",
+        "target_message_types",
+        "context_message_types",
+    )
+    @classmethod
+    def _normalize_mapping_values(cls, values: list[str]) -> list[str]:
+        normalized = [value.strip() for value in values]
+        if any(not value for value in normalized):
+            raise ValueError("Konuşma eşleme değerleri boş olamaz.")
+        if any(len(value) > 512 for value in normalized):
+            raise ValueError("Konuşma eşleme değerleri en fazla 512 karakter olabilir.")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("Konuşma eşleme değerleri tekrarlanamaz.")
+        return normalized
+
+    @model_validator(mode="after")
+    def _mapping_is_unambiguous(self) -> Self:
+        columns = [
+            self.session_id_column,
+            self.message_order_column,
+            self.role_column,
+            self.message_type_column,
+        ]
+        if len(columns) != len(set(columns)):
+            raise ValueError("Session, sıra, rol ve mesaj türü kolonları farklı olmalı.")
+        if set(self.user_role_values) & set(self.assistant_role_values):
+            raise ValueError("Aynı rol değeri hem kullanıcı hem bot olamaz.")
+        if not set(self.target_message_types) <= set(self.context_message_types):
+            raise ValueError("Hedef mesaj türleri bağlam mesaj türlerinin alt kümesi olmalı.")
+        return self
 
 
 class RowFilter(ApiRequestModel):
@@ -117,6 +205,8 @@ class AnalysisRequest(ApiRequestModel):
     sheet_name: str = Field(min_length=1)
     text_column: str = Field(min_length=1)
     row_filters: list[RowFilter] = Field(default_factory=list, max_length=5)
+    analysis_mode: AnalysisMode = AnalysisMode.MESSAGE
+    conversation_config: ConversationConfig | None = None
     model: ModelId
     prompt_version: PromptVersion
     top_n: int = Field(ge=1, le=100)
@@ -130,6 +220,38 @@ class AnalysisRequest(ApiRequestModel):
         if len(columns) != len(set(columns)):
             raise ValueError("Aynı kolon için birden fazla filtre tanımlanamaz.")
         return filters
+
+    @model_validator(mode="after")
+    def _mode_configuration_is_consistent(self) -> Self:
+        if self.analysis_mode is AnalysisMode.MESSAGE:
+            if self.conversation_config is not None:
+                raise ValueError(
+                    "conversation_config yalnızca contextual_user_turns modunda kullanılabilir."
+                )
+            if self.prompt_version is PromptVersion.FAQ_ANALYSIS_V4:
+                raise ValueError("faq_analysis/v4 yalnızca contextual_user_turns içindir.")
+            return self
+
+        config = self.conversation_config
+        if config is None:
+            raise ValueError("contextual_user_turns modu conversation_config gerektirir.")
+        if self.prompt_version is not PromptVersion.FAQ_ANALYSIS_V4:
+            raise ValueError("contextual_user_turns modu faq_analysis/v4 prompt'unu gerektirir.")
+
+        mapped_columns = {
+            config.session_id_column,
+            config.message_order_column,
+            config.role_column,
+            config.message_type_column,
+        }
+        if self.text_column in mapped_columns:
+            raise ValueError("Metin kolonu konuşma eşleme kolonlarından farklı olmalı.")
+        if mapped_columns & {row_filter.column for row_filter in self.row_filters}:
+            raise ValueError(
+                "Session, sıra, rol ve mesaj türü kolonları genel satır filtresi olarak "
+                "kullanılamaz. Bu değerleri konuşma ayarlarından eşleyin."
+            )
+        return self
 
 
 class AnalysisCreated(ApiModel):

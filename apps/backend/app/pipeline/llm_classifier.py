@@ -63,6 +63,7 @@ from app.pipeline.classifier import (
 )
 from app.pipeline.cost import build_chunks, cost_for_usage
 from app.pipeline.preprocess import RecordGroup
+from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import PromptBundle
 from app.prompts.faq_analysis.v1 import escape_record_text
 from app.schemas.analysis import PricingSnapshot
@@ -270,10 +271,7 @@ class OpenRouterClassifier:
         assigned: set[str],
     ) -> tuple[dict[str, _Bucket], tuple[int, int]]:
         """Bir chunk'ı sınıflandırır; uydurma/tekrar eden kimlikleri eler."""
-        rendered = "\n".join(
-            f'<kayit id="{group.record_id}">{escape_record_text(group.redacted_text)}</kayit>'
-            for group in chunk
-        )
+        rendered = "\n".join(render_record(group) for group in chunk)
         completion = self._client.complete_structured(
             system=self._prompt.map_system,
             user=self._prompt.map_user_template.format(records=rendered),

@@ -22,6 +22,7 @@ elindeki tek kaynak rapor gövdesidir.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from io import BytesIO
 
 from openpyxl import Workbook
@@ -50,6 +51,29 @@ _HEADER_FONT = Font(bold=True)
 #: sayısı config'e bağlı olduğu için kolon şemasını değişken yapardı.
 _EXAMPLE_SEPARATOR = "\n"
 
+# Excel/LibreOffice, hücre metni bu karakterlerle başlarsa onu formül veya
+# komut olarak yorumlayabilir. Kullanıcı denetimli kaynak adı, kolon/değer
+# eşlemeleri ve LLM tarafından üretilen etiketler export'a taşındığı için
+# koruma yalnız B4 metadata'sına değil bütün metin hücrelerine uygulanır.
+_FORMULA_PREFIXES = ("=", "+", "-", "@")
+_FORMULA_LEADING_WHITESPACE = " \t\r\n"
+
+CellValue = str | int | float | None
+
+
+def _safe_xlsx_value(value: CellValue) -> CellValue:
+    """Kullanıcı/model metninin spreadsheet formülü olmasını engelle."""
+    if isinstance(value, str) and value.lstrip(_FORMULA_LEADING_WHITESPACE).startswith(
+        _FORMULA_PREFIXES
+    ):
+        return f"'{value}"
+    return value
+
+
+def _append_row(sheet: Worksheet, values: Sequence[CellValue]) -> None:
+    """Metni sanitize ederken sayısal hücre tiplerini aynen koru."""
+    sheet.append([_safe_xlsx_value(value) for value in values])
+
 
 def content_disposition(analysis_id: str, extension: str) -> str:
     """`Content-Disposition` başlığı üretir.
@@ -66,7 +90,7 @@ def content_disposition(analysis_id: str, extension: str) -> str:
 
 
 def _write_header(sheet: Worksheet, headers: list[str]) -> None:
-    sheet.append(headers)
+    _append_row(sheet, headers)
     for cell in sheet[1]:
         cell.font = _HEADER_FONT
     sheet.freeze_panes = "A2"
@@ -103,9 +127,16 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ("Dosya", source.filename),
         ("Sayfa", source.sheet_name),
         ("Kolon", source.text_column),
+        (
+            "Analiz biçimi",
+            "Session bağlamlı kullanıcı turn'leri"
+            if source.analysis_mode == "contextual_user_turns"
+            else "Bağımsız mesajlar",
+        ),
         ("Satır filtreleri", serialized_filters or "Yok"),
         ("Toplam satır", source.total_rows),
         ("Analiz edilen kayıt", pre.analyzed_count),
+        ("Bağlam adayı (hedef dışı)", pre.context_only_count),
         ("Elenen kayıt", pre.discarded_count),
         ("Tekrar eden kayıt", pre.duplicate_count),
         ("Benzersiz kayıt", pre.unique_count),
@@ -126,6 +157,22 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
             else "Fiyat snapshot hesabı",
         ),
     ]
+    if source.conversation_config is not None:
+        config = source.conversation_config
+        rows.extend(
+            [
+                ("Session kolonu", config.session_id_column),
+                ("Mesaj sıra kolonu", config.message_order_column),
+                ("Rol kolonu", config.role_column),
+                ("Mesaj türü kolonu", config.message_type_column),
+                ("Kullanıcı rol değerleri", " | ".join(config.user_role_values)),
+                ("Bot rol değerleri", " | ".join(config.assistant_role_values)),
+                ("Hedef mesaj türleri", " | ".join(config.target_message_types)),
+                ("Bağlam mesaj türleri", " | ".join(config.context_message_types)),
+                ("Azami geçmiş turn", config.max_context_turns),
+                ("Azami bağlam token", config.max_context_tokens),
+            ]
+        )
     if report.pricing_snapshot is not None:
         snapshot = report.pricing_snapshot
         rows.extend(
@@ -148,17 +195,17 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
             ]
         )
     for label, value in rows:
-        sheet.append([label, value])
+        _append_row(sheet, [label, value])
 
-    sheet.append([])
-    sheet.append(["Yönetici özeti", report.executive_summary])
+    _append_row(sheet, [])
+    _append_row(sheet, ["Yönetici özeti", report.executive_summary])
     sheet.cell(row=sheet.max_row, column=2).alignment = Alignment(wrap_text=True, vertical="top")
 
     if report.warnings:
-        sheet.append([])
-        sheet.append(["Uyarı kodu", "Açıklama"])
+        _append_row(sheet, [])
+        _append_row(sheet, ["Uyarı kodu", "Açıklama"])
         for warning in report.warnings:
-            sheet.append([warning.code, warning.message])
+            _append_row(sheet, [warning.code, warning.message])
 
     _autosize(sheet, [26, 80])
 
@@ -169,7 +216,8 @@ def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ["Kimlik", "Soru", "Adet", "Oran (%)", "Örnek mesajlar (redakte)"],
     )
     for question in report.top_questions:
-        sheet.append(
+        _append_row(
+            sheet,
             [
                 question.id,
                 question.canonical_question,
@@ -177,7 +225,7 @@ def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
                 question.count,
                 question.percentage,
                 _EXAMPLE_SEPARATOR.join(question.redacted_examples),
-            ]
+            ],
         )
         sheet.cell(row=sheet.max_row, column=5).alignment = Alignment(
             wrap_text=True, vertical="top"
@@ -189,7 +237,8 @@ def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
 def _build_themes_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
     _write_header(sheet, ["Kimlik", "Tema", "Adet", "Oran (%)", "İlgili soru kimlikleri"])
     for theme in report.themes:
-        sheet.append(
+        _append_row(
+            sheet,
             [
                 theme.id,
                 theme.name,
@@ -198,7 +247,7 @@ def _build_themes_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
                 # Plan §1.2: bu liste top_n kırpmasından SONRA filtrelenmiş
                 # hâliyle gelir; tema `count`'u ise kırpmadan etkilenmez.
                 ", ".join(theme.related_question_ids),
-            ]
+            ],
         )
 
     _autosize(sheet, [16, 40, 10, 12, 50])

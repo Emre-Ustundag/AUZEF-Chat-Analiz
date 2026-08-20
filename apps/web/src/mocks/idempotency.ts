@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { AnalysisRequest } from "@/lib/api/schemas";
+import type { ValidatedAnalysisRequest } from "@/lib/api/schemas";
 
 /**
  * Bu sözleşmedeki ASCII alan adları için canonical JSON üretir: object
@@ -35,8 +35,17 @@ function sha256(value: string | Uint8Array): string {
 }
 
 /** Header'lar (özellikle BYOK anahtarı) bilinçli olarak fingerprint'e girmez. */
-export function analysisFingerprint(request: AnalysisRequest): string {
-  return sha256(canonicalJson(request));
+export function analysisFingerprint(request: ValidatedAnalysisRequest): string {
+  if (request.analysis_mode === "contextual_user_turns") {
+    return sha256(canonicalJson(request));
+  }
+
+  // Geriye uyumluluk: backend'in yeni message-mode defaultları, aynı eski
+  // gövde + Idempotency-Key çiftinin fingerprint'ini değiştirmemeli.
+  const legacy: Partial<ValidatedAnalysisRequest> = { ...request };
+  delete legacy.analysis_mode;
+  delete legacy.conversation_config;
+  return sha256(canonicalJson(legacy));
 }
 
 /** ADR-0002 #3'teki iki aşamalı upload fingerprint'inin İKİNCİ aşaması.

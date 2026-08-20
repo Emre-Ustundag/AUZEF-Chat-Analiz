@@ -20,7 +20,7 @@ from io import BytesIO
 
 from openpyxl import load_workbook
 
-from app.schemas.analysis import RowFilter
+from app.schemas.analysis import AnalysisMode, ConversationConfig, RowFilter
 from app.schemas.report import (
     AnalysisReport,
     AnalysisWarning,
@@ -252,6 +252,47 @@ def test_uyarilar_ozete_yazilir() -> None:
     metin = "\n".join(str(cell) for row in sheet.iter_rows(values_only=True) for cell in row)
     assert "COST_LIMIT_APPROACHED" in metin
     assert "Kayıtların çoğunluğu sınav takvimiyle ilgili." in metin
+
+
+def test_contextual_metadata_xlsx_formulu_olamaz() -> None:
+    """Kullanıcı denetimli eşleme değerleri Excel formülüne dönüşmemeli."""
+    report = build_report()
+    config = ConversationConfig(
+        session_id_column="=1+1",
+        message_order_column="+SUM(A1:A2)",
+        role_column="@rol",
+        message_type_column="-tur",
+        user_role_values=["=Kullanıcı"],
+        assistant_role_values=["+Bot"],
+        target_message_types=["@text"],
+        context_message_types=["@text", "-quick_reply"],
+    )
+    source = report.source_summary.model_copy(
+        update={
+            "analysis_mode": AnalysisMode.CONTEXTUAL_USER_TURNS,
+            "conversation_config": config,
+        }
+    )
+    report = report.model_copy(update={"source_summary": source})
+
+    sheet = load(report)["Özet"]  # type: ignore[index]
+    cells = {row[0].value: row[1] for row in sheet.iter_rows(min_row=2)}
+    protected_labels = {
+        "Session kolonu",
+        "Mesaj sıra kolonu",
+        "Rol kolonu",
+        "Mesaj türü kolonu",
+        "Kullanıcı rol değerleri",
+        "Bot rol değerleri",
+        "Hedef mesaj türleri",
+        "Bağlam mesaj türleri",
+    }
+
+    for label in protected_labels:
+        cell = cells[label]
+        assert cell.data_type == "s"
+        assert isinstance(cell.value, str)
+        assert cell.value.startswith("'")
 
 
 # ------------------------------------------------------------------ JSON

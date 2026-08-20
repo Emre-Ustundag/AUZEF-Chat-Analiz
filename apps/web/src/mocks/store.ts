@@ -9,7 +9,11 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
-import { ERROR_STATUS_BY_CODE, percentageHalfUp } from "@/lib/api/schemas";
+import {
+  conversationConfigSchema,
+  ERROR_STATUS_BY_CODE,
+  percentageHalfUp,
+} from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -454,8 +458,16 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
   const overRowLimit = record.scenario === "row-limit";
   const totalRows = overRowLimit ? ROW_LIMIT_TOTAL_ROWS : 48_213;
   const considered = totalRows;
+  const analysisMode = record.request.analysis_mode ?? "message";
+  const conversationConfig =
+    analysisMode === "contextual_user_turns"
+      ? conversationConfigSchema.parse(record.request.conversation_config)
+      : null;
+  // Bağlamsal mock'ta kullanıcı hedefi olmayan satırlar yalnız önceki
+  // konuşma bağlamına girer. Mesaj modu eski adetleri aynen korur.
+  const contextOnly = analysisMode === "contextual_user_turns" ? Math.round(considered * 0.1) : 0;
   const discarded = 1_107;
-  const analyzed = considered - discarded;
+  const analyzed = considered - contextOnly - discarded;
   const unique = Math.round(analyzed * (31_540 / 47_106));
   const duplicate = analyzed - unique;
 
@@ -530,10 +542,13 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       sheet_name: record.request.sheet_name,
       text_column: record.request.text_column,
       row_filters: record.request.row_filters,
+      analysis_mode: analysisMode,
+      conversation_config: conversationConfig,
       total_rows: totalRows,
     },
     preprocessing_summary: {
       analyzed_count: analyzed,
+      context_only_count: contextOnly,
       discarded_count: discarded,
       duplicate_count: duplicate,
       redacted_count: Math.round(analyzed * (2_841 / 47_106)),

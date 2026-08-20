@@ -20,12 +20,14 @@ import pytest
 import pytest_asyncio
 from celery.exceptions import SoftTimeLimitExceeded
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
+from openpyxl import Workbook
+from sqlalchemy import select, text
 
 from app.api.v1 import analyses as analyses_api
 from app.core.config import get_settings
 from app.core.db import dispose_engine, session_scope
 from app.main import create_app
+from app.models.analysis import Analysis
 from app.pipeline.cost import CostDecision
 from app.pipeline.llm_classifier import OpenRouterClassifier
 from app.prompts.faq_analysis import get_prompt
@@ -575,6 +577,74 @@ async def test_api_on_tahmini_benzersiz_deger_sayisini_kullanir(
     assert getattr(captured["prompt"], "version", None) == "faq_analysis/v1"
 
     analysis_id = created.json()["analysis_id"]
+    await client.delete(f"/api/v1/analyses/{analysis_id}")
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_baglamsal_analiz_ayarlari_saklanir_ve_profil_tahmini_atlanir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Profil, hedef turn/context birleşimini bilmez; worker öncesi tahmin yapılmamalı."""
+
+    def forbidden_estimate(*args: Any, **kwargs: Any) -> CostDecision:
+        del args, kwargs
+        raise AssertionError("Bağlamsal modda profil maliyet tahmini çağrılmamalı.")
+
+    monkeypatch.setattr(analyses_api, "estimate_profile_cost_range", forbidden_estimate)
+
+    path = tmp_path / "conversation.xlsx"
+    workbook = Workbook()
+    worksheet = workbook.active
+    assert worksheet is not None
+    worksheet.title = "Mesajlar"
+    worksheet.append(["session_id", "message_order", "direction", "message_type", "message_text"])
+    worksheet.append(["s1", 1, "Kullanıcı", "text", "Sınav ne zaman?"])
+    worksheet.append(["s1", 2, "Bot", "text", "Sınav takvimini mi soruyorsunuz?"])
+    worksheet.append(["s1", 3, "Kullanıcı", "quick_reply", "Evet"])
+    workbook.save(path)
+    workbook.close()
+
+    with path.open("rb") as handle:
+        uploaded = await client.post(
+            "/api/v1/uploads",
+            files={"file": (path.name, handle, "application/octet-stream")},
+        )
+    assert uploaded.status_code == 202
+    upload_id = uuid.UUID(uploaded.json()["upload_id"])
+    assert await tasks.run_upload_profiling(upload_id) == "ready"
+
+    conversation_config = {
+        "session_id_column": "session_id",
+        "message_order_column": "message_order",
+        "role_column": "direction",
+        "message_type_column": "message_type",
+        "user_role_values": ["Kullanıcı"],
+        "assistant_role_values": ["Bot"],
+        "target_message_types": ["text", "quick_reply"],
+        "context_message_types": ["text", "quick_reply", "single-choice"],
+        "max_context_turns": 4,
+        "max_context_tokens": 1000,
+    }
+    created = await _create(
+        client,
+        upload_id,
+        sheet_name="Mesajlar",
+        text_column="message_text",
+        analysis_mode="contextual_user_turns",
+        conversation_config=conversation_config,
+        prompt_version="faq_analysis/v4",
+    )
+    assert created.status_code == 202, created.text
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    async with session_scope() as session:
+        analysis = await session.scalar(select(Analysis).where(Analysis.id == analysis_id))
+        assert analysis is not None
+        assert analysis.analysis_mode == "contextual_user_turns"
+        assert analysis.conversation_config == conversation_config
+
     await client.delete(f"/api/v1/analyses/{analysis_id}")
     await client.delete(f"/api/v1/uploads/{upload_id}")
 

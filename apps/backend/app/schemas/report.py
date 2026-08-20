@@ -12,7 +12,13 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from app.schemas.analysis import PricingSnapshot, PromptVersion, RowFilter
+from app.schemas.analysis import (
+    AnalysisMode,
+    ConversationConfig,
+    PricingSnapshot,
+    PromptVersion,
+    RowFilter,
+)
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -37,12 +43,24 @@ class SourceSummary(ApiModel):
     sheet_name: str
     text_column: str
     row_filters: list[RowFilter] = Field(default_factory=list)
+    analysis_mode: AnalysisMode = AnalysisMode.MESSAGE
+    conversation_config: ConversationConfig | None = None
     total_rows: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _mode_matches_conversation_config(self) -> Self:
+        if (self.analysis_mode is AnalysisMode.CONTEXTUAL_USER_TURNS) != (
+            self.conversation_config is not None
+        ):
+            raise ValueError("Rapor analiz modu ile konuşma ayarı uyumsuz.")
+        return self
 
 
 class PreprocessingSummary(ApiModel):
     #: Analize giren kayıt sayısı (boş/sistem kayıtları elendikten sonra).
     analyzed_count: int = Field(ge=0)
+    #: Contextual modda bağlam için uygun olan hedef-dışı kaynak satırı.
+    context_only_count: int = Field(default=0, ge=0)
     discarded_count: int = Field(ge=0)
     #: Exact hash ile tekilleştirilen kayıt sayısı; frekansları korunur.
     duplicate_count: int = Field(ge=0)
@@ -174,9 +192,13 @@ class AnalysisReport(ApiModel):
         #
         # `MAX_ROWS` artık kesme eşiği değil, `UploadProfile.exceeds_row_limit`
         # üzerinden "bu dosya büyük, uzun sürer ve pahalıdır" uyarısının eşiği.
-        if prep.analyzed_count + prep.discarded_count != self.source_summary.total_rows:
+        if (
+            prep.analyzed_count + prep.context_only_count + prep.discarded_count
+            != self.source_summary.total_rows
+        ):
             raise ValueError(
-                "analyzed_count + discarded_count, işlenen satır sayısına eşit olmalı."
+                "analyzed_count + context_only_count + discarded_count, işlenen satır "
+                "sayısına eşit olmalı."
             )
         if prep.unique_count + prep.duplicate_count != prep.analyzed_count:
             raise ValueError("unique_count + duplicate_count, analyzed_count'a eşit olmalı.")

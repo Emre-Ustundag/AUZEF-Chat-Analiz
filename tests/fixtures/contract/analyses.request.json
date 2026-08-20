@@ -16,6 +16,8 @@
       ]
     }
   ],
+  "analysis_mode": "message",
+  "conversation_config": null,
   "model": "google/gemini-2.5-flash",
   "prompt_version": "faq_analysis/v3",
   "top_n": 8,

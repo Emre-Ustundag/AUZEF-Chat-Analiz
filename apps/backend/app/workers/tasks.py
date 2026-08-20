@@ -45,12 +45,19 @@ from app.pipeline.llm_classifier import (
     OpenRouterClassifier,
     ProgressCallback,
 )
-from app.pipeline.preprocess import Preprocessor, PreprocessResult
+from app.pipeline.preprocess import (
+    ContextualPreprocessor,
+    ConversationOrderError,
+    Preprocessor,
+    PreprocessResult,
+)
 from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
 from app.schemas.analysis import (
     STAGE_PROGRESS,
     TERMINAL_STATUSES,
+    AnalysisMode,
     AnalysisStatus,
+    ConversationConfig,
     PricingSnapshot,
     RowFilter,
 )
@@ -62,6 +69,7 @@ from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
     iter_column_values,
+    iter_conversation_rows,
     validate_and_profile,
     validate_xlsx,
 )
@@ -441,6 +449,8 @@ async def _preprocess_in_batches(
     sheet_name: str,
     text_column: str,
     row_filters: list[RowFilter],
+    analysis_mode: AnalysisMode,
+    conversation_config: ConversationConfig | None,
     expected_rows: int,
     settings: Settings,
 ) -> PreprocessResult:
@@ -458,11 +468,25 @@ async def _preprocess_in_batches(
     openpyxl senkron ve CPU yoğun olduğu için hem okuma hem işleme thread'e
     taşınıyor; aksi hâlde event loop dakikalarca bloklanırdı.
     """
-    preprocessor = Preprocessor(settings)
     filter_map = {
         row_filter.column: frozenset(row_filter.allowed_values) for row_filter in row_filters
     }
-    values = iter_column_values(local_path, sheet_name, text_column, filter_map)
+    if analysis_mode is AnalysisMode.CONTEXTUAL_USER_TURNS:
+        if conversation_config is None:
+            raise ValueError("contextual_user_turns_without_config")
+        preprocessor: Preprocessor | ContextualPreprocessor = ContextualPreprocessor(
+            settings, conversation_config
+        )
+        values: Any = iter_conversation_rows(
+            local_path,
+            sheet_name,
+            text_column,
+            conversation_config,
+            filter_map,
+        )
+    else:
+        preprocessor = Preprocessor(settings)
+        values = iter_column_values(local_path, sheet_name, text_column, filter_map)
 
     start = STAGE_PROGRESS[AnalysisStatus.PREPROCESSING]
     end = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
@@ -645,6 +669,12 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         sheet_name = analysis.sheet_name
         text_column = analysis.text_column
         row_filters = [RowFilter.model_validate(item) for item in analysis.row_filters]
+        analysis_mode = AnalysisMode(analysis.analysis_mode)
+        conversation_config = (
+            ConversationConfig.model_validate(analysis.conversation_config)
+            if analysis.conversation_config is not None
+            else None
+        )
         model = analysis.model
         pricing_snapshot_payload = analysis.pricing_snapshot
         prompt_version = analysis.prompt_version
@@ -732,11 +762,20 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
                 sheet_name=sheet_name,
                 text_column=text_column,
                 row_filters=row_filters,
+                analysis_mode=analysis_mode,
+                conversation_config=conversation_config,
                 expected_rows=expected_rows,
                 settings=settings,
             )
         except _AnalysisCancelledError:
             return AnalysisStatus.CANCELLED.value
+        except ConversationOrderError:
+            return await _fail(
+                analysis_id,
+                "REQUEST_VALIDATION",
+                "Mesaj sırası geçersiz veya aynı session içinde geriye gidiyor. "
+                "Sıra kolonunu kontrol edin.",
+            )
         except SheetOrColumnNotFoundError as exc:
             logger.warning(
                 "analysis_selection_not_found",
@@ -1019,6 +1058,8 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             sheet_name=sheet_name,
             text_column=text_column,
             row_filters=row_filters,
+            analysis_mode=analysis_mode,
+            conversation_config=conversation_config,
             model=model,
             prompt_version=prompt_version,
             classifier_id=classifier.identifier,

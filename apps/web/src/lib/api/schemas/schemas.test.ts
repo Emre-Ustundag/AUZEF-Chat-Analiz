@@ -149,7 +149,9 @@ describe("analysisRequestSchema", () => {
   };
 
   it("geçerli isteği kabul eder", () => {
-    expect(analysisRequestSchema.safeParse(valid).success).toBe(true);
+    const parsed = analysisRequestSchema.parse(valid);
+    expect(parsed.analysis_mode).toBe("message");
+    expect(parsed.conversation_config).toBeNull();
   });
 
   it("top_n sıfır olamaz", () => {
@@ -168,6 +170,81 @@ describe("analysisRequestSchema", () => {
     expect(analysisRequestSchema.safeParse({ ...valid, model: "unknown/model" }).success).toBe(
       false,
     );
+    expect(
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v5" }).success,
+    ).toBe(false);
+  });
+
+  it("bağlamsal kullanıcı turlarını v4 prompt ve geçerli eşlemeyle kabul eder", () => {
+    const result = analysisRequestSchema.safeParse({
+      ...valid,
+      analysis_mode: "contextual_user_turns",
+      prompt_version: "faq_analysis/v4",
+      conversation_config: {
+        session_id_column: "session_id",
+        message_order_column: "message_order",
+        role_column: "direction",
+        message_type_column: "message_type",
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.conversation_config).toMatchObject({
+      user_role_values: ["Kullanıcı"],
+      assistant_role_values: ["Bot"],
+      target_message_types: ["text"],
+      context_message_types: ["text", "quick_reply", "single-choice"],
+      max_context_turns: 4,
+      max_context_tokens: 1000,
+    });
+  });
+
+  it("bağlamsal modda config, kolon ayrımı ve v4 prompt zorunludur", () => {
+    const config = {
+      session_id_column: "session_id",
+      message_order_column: "message_order",
+      role_column: "direction",
+      message_type_column: "message_type",
+    };
+
+    expect(
+      analysisRequestSchema.safeParse({
+        ...valid,
+        analysis_mode: "contextual_user_turns",
+        prompt_version: "faq_analysis/v4",
+        conversation_config: null,
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisRequestSchema.safeParse({
+        ...valid,
+        analysis_mode: "contextual_user_turns",
+        conversation_config: config,
+      }).success,
+    ).toBe(false);
+    expect(
+      analysisRequestSchema.safeParse({
+        ...valid,
+        analysis_mode: "contextual_user_turns",
+        prompt_version: "faq_analysis/v4",
+        conversation_config: { ...config, role_column: "session_id" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("bağımsız mesaj modunda konuşma config'i reddeder", () => {
+    expect(
+      analysisRequestSchema.safeParse({
+        ...valid,
+        conversation_config: {
+          session_id_column: "session_id",
+          message_order_column: "message_order",
+          role_column: "direction",
+          message_type_column: "message_type",
+        },
+      }).success,
+    ).toBe(false);
     expect(
       analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v4" }).success,
     ).toBe(false);
@@ -307,7 +384,7 @@ describe("analysisReportSchema", () => {
       true,
     );
     expect(
-      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v4" }).success,
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v5" }).success,
     ).toBe(false);
   });
 

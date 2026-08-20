@@ -35,7 +35,7 @@ const upload: Upload = {
       {
         name: "Mesajlar",
         row_count: 48_213,
-        column_count: 2,
+        column_count: 7,
         columns: [
           {
             name: "kullanici_id",
@@ -48,14 +48,64 @@ const upload: Upload = {
             sample_values: ["[ID]"],
           },
           {
-            name: "mesaj",
+            name: "session_id",
             index: 1,
+            non_empty_count: 48_213,
+            empty_count: 0,
+            unique_count: 18_500,
+            avg_length: 36,
+            is_likely_text: false,
+            sample_values: ["session-1"],
+          },
+          {
+            name: "message_order",
+            index: 2,
+            non_empty_count: 48_213,
+            empty_count: 0,
+            unique_count: 24,
+            avg_length: 2,
+            is_likely_text: false,
+            sample_values: ["1", "2"],
+          },
+          {
+            name: "direction",
+            index: 3,
+            non_empty_count: 48_213,
+            empty_count: 0,
+            unique_count: 2,
+            avg_length: 7,
+            is_likely_text: false,
+            sample_values: ["Kullanıcı", "Bot"],
+          },
+          {
+            name: "message_type",
+            index: 4,
+            non_empty_count: 48_213,
+            empty_count: 0,
+            unique_count: 3,
+            avg_length: 10,
+            is_likely_text: false,
+            sample_values: ["text", "quick_reply"],
+          },
+          {
+            name: "message_text_clean",
+            index: 5,
             non_empty_count: 47_106,
             empty_count: 1_107,
             unique_count: 31_540,
             avg_length: 64,
             is_likely_text: true,
             sample_values: ["sınav ne zaman"],
+          },
+          {
+            name: "alternate_session_id",
+            index: 6,
+            non_empty_count: 48_213,
+            empty_count: 0,
+            unique_count: 18_500,
+            avg_length: 36,
+            is_likely_text: false,
+            sample_values: ["alternate-1"],
           },
         ],
       },
@@ -113,7 +163,7 @@ describe("ConfigureForm", () => {
   it("kolonları profil istatistikleriyle listeler", () => {
     renderForm();
 
-    expect(screen.getByText("mesaj")).toBeInTheDocument();
+    expect(screen.getByText("message_text_clean")).toBeInTheDocument();
     expect(screen.getByText("kullanici_id")).toBeInTheDocument();
     // Sayılar Türkçe biçimde.
     expect(screen.getByText("47.106")).toBeInTheDocument();
@@ -136,9 +186,53 @@ describe("ConfigureForm", () => {
 
     const [request] = createAnalysis.mock.calls[0];
     expect(request.model).toBe("google/gemini-2.5-flash");
-    expect(request.text_column).toBe("mesaj");
+    expect(request.text_column).toBe("message_text_clean");
     expect(request.sheet_name).toBe("Mesajlar");
     expect(request.row_filters).toEqual([]);
+    expect(request.analysis_mode).toBe("message");
+    expect(request.conversation_config).toBeNull();
+    expect(request.prompt_version).toBe("faq_analysis/v3");
+  });
+
+  it("bilinen CSV kolonlarını bağlamsal modda otomatik önerir ve v4 prompt kullanır", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("radio", { name: /Bağlamsal kullanıcı turları/ }));
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.analysis_mode).toBe("contextual_user_turns");
+    expect(request.prompt_version).toBe("faq_analysis/v4");
+    expect(request.conversation_config).toEqual({
+      session_id_column: "session_id",
+      message_order_column: "message_order",
+      role_column: "direction",
+      message_type_column: "message_type",
+      user_role_values: ["Kullanıcı"],
+      assistant_role_values: ["Bot"],
+      target_message_types: ["text"],
+      context_message_types: ["text", "quick_reply", "single-choice"],
+      max_context_turns: 4,
+      max_context_tokens: 1000,
+    });
+  });
+
+  it("otomatik önerilen konuşma kolonunu değiştirmeye izin verir", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("radio", { name: /Bağlamsal kullanıcı turları/ }));
+    await user.click(screen.getByLabelText("Oturum kimliği kolonu"));
+    await user.click(await screen.findByRole("option", { name: "alternate_session_id" }));
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.conversation_config.session_id_column).toBe("alternate_session_id");
   });
 
   it("isteğe bağlı satır filtresini isteğe ekler", async () => {

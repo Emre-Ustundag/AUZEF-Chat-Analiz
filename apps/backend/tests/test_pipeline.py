@@ -17,6 +17,7 @@ Doğrulanan değişmezler:
 from __future__ import annotations
 
 import uuid
+from dataclasses import replace
 
 import pytest
 
@@ -35,10 +36,21 @@ from app.pipeline.cost import (
     estimate_cost,
     estimate_profile_cost,
     estimate_profile_cost_range,
+    record_tokens,
 )
-from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
+from app.pipeline.preprocess import (
+    ContextTurn,
+    ContextualPreprocessor,
+    ConversationOrderError,
+    PreprocessResult,
+    RecordGroup,
+    normalize,
+    preprocess,
+)
 from app.prompts.faq_analysis import V1, V2
+from app.schemas.analysis import ConversationConfig
 from app.schemas.report import AnalysisReport, percentage_half_up
+from app.services.xlsx import ConversationRow
 
 
 @pytest.fixture
@@ -131,6 +143,155 @@ def test_ayni_girdi_ayni_ciktiyi_uretir(settings: Settings) -> None:
 
     assert [g.record_id for g in first.groups] == [g.record_id for g in second.groups]
     assert [g.count for g in first.groups] == [g.count for g in second.groups]
+
+
+def _conversation_config(**overrides: object) -> ConversationConfig:
+    return ConversationConfig.model_validate(
+        {
+            "session_id_column": "session_id",
+            "message_order_column": "message_order",
+            "role_column": "direction",
+            "message_type_column": "message_type",
+            **overrides,
+        }
+    )
+
+
+def _conversation_row(
+    row: int,
+    session: str,
+    order: int,
+    role: str,
+    text: str,
+    message_type: str = "text",
+) -> ConversationRow:
+    return ConversationRow(
+        source_row=row,
+        included=True,
+        session_id=session,
+        message_order=str(order),
+        role=role,
+        message_type=message_type,
+        text=text,
+    )
+
+
+def test_contextual_ayni_hedef_farkli_baglamda_ayri_kalir(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    processor.consume(
+        [
+            _conversation_row(2, "s1", 1, "Bot", "Sınavlar 10 Ağustos tarihinde."),
+            _conversation_row(3, "s1", 2, "Kullanıcı", "Ne zaman?"),
+            _conversation_row(4, "s2", 1, "Bot", "Kayıtlar 20 Eylül tarihinde."),
+            _conversation_row(5, "s2", 2, "Kullanıcı", "Ne zaman?"),
+        ]
+    )
+    result = processor.finish()
+
+    assert result.total_rows == 4
+    assert result.analyzed_count == 2
+    assert result.context_only_count == 2
+    assert result.discarded_count == 0
+    assert result.unique_count == 2
+    assert {group.redacted_text for group in result.groups} == {"Ne zaman?"}
+    assert {group.context_turns[0].redacted_text for group in result.groups} == {
+        "Sınavlar 10 Ağustos tarihinde.",
+        "Kayıtlar 20 Eylül tarihinde.",
+    }
+
+
+def test_contextual_session_id_dedupe_anahtarina_girmez(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    processor.consume(
+        [
+            _conversation_row(2, "s1", 1, "Bot", "Başvurular yarın açılıyor."),
+            _conversation_row(3, "s1", 2, "Kullanıcı", "Nasıl başvururum?"),
+            _conversation_row(4, "s2", 1, "Bot", "Başvurular yarın açılıyor."),
+            _conversation_row(5, "s2", 2, "Kullanıcı", "Nasıl başvururum?"),
+        ]
+    )
+    result = processor.finish()
+
+    assert result.unique_count == 1
+    assert result.groups[0].count == 2
+    assert result.duplicate_count == 1
+
+
+def test_contextual_bot_baglamindaki_pii_modele_gitmez(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    processor.consume(
+        [
+            _conversation_row(
+                2,
+                "s1",
+                1,
+                "Bot",
+                "05551234567 numarasına gönderildi, ali@example.com adresini kontrol edin.",
+            ),
+            _conversation_row(3, "s1", 2, "Kullanıcı", "Ulaşmadı, ne yapmalıyım?"),
+        ]
+    )
+    result = processor.finish()
+
+    context_text = result.groups[0].context_turns[0].redacted_text
+    assert "05551234567" not in context_text
+    assert "ali@example.com" not in context_text
+    assert "[TELEFON]" in context_text
+    assert "[EPOSTA]" in context_text
+    # Redaksiyon sayacı yalnız sınıflandırılan hedef kullanıcı turn'ünü sayar.
+    assert result.redacted_count == 0
+
+
+def test_contextual_session_sirasi_geriye_giderse_reddeder(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    with pytest.raises(ConversationOrderError):
+        processor.consume(
+            [
+                _conversation_row(2, "s1", 2, "Bot", "Önce görülen yanıt."),
+                _conversation_row(3, "s1", 1, "Kullanıcı", "Sonra gelen soru."),
+            ]
+        )
+
+
+def test_contextual_sira_nan_ise_reddeder(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    row = _conversation_row(2, "s1", 1, "Kullanıcı", "Sınav ne zaman?")
+
+    with pytest.raises(ConversationOrderError):
+        processor.consume([replace(row, message_order="NaN")])
+
+
+def test_contextual_sistem_mesaji_baglama_girmez(settings: Settings) -> None:
+    processor = ContextualPreprocessor(settings, _conversation_config())
+    processor.consume(
+        [
+            _conversation_row(2, "s1", 1, "Bot", "[Sistem] oturum başladı"),
+            _conversation_row(3, "s1", 2, "Kullanıcı", "Sınav ne zaman?"),
+        ]
+    )
+    result = processor.finish()
+
+    assert result.context_only_count == 0
+    assert result.discarded_count == 1
+    assert result.groups[0].context_turns == ()
+
+
+def test_context_boyutu_prompt_token_tahminine_dahil_edilir() -> None:
+    flat = RecordGroup(record_id="flat", normalized="ne zaman", redacted_text="Ne zaman?")
+    contextual = RecordGroup(
+        record_id="ctx",
+        normalized="ne zaman",
+        redacted_text="Ne zaman?",
+        contextual=True,
+        context_turns=(
+            ContextTurn(
+                role="assistant",
+                redacted_text="Başvuru takvimi gelecek hafta ilan edilecek.",
+            ),
+        ),
+    )
+
+    assert record_tokens(contextual) > record_tokens(flat)
 
 
 # ------------------------------------------------------------ sınıflandırıcı

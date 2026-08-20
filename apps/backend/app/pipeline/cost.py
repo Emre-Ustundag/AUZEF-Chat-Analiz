@@ -29,6 +29,7 @@ from dataclasses import dataclass
 
 from app.core.config import Settings
 from app.pipeline.preprocess import RecordGroup
+from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import PromptBundle
 from app.schemas.analysis import PricingSnapshot
 from app.services.pricing import fallback_pricing_snapshot
@@ -238,7 +239,9 @@ def record_tokens(group: RecordGroup) -> int:
     `<kayit>` gövdesine onu koyuyor). `normalized` ölçmek, tahmini gerçekten
     ayırırdı.
     """
-    return int(len(group.redacted_text) / CHARS_PER_TOKEN) + OVERHEAD_TOKENS_PER_RECORD
+    # Renderer ile aynı gerçek payload ölçülür. Context ayrı hesaplanırsa XML
+    # yükü veya gelecekteki format değişikliği tavan tahmininden kaçabilirdi.
+    return int(len(render_record(group)) / CHARS_PER_TOKEN) + OVERHEAD_TOKENS_PER_RECORD
 
 
 def _template_tokens(text: str) -> int:

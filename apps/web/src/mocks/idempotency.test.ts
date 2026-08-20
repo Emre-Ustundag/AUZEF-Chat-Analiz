@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { analysisRequestSchema } from "@/lib/api/schemas";
 import type { AnalysisRequest } from "@/lib/api/schemas";
 
 import { analysisFingerprint, canonicalJson, uploadFingerprint } from "./idempotency";
@@ -24,7 +25,65 @@ describe("idempotency fingerprint'leri", () => {
     };
     const right = Object.fromEntries(Object.entries(left).reverse()) as typeof left;
 
-    expect(analysisFingerprint(left)).toBe(analysisFingerprint(right));
+    expect(analysisFingerprint(analysisRequestSchema.parse(left))).toBe(
+      analysisFingerprint(analysisRequestSchema.parse(right)),
+    );
+  });
+
+  it("message modu defaultlarını legacy fingerprint'ten çıkarır", () => {
+    const legacy: AnalysisRequest = {
+      upload_id: "00000000-0000-4000-8000-000000000000",
+      sheet_name: "Mesajlar",
+      text_column: "mesaj",
+      row_filters: [],
+      model: "anthropic/claude-sonnet-4.6",
+      prompt_version: "faq_analysis/v1",
+      top_n: 8,
+      max_cost_usd: 10,
+    };
+
+    expect(
+      analysisFingerprint(
+        analysisRequestSchema.parse({
+          ...legacy,
+          analysis_mode: "message",
+          conversation_config: null,
+        }),
+      ),
+    ).toBe(analysisFingerprint(analysisRequestSchema.parse(legacy)));
+  });
+
+  it("bağlamsal konuşma ayarlarını fingerprint'e dahil eder", () => {
+    const contextual = analysisRequestSchema.parse({
+      upload_id: "00000000-0000-4000-8000-000000000000",
+      sheet_name: "Mesajlar",
+      text_column: "message_text_clean",
+      row_filters: [],
+      analysis_mode: "contextual_user_turns",
+      conversation_config: {
+        session_id_column: "session_id",
+        message_order_column: "message_order",
+        role_column: "direction",
+        message_type_column: "message_type",
+        user_role_values: ["Kullanıcı"],
+        assistant_role_values: ["Bot"],
+        target_message_types: ["text", "quick_reply"],
+        context_message_types: ["text", "quick_reply", "single-choice"],
+        max_context_turns: 4,
+        max_context_tokens: 1000,
+      },
+      model: "anthropic/claude-sonnet-4.6",
+      prompt_version: "faq_analysis/v4",
+      top_n: 8,
+      max_cost_usd: 10,
+    });
+
+    expect(analysisFingerprint(contextual)).not.toBe(
+      analysisFingerprint({
+        ...contextual,
+        conversation_config: { ...contextual.conversation_config!, max_context_turns: 5 },
+      }),
+    );
   });
 
   it("upload fingerprint'inde byte, filename, MIME ve size metadata'sını kullanır", async () => {

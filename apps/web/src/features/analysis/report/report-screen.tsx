@@ -77,6 +77,11 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
             {src.filename} · {src.sheet_name} · {src.text_column} kolonu ·{" "}
             {formatDateTime(report.generated_at)}
           </p>
+          <p className="text-xs text-muted-foreground">
+            {src.analysis_mode === "contextual_user_turns"
+              ? "Session bağlamlı kullanıcı turn'leri; bot mesajları yalnız bağlamdır."
+              : "Her mesaj bağımsız analiz edildi."}
+          </p>
           {src.row_filters.length > 0 && (
             <p className="text-xs text-muted-foreground">
               Filtreler:{" "}
@@ -154,10 +159,18 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
             {
               label: "Analiz edilen",
               value: formatCount(pre.analyzed_count),
-              hint: `${formatCount(pre.discarded_count)} kayıt elendi`,
+              hint:
+                src.analysis_mode === "contextual_user_turns"
+                  ? `${formatCount(pre.context_only_count)} bağlam adayı · ${formatCount(
+                      pre.discarded_count,
+                    )} elendi`
+                  : `${formatCount(pre.discarded_count)} kayıt elendi`,
             },
             {
-              label: "Benzersiz mesaj",
+              label:
+                src.analysis_mode === "contextual_user_turns"
+                  ? "Benzersiz kullanıcı turn'ü"
+                  : "Benzersiz mesaj",
               value: formatCount(pre.unique_count),
               hint: `${formatCount(pre.duplicate_count)} tekrar birleştirildi`,
             },
@@ -219,6 +232,20 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
           <CardContent>
             <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <Meta label="Model" value={report.model} />
+              <Meta
+                label="Analiz biçimi"
+                value={
+                  src.analysis_mode === "contextual_user_turns"
+                    ? "Session bağlamlı kullanıcı turn'leri"
+                    : "Bağımsız mesajlar"
+                }
+              />
+              {src.conversation_config ? (
+                <Meta
+                  label="Session / rol kolonları"
+                  value={`${src.conversation_config.session_id_column} / ${src.conversation_config.role_column}`}
+                />
+              ) : null}
               <Meta label="Prompt sürümü" value={report.prompt_version} />
               <Meta label="Prompt özeti" value={report.prompt_hash} mono />
               <Meta

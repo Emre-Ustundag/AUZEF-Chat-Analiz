@@ -123,11 +123,11 @@ Browser
   → FastAPI dosyayı stream ederek object storage'a yazar
   → Celery validate/profile job
   → güvenli .xlsx kontrolü + sheet/kolon/veri profili
-  → kullanıcı sheet ve message_text kolonunu seçer
+  → kullanıcı sheet, metin ve isteğe bağlı session/rol/sıra kolonlarını seçer
   → POST /analyses + X-OpenRouter-Key
   → API anahtarı AES-GCM ile şifrelenip Redis'e kısa TTL ile yazılır
   → Celery analysis job
-  → preprocess + PII redaksiyonu + exact dedupe/frequency
+  → preprocess + PII redaksiyonu + bağlama duyarlı exact dedupe/frequency
   → token sınırına göre chunk
   → OpenRouter map çağrıları
   → kategori eşleme/reduce
@@ -142,6 +142,15 @@ Browser
 
 LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj kimliğini bir kanonik SSS ya da tema kimliğine eşler. Nihai adet ve oranları backend, mesajların gerçek frekanslarından deterministik olarak hesaplar. Böylece LLM'in sayı uydurması engellenir.
 
+Analiz iki geriye uyumlu mod taşır. `message` modunda seçilen metin kolonu
+önceki davranışla bağımsız mesajlar olarak işlenir. `contextual_user_turns`
+modunda sınıflandırılan ve sayılan birim yalnız kullanıcı turn'üdür; aynı
+session'daki en fazla 1–8 önceki kullanıcı/bot turn'ü (ayrıca 128–4000 token
+tavanıyla) yalnız bağlam olarak modele verilir. Bot mesajları kategori
+adetlerine, yüzdelere veya örneklere girmez. Context ve hedef PII'dan
+arındırılır; tekilleştirme anahtarı hedef ile sıralı/canonical rol etiketli
+bağlamdan türetilir, session kimliği LLM'e veya hash'e girmez.
+
 ## 5. İki aşamalı upload/analysis modeli
 
 ### Aşama A — Upload ve profil
@@ -153,7 +162,7 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 
 ### Aşama B — Analiz
 
-1. Seçilen kolon satır satır okunur.
+1. Seçilen kolon satır satır okunur; contextual modda session, sıra, rol ve mesaj türü kolonları da birlikte çıkarılır.
 2. Boş, sistem ve tekrar kayıtları işaretlenir.
 3. Telefon, e-posta, T.C./öğrenci no gibi PII LLM'den önce maskelenir.
 4. Normalize edilmiş metinler exact hash ile deduplicate edilir ve gerçek frekans korunur.
@@ -174,11 +183,11 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 ### Model listesi
 
 - `GET /api/v1/models` — izin verilen modeller, `default_model`, `default_prompt_version` (ADR-0002 #1)
-- Whitelist: `anthropic/claude-sonnet-4.6`, `openai/gpt-4.1-mini`, `google/gemini-2.5-flash`; varsayılan model `google/gemini-2.5-flash`, varsayılan prompt `faq_analysis/v1`; tüm whitelist üyeleri structured output destekler
+- Whitelist: `anthropic/claude-sonnet-4.6`, `openai/gpt-4.1-mini`, `google/gemini-2.5-flash`; varsayılan model `google/gemini-2.5-flash`, varsayılan prompt `faq_analysis/v3`; tüm whitelist üyeleri structured output destekler
 
 ### Analysis
 
-- `POST /api/v1/analyses` — `upload_id`, `sheet_name`, `text_column`, `model`, `prompt_version`, `top_n`, `max_cost_usd`
+- `POST /api/v1/analyses` — mevcut alanlara ek olarak geriye uyumlu `analysis_mode` ve contextual modda zorunlu `conversation_config`
 - Model yalnızca JSON Schema structured output desteği doğrulanmış backend whitelist'inden seçilebilir
 - OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır; reverse proxy ve uygulama loglarında bu header zorunlu olarak redakte edilir
 - `GET /api/v1/analyses/{analysis_id}` — durum, progress, aşama ve güvenli hata

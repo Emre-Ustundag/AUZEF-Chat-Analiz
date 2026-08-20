@@ -1314,6 +1314,8 @@
                         ]
                       }
                     ],
+                    "analysis_mode": "message",
+                    "conversation_config": null,
                     "model": "google/gemini-2.5-flash",
                     "prompt_version": "faq_analysis/v3",
                     "top_n": 8,
@@ -2145,10 +2147,13 @@
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
                         "row_filters": [],
+                        "analysis_mode": "message",
+                        "conversation_config": null,
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
                         "analyzed_count": 47106,
+                        "context_only_count": 0,
                         "discarded_count": 1107,
                         "duplicate_count": 15566,
                         "redacted_count": 2840,
@@ -2309,10 +2314,13 @@
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
                         "row_filters": [],
+                        "analysis_mode": "message",
+                        "conversation_config": null,
                         "total_rows": 250000
                       },
                       "preprocessing_summary": {
                         "analyzed_count": 248893,
+                        "context_only_count": 0,
                         "discarded_count": 1107,
                         "duplicate_count": 82246,
                         "redacted_count": 15008,
@@ -2710,10 +2718,13 @@
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
                         "row_filters": [],
+                        "analysis_mode": "message",
+                        "conversation_config": null,
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
                         "analyzed_count": 47106,
+                        "context_only_count": 0,
                         "discarded_count": 1107,
                         "duplicate_count": 15566,
                         "redacted_count": 2840,
@@ -3174,6 +3185,15 @@
         "title": "AnalysisJob",
         "description": "GET /api/v1/analyses/{analysis_id} — durum sorgulaması.\n\nADR-0001 §2: ilerleme her satırda değil, yalnızca aşama veya anlamlı yüzde\ndeğişiminde yazılır; `progress` düzenli artmayabilir."
       },
+      "AnalysisMode": {
+        "type": "string",
+        "enum": [
+          "message",
+          "contextual_user_turns"
+        ],
+        "title": "AnalysisMode",
+        "description": "Bir LLM kaydının hangi kaynak birimini temsil ettiği."
+      },
       "AnalysisReport": {
         "properties": {
           "schema_version": {
@@ -3316,6 +3336,20 @@
             "type": "array",
             "maxItems": 5,
             "title": "Row Filters"
+          },
+          "analysis_mode": {
+            "$ref": "#/components/schemas/AnalysisMode",
+            "default": "message"
+          },
+          "conversation_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConversationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "model": {
             "$ref": "#/components/schemas/ModelId"
@@ -3463,6 +3497,94 @@
           "sample_values"
         ],
         "title": "ColumnProfile"
+      },
+      "ConversationConfig": {
+        "properties": {
+          "session_id_column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Session Id Column"
+          },
+          "message_order_column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Message Order Column"
+          },
+          "role_column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Role Column"
+          },
+          "message_type_column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Message Type Column"
+          },
+          "user_role_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "User Role Values"
+          },
+          "assistant_role_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Assistant Role Values"
+          },
+          "target_message_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Target Message Types"
+          },
+          "context_message_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Context Message Types"
+          },
+          "max_context_turns": {
+            "type": "integer",
+            "maximum": 8.0,
+            "minimum": 1.0,
+            "title": "Max Context Turns",
+            "default": 4
+          },
+          "max_context_tokens": {
+            "type": "integer",
+            "maximum": 4000.0,
+            "minimum": 128.0,
+            "title": "Max Context Tokens",
+            "default": 1000
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session_id_column",
+          "message_order_column",
+          "role_column",
+          "message_type_column"
+        ],
+        "title": "ConversationConfig",
+        "description": "Session bağlamlı kullanıcı-turn analizi için kolon/değer eşlemesi.\n\nKullanıcı turn'ü sınıflandırılan ve sayılan birimdir. Aynı session'daki\nönceki kullanıcı/bot mesajları yalnızca bağlamdır; rapor adetlerine\ngirmez. Rol ve mesaj türü değerleri tam eşleşmeyle yorumlanır."
       },
       "ErrorCode": {
         "type": "string",
@@ -3664,6 +3786,12 @@
             "minimum": 0.0,
             "title": "Analyzed Count"
           },
+          "context_only_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Context Only Count",
+            "default": 0
+          },
           "discarded_count": {
             "type": "integer",
             "minimum": 0.0,
@@ -3688,6 +3816,7 @@
         "type": "object",
         "required": [
           "analyzed_count",
+          "context_only_count",
           "discarded_count",
           "duplicate_count",
           "redacted_count",
@@ -3821,7 +3950,8 @@
         "enum": [
           "faq_analysis/v1",
           "faq_analysis/v2",
-          "faq_analysis/v3"
+          "faq_analysis/v3",
+          "faq_analysis/v4"
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."
@@ -3951,6 +4081,20 @@
             "type": "array",
             "title": "Row Filters"
           },
+          "analysis_mode": {
+            "$ref": "#/components/schemas/AnalysisMode",
+            "default": "message"
+          },
+          "conversation_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConversationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "total_rows": {
             "type": "integer",
             "minimum": 0.0,
@@ -3963,6 +4107,8 @@
           "sheet_name",
           "text_column",
           "row_filters",
+          "analysis_mode",
+          "conversation_config",
           "total_rows"
         ],
         "title": "SourceSummary"

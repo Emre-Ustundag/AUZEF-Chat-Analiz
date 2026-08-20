@@ -140,7 +140,16 @@ def analysis_fingerprint(body: BaseModel) -> str:
     `mode="json"` zorunlu: UUID ve enum alanları tel üstündeki metin
     biçimleriyle hash'lenmeli, Python nesneleri olarak değil.
     """
-    return _sha256(canonical_json(body.model_dump(mode="json")))
+    payload = body.model_dump(mode="json")
+    # B4'te eklenen alanların varsayılanları eski request ile aynı semantiği
+    # taşır. Bunları legacy düz-mesaj fingerprint'ine katmak, deploy öncesi
+    # oluşturulmuş idempotency anahtarlarını gereksiz yere 409'a çevirirdi.
+    # Contextual mod ise gerçekten farklı bir analizdir ve tüm config hash'e
+    # girer.
+    if payload.get("analysis_mode") == "message" and payload.get("conversation_config") is None:
+        payload.pop("analysis_mode", None)
+        payload.pop("conversation_config", None)
+    return _sha256(canonical_json(payload))
 
 
 def upload_fingerprint(*, file_sha256: str, filename: str, mime_type: str, size: int) -> str:

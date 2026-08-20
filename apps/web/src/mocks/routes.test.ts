@@ -76,6 +76,20 @@ function analysisRequestFor(uploadId: string): AnalysisRequest {
   };
 }
 
+function contextualAnalysisRequestFor(uploadId: string): AnalysisRequest {
+  return {
+    ...analysisRequestFor(uploadId),
+    analysis_mode: "contextual_user_turns",
+    conversation_config: {
+      session_id_column: "kullanici_id",
+      message_order_column: "tarih",
+      role_column: "kanal",
+      message_type_column: "yanit",
+    },
+    prompt_version: "faq_analysis/v4",
+  };
+}
+
 function analysisRequest(
   body: unknown,
   options: { apiKey?: string; idempotencyKey?: string } = {},
@@ -226,6 +240,56 @@ describe("POST /analyses doğrulama parity'si", () => {
   });
 
   it.each([
+    "session_id_column",
+    "message_order_column",
+    "role_column",
+    "message_type_column",
+  ] as const)("profilde olmayan conversation_config.%s için özel 422 döner", async (field) => {
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    advance(5_000);
+    const base = contextualAnalysisRequestFor(upload.uploadId);
+    const body = {
+      ...base,
+      conversation_config: {
+        ...base.conversation_config!,
+        [field]: `olmayan_${field}`,
+      },
+    };
+    const response = await postAnalysis(analysisRequest(body, { apiKey: "sk-test" }));
+    const responseProblem = problemDetailsSchema.parse(await response.json());
+
+    expect(response.status).toBe(422);
+    expect(responseProblem.code).toBe("SHEET_OR_COLUMN_NOT_FOUND");
+    expect(responseProblem.errors).toContainEqual({
+      field: `conversation_config.${field}`,
+      message: "Bu kolon seçilen sayfada bulunmuyor.",
+    });
+  });
+
+  it("profil maliyet kapısını message modunda uygular, contextual modda worker'a bırakır", async () => {
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    advance(5_000);
+    const maxCost = 0.01;
+    const messageResponse = await postAnalysis(
+      analysisRequest(
+        { ...analysisRequestFor(upload.uploadId), max_cost_usd: maxCost },
+        { apiKey: "sk-test" },
+      ),
+    );
+    const contextualResponse = await postAnalysis(
+      analysisRequest(
+        { ...contextualAnalysisRequestFor(upload.uploadId), max_cost_usd: maxCost },
+        { apiKey: "sk-test" },
+      ),
+    );
+
+    expect(messageResponse.status).toBe(422);
+    expect(await problemCode(messageResponse)).toBe("COST_LIMIT_EXCEEDED");
+    expect(contextualResponse.status).toBe(202);
+    expect(analysisCreatedSchema.safeParse(await contextualResponse.json()).success).toBe(true);
+  });
+
+  it.each([
     ["model", "   "],
     ["prompt_version", "   "],
   ] as const)(
@@ -294,6 +358,75 @@ describe("mock idempotency", () => {
 
     expect(replay.status).toBe(202);
     expect(replayBody).toEqual(firstBody);
+    expect(replay.headers.get(TRACE_ID_HEADER)).toBe(firstTrace);
+  });
+
+  it("message modu açık defaultlarını legacy gövdeyle aynı retry sayar", async () => {
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    advance(5_000);
+    const body = analysisRequestFor(upload.uploadId);
+    const key = `analysis-message-defaults-${crypto.randomUUID()}`;
+
+    const first = await postAnalysis(
+      analysisRequest(body, { apiKey: "sk-test", idempotencyKey: key }),
+    );
+    const firstTrace = first.headers.get(TRACE_ID_HEADER);
+    const firstBody = analysisCreatedSchema.parse(await first.json());
+    const replay = await postAnalysis(
+      analysisRequest(
+        { ...body, analysis_mode: "message", conversation_config: null },
+        { apiKey: "sk-test", idempotencyKey: key },
+      ),
+    );
+
+    expect(replay.status).toBe(202);
+    expect(analysisCreatedSchema.parse(await replay.json())).toEqual(firstBody);
+    expect(replay.headers.get(TRACE_ID_HEADER)).toBe(firstTrace);
+  });
+
+  it("contextual config defaultlarını hash'ten önce uygular", async () => {
+    const upload = createUploadRecord("veri.xlsx", 1024);
+    advance(5_000);
+    const base = analysisRequestFor(upload.uploadId);
+    const minimalConfig = {
+      session_id_column: "kullanici_id",
+      message_order_column: "tarih",
+      role_column: "kanal",
+      message_type_column: "yanit",
+    };
+    const body = {
+      ...base,
+      analysis_mode: "contextual_user_turns",
+      conversation_config: minimalConfig,
+      prompt_version: "faq_analysis/v4",
+    };
+    const key = `analysis-context-defaults-${crypto.randomUUID()}`;
+
+    const first = await postAnalysis(
+      analysisRequest(body, { apiKey: "sk-test", idempotencyKey: key }),
+    );
+    const firstTrace = first.headers.get(TRACE_ID_HEADER);
+    const firstBody = analysisCreatedSchema.parse(await first.json());
+    const replay = await postAnalysis(
+      analysisRequest(
+        {
+          ...body,
+          conversation_config: {
+            ...minimalConfig,
+            user_role_values: ["Kullanıcı"],
+            assistant_role_values: ["Bot"],
+            target_message_types: ["text"],
+            context_message_types: ["text", "quick_reply", "single-choice"],
+            max_context_turns: 4,
+            max_context_tokens: 1000,
+          },
+        },
+        { apiKey: "sk-test", idempotencyKey: key },
+      ),
+    );
+
+    expect(replay.status).toBe(202);
+    expect(analysisCreatedSchema.parse(await replay.json())).toEqual(firstBody);
     expect(replay.headers.get(TRACE_ID_HEADER)).toBe(firstTrace);
   });
 

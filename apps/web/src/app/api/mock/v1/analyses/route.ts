@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
     return invalidPrompt();
   }
 
+  // Ham body değil parse edilmiş gövde hash'lenir: contextual config
+  // defaultları semantik olarak eşdeğer retry'larda aynı fingerprint'i verir.
   const fingerprint = idempotencyKey.key ? analysisFingerprint(parsed.data) : null;
   if (idempotencyKey.key && fingerprint) {
     const lookup = lookupIdempotency("POST", PUBLIC_PATH, idempotencyKey.key, fingerprint);
@@ -201,10 +203,44 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const conversationConfig = parsed.data.conversation_config;
+  if (conversationConfig) {
+    const mappingColumns = [
+      ["session_id_column", conversationConfig.session_id_column],
+      ["message_order_column", conversationConfig.message_order_column],
+      ["role_column", conversationConfig.role_column],
+      ["message_type_column", conversationConfig.message_type_column],
+    ] as const;
+    const missingMappingColumns = mappingColumns.filter(
+      ([, column]) => !availableColumns.has(column),
+    );
+
+    if (missingMappingColumns.length > 0) {
+      return problemResponse(
+        problem(
+          "SHEET_OR_COLUMN_NOT_FOUND",
+          422,
+          "Konuşma eşleme kolonu bulunamadı",
+          "Konuşma eşlemesinde seçilen kolon bu sayfada bulunmuyor.",
+          {
+            errors: missingMappingColumns.map(([field]) => ({
+              field: `conversation_config.${field}`,
+              message: "Bu kolon seçilen sayfada bulunmuyor.",
+            })),
+          },
+        ),
+      );
+    }
+  }
+
   // ADR-0002 #10: maliyet tavanı iki noktada kontrol edilir; bu, LLM çağrısı
   // hiç başlamadan submit anındaki senkron ön tahmin.
   const estimated = estimateCostUsd(model);
-  if (parsed.data.row_filters.length === 0 && estimated > max_cost_usd) {
+  if (
+    parsed.data.analysis_mode === "message" &&
+    parsed.data.row_filters.length === 0 &&
+    estimated > max_cost_usd
+  ) {
     return problemResponse(
       problem(
         "COST_LIMIT_EXCEEDED",

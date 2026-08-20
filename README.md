@@ -32,7 +32,7 @@ Binlerce chatbot mesajını manuel olarak incelemek hem zaman alır hem de tekra
 ## Hedeflenen MVP akışı
 
 1. Kullanıcı `.xlsx` formatındaki veri dosyasını yükler.
-2. Dosyadaki kolonlar algılanır ve analiz edilecek metin kolonu seçilir.
+2. Dosyadaki kolonlar algılanır; metin kolonu ve istenirse session/rol/sıra eşlemesi seçilir.
 3. OpenRouter API anahtarı güvenli biçimde backend'e iletilir; sürümlü sistem promptu backend tarafından yönetilir.
 4. Boş, geçersiz veya analiz dışı kayıtlar temizlenir.
 5. Büyük veri kümeleri modelin bağlam sınırlarına uygun parçalara ayrılır.
@@ -78,6 +78,15 @@ Dashboard üzerinde aşağıdaki bilgilerin sunulması planlanmaktadır:
 LLM doğrudan toplam sayı üretmez. Her temizlenmiş veya benzersiz mesaj kimliğini kanonik bir SSS ya da tema kimliğine eşler. Adet, oran ve kayıt istatistikleri gerçek mesaj frekanslarından backend tarafından deterministik olarak hesaplanır. Böylece modelin sayı uydurma riski azaltılır ve sonuçlar izlenebilir kalır.
 
 Analiz iki aşamalı bir map/reduce yaklaşımı izler:
+
+- Varsayılan `message` modu her mesajı bağımsız işler ve eski isteklerle
+  geriye uyumludur.
+- `contextual_user_turns` modu yalnız yapılandırılmış hedef kullanıcı
+  turn'lerini sayar; güvenli varsayılan yalnız `text` mesajlarıdır.
+  `quick_reply` mesajları varsayılan olarak aynı session'daki sınırlı önceki
+  kullanıcı/bot bağlamına girer ve kullanıcı isterse hedef türlere eklenebilir.
+  Böylece “ne zaman?” gibi takip mesajları konuşmadan kopmadan
+  sınıflandırılırken bot cevapları ve buton seçimleri FAQ frekansını şişirmez.
 
 1. Normalize edilen mesajlar exact hash ile tekilleştirilir; gerçek frekansları korunur.
 2. Benzersiz kayıtlar token bütçesine göre parçalara ayrılır.

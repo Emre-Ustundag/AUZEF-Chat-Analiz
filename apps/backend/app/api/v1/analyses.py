@@ -57,6 +57,7 @@ from app.schemas.analysis import (
     AnalysisCreate,
     AnalysisCreated,
     AnalysisJobRead,
+    AnalysisMode,
     AnalysisStatus,
     ExportFormat,
 )
@@ -112,6 +113,20 @@ def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Satır filtresinde seçilen kolon bu sayfada bulunamadı.",
         )
+
+    config = body.conversation_config
+    if config is not None:
+        mapping_columns = {
+            config.session_id_column,
+            config.message_order_column,
+            config.role_column,
+            config.message_type_column,
+        }
+        if not mapping_columns <= available_columns:
+            raise ApiError(
+                "SHEET_OR_COLUMN_NOT_FOUND",
+                "Konuşma eşlemesinde seçilen kolon bu sayfada bulunamadı.",
+            )
     return column
 
 
@@ -209,7 +224,12 @@ async def create_analysis(
         # azaltan özelliği kullanılamaz hale getirirdi. Bu durumda senkron
         # kapı atlanır; worker filtreyi uygulayıp dedupe ettikten sonra daha
         # kesin tahmini, İLK model çağrısından önce zaten zorlar.
-        if not body.row_filters:
+        # Bağlamsal modda profil, yalnızca hedef kullanıcı turn'lerinin kaç
+        # tane olduğunu veya her hedefe eklenecek bağlam uzunluğunu bilmez.
+        # Düz kolon istatistiğiyle burada fiyat biçmek sistematik olarak yanlış
+        # olur. Worker gerçek turn'leri kurup bağlama duyarlı tekilleştirdikten
+        # sonra kesin preflight'i ilk sağlayıcı çağrısından önce yine uygular.
+        if not body.row_filters and body.analysis_mode is AnalysisMode.MESSAGE:
             profile_forecast = estimate_profile_cost_range(
                 column.unique_count,
                 column.avg_length,
@@ -239,6 +259,12 @@ async def create_analysis(
             sheet_name=body.sheet_name,
             text_column=body.text_column,
             row_filters=[row_filter.model_dump(mode="json") for row_filter in body.row_filters],
+            analysis_mode=body.analysis_mode.value,
+            conversation_config=(
+                body.conversation_config.model_dump(mode="json")
+                if body.conversation_config is not None
+                else None
+            ),
             model=body.model,
             pricing_snapshot=pricing_snapshot.model_dump(mode="json"),
             prompt_version=body.prompt_version,

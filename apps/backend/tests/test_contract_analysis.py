@@ -18,14 +18,19 @@ from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
+from sqlalchemy import String
+from sqlalchemy.dialects.postgresql import JSONB
 
-from app.core.errors import build_problem
+from app.api.v1.analyses import _validate_selection
+from app.core.errors import ApiError, build_problem
+from app.models.analysis import Analysis
 from app.schemas.analysis import (
     STAGE_PROGRESS,
     TERMINAL_STATUSES,
     AnalysisCreate,
     AnalysisCreated,
     AnalysisJobRead,
+    AnalysisMode,
     AnalysisStatus,
 )
 from app.schemas.report import (
@@ -102,8 +107,93 @@ def _valid_request() -> dict[str, object]:
     }
 
 
+def _contextual_request() -> AnalysisCreate:
+    return AnalysisCreate.model_validate(
+        _valid_request()
+        | {
+            "analysis_mode": "contextual_user_turns",
+            "conversation_config": {
+                "session_id_column": "session_id",
+                "message_order_column": "message_order",
+                "role_column": "direction",
+                "message_type_column": "message_type",
+            },
+            "prompt_version": "faq_analysis/v4",
+        }
+    )
+
+
+def _conversation_profile(*, missing: str | None = None) -> dict[str, object]:
+    names = ["mesaj", "session_id", "message_order", "direction", "message_type"]
+    if missing is not None:
+        names.remove(missing)
+    columns = [
+        {
+            "name": name,
+            "index": index,
+            "non_empty_count": 1,
+            "empty_count": 0,
+            "unique_count": 1,
+            "avg_length": 8,
+            "is_likely_text": name == "mesaj",
+            "sample_values": [],
+        }
+        for index, name in enumerate(names)
+    ]
+    return {
+        "sheets": [
+            {
+                "name": "Mesajlar",
+                "row_count": 1,
+                "column_count": len(columns),
+                "columns": columns,
+            }
+        ],
+        "total_row_count": 1,
+        "exceeds_row_limit": False,
+    }
+
+
 def test_gecerli_istek_kabul_edilir() -> None:
-    assert AnalysisCreate.model_validate(_valid_request())
+    parsed = AnalysisCreate.model_validate(_valid_request())
+
+    assert parsed.analysis_mode is AnalysisMode.MESSAGE
+    assert parsed.conversation_config is None
+
+
+def test_v4_duz_mesaj_modunda_reddedilir() -> None:
+    with pytest.raises(ValidationError):
+        AnalysisCreate.model_validate(_valid_request() | {"prompt_version": "faq_analysis/v4"})
+
+
+def test_baglamsal_esleme_kolonlari_profilde_dogrulanir() -> None:
+    selected = _validate_selection(_conversation_profile(), _contextual_request())
+
+    assert selected.name == "mesaj"
+
+
+@pytest.mark.parametrize(
+    "missing",
+    ["session_id", "message_order", "direction", "message_type"],
+)
+def test_baglamsal_esleme_kolonu_eksikse_reddedilir(missing: str) -> None:
+    with pytest.raises(ApiError) as exc_info:
+        _validate_selection(_conversation_profile(missing=missing), _contextual_request())
+
+    assert exc_info.value.code == "SHEET_OR_COLUMN_NOT_FOUND"
+
+
+def test_analysis_modeli_baglamsal_ayarlari_saklayacak_kolonlari_tanimlar() -> None:
+    mode_column = Analysis.__table__.c.analysis_mode
+    config_column = Analysis.__table__.c.conversation_config
+
+    assert isinstance(mode_column.type, String)
+    assert mode_column.type.length == 64
+    assert mode_column.nullable is False
+    assert mode_column.server_default is not None
+    assert str(mode_column.server_default.arg) == "'message'"
+    assert isinstance(config_column.type, JSONB)
+    assert config_column.nullable is True
 
 
 def test_satir_filtreleri_normalize_edilir() -> None:
@@ -166,6 +256,8 @@ def test_istek_govdesinde_api_anahtari_alani_yok() -> None:
         "sheet_name",
         "text_column",
         "row_filters",
+        "analysis_mode",
+        "conversation_config",
         "model",
         "prompt_version",
         "top_n",
@@ -315,10 +407,13 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "sheet_name",
         "text_column",
         "row_filters",
+        "analysis_mode",
+        "conversation_config",
         "total_rows",
     }
     assert set(payload["preprocessing_summary"]) == {
         "analyzed_count",
+        "context_only_count",
         "discarded_count",
         "duplicate_count",
         "redacted_count",
