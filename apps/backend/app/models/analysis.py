@@ -66,6 +66,15 @@ class Analysis(Base):
     top_n: Mapped[int] = mapped_column(Integer, nullable=False)
     max_cost_usd: Mapped[float] = mapped_column(Float, nullable=False)
 
+    #: Veri kümesi ön ayarı (`DatasetType` değeri). Enum değil String: yeni
+    #: bir ön ayar eklemek migration gerektirmemeli — doğrulama şemada.
+    dataset_type: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="GENERIC", server_default="GENERIC"
+    )
+
+    #: Yalnızca `CHATBOT_LOG` işlerinde dolu. `ChatbotLogConfig` şemasına uyar.
+    chatbot_config: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
     #: Yalnızca status "completed" iken dolu. AnalysisReport şemasına uyar.
     report: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 

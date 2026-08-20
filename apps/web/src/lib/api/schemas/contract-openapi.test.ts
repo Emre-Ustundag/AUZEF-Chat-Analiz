@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   analysisReportSchema,
   analysisStatusSchema,
+  datasetTypeSchema,
   ERROR_MESSAGES_TR,
   errorCodeSchema,
   exportFormatSchema,
@@ -76,6 +77,7 @@ describe("enum parity — OpenAPI ↔ Zod", () => {
     ["ExportFormat", exportFormatSchema.options],
     ["ModelId", modelIdSchema.options],
     ["PromptVersion", promptVersionSchema.options],
+    ["DatasetType", datasetTypeSchema.options],
   ])("%s aynı üyelere sahip", (schemaName, zodOptions) => {
     const openapiEnum = openapi.components.schemas[schemaName]?.enum;
     expect(openapiEnum, `${schemaName} openapi.json'da bulunamadı`).toBeDefined();
@@ -211,10 +213,12 @@ describe("sözleşme detayları", () => {
         "analysis_id",
         "status",
         "generated_at",
+        "dataset_type",
         "source_summary",
         "preprocessing_summary",
         "top_questions",
         "themes",
+        "time_series",
         "executive_summary",
         "warnings",
         "model",

@@ -99,6 +99,24 @@ def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen kolon bu sayfada bulunamadı.",
         )
+
+    # CHATBOT_LOG kolon eşlemesi de profile karşı doğrulanır: hata ancak
+    # worker dosyayı açtığında çıksaydı kullanıcı dakikalar sonra "kolon yok"
+    # görürdü. Profil elimizde; şimdi bakmak bedava.
+    if body.chatbot_config is not None:
+        available = {c.name for c in sheet.columns}
+        selected = [
+            body.chatbot_config.role_column,
+            body.chatbot_config.session_id_column,
+            body.chatbot_config.timestamp_column,
+            body.chatbot_config.message_type_column,
+        ]
+        missing = [name for name in selected if name is not None and name not in available]
+        if missing:
+            raise ApiError(
+                "SHEET_OR_COLUMN_NOT_FOUND",
+                "Chatbot kolon eşlemesindeki kolonlar bu sayfada bulunamadı.",
+            )
     return column
 
 
@@ -199,6 +217,12 @@ async def create_analysis(
             prompt_version=body.prompt_version,
             top_n=body.top_n,
             max_cost_usd=body.max_cost_usd,
+            dataset_type=body.dataset_type.value,
+            chatbot_config=(
+                body.chatbot_config.model_dump(mode="json")
+                if body.chatbot_config is not None
+                else None
+            ),
         )
         session.add(analysis)
         await session.commit()

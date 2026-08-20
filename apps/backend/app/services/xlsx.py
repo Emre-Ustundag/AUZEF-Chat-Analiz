@@ -24,7 +24,7 @@ Tehdit modeli — buraya gelen dosya GÜVENİLMEYEN kullanıcı girdisidir:
 from __future__ import annotations
 
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -409,24 +409,28 @@ class SheetOrColumnNotFoundError(Exception):
         self.reason = reason
 
 
-def iter_column_values(
+def iter_row_values(
     path: Path,
     sheet_name: str,
-    text_column: str,
-) -> Iterator[str | None]:
-    """Seçilen sayfanın seçilen kolonundaki hücreleri SATIR SATIR üretir.
+    columns: Sequence[str],
+) -> Iterator[tuple[str | None, ...]]:
+    """Seçilen sayfanın seçilen KOLONLARINI satır satır, istenen sırada üretir.
 
     ADR §5 Aşama B madde 1. Faz 1'in profilleme kodu gibi
     `read_only=True, data_only=True` kullanır: 130 MB'lık bir dosyanın tamamı
-    belleğe ALINMAZ, üstelik burada tek bir kolon gerekiyor.
+    belleğe ALINMAZ; yalnızca istenen kolonlar üretilir.
 
-    Kolon, profil çıkarılırken kullanılan mantığın AYNISIYLA bulunur
+    Kolonlar, profil çıkarılırken kullanılan mantığın AYNISIYLA bulunur
     (`_column_name`): ilk satır başlıktır ve boş başlıklar `Kolon N` olur.
     İki yerde farklı isimlendirme kullanmak, kullanıcının arayüzde seçtiği
     kolon adının burada bulunamamasına yol açardı.
 
     Boş hücreler `None` olarak ÜRETİLİR, atlanmaz: `discarded_count` ve
     `total_rows` sayımlarının doğru olması için toplam satır sayısı gerekli.
+
+    Çok kolonlu biçim `CHATBOT_LOG` ön ayarı için eklendi: rol, oturum ve
+    zaman kolonları metin kolonuyla AYNI geçişte okunur; dosyayı kolon başına
+    yeniden taramak 130 MB'lık gerçek dökümde okuma süresini katlardı.
     """
     try:
         workbook = load_workbook(path, read_only=True, data_only=True, keep_links=False)
@@ -438,16 +442,15 @@ def iter_column_values(
             raise SheetOrColumnNotFoundError("sheet_not_found")
 
         worksheet = workbook[sheet_name]
-        column_index = -1
+        indexes: list[int] = []
 
         for row_number, row in enumerate(worksheet.iter_rows(values_only=True)):
             if row_number == 0:
-                for index, value in enumerate(row):
-                    if _column_name(value, index) == text_column:
-                        column_index = index
-                        break
-                if column_index < 0:
-                    raise SheetOrColumnNotFoundError("column_not_found")
+                names = [_column_name(value, index) for index, value in enumerate(row)]
+                try:
+                    indexes = [names.index(column) for column in columns]
+                except ValueError:
+                    raise SheetOrColumnNotFoundError("column_not_found") from None
                 continue
 
             # Profillemeyle aynı kural: tamamen boş satırlar Excel'in
@@ -457,19 +460,28 @@ def iter_column_values(
             ):
                 continue
 
-            if column_index >= len(row):
-                yield None
-                continue
-
-            cell = row[column_index]
-            if cell is None:
-                yield None
-            elif isinstance(cell, str):
-                yield cell
-            else:
-                yield str(cell)
+            yield tuple(_cell_text(row, index) for index in indexes)
     finally:
         workbook.close()
+
+
+def _cell_text(row: tuple[Any, ...], index: int) -> str | None:
+    if index >= len(row):
+        return None
+    cell = row[index]
+    if cell is None:
+        return None
+    return cell if isinstance(cell, str) else str(cell)
+
+
+def iter_column_values(
+    path: Path,
+    sheet_name: str,
+    text_column: str,
+) -> Iterator[str | None]:
+    """Tek kolonluk kısayol; `iter_row_values` üzerinden aynı kuralları uygular."""
+    for row in iter_row_values(path, sheet_name, [text_column]):
+        yield row[0]
 
 
 def validate_and_profile(path: Path, settings: Settings) -> dict[str, Any]:

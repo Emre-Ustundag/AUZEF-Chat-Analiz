@@ -39,17 +39,22 @@ from app.schemas.analysis import (
     AnalysisJob,
     AnalysisRequest,
     AnalysisStatus,
+    ChatbotLogConfig,
+    DatasetType,
 )
 from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
 from app.schemas.health import LivenessResponse, ReadinessCheckResponse, ReadinessResponse
 from app.schemas.report import (
     AnalysisReport,
+    AnalysisTimeSeries,
     AnalysisWarning,
     PreprocessingSummary,
     SourceSummary,
     Theme,
     TokenUsage,
     TopQuestion,
+    TrendPoint,
+    TrendSeries,
     percentage_half_up,
 )
 from app.schemas.upload import (
@@ -388,6 +393,170 @@ def row_limit_warning(sheet_rows: int) -> AnalysisWarning:
     )
 
 
+# ------------------------------------------------------- chatbot log raporu
+
+#: Chatbot senaryosunun sabitleri. Oranlar gerçek dökümden (plan B2): satırların
+#: yalnızca ~%13'ü gerçek kullanıcı metnidir, kalanı bot cevabı ve sistem olayı.
+CHATBOT_TOTAL_ROWS = 50_000
+CHATBOT_ANALYZED = 6_650
+CHATBOT_SESSIONS = 2_450
+CHATBOT_FILENAME = "auzef-chatbot-dokumu.csv"
+
+#: (id, soru, günlük adetler, count, session_count, confidence). Günlük toplam
+#: count'tan KÜÇÜK tutuldu: zaman damgası çözümlenemeyen kayıtlar seriye
+#: girmez ve sözleşme `<=` kuralını zorlar — fixture bu kuralı da göstersin.
+_CHATBOT_DAYS = ("2026-05-29", "2026-05-30", "2026-05-31")
+_CHATBOT_QUESTIONS: list[dict[str, Any]] = [
+    {
+        "id": "q1",
+        "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+        "daily": (310, 290, 240),
+        "count": 850,
+        "session_count": 620,
+        "confidence": 0.93,
+        "examples": ["sınav tarihleri belli mi", "final ne zaman"],
+        "theme": "t1",
+    },
+    {
+        "id": "q2",
+        "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+        "daily": (210, 180, 150),
+        "count": 545,
+        "session_count": 410,
+        "confidence": 0.9,
+        "examples": ["kayıt yenileme nereden yapılıyor"],
+        "theme": "t2",
+    },
+    {
+        "id": "q3",
+        "canonical_question": "Harç ödemesini nasıl yaparım?",
+        "daily": (120, 140, 90),
+        "count": 352,
+        "session_count": 260,
+        "confidence": 0.88,
+        "examples": ["harç yatırma", "ödeme ekranı açılmıyor"],
+        "theme": "t2",
+    },
+]
+
+_CHATBOT_THEMES: list[dict[str, Any]] = [
+    {"id": "t1", "name": "Sınav ve takvim", "question_ids": ["q1"], "session_count": 620},
+    {"id": "t2", "name": "Kayıt ve ödeme", "question_ids": ["q2", "q3"], "session_count": 655},
+]
+
+#: Zaman serisindeki "diğer" analiz edilmiş mesajlar (ilk üç soru dışındakiler).
+_CHATBOT_OTHER_DAILY = (1_500, 1_400, 1_300)
+
+
+def _points(counts: tuple[int, ...]) -> list[TrendPoint]:
+    return [
+        TrendPoint(date=date, count=count)
+        for date, count in zip(_CHATBOT_DAYS, counts, strict=True)
+    ]
+
+
+def build_chatbot_report() -> AnalysisReport:
+    """`CHATBOT_LOG` ön ayarının çalıştırılabilir spesifikasyonu.
+
+    Yeni opsiyonel alanların tamamı dolu: `dataset_type`, oturum sayıları ve
+    `time_series`. Sayısal değişmezler (`session_count <= count`, günlük
+    toplam `<= count`, tarihler artan sıralı) burada da şema doğrulamasından
+    geçer — fixture tanım gereği geçerli.
+    """
+    analyzed = CHATBOT_ANALYZED
+    discarded = CHATBOT_TOTAL_ROWS - analyzed
+    unique = 3_000
+
+    questions = [
+        TopQuestion(
+            id=q["id"],
+            canonical_question=q["canonical_question"],
+            count=q["count"],
+            percentage=percentage_half_up(q["count"], analyzed),
+            confidence=q["confidence"],
+            redacted_examples=q["examples"],
+            session_count=q["session_count"],
+        )
+        for q in _CHATBOT_QUESTIONS
+    ]
+
+    themes = []
+    for theme in _CHATBOT_THEMES:
+        ids = set(theme["question_ids"])
+        count = sum(q["count"] for q in _CHATBOT_QUESTIONS if q["id"] in ids)
+        themes.append(
+            Theme(
+                id=theme["id"],
+                name=theme["name"],
+                count=count,
+                percentage=percentage_half_up(count, analyzed),
+                related_question_ids=list(theme["question_ids"]),
+                session_count=theme["session_count"],
+            )
+        )
+
+    daily_totals = tuple(
+        sum(q["daily"][index] for q in _CHATBOT_QUESTIONS) + _CHATBOT_OTHER_DAILY[index]
+        for index in range(len(_CHATBOT_DAYS))
+    )
+    theme_daily = {
+        theme["id"]: tuple(
+            sum(q["daily"][index] for q in _CHATBOT_QUESTIONS if q["id"] in theme["question_ids"])
+            for index in range(len(_CHATBOT_DAYS))
+        )
+        for theme in _CHATBOT_THEMES
+    }
+
+    return AnalysisReport(
+        schema_version="1.0",
+        analysis_id=ANALYSIS_ID,
+        generated_at=GENERATED_AT,
+        dataset_type=DatasetType.CHATBOT_LOG,
+        source_summary=SourceSummary(
+            filename=CHATBOT_FILENAME,
+            sheet_name="CSV",
+            text_column="message_text_clean",
+            total_rows=CHATBOT_TOTAL_ROWS,
+        ),
+        preprocessing_summary=PreprocessingSummary(
+            analyzed_count=analyzed,
+            discarded_count=discarded,
+            duplicate_count=analyzed - unique,
+            redacted_count=214,
+            unique_count=unique,
+            session_count=CHATBOT_SESSIONS,
+        ),
+        top_questions=questions,
+        themes=themes,
+        time_series=AnalysisTimeSeries(
+            daily_totals=_points(daily_totals),
+            question_trends=[
+                TrendSeries(id=q["id"], daily=_points(q["daily"])) for q in _CHATBOT_QUESTIONS
+            ],
+            theme_trends=[
+                TrendSeries(id=theme["id"], daily=_points(theme_daily[theme["id"]]))
+                for theme in _CHATBOT_THEMES
+            ],
+        ),
+        executive_summary=(
+            "Chatbot dökümündeki 50.000 satırın 6.650'si gerçek kullanıcı "
+            "mesajı; bot cevapları ve sistem olayları analize alınmadı. En "
+            "yoğun başlık sınav takvimi, onu kayıt yenileme ve harç ödemesi "
+            "izliyor. Sorular üç günlük dönemde 2.450 farklı oturumdan geldi."
+        ),
+        warnings=[],
+        model=DEFAULT_MODEL,
+        prompt_version=DEFAULT_PROMPT_VERSION,
+        prompt_hash="sha256:2f8a1c9e4b7d",
+        token_usage=TokenUsage(
+            prompt_tokens=412_000,
+            completion_tokens=31_200,
+            total_tokens=412_000 + 31_200,
+        ),
+        estimated_cost_usd=estimate_cost_usd(DEFAULT_MODEL, 412_000, 31_200),
+    )
+
+
 # --------------------------------------------------------------------- API
 
 ANALYSIS_REQUEST = AnalysisRequest(
@@ -398,6 +567,26 @@ ANALYSIS_REQUEST = AnalysisRequest(
     prompt_version=DEFAULT_PROMPT_VERSION,
     top_n=8,
     max_cost_usd=10,
+)
+
+#: `CHATBOT_LOG` ön ayarlı istek — kolon adları gerçek dökümün başlıkları.
+ANALYSIS_REQUEST_CHATBOT = AnalysisRequest(
+    upload_id=UPLOAD_ID,
+    sheet_name="CSV",
+    text_column="message_text_clean",
+    model=DEFAULT_MODEL,
+    prompt_version=DEFAULT_PROMPT_VERSION,
+    top_n=3,
+    max_cost_usd=10,
+    dataset_type=DatasetType.CHATBOT_LOG,
+    chatbot_config=ChatbotLogConfig(
+        role_column="direction",
+        role_user_values=["Kullanıcı", "user"],
+        session_id_column="session_id",
+        timestamp_column="message_time_tr",
+        message_type_column="message_type",
+        allowed_message_types=["text"],
+    ),
 )
 
 
@@ -512,9 +701,17 @@ def build_cases() -> list[Case]:
             ),
         ),
         Case("models.list.200", "GET", "/api/v1/models", 200, "ModelList", MODEL_LIST),
-        # İSTEK yönü: frontend'in ürettiği tek gövde.
+        # İSTEK yönü: frontend'in ürettiği iki gövde (GENERIC ve CHATBOT_LOG).
         Case(
             "analyses.request", "POST", "/api/v1/analyses", 202, "AnalysisRequest", ANALYSIS_REQUEST
+        ),
+        Case(
+            "analyses.request.chatbot",
+            "POST",
+            "/api/v1/analyses",
+            202,
+            "AnalysisRequest",
+            ANALYSIS_REQUEST_CHATBOT,
         ),
         Case(
             "analyses.create.202",
@@ -593,6 +790,16 @@ def build_cases() -> list[Case]:
                 sheet_rows=SHEET_ROWS_OVER_LIMIT,
                 warnings=[row_limit_warning(SHEET_ROWS_OVER_LIMIT)],
             ),
+        ),
+        # CHATBOT_LOG ön ayarının çalıştırılabilir spesifikasyonu: oturum
+        # sayıları ve günlük zaman serisi dolu.
+        Case(
+            "analyses.result.200.chatbot",
+            "GET",
+            "/api/v1/analyses/{analysis_id}/result",
+            200,
+            "AnalysisReport",
+            build_chatbot_report(),
         ),
     ]
 
@@ -729,6 +936,50 @@ CONSTRAINT_CASES: list[dict[str, Any]] = [
         "field": "upload_id",
         "value": "not-a-uuid",
         "valid": False,
+    },
+    # Veri kümesi ön ayarı: enum iki dilde de aynı üyeleri tanımalı.
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request",
+        "field": "dataset_type",
+        "value": "GENERIC",
+        "valid": True,
+    },
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request",
+        "field": "dataset_type",
+        "value": "bilinmeyen",
+        "valid": False,
+    },
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request",
+        "field": "chatbot_config",
+        "value": None,
+        "valid": True,
+    },
+    # Kolon eşlemesi: boş rol kolonu ve boş izin listesi iki tarafta da düşer.
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request.chatbot",
+        "field": "chatbot_config",
+        "value": {"role_column": "", "role_user_values": ["user"]},
+        "valid": False,
+    },
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request.chatbot",
+        "field": "chatbot_config",
+        "value": {"role_column": "direction", "role_user_values": []},
+        "valid": False,
+    },
+    {
+        "model": "AnalysisRequest",
+        "base": "analyses.request.chatbot",
+        "field": "chatbot_config",
+        "value": {"role_column": "direction", "role_user_values": ["Kullanıcı"]},
+        "valid": True,
     },
     {
         "model": "AnalysisJob",

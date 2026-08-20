@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ApiError } from "@/lib/api/client";
 import { useCreateAnalysis } from "@/lib/api/hooks";
+import { DATASET_TYPE_LABELS_TR, datasetTypeSchema } from "@/lib/api/schemas";
 import type { ModelList, Upload } from "@/lib/api/schemas";
 import { formatCount } from "@/lib/format";
 
@@ -57,6 +58,14 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
       top_n: 20,
       max_cost_usd: 10,
       openrouter_api_key: "",
+      dataset_type: "GENERIC",
+      role_column: "",
+      // Gerçek dökümlerdeki yaygın değerler; kullanıcı düzenleyebilir.
+      role_user_values_raw: "Kullanıcı, user, kullanici",
+      session_id_column: "",
+      timestamp_column: "",
+      message_type_column: "",
+      allowed_message_types_raw: "text",
     },
   });
 
@@ -66,7 +75,24 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
   // tabanlı ve yalnızca ilgili alan değiştiğinde yeniden render ediyor.
   const selectedSheetName = useWatch({ control, name: "sheet_name" });
   const selectedColumn = useWatch({ control, name: "text_column" });
+  const datasetType = useWatch({ control, name: "dataset_type" });
+  const messageTypeColumn = useWatch({ control, name: "message_type_column" });
   const selectedSheet = sheets.find((sheet) => sheet.name === selectedSheetName) ?? firstSheet;
+
+  const columnNames = (selectedSheet?.columns ?? []).map((column) => column.name);
+  /** Radix Select boş string değeri kabul etmiyor; "kullanılmasın" için sentinel. */
+  const NONE = "__none__";
+  const optionalColumnItems = [
+    { label: "Kullanılmasın", value: NONE },
+    ...columnNames.map((name) => ({ label: name, value: name })),
+  ];
+
+  const resetChatbotColumns = () => {
+    setValue("role_column", "");
+    setValue("session_id_column", "");
+    setValue("timestamp_column", "");
+    setValue("message_type_column", "");
+  };
 
   const onSubmit = handleSubmit((values) => {
     createAnalysis.mutate(
@@ -101,6 +127,43 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="dataset_type">Veri kümesi türü</Label>
+            <Controller
+              control={control}
+              name="dataset_type"
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(next) => {
+                    const parsed = datasetTypeSchema.safeParse(next);
+                    if (parsed.success) field.onChange(parsed.data);
+                  }}
+                  items={datasetTypeSchema.options.map((value) => ({
+                    label: DATASET_TYPE_LABELS_TR[value],
+                    value,
+                  }))}
+                >
+                  <SelectTrigger id="dataset_type" className="w-full sm:w-80">
+                    <SelectValue placeholder="Veri türü seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {datasetTypeSchema.options.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {DATASET_TYPE_LABELS_TR[value]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <p className="text-xs text-muted-foreground">
+              Chatbot dökümü seçilirse bot cevapları ve sistem olayları gönderen kolonuna göre
+              otomatik elenir; oturum ve zaman kolonları rapora oturum sayıları ve günlük trend
+              ekler.
+            </p>
+          </div>
+
           {sheets.length > 1 && (
             <div className="space-y-2">
               <Label htmlFor="sheet">Sayfa</Label>
@@ -121,6 +184,8 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                         sheet?.columns.find((c) => c.is_likely_text)?.name ?? "",
                         { shouldValidate: true },
                       );
+                      // Chatbot kolon eşlemesi de sayfaya özgüdür.
+                      resetChatbotColumns();
                     }}
                     items={sheets.map((sheet) => ({
                       label: sheet.name,
@@ -154,6 +219,175 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
               <p className="text-sm text-destructive">{errors.text_column.message}</p>
             )}
           </div>
+
+          {datasetType === "CHATBOT_LOG" && (
+            <>
+              <Separator />
+              <div className="space-y-6">
+                <p className="text-sm font-medium">Chatbot kolon eşlemesi</p>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="role_column">Gönderen / rol kolonu</Label>
+                    <Controller
+                      control={control}
+                      name="role_column"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value || undefined}
+                          onValueChange={(next) => {
+                            if (typeof next === "string") field.onChange(next);
+                          }}
+                          items={columnNames.map((name) => ({ label: name, value: name }))}
+                        >
+                          <SelectTrigger id="role_column" className="w-full">
+                            <SelectValue placeholder="Kolon seçin (örn. direction)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {columnNames.map((name) => (
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.role_column && (
+                      <p className="text-sm text-destructive">{errors.role_column.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role_user_values_raw">Kullanıcı değerleri</Label>
+                    <Input
+                      id="role_user_values_raw"
+                      placeholder="Kullanıcı, user"
+                      {...register("role_user_values_raw")}
+                    />
+                    {errors.role_user_values_raw ? (
+                      <p className="text-sm text-destructive">
+                        {errors.role_user_values_raw.message}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Rol kolonunda kullanıcı mesajı sayılacak değerler; virgülle ayırın. Diğer
+                        tüm satırlar (bot, sistem) analize alınmaz.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="session_id_column">Oturum kolonu (opsiyonel)</Label>
+                    <Controller
+                      control={control}
+                      name="session_id_column"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value || NONE}
+                          onValueChange={(next) => {
+                            if (typeof next === "string") field.onChange(next === NONE ? "" : next);
+                          }}
+                          items={optionalColumnItems}
+                        >
+                          <SelectTrigger id="session_id_column" className="w-full">
+                            <SelectValue placeholder="Kullanılmasın" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {optionalColumnItems.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Seçilirse rapor, her soru ve temadan etkilenen benzersiz oturum sayısını
+                      içerir.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="timestamp_column">Zaman kolonu (opsiyonel)</Label>
+                    <Controller
+                      control={control}
+                      name="timestamp_column"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value || NONE}
+                          onValueChange={(next) => {
+                            if (typeof next === "string") field.onChange(next === NONE ? "" : next);
+                          }}
+                          items={optionalColumnItems}
+                        >
+                          <SelectTrigger id="timestamp_column" className="w-full">
+                            <SelectValue placeholder="Kullanılmasın" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {optionalColumnItems.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Seçilirse rapor, soru ve temalar için günlük (YYYY-AA-GG) trend serileri
+                      içerir.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message_type_column">Mesaj tipi kolonu (opsiyonel)</Label>
+                    <Controller
+                      control={control}
+                      name="message_type_column"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value || NONE}
+                          onValueChange={(next) => {
+                            if (typeof next === "string") field.onChange(next === NONE ? "" : next);
+                          }}
+                          items={optionalColumnItems}
+                        >
+                          <SelectTrigger id="message_type_column" className="w-full">
+                            <SelectValue placeholder="Kullanılmasın" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {optionalColumnItems.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  {messageTypeColumn && (
+                    <div className="space-y-2">
+                      <Label htmlFor="allowed_message_types_raw">İzin verilen mesaj tipleri</Label>
+                      <Input
+                        id="allowed_message_types_raw"
+                        placeholder="text"
+                        {...register("allowed_message_types_raw")}
+                      />
+                      {errors.allowed_message_types_raw && (
+                        <p className="text-sm text-destructive">
+                          {errors.allowed_message_types_raw.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

@@ -11,10 +11,12 @@
         "model": "anthropic/claude-sonnet-4.6",
         "prompt_version": "faq_analysis/v1",
         "top_n": 20,
-        "max_cost_usd": 5.0
+        "max_cost_usd": 5.0,
+        "dataset_type": "GENERIC",
+        "chatbot_config": null
       },
-      "canonical_json": "{\"max_cost_usd\":5,\"model\":\"anthropic/claude-sonnet-4.6\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Mesajlar\",\"text_column\":\"mesaj\",\"top_n\":20,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
-      "fingerprint": "8edfb3a323d93696f17b9744bcd38d935a4c0a065c868513b1e61ad7fa26a7ae"
+      "canonical_json": "{\"chatbot_config\":null,\"dataset_type\":\"GENERIC\",\"max_cost_usd\":5,\"model\":\"anthropic/claude-sonnet-4.6\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Mesajlar\",\"text_column\":\"mesaj\",\"top_n\":20,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
+      "fingerprint": "69904eacb5f9f7474572b99bc45999341f489e8f606708a263e2fca97cbca791"
     },
     {
       "id": "analyses.fingerprint.1",
@@ -26,10 +28,41 @@
         "model": "google/gemini-2.5-flash",
         "prompt_version": "faq_analysis/v1",
         "top_n": 1,
-        "max_cost_usd": 2.5
+        "max_cost_usd": 2.5,
+        "dataset_type": "GENERIC",
+        "chatbot_config": null
       },
-      "canonical_json": "{\"max_cost_usd\":2.5,\"model\":\"google/gemini-2.5-flash\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Sayfa 1\",\"text_column\":\"soru metni\",\"top_n\":1,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
-      "fingerprint": "03038bf27d6d519f5fc79033b15d94f0e4bf5ba457ddefc19fbdde81da970f75"
+      "canonical_json": "{\"chatbot_config\":null,\"dataset_type\":\"GENERIC\",\"max_cost_usd\":2.5,\"model\":\"google/gemini-2.5-flash\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"Sayfa 1\",\"text_column\":\"soru metni\",\"top_n\":1,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
+      "fingerprint": "96ee6578868f7530ad79f04f2381679c1ba50bde838d9b238bfd46929f30e8ff"
+    },
+    {
+      "id": "analyses.fingerprint.2",
+      "kind": "analysis",
+      "input": {
+        "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
+        "sheet_name": "CSV",
+        "text_column": "message_text_clean",
+        "model": "google/gemini-2.5-flash",
+        "prompt_version": "faq_analysis/v1",
+        "top_n": 3,
+        "max_cost_usd": 5.0,
+        "dataset_type": "CHATBOT_LOG",
+        "chatbot_config": {
+          "role_column": "direction",
+          "role_user_values": [
+            "Kullanıcı",
+            "user"
+          ],
+          "session_id_column": "session_id",
+          "timestamp_column": "message_time_tr",
+          "message_type_column": "message_type",
+          "allowed_message_types": [
+            "text"
+          ]
+        }
+      },
+      "canonical_json": "{\"chatbot_config\":{\"allowed_message_types\":[\"text\"],\"message_type_column\":\"message_type\",\"role_column\":\"direction\",\"role_user_values\":[\"Kullanıcı\",\"user\"],\"session_id_column\":\"session_id\",\"timestamp_column\":\"message_time_tr\"},\"dataset_type\":\"CHATBOT_LOG\",\"max_cost_usd\":5,\"model\":\"google/gemini-2.5-flash\",\"prompt_version\":\"faq_analysis/v1\",\"sheet_name\":\"CSV\",\"text_column\":\"message_text_clean\",\"top_n\":3,\"upload_id\":\"8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c\"}",
+      "fingerprint": "97c82c69c457735ef3801fd9d61b274e9ff675b85d6a473517fed44344d2e1df"
     },
     {
       "id": "uploads.fingerprint.0",

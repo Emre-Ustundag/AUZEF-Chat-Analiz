@@ -13,6 +13,7 @@ from app.schemas.analysis import (
     AnalysisJob,
     AnalysisRequest,
     AnalysisStatus,
+    DatasetType,
     ExportFormat,
     ModelId,
     ModelList,
@@ -77,6 +78,7 @@ def test_documents_exactly_the_expected_endpoints(openapi: Any) -> None:
         ("ExportFormat", {f.value for f in ExportFormat}),
         ("ModelId", {model.value for model in ModelId}),
         ("PromptVersion", {prompt.value for prompt in PromptVersion}),
+        ("DatasetType", {preset.value for preset in DatasetType}),
     ],
 )
 def test_enum_members(openapi: Any, schema_name: str, members: set[str]) -> None:

@@ -55,12 +55,59 @@ class ExportFormat(StrEnum):
     JSON = "json"
 
 
+class DatasetType(StrEnum):
+    """Veri kümesi ön ayarı.
+
+    `GENERIC` düz metin kolonlu dosyalar içindir ve mevcut davranışı korur.
+    `CHATBOT_LOG` gerçek chatbot dökümleri içindir: satırlar gönderen/rol
+    kolonuna göre ön filtrelenir (bot cevapları ve sistem olayları analize
+    girmez), oturum ve zaman kolonları rapora session/time-series metrikleri
+    ekler.
+    """
+
+    GENERIC = "GENERIC"
+    CHATBOT_LOG = "CHATBOT_LOG"
+
+
+class ChatbotLogConfig(ApiRequestModel):
+    """`CHATBOT_LOG` ön ayarının kolon eşlemesi.
+
+    Metin kolonu burada DEĞİL: `AnalysisRequest.text_column` iki ön ayarda da
+    aynı anlamı taşıyor, ikinci bir kopya sessizce ayrışabilirdi.
+    """
+
+    #: Gönderen/rol kolonu (örn. `direction`). Filtrelemenin temeli.
+    role_column: str = Field(min_length=1)
+    #: Kullanıcı satırı sayılan değerler (örn. `["Kullanıcı", "user"]`).
+    #: Karşılaştırma boşluk kırpılıp küçük/büyük harf duyarsız yapılır.
+    role_user_values: list[str] = Field(min_length=1, max_length=20)
+    #: Oturum kimliği kolonu; verilirse rapora oturum sayıları eklenir.
+    session_id_column: str | None = Field(default=None, min_length=1)
+    #: Mesaj zamanı kolonu; verilirse rapora günlük zaman serisi eklenir.
+    timestamp_column: str | None = Field(default=None, min_length=1)
+    #: Mesaj tipi kolonu (örn. `message_type`); `allowed_message_types` ile
+    #: birlikte verilir.
+    message_type_column: str | None = Field(default=None, min_length=1)
+    #: İzin verilen mesaj tipleri (örn. `["text"]`).
+    allowed_message_types: list[str] | None = Field(default=None, min_length=1, max_length=20)
+
+    @model_validator(mode="after")
+    def _message_type_fields_pair(self) -> Self:
+        if (self.message_type_column is None) is not (self.allowed_message_types is None):
+            raise ValueError("message_type_column ve allowed_message_types birlikte verilmelidir.")
+        for values in (self.role_user_values, self.allowed_message_types or []):
+            if any(not value.strip() for value in values):
+                raise ValueError("Filtre değerleri boş olamaz.")
+        return self
+
+
 class ModelId(StrEnum):
     """BE-01'de dondurulmuş, structured-output destekli model whitelist'i."""
 
     CLAUDE_SONNET_4_6 = "anthropic/claude-sonnet-4.6"
     GPT_4_1_MINI = "openai/gpt-4.1-mini"
     GEMINI_2_5_FLASH = "google/gemini-2.5-flash"
+    GLM_5_2_FREE = "z-ai/glm-5.2:free"
 
 
 class PromptVersion(StrEnum):
@@ -86,6 +133,18 @@ class AnalysisRequest(ApiRequestModel):
     top_n: int = Field(ge=1, le=100)
     #: gt, ge değil: Zod tarafı `.positive()`.
     max_cost_usd: float = Field(gt=0, le=100)
+    #: Opsiyonel ön ayar; verilmezse davranış eskisiyle birebir aynı.
+    dataset_type: DatasetType = DatasetType.GENERIC
+    #: Yalnızca `CHATBOT_LOG` ile birlikte anlamlı ve o zaman zorunlu.
+    chatbot_config: ChatbotLogConfig | None = None
+
+    @model_validator(mode="after")
+    def _preset_requires_config(self) -> Self:
+        if self.dataset_type is DatasetType.CHATBOT_LOG and self.chatbot_config is None:
+            raise ValueError("CHATBOT_LOG ön ayarı chatbot_config gerektirir.")
+        if self.dataset_type is DatasetType.GENERIC and self.chatbot_config is not None:
+            raise ValueError("chatbot_config yalnızca CHATBOT_LOG ön ayarında verilebilir.")
+        return self
 
 
 class AnalysisCreated(ApiModel):

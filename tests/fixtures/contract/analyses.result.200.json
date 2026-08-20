@@ -3,6 +3,7 @@
   "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
   "status": "completed",
   "generated_at": "2026-08-11T10:12:15.000Z",
+  "dataset_type": "GENERIC",
   "source_summary": {
     "filename": "auzef-chatbot-mesajlari.xlsx",
     "sheet_name": "Mesajlar",
@@ -14,7 +15,8 @@
     "discarded_count": 1107,
     "duplicate_count": 15566,
     "redacted_count": 2840,
-    "unique_count": 31540
+    "unique_count": 31540,
+    "session_count": null
   },
   "top_questions": [
     {
@@ -26,7 +28,8 @@
       "redacted_examples": [
         "sınav tarihleri belli mi",
         "vize ne zaman"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q2",
@@ -37,7 +40,8 @@
       "redacted_examples": [
         "ders kitabı nerede",
         "pdf'leri bulamıyorum"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q3",
@@ -48,7 +52,8 @@
       "redacted_examples": [
         "harç yatırma",
         "ödeme yapamıyorum"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q4",
@@ -58,7 +63,8 @@
       "confidence": 0.87,
       "redacted_examples": [
         "kayıt yenilemedim ne olur"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q5",
@@ -69,7 +75,8 @@
       "redacted_examples": [
         "sınav yeri",
         "hangi binada"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q6",
@@ -79,7 +86,8 @@
       "confidence": 0.82,
       "redacted_examples": [
         "mazeret sınavı başvuru"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q7",
@@ -89,7 +97,8 @@
       "confidence": 0.78,
       "redacted_examples": [
         "notuma itiraz etmek istiyorum"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "q8",
@@ -99,7 +108,8 @@
       "confidence": 0.76,
       "redacted_examples": [
         "öğrenci belgesi lazım"
-      ]
+      ],
+      "session_count": null
     }
   ],
   "themes": [
@@ -112,7 +122,8 @@
         "q1",
         "q5",
         "q6"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "t2",
@@ -121,7 +132,8 @@
       "percentage": 17.2,
       "related_question_ids": [
         "q2"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "t3",
@@ -131,7 +143,8 @@
       "related_question_ids": [
         "q3",
         "q4"
-      ]
+      ],
+      "session_count": null
     },
     {
       "id": "t4",
@@ -141,9 +154,11 @@
       "related_question_ids": [
         "q7",
         "q8"
-      ]
+      ],
+      "session_count": null
     }
   ],
+  "time_series": null,
   "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
   "warnings": [],
   "model": "google/gemini-2.5-flash",

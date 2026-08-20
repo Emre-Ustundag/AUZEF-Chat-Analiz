@@ -13,11 +13,14 @@ from uuid import UUID
 from pydantic import Field, field_validator, model_validator
 
 from app.core.config import MAX_ROWS
-from app.schemas.analysis import PromptVersion
+from app.schemas.analysis import DatasetType, PromptVersion
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
 REPORT_SCHEMA_VERSION: Literal["1.0"] = "1.0"
+
+#: Zaman serisi tarihleri her zaman UTC gün hassasiyetindedir.
+TREND_DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
 
 
 def percentage_half_up(count: int, total: int) -> float:
@@ -49,6 +52,9 @@ class PreprocessingSummary(ApiModel):
     redacted_count: int = Field(ge=0)
     #: Tekilleştirme sonrası LLM'e giden benzersiz kayıt sayısı.
     unique_count: int = Field(ge=0)
+    #: Analize giren kayıtlardaki benzersiz oturum sayısı. Yalnızca
+    #: `CHATBOT_LOG` ön ayarında ve oturum kolonu seçiliyken dolu.
+    session_count: int | None = Field(default=None, ge=0)
 
 
 class TopQuestion(ApiModel):
@@ -61,6 +67,8 @@ class TopQuestion(ApiModel):
     confidence: float = Field(ge=0, le=1)
     #: PII redakte edilmiş, kırpılmış gerçek kullanıcı mesajları.
     redacted_examples: list[str] = Field(default_factory=list)
+    #: Bu soruyu soran benzersiz oturum sayısı (`CHATBOT_LOG` + oturum kolonu).
+    session_count: int | None = Field(default=None, ge=0)
 
 
 class Theme(ApiModel):
@@ -78,6 +86,39 @@ class Theme(ApiModel):
     `percentage` ise temanın gerçek büyüklüğünü yansıtmaya devam eder, yani
     bir temanın adedi listelenen sorularının toplamından büyük olabilir.
     """
+
+    #: Bu temaya düşen benzersiz oturum sayısı (`CHATBOT_LOG` + oturum kolonu).
+    session_count: int | None = Field(default=None, ge=0)
+
+
+class TrendPoint(ApiModel):
+    """Tek bir günün adedi. Adet, gerçek frekans toplamıdır (ADR §4)."""
+
+    date: str = Field(pattern=TREND_DATE_PATTERN)
+    count: int = Field(ge=0)
+
+
+class TrendSeries(ApiModel):
+    """Bir soru veya temanın günlük kırılımı; `id` ilgili listeye bağlanır."""
+
+    id: str = Field(min_length=1)
+    daily: list[TrendPoint]
+
+
+class AnalysisTimeSeries(ApiModel):
+    """Günlük zaman serisi (`CHATBOT_LOG` + zaman kolonu seçiliyken).
+
+    Tarihler her seride artan sıralı ve benzersizdir. Zaman damgası
+    çözümlenemeyen kayıtlar seriye girmez; bu yüzden serilerin toplamı ilgili
+    `count` değerinden KÜÇÜK olabilir, asla büyük olamaz.
+    """
+
+    #: Analize giren tüm mesajların günlük toplamı.
+    daily_totals: list[TrendPoint]
+    #: Yalnızca raporda yer alan (`top_questions`) soruların kırılımı.
+    question_trends: list[TrendSeries]
+    #: Tüm temaların kırılımı.
+    theme_trends: list[TrendSeries]
 
 
 class TokenUsage(ApiModel):
@@ -128,11 +169,18 @@ class AnalysisReport(ApiModel):
     status: Literal["completed"] = "completed"
     generated_at: UtcDateTime
 
+    #: Analizin çalıştığı veri kümesi ön ayarı. Opsiyonel alan olarak eklendi
+    #: (ADR-0002 #12): eski raporlar varsayılan `GENERIC` ile okunur.
+    dataset_type: DatasetType = DatasetType.GENERIC
+
     source_summary: SourceSummary
     preprocessing_summary: PreprocessingSummary
 
     top_questions: list[TopQuestion]
     themes: list[Theme]
+
+    #: Günlük zaman serisi; yalnızca `CHATBOT_LOG` + zaman kolonu seçiliyken.
+    time_series: AnalysisTimeSeries | None = None
 
     executive_summary: str
     warnings: list[AnalysisWarning] = Field(default_factory=list)
@@ -210,4 +258,54 @@ class AnalysisReport(ApiModel):
         )
         if truncated is not has_warning:
             raise ValueError("ROW_LIMIT_TRUNCATED uyarısı satır sınırıyla uyumlu olmalı.")
+
+        self._session_invariants()
+        self._time_series_invariants(set(question_ids), set(theme_ids))
         return self
+
+    def _session_invariants(self) -> None:
+        """Oturum sayıları frekanslardan türetilir ve onları aşamaz."""
+        total_sessions = self.preprocessing_summary.session_count
+        items: list[TopQuestion | Theme] = [*self.top_questions, *self.themes]
+        for item in items:
+            if item.session_count is None:
+                continue
+            if total_sessions is None:
+                raise ValueError(
+                    "session_count yalnızca preprocessing_summary.session_count doluyken "
+                    "verilebilir."
+                )
+            # Her mesaj tek bir oturuma aittir: oturum sayısı mesaj sayısını
+            # ve korpustaki toplam oturum sayısını aşamaz.
+            if item.session_count > item.count or item.session_count > total_sessions:
+                raise ValueError("session_count, count ve toplam oturum sayısını aşamaz.")
+
+    def _time_series_invariants(self, question_ids: set[str], theme_ids: set[str]) -> None:
+        if self.time_series is None:
+            return
+        if self.dataset_type is DatasetType.GENERIC:
+            raise ValueError("time_series yalnızca CHATBOT_LOG raporlarında bulunabilir.")
+
+        def check_dates(points: list[TrendPoint], label: str) -> int:
+            dates = [point.date for point in points]
+            if dates != sorted(set(dates)):
+                raise ValueError(f"{label}: tarihler artan sıralı ve benzersiz olmalı.")
+            return sum(point.count for point in points)
+
+        analyzed = self.preprocessing_summary.analyzed_count
+        if check_dates(self.time_series.daily_totals, "daily_totals") > analyzed:
+            raise ValueError("daily_totals toplamı analyzed_count'u aşamaz.")
+
+        question_counts = {question.id: question.count for question in self.top_questions}
+        theme_counts = {theme.id: theme.count for theme in self.themes}
+        for series_list, counts, known_ids, label in (
+            (self.time_series.question_trends, question_counts, question_ids, "question_trends"),
+            (self.time_series.theme_trends, theme_counts, theme_ids, "theme_trends"),
+        ):
+            seen: set[str] = set()
+            for series in series_list:
+                if series.id not in known_ids or series.id in seen:
+                    raise ValueError(f"{label}: id raporda bulunmalı ve tekrarlanamaz.")
+                seen.add(series.id)
+                if check_dates(series.daily, f"{label}[{series.id}]") > counts[series.id]:
+                    raise ValueError(f"{label}: günlük toplam ilgili count değerini aşamaz.")

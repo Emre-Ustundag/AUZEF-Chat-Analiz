@@ -20,6 +20,7 @@ from __future__ import annotations
 import asyncio
 import tempfile
 import uuid
+from collections.abc import Iterator
 from itertools import islice
 from pathlib import Path
 from typing import Any, cast
@@ -45,9 +46,20 @@ from app.pipeline.llm_classifier import (
     OpenRouterClassifier,
     ProgressCallback,
 )
-from app.pipeline.preprocess import Preprocessor, PreprocessResult
+from app.pipeline.preprocess import (
+    Preprocessor,
+    PreprocessResult,
+    SourceRecord,
+    chatbot_records,
+)
 from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
-from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
+from app.schemas.analysis import (
+    STAGE_PROGRESS,
+    TERMINAL_STATUSES,
+    AnalysisStatus,
+    ChatbotLogConfig,
+    DatasetType,
+)
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
 from app.services import csv_file, retention, secret_store, storage
@@ -56,7 +68,7 @@ from app.services.openrouter import OpenRouterClient, OpenRouterError
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
-    iter_column_values,
+    iter_row_values,
     validate_and_profile,
     validate_xlsx,
 )
@@ -425,12 +437,45 @@ async def _fail(
     return AnalysisStatus.FAILED.value
 
 
+def _source_records(
+    local_path: Path,
+    filename: str,
+    sheet_name: str,
+    text_column: str,
+    chatbot_config: ChatbotLogConfig | None,
+) -> Iterator[SourceRecord]:
+    """Dosyadan ön işleme kayıtları üretir; biçim ve ön ayar burada birleşir.
+
+    `CHATBOT_LOG` kolonları metin kolonuyla AYNI geçişte okunur
+    (`iter_row_values`); satır sırası `chatbot_records`'un sözleşmesidir:
+    `(text, role, [message_type], [session_id], [timestamp])`.
+    """
+    iter_rows = csv_file.iter_row_values if _is_csv(filename) else iter_row_values
+
+    if chatbot_config is None:
+        for row in iter_rows(local_path, sheet_name, [text_column]):
+            yield SourceRecord(text=row[0])
+        return
+
+    columns = [text_column, chatbot_config.role_column]
+    if chatbot_config.message_type_column is not None:
+        columns.append(chatbot_config.message_type_column)
+    if chatbot_config.session_id_column is not None:
+        columns.append(chatbot_config.session_id_column)
+    if chatbot_config.timestamp_column is not None:
+        columns.append(chatbot_config.timestamp_column)
+
+    yield from chatbot_records(iter_rows(local_path, sheet_name, columns), chatbot_config)
+
+
 async def _preprocess_in_batches(
     *,
     analysis_id: uuid.UUID,
     local_path: Path,
+    filename: str,
     sheet_name: str,
     text_column: str,
+    chatbot_config: ChatbotLogConfig | None,
     expected_rows: int,
     settings: Settings,
 ) -> PreprocessResult:
@@ -448,8 +493,12 @@ async def _preprocess_in_batches(
     openpyxl senkron ve CPU yoğun olduğu için hem okuma hem işleme thread'e
     taşınıyor; aksi hâlde event loop dakikalarca bloklanırdı.
     """
-    preprocessor = Preprocessor(settings)
-    values = iter_column_values(local_path, sheet_name, text_column)
+    preprocessor = Preprocessor(
+        settings,
+        track_sessions=chatbot_config is not None and chatbot_config.session_id_column is not None,
+        track_dates=chatbot_config is not None and chatbot_config.timestamp_column is not None,
+    )
+    values = _source_records(local_path, filename, sheet_name, text_column, chatbot_config)
 
     start = STAGE_PROGRESS[AnalysisStatus.PREPROCESSING]
     end = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
@@ -460,7 +509,7 @@ async def _preprocess_in_batches(
         if not batch:
             break
 
-        await asyncio.to_thread(preprocessor.consume, batch)
+        await asyncio.to_thread(preprocessor.consume_records, batch)
 
         if expected_rows > 0:
             fraction = min(1.0, preprocessor.rows_seen / expected_rows)
@@ -638,9 +687,25 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         storage_key = upload.storage_key if upload else None
         filename = upload.filename if upload else ""
         upload_profile = upload.profile if upload else None
+        raw_dataset_type = analysis.dataset_type
+        raw_chatbot_config = analysis.chatbot_config
 
     if storage_key is None:
         return await _fail(analysis_id, "JOB_NOT_FOUND", "Analiz edilecek yükleme bulunamadı.")
+
+    # Ön ayar yapılandırması JSONB'den ŞEMADAN geçirilerek okunur: eski veya
+    # bozuk bir kayıt sessizce yanlış filtre uygulayacağına iş açık bir hatayla
+    # kapansın. Bu fonksiyon istisna FIRLATMAZ (sözleşme yukarıda).
+    try:
+        dataset_type = DatasetType(raw_dataset_type or DatasetType.GENERIC.value)
+        chatbot_config = (
+            ChatbotLogConfig.model_validate(raw_chatbot_config)
+            if dataset_type is DatasetType.CHATBOT_LOG and raw_chatbot_config
+            else None
+        )
+    except (ValueError, ValidationError):
+        logger.exception("analysis_dataset_config_invalid", extra={"analysis_id": str(analysis_id)})
+        return await _fail(analysis_id, "INTERNAL_ERROR", "Analiz yapılandırması okunamadı.")
 
     warnings: list[AnalysisWarning] = []
     #: İlerleme yüzdesinin paydası. Profilden gelir; profil yoksa 0 kalır ve
@@ -720,8 +785,10 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             preprocess_result = await _preprocess_in_batches(
                 analysis_id=analysis_id,
                 local_path=local_path,
+                filename=filename,
                 sheet_name=sheet_name,
                 text_column=text_column,
+                chatbot_config=chatbot_config,
                 expected_rows=expected_rows,
                 settings=settings,
             )
@@ -978,6 +1045,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             classifier_id=classifier.identifier,
             top_n=top_n,
             settings=settings,
+            dataset_type=dataset_type,
             extra_warnings=warnings,
             token_usage=token_usage,
             estimated_cost_usd=spent_usd,

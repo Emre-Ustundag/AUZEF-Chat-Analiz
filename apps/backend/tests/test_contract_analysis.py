@@ -138,6 +138,8 @@ def test_istek_govdesinde_api_anahtari_alani_yok() -> None:
         "prompt_version",
         "top_n",
         "max_cost_usd",
+        "dataset_type",
+        "chatbot_config",
     }
 
 
@@ -263,10 +265,12 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "analysis_id",
         "status",
         "generated_at",
+        "dataset_type",
         "source_summary",
         "preprocessing_summary",
         "top_questions",
         "themes",
+        "time_series",
         "executive_summary",
         "warnings",
         "model",
@@ -289,6 +293,7 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "duplicate_count",
         "redacted_count",
         "unique_count",
+        "session_count",
     }
     assert set(payload["top_questions"][0]) == {
         "id",
@@ -297,6 +302,7 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "percentage",
         "confidence",
         "redacted_examples",
+        "session_count",
     }
     assert set(payload["themes"][0]) == {
         "id",
@@ -304,6 +310,7 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "count",
         "percentage",
         "related_question_ids",
+        "session_count",
     }
     assert set(payload["token_usage"]) == {
         "prompt_tokens",
