@@ -41,7 +41,8 @@ from app.pipeline.llm_classifier import (
 )
 from app.pipeline.preprocess import ContextTurn, RecordGroup, preprocess
 from app.pipeline.record_rendering import render_record
-from app.prompts.faq_analysis import V1, V4
+from app.prompts.faq_analysis import V1, V2, V4
+from app.services.map_cache import MapCache, build_key
 from app.services.openrouter import OpenRouterClient
 from tests.fake_openrouter import FakeOpenRouter
 
@@ -1132,3 +1133,210 @@ def test_eszamanli_iptalde_kalan_chunklar_gonderilmez(settings: Settings) -> Non
 
     assert 2 <= provider.map_calls <= 2 + 4
     assert provider.map_calls < 10, "iptal kalan chunk'ları durdurmadı"
+
+
+# ------------------------------------------- A3: tamamlanan map sonuçları saklanır
+
+
+class _FakeCacheBackend:
+    """Sözlük destekli map önbelleği — Redis GEREKTİRMEZ.
+
+    `MapCache` yalnızca `get`/`setex` kullanıyor; testin ilgilendiği şey
+    kayıtların gerçekten yazılıp okunduğu, Redis'in kendisi değil.
+    """
+
+    def __init__(self, *, fail: bool = False) -> None:
+        self.data: dict[str, str] = {}
+        self.fail = fail
+        self.reads = 0
+        self.writes = 0
+
+    def get(self, name: str) -> bytes | str | None:
+        self.reads += 1
+        if self.fail:
+            raise ConnectionError("redis yok")
+        return self.data.get(name)
+
+    def setex(self, name: str, time: int, value: str) -> object:
+        self.writes += 1
+        if self.fail:
+            raise ConnectionError("redis yok")
+        self.data[name] = value
+        return True
+
+
+def test_onbellekli_ikinci_kosu_saglayiciya_hic_gitmez(settings: Settings) -> None:
+    """A3: yarıda kalan bir koşunun ödenmiş chunk'ı ikinci kez ödenmez.
+
+    İkinci koşu YENİ bir sınıflandırıcı ve YENİ bir sağlayıcı ile kuruluyor —
+    anahtarda `analysis_id` olmadığı için bu, zaman aşımından sonra açılan
+    yeni bir analizin karşılığıdır. Sağlayıcının yanıt listesi BOŞ: bir çağrı
+    yapılsaydı test IndexError ile patlardı.
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1))
+    payload = _map({"r1": "c1", "r2": "c2"}, {"c1": ("Sınav?", "Sınav"), "c2": ("Harç?", "Harç")})
+
+    ilk_saglayici = _Provider(map_responses=[payload])
+    ilk = _classifier(settings, ilk_saglayici, map_cache=MapCache(settings, backend=backend))
+    ilk_sonuc = ilk.classify(groups)
+
+    assert len(ilk_saglayici.map_calls) == 1
+    assert backend.writes == 1
+
+    ikinci_saglayici = _Provider(map_responses=[])
+    ikinci = _classifier(settings, ikinci_saglayici, map_cache=MapCache(settings, backend=backend))
+    ikinci_sonuc = ikinci.classify(groups)
+
+    assert ikinci_saglayici.map_calls == []
+    assert ikinci_saglayici.reduce_calls == []
+    assert ikinci_sonuc == ilk_sonuc
+
+
+def test_coklu_chunkta_sicak_onbellek_ayni_raporu_uretir(settings: Settings) -> None:
+    """İki chunk'lık bir koşu tamamen önbellekten geldiğinde sonuç DEĞİŞMEZ.
+
+    Asıl korunan değişmez bu: önbellek yalnızca sağlayıcı çağrısını atlıyor,
+    kayıt eşleme muhasebesi (`assigned`, "ilk eşleme kazanır", uydurma/tekrar
+    sayaçları) her koşuda chunk SIRASINA göre yeniden işliyor. Tek chunk'lık
+    bir test bunu göstermez.
+
+    Reduce ÖNBELLEKLENMEZ; ikinci koşuda da bir reduce çağrısı beklenir.
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1), ("ders materyali", 1), ("d", 1))
+    map_yanitlari = [
+        # İkinci chunk'ta r1 tekrar eşleniyor: "ilk eşleme kazanır" kuralı
+        # sıcak önbellekte de aynı sonucu vermeli.
+        _map({"r1": "c1", "r2": "c1", "r3": "c2"}, {"c1": ("A?", "T"), "c2": ("B?", "T")}),
+        _map({"r4": "c1", "r1": "c1"}, {"c1": ("C?", "T")}),
+    ]
+    reduce_yaniti = {
+        "groups": [
+            {"canonical_question": "A?", "theme": "T", "member_category_ids": ["0:c1", "1:c1"]}
+        ]
+    }
+
+    ilk_saglayici = _Provider(map_responses=map_yanitlari, reduce_response=reduce_yaniti)
+    ilk = _classifier(settings, ilk_saglayici, map_cache=MapCache(settings, backend=backend))
+    ilk_sonuc = ilk.classify(groups)
+    assert len(ilk_saglayici.map_calls) == 2
+
+    ikinci_saglayici = _Provider(map_responses=[], reduce_response=reduce_yaniti)
+    ikinci = _classifier(settings, ikinci_saglayici, map_cache=MapCache(settings, backend=backend))
+    ikinci_sonuc = ikinci.classify(groups)
+
+    assert ikinci_saglayici.map_calls == []
+    assert len(ikinci_saglayici.reduce_calls) == 1
+    assert ikinci_sonuc == ilk_sonuc
+    assert ikinci_sonuc.warnings == ilk_sonuc.warnings
+
+
+def test_onbellek_isabeti_usage_a_eklenmez(settings: Settings) -> None:
+    """Rapor "sağlayıcının bildirdiği gerçek tüketim" demek zorunda.
+
+    Ödenmemiş bir çağrıyı ödenmiş gibi saymak, maliyet alanını doğrudan
+    yanlış yapardı (`pipeline/cost.py`).
+    """
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1))
+    payload = _map({"r1": "c1"}, {"c1": ("Sınav?", "Sınav")})
+
+    ilk = _classifier(
+        settings,
+        _Provider(map_responses=[payload]),
+        map_cache=MapCache(settings, backend=backend),
+    )
+    ilk.classify(groups)
+    assert ilk.usage.total_tokens == 60
+
+    ikinci = _classifier(
+        settings,
+        _Provider(map_responses=[]),
+        map_cache=MapCache(settings, backend=backend),
+    )
+    ikinci.classify(groups)
+
+    assert ikinci.usage.total_tokens == 0
+    assert ikinci.usage.cost_usd is None
+
+
+def test_onbellek_anahtari_model_prompt_ve_istek_metnine_baglidir(settings: Settings) -> None:
+    """Önbellek YANLIŞ isabet vermemeli: girdinin her parçası anahtarda.
+
+    Anahtar, sağlayıcıya giden `<kayit>` METNİNDEN türüyor; kayıt sırası da
+    o metnin içinde. Modelin çıktısı girdi sırasına duyarlı olduğu için
+    sıralı ve ters sıralı chunk aynı istek DEĞİLDİR.
+    """
+    kayitlar = ['<kayit id="r1">sınav ne zaman</kayit>', '<kayit id="r2">harç ne kadar</kayit>']
+    temel: dict[str, Any] = dict(
+        model="google/gemini-2.5-flash",
+        prompt_text_hash=V1.text_hash,
+        map_schema=V1.map_schema,
+        rendered_records="\n".join(kayitlar),
+    )
+    anahtar = build_key(**temel)
+
+    assert build_key(**{**temel, "model": "openai/gpt-4o-mini"}) != anahtar
+    assert build_key(**{**temel, "prompt_text_hash": V2.text_hash}) != anahtar
+    # V1 ve V2 aynı map şemasını kullanıyor; şemanın anahtara girdiğini
+    # göstermek için şemanın kendisi değiştiriliyor.
+    baska_sema = {**V1.map_schema, "additionalProperties": True}
+    assert build_key(**{**temel, "map_schema": baska_sema}) != anahtar
+    ters = "\n".join(reversed(kayitlar))
+    assert build_key(**{**temel, "rendered_records": ters}) != anahtar
+    assert build_key(**temel) == anahtar
+
+
+def test_onbellek_erisilemezse_analiz_yine_kosar(settings: Settings) -> None:
+    """Önbellek bir tasarruf katmanı; Redis çökerse analiz DÜŞMEZ.
+
+    İlk hatadan sonra önbellek kendini kapatır: 366 chunk'lık bir koşuda her
+    chunk için yeniden bağlanmayı denemek logu doldurur ve her seferinde
+    bağlantı zaman aşımı kadar bekletir.
+    """
+    backend = _FakeCacheBackend(fail=True)
+    groups = _groups(("sınav ne zaman", 1), ("harç ne kadar", 1), ("ders materyali", 1), ("d", 1))
+    provider = _Provider(
+        map_responses=[
+            _map({"r1": "c1", "r2": "c1", "r3": "c1"}, {"c1": ("A?", "T")}),
+            _map({"r4": "c1"}, {"c1": ("B?", "T")}),
+        ],
+        reduce_response={
+            "groups": [
+                {"canonical_question": "A?", "theme": "T", "member_category_ids": ["0:c1", "1:c1"]}
+            ]
+        },
+    )
+    cache = MapCache(settings, backend=backend)
+    classifier = _classifier(settings, provider, map_cache=cache)
+    result = classifier.classify(groups)
+
+    # Analiz normal şekilde tamamlandı: dört kaydın hepsi eşlendi.
+    assert sum(len(question.record_ids) for question in result.questions) == 4
+    assert len(provider.map_calls) == 2
+    # Kapanma: iki chunk'a rağmen tek okuma denemesi yapıldı.
+    assert backend.reads == 1
+    assert cache.hits == 0
+
+
+def test_bozuk_onbellek_kaydi_iska_sayilir(settings: Settings) -> None:
+    """Eski/bozuk bir kayıt analizi düşürmez, normal çağrı yoluna düşer."""
+    backend = _FakeCacheBackend()
+    groups = _groups(("sınav ne zaman", 1))
+    key = build_key(
+        model="google/gemini-2.5-flash",
+        prompt_text_hash=V1.text_hash,
+        map_schema=V1.map_schema,
+        rendered_records='<kayit id="r1">sınav ne zaman</kayit>',
+    )
+    backend.data[key] = '{"bu": "eski bir bicim"}'
+
+    provider = _Provider(map_responses=[_map({"r1": "c1"}, {"c1": ("Sınav?", "Sınav")})])
+    classifier = _classifier(settings, provider, map_cache=MapCache(settings, backend=backend))
+    result = classifier.classify(groups)
+
+    assert len(provider.map_calls) == 1
+    assert result.questions[0].canonical_question == "Sınav?"
+    # Bozuk kayıt geçerli olanla değiştirildi.
+    assert backend.data[key] != '{"bu": "eski bir bicim"}'

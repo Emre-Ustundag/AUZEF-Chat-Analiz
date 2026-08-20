@@ -53,7 +53,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from app.core.config import Settings
 from app.core.logging import get_logger
@@ -68,6 +68,7 @@ from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import PromptBundle
 from app.prompts.faq_analysis.v1 import escape_record_text
 from app.schemas.analysis import PricingSnapshot
+from app.services.map_cache import MapCache, build_key
 from app.services.openrouter import Completion, OpenRouterClient, Usage
 
 logger = get_logger(__name__)
@@ -168,6 +169,7 @@ class OpenRouterClassifier:
         on_progress: ProgressCallback | None = None,
         max_cost_usd: float | None = None,
         pricing_snapshot: PricingSnapshot | None = None,
+        map_cache: MapCache | None = None,
     ) -> None:
         self._client = client
         self._prompt = prompt
@@ -179,6 +181,13 @@ class OpenRouterClassifier:
         #: kullanmıyor).
         self._max_cost_usd = max_cost_usd
         self._pricing_snapshot = pricing_snapshot
+        #: Tamamlanmış map çağrılarının önbelleği (bulgu A3). VARSAYILAN
+        #: `None` — önbellek yalnızca ENJEKTE EDİLDİĞİNDE devreye girer.
+        #: Sebebi test izolasyonu: sınıflandırıcıyı kuran her test, sahte
+        #: sağlayıcıya kaç çağrı gittiğini sayıyor; kendiliğinden açılan
+        #: paylaşımlı bir önbellek o sayıları testler arasında sızdırırdı.
+        #: Üretimde `workers/tasks.py::_build_classifier` enjekte ediyor.
+        self._map_cache = map_cache
         self._usage = Usage()
         self._repairs = 0
         self._reduce_bucket_serial = 0
@@ -316,22 +325,51 @@ class OpenRouterClassifier:
                 raise
 
     def _map_chunk_call(self, chunk: Sequence[RecordGroup]) -> Completion[MapResponse]:
-        """SAĞLAYICI ÇAĞRISI — havuzdaki iş parçacığından çalışır.
+        """Önbellek/sağlayıcı çağrısı — havuzdaki iş parçacığından çalışır.
 
-        Burada `self` üzerinde HİÇBİR yazma yok. `_usage`, `_repairs` ve kova
-        bookkeeping'i `_merge_map_chunk`'ta, ana iş parçacığında ve chunk
-        SIRASINA göre işlenir. Eşzamanlı koşunun sıralı koşuyla birebir aynı
-        çıktıyı vermesi buna dayanıyor: "ilk eşleme kazanır" kuralı chunk
-        sırasına bağlı ve o sıra burada değil, birleştirmede belirleniyor.
+        Burada sıralamaya duyarlı sınıflandırıcı durumu üzerinde HİÇBİR yazma
+        yok. `_usage`, `_repairs` ve kova bookkeeping'i `_merge_map_chunk`'ta,
+        ana iş parçacığında ve chunk SIRASINA göre işlenir. Önbellek isabeti
+        sıfır kullanımlı bir `Completion` döndürür; böylece rapor yalnızca bu
+        koşuda sağlayıcıya gerçekten ödenen tüketimi içerir.
         """
         rendered = "\n".join(render_record(group) for group in chunk)
-        return self._client.complete_structured(
+        cache = self._map_cache
+        key: str | None = None
+
+        if cache is not None:
+            key = build_key(
+                model=self._model,
+                prompt_text_hash=self._prompt.text_hash,
+                map_schema=self._prompt.map_schema,
+                # Anahtar sağlayıcıya giden metinden türer; kayıt sırası veya
+                # kaçış biçimi değişirse eski yanıt yanlışlıkla kullanılmaz.
+                rendered_records=rendered,
+            )
+            raw = cache.load(key)
+            if raw is not None:
+                try:
+                    cached = MapResponse.model_validate_json(raw)
+                except ValidationError:
+                    # Eski/bozuk kayıt ıska sayılır ve aşağıdaki normal çağrı
+                    # yolunda geçerli yanıtla üzerine yazılır.
+                    logger.warning("map_cache_invalid_payload")
+                else:
+                    logger.info("map_cache_hit")
+                    return Completion(data=cached, usage=Usage())
+
+        completion = self._client.complete_structured(
             system=self._prompt.map_system,
             user=self._prompt.map_user_template.format(records=rendered),
             schema=self._prompt.map_schema,
             schema_name="faq_map",
             model_type=MapResponse,
         )
+
+        if cache is not None and key is not None:
+            cache.store(key, completion.data.model_dump_json())
+
+        return completion
 
     def _merge_map_chunk(
         self,
