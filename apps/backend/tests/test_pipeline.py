@@ -39,6 +39,7 @@ from app.pipeline.cost import (
     record_tokens,
 )
 from app.pipeline.preprocess import (
+    COURTESY_ONLY,
     ContextTurn,
     ContextualPreprocessor,
     ConversationOrderError,
@@ -107,6 +108,59 @@ def test_bos_ve_sistem_kayitlari_elenir(settings: Settings) -> None:
     assert result.discarded_count == 5
     # Değişmez: hiçbir kayıt kaybolmaz.
     assert result.analyzed_count + result.discarded_count == result.total_rows
+
+
+def test_nezaket_listesindeki_her_deger_normalize_bicimindedir() -> None:
+    """Liste `normalize()` çıktısıyla karşılaştırılıyor.
+
+    Bir değer o biçimde değilse (büyük harf, noktalama, çift boşluk)
+    eşleşme SESSİZCE hiç kurulmaz — eleme çalışmaz ama hiçbir test de
+    kırmızıya dönmez. Bu yüzden biçim burada zorlanıyor.
+    """
+    hatali = sorted(deger for deger in COURTESY_ONLY if normalize(deger) != deger)
+    assert hatali == []
+
+
+def test_nezaket_listesi_gercek_konulari_yutmaz(settings: Settings) -> None:
+    """Gerçek veriden ölçülen iki tarafı BİRLİKTE doğrular.
+
+    Solda: 505.442 satırlık AUZEF dökümünde sık geçen, soru OLMAYAN
+    kalıplar (hayır 456, okudum anladım 325, evet 257, cevap 165,
+    merhabalar 146 kez).
+
+    Sağda: aynı dökümde tek kelimeyle sorulan MEŞRU konular (mezuniyet
+    464, diploma 320, staj 100 kez). Liste büyüdükçe asıl risk budur —
+    eleme fazla genişlerse raporun konularını yer.
+
+    Eşleşme tam metin üzerinde olduğu için "evet mezun oldum mu" gibi
+    içinde onay kelimesi geçen gerçek sorular da korunur.
+    """
+    elenecek = [
+        "Hayır",
+        "evet",
+        "Okudum, anladım.",
+        "cevap",
+        "cevap bekliyorum",
+        "Merhabalar",
+        "hoşbuldum",
+        "kolay gelsin",
+        "iyi akşamlar",
+        "tamamdır",
+    ]
+    korunacak = [
+        "mezuniyet",
+        "diploma",
+        "staj",
+        "transkript",
+        "agno",
+        "yaz okulu",
+        "evet mezun oldum mu",
+    ]
+    result = preprocess(elenecek + korunacak, settings)
+
+    assert result.discarded_count == len(elenecek)
+    assert result.analyzed_count == len(korunacak)
+    assert {group.normalized for group in result.groups} == {normalize(text) for text in korunacak}
 
 
 def test_pii_siniflandiriciya_gitmeden_maskelenir(settings: Settings) -> None:
