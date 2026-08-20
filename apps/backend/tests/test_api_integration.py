@@ -118,7 +118,11 @@ async def test_models_endpoint_sozlesmeye_uyar(client: AsyncClient) -> None:
             "label",
             "input_cost_per_million",
             "output_cost_per_million",
+            "cache_read_cost_per_million",
+            "cache_write_cost_per_million",
             "context_window",
+            "pricing_source",
+            "pricing_updated_at",
         }
         assert model["context_window"] > 0
 

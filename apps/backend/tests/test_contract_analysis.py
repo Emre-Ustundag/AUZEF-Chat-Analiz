@@ -94,6 +94,7 @@ def _valid_request() -> dict[str, object]:
         "upload_id": str(uuid4()),
         "sheet_name": "Mesajlar",
         "text_column": "mesaj",
+        "row_filters": [],
         "model": "anthropic/claude-sonnet-4.6",
         "prompt_version": "faq_analysis/v1",
         "top_n": 20,
@@ -103,6 +104,36 @@ def _valid_request() -> dict[str, object]:
 
 def test_gecerli_istek_kabul_edilir() -> None:
     assert AnalysisCreate.model_validate(_valid_request())
+
+
+def test_satir_filtreleri_normalize_edilir() -> None:
+    payload = _valid_request() | {
+        "row_filters": [
+            {"column": " direction ", "allowed_values": [" Kullanıcı ", "Temsilci"]},
+            {"column": "message_type", "allowed_values": ["text"]},
+        ]
+    }
+    parsed = AnalysisCreate.model_validate(payload)
+
+    assert parsed.row_filters[0].column == "direction"
+    assert parsed.row_filters[0].allowed_values == ["Kullanıcı", "Temsilci"]
+
+
+@pytest.mark.parametrize(
+    "row_filters",
+    [
+        [{"column": "direction", "allowed_values": []}],
+        [{"column": "direction", "allowed_values": [""]}],
+        [{"column": "direction", "allowed_values": ["Kullanıcı", "Kullanıcı"]}],
+        [
+            {"column": "direction", "allowed_values": ["Kullanıcı"]},
+            {"column": "direction", "allowed_values": ["Bot"]},
+        ],
+    ],
+)
+def test_gecersiz_satir_filtreleri_reddedilir(row_filters: list[dict[str, object]]) -> None:
+    with pytest.raises(ValidationError):
+        AnalysisCreate.model_validate(_valid_request() | {"row_filters": row_filters})
 
 
 @pytest.mark.parametrize(
@@ -134,6 +165,7 @@ def test_istek_govdesinde_api_anahtari_alani_yok() -> None:
         "upload_id",
         "sheet_name",
         "text_column",
+        "row_filters",
         "model",
         "prompt_version",
         "top_n",
@@ -238,7 +270,6 @@ def _report() -> AnalysisReport:
                 canonical_question="Sınav ne zaman?",
                 count=45,
                 percentage=50.0,
-                confidence=0.9,
                 redacted_examples=["sınav ne zaman"],
             )
         ],
@@ -274,6 +305,8 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "prompt_hash",
         "token_usage",
         "estimated_cost_usd",
+        "cost_source",
+        "pricing_snapshot",
     }
     assert payload["status"] == "completed"
     assert ISO_Z_PATTERN.match(payload["generated_at"])
@@ -281,6 +314,7 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "filename",
         "sheet_name",
         "text_column",
+        "row_filters",
         "total_rows",
     }
     assert set(payload["preprocessing_summary"]) == {
@@ -295,7 +329,6 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "canonical_question",
         "count",
         "percentage",
-        "confidence",
         "redacted_examples",
     }
     assert set(payload["themes"][0]) == {
@@ -309,7 +342,18 @@ def test_rapor_alanlari_sozlesmeyle_birebir() -> None:
         "prompt_tokens",
         "completion_tokens",
         "total_tokens",
+        "cached_tokens",
+        "cache_write_tokens",
     }
+
+
+def test_tarihsel_confidence_alani_yok_sayilir() -> None:
+    payload = _report().model_dump(mode="json")
+    payload["top_questions"][0]["confidence"] = 0.9
+
+    parsed = AnalysisReport.model_validate(payload).model_dump(mode="json")
+
+    assert "confidence" not in parsed["top_questions"][0]
 
 
 def test_rapor_yalnizca_completed_durumunu_tasir() -> None:
@@ -324,14 +368,13 @@ def test_rapor_yalnizca_completed_durumunu_tasir() -> None:
 @pytest.mark.parametrize(
     ("path", "value"),
     [
-        (("top_questions", 0, "confidence"), 92),
         (("top_questions", 0, "percentage"), 148),
         (("themes", 0, "percentage"), -1),
         (("top_questions", 0, "count"), -5),
     ],
 )
 def test_sayisal_sinirlar_zod_ile_ayni(path: tuple[object, ...], value: object) -> None:
-    """Zod: confidence 0-1, percentage 0-100, count >= 0."""
+    """Zod: percentage 0-100, count >= 0."""
     payload = _report().model_dump(mode="json")
     target: object = payload
     for key in path[:-1]:

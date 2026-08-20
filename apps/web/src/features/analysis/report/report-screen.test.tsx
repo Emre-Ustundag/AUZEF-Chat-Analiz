@@ -34,6 +34,7 @@ const report: AnalysisReport = {
     filename: "mesajlar.xlsx",
     sheet_name: "Mesajlar",
     text_column: "mesaj",
+    row_filters: [],
     total_rows: 48_213,
   },
   preprocessing_summary: {
@@ -49,7 +50,6 @@ const report: AnalysisReport = {
       canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
       count: 11_680,
       percentage: 24.8,
-      confidence: 0.94,
       redacted_examples: ["sınav ne zaman"],
     },
     {
@@ -57,7 +57,6 @@ const report: AnalysisReport = {
       canonical_question: "Ders materyallerine nereden ulaşabilirim?",
       count: 8_102,
       percentage: 17.2,
-      confidence: 0.55,
       redacted_examples: ["pdf bulamıyorum"],
     },
   ],
@@ -80,8 +79,19 @@ const report: AnalysisReport = {
     prompt_tokens: 1_284_000,
     completion_tokens: 96_400,
     total_tokens: 1_380_400,
+    cached_tokens: 0,
+    cache_write_tokens: 0,
   },
   estimated_cost_usd: 4.1412,
+  cost_source: "provider",
+  pricing_snapshot: {
+    input_cost_per_million: 3,
+    output_cost_per_million: 15,
+    cache_read_cost_per_million: 0.3,
+    cache_write_cost_per_million: 3.75,
+    source: "openrouter",
+    fetched_at: "2026-08-11T09:55:00Z",
+  },
 };
 
 function renderScreen() {
@@ -106,6 +116,8 @@ describe("ReportScreen", () => {
     expect(screen.getByText("47.106")).toBeInTheDocument();
     expect(screen.getByText("31.540")).toBeInTheDocument();
     expect(screen.getByText("$4,1412")).toBeInTheDocument();
+    expect(screen.getByText("Gerçek maliyet")).toBeInTheDocument();
+    expect(screen.getByText("OpenRouter canlı katalog")).toBeInTheDocument();
   });
 
   it("soruları oranlarıyla listeler", async () => {
@@ -124,6 +136,25 @@ describe("ReportScreen", () => {
     expect(await screen.findByText("anthropic/claude-sonnet-4.6")).toBeInTheDocument();
     expect(screen.getByText("faq_analysis/v1")).toBeInTheDocument();
     expect(screen.getByText("sha256:2f8a1c9e4b7d")).toBeInTheDocument();
+  });
+
+  it("uygulanan satır filtrelerini kaynak künyesinde gösterir", async () => {
+    getAnalysisReport.mockResolvedValue({
+      ...report,
+      source_summary: {
+        ...report.source_summary,
+        row_filters: [
+          { column: "direction", allowed_values: ["Kullanıcı"] },
+          { column: "message_type", allowed_values: ["text"] },
+        ],
+      },
+    });
+
+    renderScreen();
+
+    expect(
+      await screen.findByText("Filtreler: direction = Kullanıcı; message_type = text"),
+    ).toBeInTheDocument();
   });
 
   it("dışa aktarmayı istenen formatla çalıştırır", async () => {
@@ -159,13 +190,6 @@ describe("ReportScreen", () => {
     expect(await screen.findByText("Dosya indirilemedi")).toBeInTheDocument();
     expect(screen.getByText(/zaten devam eden bir analiz var/)).toBeInTheDocument();
     expect(screen.queryByText(/completed analyses/)).not.toBeInTheDocument();
-  });
-
-  it("düşük güven skorunu sayıyla birlikte gösterir", async () => {
-    // Renk tek başına anlam taşımamalı; yüzde her zaman yazılı olmalı.
-    renderScreen();
-
-    expect(await screen.findByText("%55,0")).toBeInTheDocument();
   });
 
   it("tema dağılımını metin olarak da erişilebilir kılar", async () => {

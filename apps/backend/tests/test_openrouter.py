@@ -99,6 +99,51 @@ def test_basarili_yanit_ayristirilir_ve_token_toplanir(settings: Settings) -> No
     assert result.usage.total_tokens == 120
 
 
+def test_usage_maliyet_ve_cache_ayrintilarini_okur(settings: Settings) -> None:
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps({"label": "sınav"})}}],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 20,
+                    "cost": 0.0123,
+                    "prompt_tokens_details": {
+                        "cached_tokens": 40,
+                        "cache_write_tokens": 10,
+                    },
+                },
+            },
+        )
+
+    with _client(settings, handler) as client:
+        result = client.complete_structured(
+            system="s",
+            user="u",
+            schema=_SCHEMA,
+            schema_name="answer",
+            model_type=_Answer,
+        )
+
+    assert result.usage == Usage(
+        prompt_tokens=100,
+        completion_tokens=20,
+        cached_tokens=40,
+        cache_write_tokens=10,
+        cost_usd=0.0123,
+    )
+
+
+def test_usage_toplaminda_eksik_maliyet_kismi_toplam_diye_kullanilmaz() -> None:
+    complete = Usage(prompt_tokens=100, completion_tokens=20, cost_usd=0.01)
+    missing_cost = Usage(prompt_tokens=50, completion_tokens=10)
+
+    assert (Usage() + complete).cost_usd == 0.01
+    assert (complete + Usage(cost_usd=0.02)).cost_usd == 0.03
+    assert (complete + missing_cost).cost_usd is None
+
+
 def test_istek_govdesi_sozlesmeye_uyar_ve_tool_cagrilari_kapali(settings: Settings) -> None:
     """ADR §9: tool/function çağrıları kapalı, structured output zorunlu."""
     seen: dict[str, Any] = {}

@@ -72,9 +72,28 @@ export const modelIdSchema = z.enum([
 export type ModelId = z.infer<typeof modelIdSchema>;
 
 /** BE-01'de dondurulan, sürümlenmiş prompt whitelist'i. */
-export const promptVersionSchema = z.enum(["faq_analysis/v1"]);
+export const promptVersionSchema = z.enum([
+  "faq_analysis/v1",
+  "faq_analysis/v2",
+  "faq_analysis/v3",
+]);
 
 export type PromptVersion = z.infer<typeof promptVersionSchema>;
+
+export const rowFilterSchema = z.object({
+  column: z.string().trim().min(1, "Filtre kolonu boş olamaz.").max(512),
+  allowed_values: z
+    .array(z.string().trim().min(1, "Filtre değeri boş olamaz.").max(512))
+    .min(1, "En az bir filtre değeri girilmelidir.")
+    .max(20, "Bir filtrede en fazla 20 değer olabilir.")
+    .superRefine((values, ctx) => {
+      if (new Set(values).size !== values.length) {
+        ctx.addIssue({ code: "custom", message: "Aynı filtre değeri tekrarlanamaz." });
+      }
+    }),
+});
+
+export type RowFilter = z.infer<typeof rowFilterSchema>;
 
 /**
  * POST /api/v1/analyses gövdesi.
@@ -87,6 +106,15 @@ export const analysisRequestSchema = z.object({
   upload_id: z.uuid(),
   sheet_name: z.string().min(1, "Sayfa seçilmelidir."),
   text_column: z.string().min(1, "Analiz edilecek metin kolonu seçilmelidir."),
+  row_filters: z
+    .array(rowFilterSchema)
+    .max(5, "En fazla 5 satır filtresi tanımlanabilir.")
+    .superRefine((filters, ctx) => {
+      const columns = filters.map((rowFilter) => rowFilter.column);
+      if (new Set(columns).size !== columns.length) {
+        ctx.addIssue({ code: "custom", message: "Aynı kolon birden fazla filtrelenemez." });
+      }
+    }),
   model: modelIdSchema,
   prompt_version: promptVersionSchema,
   top_n: z.int().min(1, "En az 1 sonuç istenmelidir.").max(100, "En fazla 100 sonuç istenebilir."),
@@ -159,10 +187,25 @@ export const modelOptionSchema = z.object({
   /** 1M girdi tokenı başına USD; maliyet tahmini için. */
   input_cost_per_million: z.number().nonnegative(),
   output_cost_per_million: z.number().nonnegative(),
+  cache_read_cost_per_million: z.number().nonnegative().nullable().default(null),
+  cache_write_cost_per_million: z.number().nonnegative().nullable().default(null),
   context_window: z.int().positive(),
+  pricing_source: z.enum(["openrouter", "fallback"]).default("fallback"),
+  pricing_updated_at: z.iso.datetime().nullable().default(null),
 });
 
 export type ModelOption = z.infer<typeof modelOptionSchema>;
+
+export const pricingSnapshotSchema = z.object({
+  input_cost_per_million: z.number().nonnegative(),
+  output_cost_per_million: z.number().nonnegative(),
+  cache_read_cost_per_million: z.number().nonnegative().nullable().default(null),
+  cache_write_cost_per_million: z.number().nonnegative().nullable().default(null),
+  source: z.enum(["openrouter", "fallback"]),
+  fetched_at: z.iso.datetime().nullable().default(null),
+});
+
+export type PricingSnapshot = z.infer<typeof pricingSnapshotSchema>;
 
 export const modelListSchema = z
   .object({

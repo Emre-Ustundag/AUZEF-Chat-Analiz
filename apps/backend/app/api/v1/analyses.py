@@ -43,14 +43,15 @@ from app.api.v1.responses import (
     ANALYSIS_READ,
     ANALYSIS_RESULT,
 )
-from app.core.config import MAX_ROWS, Settings, get_settings
+from app.core.config import Settings, get_settings
 from app.core.db import get_session
 from app.core.errors import ApiError
 from app.core.logging import get_logger
 from app.domain.model_catalog import is_allowed_model
 from app.models.analysis import Analysis
 from app.models.upload import Upload
-from app.pipeline.cost import estimate_profile_cost
+from app.pipeline.cost import estimate_profile_cost_range
+from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import (
     TERMINAL_STATUSES,
     AnalysisCreate,
@@ -62,7 +63,7 @@ from app.schemas.analysis import (
 from app.schemas.common import ProblemDetails
 from app.schemas.report import AnalysisReport
 from app.schemas.upload import ColumnProfile, UploadProfile, UploadStatus
-from app.services import idempotency, report_export, secret_store
+from app.services import idempotency, pricing, report_export, secret_store
 
 logger = get_logger(__name__)
 
@@ -98,6 +99,18 @@ def _validate_selection(profile_payload: dict[str, object], body: AnalysisCreate
         raise ApiError(
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen kolon bu sayfada bulunamadı.",
+        )
+
+    available_columns = {profile_column.name for profile_column in sheet.columns}
+    missing_filter_columns = [
+        row_filter.column
+        for row_filter in body.row_filters
+        if row_filter.column not in available_columns
+    ]
+    if missing_filter_columns:
+        raise ApiError(
+            "SHEET_OR_COLUMN_NOT_FOUND",
+            "Satır filtresinde seçilen kolon bu sayfada bulunamadı.",
         )
     return column
 
@@ -169,22 +182,52 @@ async def create_analysis(
 
         column = _validate_selection(upload.profile, body)
 
+        # Fiyat kataloğunun daha sonra yenilenmesi kuyruktaki işin maliyet
+        # hesabını değiştirmemeli. Bu yüzden seçilen oranlar job
+        # oluşturulurken sabitlenir ve worker'a PostgreSQL üzerinden taşınır.
+        pricing_snapshot = await run_in_threadpool(
+            pricing.get_pricing_snapshot,
+            body.model,
+            settings,
+        )
+
         # ADR-0002 #10: pahalı olduğu profilden belli olan istek job ve Redis
         # secret oluşturmadan senkron reddedilir. Worker gerçek hücreleri
         # işledikten sonra dedupe-aware tahmini ve koşu içi gerçek tüketimi de
         # ayrıca denetler; bu ilk kapı kullanıcıya anında geri bildirim verir.
-        estimated_cost_usd = estimate_profile_cost(
-            min(column.non_empty_count, MAX_ROWS),
-            column.avg_length,
-            body.model,
-        )
-        if estimated_cost_usd > body.max_cost_usd:
-            raise ApiError(
-                "COST_LIMIT_EXCEEDED",
-                f"Tahmini maliyet ({estimated_cost_usd:.4f} USD) belirlediğiniz "
-                f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
-                "yükseltin ya da daha ucuz bir model seçin.",
+        #
+        # KIRPMA YOK: burada eskiden `min(column.non_empty_count, MAX_ROWS)`
+        # yazıyordu, yani 100.000 satırın üstündeki her dosya SANKİ 100.000
+        # satırmış gibi fiyatlanıyordu. Analiz hiçbir zaman kırpmadığı için
+        # (bkz. `schemas/report.py` değişmezi) bu kapı büyük dosyalarda
+        # sistematik olarak DÜŞÜK tahmin veriyordu — üstelik tahmin zaten
+        # ayrı bir sebepten düşük (completion JSON'unun sabit yükü ve reduce
+        # çıktısı sayılmıyordu). İki hata üst üste binince tavan kapısı büyük
+        # dosyalarda pratikte hiç kapanmıyordu.
+        # Profil filtre kombinasyonunun kaç satır tuttuğunu bilmez. Filtreli
+        # isteği filtresiz `non_empty_count` ile reddetmek, tam da maliyeti
+        # azaltan özelliği kullanılamaz hale getirirdi. Bu durumda senkron
+        # kapı atlanır; worker filtreyi uygulayıp dedupe ettikten sonra daha
+        # kesin tahmini, İLK model çağrısından önce zaten zorlar.
+        if not body.row_filters:
+            profile_forecast = estimate_profile_cost_range(
+                column.unique_count,
+                column.avg_length,
+                body.model,
+                settings=settings,
+                prompt=get_prompt(body.prompt_version),
+                pricing_snapshot=pricing_snapshot,
+                max_cost_usd=body.max_cost_usd,
             )
+            if profile_forecast.exceeds:
+                raise ApiError(
+                    "COST_LIMIT_EXCEEDED",
+                    "Tahmini maliyet aralığı "
+                    f"({profile_forecast.estimated_cost_usd:.4f}–"
+                    f"{profile_forecast.upper_cost_usd:.4f} USD) belirlediğiniz "
+                    f"{body.max_cost_usd} USD sınırının üzerinde. Maliyet sınırını "
+                    "yükseltin ya da daha ucuz bir model seçin.",
+                )
 
         analysis_id = uuid.uuid4()
         analysis = Analysis(
@@ -195,7 +238,9 @@ async def create_analysis(
             cancel_requested=False,
             sheet_name=body.sheet_name,
             text_column=body.text_column,
+            row_filters=[row_filter.model_dump(mode="json") for row_filter in body.row_filters],
             model=body.model,
+            pricing_snapshot=pricing_snapshot.model_dump(mode="json"),
             prompt_version=body.prompt_version,
             top_n=body.top_n,
             max_cost_usd=body.max_cost_usd,

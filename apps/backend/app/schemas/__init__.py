@@ -10,7 +10,9 @@ from app.schemas.analysis import (
     ModelId,
     ModelList,
     ModelOption,
+    PricingSnapshot,
     PromptVersion,
+    RowFilter,
 )
 from app.schemas.base import ApiModel, ApiRequestModel, UtcDateTime
 from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
@@ -51,10 +53,12 @@ __all__ = [
     "ModelList",
     "ModelOption",
     "PreprocessingSummary",
+    "PricingSnapshot",
     "ProblemDetails",
     "PromptVersion",
     "ReadinessCheckResponse",
     "ReadinessResponse",
+    "RowFilter",
     "SheetProfile",
     "SourceSummary",
     "Theme",

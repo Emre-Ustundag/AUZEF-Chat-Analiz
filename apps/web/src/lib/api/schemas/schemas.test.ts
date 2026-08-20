@@ -141,6 +141,7 @@ describe("analysisRequestSchema", () => {
     upload_id: ID,
     sheet_name: "Sayfa1",
     text_column: "mesaj",
+    row_filters: [],
     model: "anthropic/claude-sonnet-4.6",
     prompt_version: "faq_analysis/v1",
     top_n: 20,
@@ -168,7 +169,7 @@ describe("analysisRequestSchema", () => {
       false,
     );
     expect(
-      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v2" }).success,
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v4" }).success,
     ).toBe(false);
   });
 
@@ -244,7 +245,6 @@ describe("analysisReportSchema", () => {
         canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
         count: 1240,
         percentage: 25.8,
-        confidence: 0.92,
         redacted_examples: ["sınav ne zaman"],
       },
     ],
@@ -274,20 +274,20 @@ describe("analysisReportSchema", () => {
     expect(analysisReportSchema.safeParse(report).success).toBe(true);
   });
 
+  it("tarihsel raporlardaki confidence alanını yok sayar", () => {
+    const parsed = analysisReportSchema.parse({
+      ...report,
+      top_questions: [{ ...report.top_questions[0], confidence: 0.92 }],
+    });
+
+    expect(parsed.top_questions[0]).not.toHaveProperty("confidence");
+  });
+
   it("yalnızca completed durumunu kabul eder", () => {
     // /result endpoint'i tamamlanmamış job için rapor dönmemeli.
     const result = analysisReportSchema.safeParse({
       ...report,
       status: "analyzing",
-    });
-
-    expect(result.success).toBe(false);
-  });
-
-  it("güven skorunu 0-1 aralığıyla sınırlar", () => {
-    const result = analysisReportSchema.safeParse({
-      ...report,
-      top_questions: [{ ...report.top_questions[0], confidence: 92 }],
     });
 
     expect(result.success).toBe(false);
@@ -302,12 +302,12 @@ describe("analysisReportSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("tarihsel model kimliğini kabul eder, prompt sürümünü dondurur", () => {
+  it("tarihsel model kimliğini kabul eder, bilinmeyen prompt sürümünü reddeder", () => {
     expect(analysisReportSchema.safeParse({ ...report, model: "retired/model-v1" }).success).toBe(
       true,
     );
     expect(
-      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v2" }).success,
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v4" }).success,
     ).toBe(false);
   });
 

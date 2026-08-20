@@ -262,7 +262,7 @@ Ham OpenRouter yanıtı, API anahtarı veya mesaj içeriği hata cevabına ve lo
 - `schema_version`, `analysis_id`, `status`, `generated_at`
 - `source_summary`: dosya, sheet ve satır özeti
 - `preprocessing_summary`: analiz edilen, elenen, tekrar ve redakte edilen kayıt sayıları
-- `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `confidence`, `redacted_examples`
+- `top_questions[]`: `id`, `canonical_question`, `count`, `percentage`, `redacted_examples`
 - `themes[]`: `id`, `name`, `count`, `percentage`, `related_question_ids`
   - `related_question_ids`, `top_n` kırpması sonrası raporda gerçekten yer alan sorulara filtrelenir; `count` ve `percentage` ise temanın gerçek büyüklüğünü yansıtmaya devam eder (ADR-0002 #5)
   - soru/tema id'leri benzersiz, `count <= analyzed_count`; `percentage`, bir ondalığa exact half-up yuvarlanmış gerçek orandır
@@ -280,7 +280,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 - Sözleşmede donmuş sıkıştırılmış upload sınırı: 150 MB
 - OOXML açılmış toplam boyut tavanı: 4 GiB. **1 GiB'ti ve yük testinde düştü** (§10 risk 1'in istediği ölçüm): 130,9 MB'lık gerçekçi bir dosya 1,12 GB'a açılıyor ve reddediliyordu. Sıkıştırma oranı 8,7 — bomba eşiğinin (200) çok altında, yani reddedilen şey meşru bir dosyaydı. 150 MB'lık donmuş upload sınırı ile 1 GiB tavan aynı anda doğru olamazdı. Asıl ZIP bomba savunması bu mutlak tavan DEĞİL, üye başına sıkıştırma oranı ve akış sırasında sayan gerçek bayt kontrolüdür; tavan ikincil bir nettir
 - Boyut ve süre sınırları environment config'tir (`AUZEF_` öneki); satır sınırı DEĞİLDİR
-- Satır sınırı: 100.000, sözleşmede donmuştur (ADR-0002 #13) — hem Pydantic hem Zod cevap invariant'larında kullanıldığı için env ile oynatmak backend'in doğru ürettiği cevapları frontend'e reddettirirdi. Sınır aşımı upload'ı REDDETMEZ: dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir, analiz ilk 100.000 satırı işler ve rapora `ROW_LIMIT_TRUNCATED` uyarısı eklenir (ADR-0002 #2)
+- Büyük veri eşiği: 100.000, backend ve frontend uyarısını aynı noktada tutan sözleşme sabitidir (ADR-0002 #13). Dosya tam profillenir, `profile.exceeds_row_limit` işaretlenir ve analiz filtrelerden sonra kalan tüm satırları işler; kıpma yoktur (ADR-0002 #2).
 - OpenRouter key PostgreSQL'e veya loglara yazılmaz
 - BYOK anahtarı AES-GCM ile şifreli Redis kaydı olarak tutulur; TTL her zaman job hard timeout + 5 dakikadır (varsayılan 50 dakika) ve işlem bitince başarı/hata fark etmeksizin silinir
 - Sunucu master encryption key yalnızca secret manager/environment içinde bulunur

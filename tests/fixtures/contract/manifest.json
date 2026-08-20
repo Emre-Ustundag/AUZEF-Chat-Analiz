@@ -143,12 +143,12 @@
       "file": "analyses.result.200.json"
     },
     {
-      "id": "analyses.result.200.truncated",
+      "id": "analyses.result.200.over-row-limit",
       "method": "GET",
       "path": "/api/v1/analyses/{analysis_id}/result",
       "status": 200,
       "model": "AnalysisReport",
-      "file": "analyses.result.200.truncated.json"
+      "file": "analyses.result.200.over-row-limit.json"
     },
     {
       "id": "errors.upload-too-large.413",

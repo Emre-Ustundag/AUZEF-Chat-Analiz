@@ -22,9 +22,11 @@ from celery.exceptions import SoftTimeLimitExceeded
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
+from app.api.v1 import analyses as analyses_api
 from app.core.config import get_settings
 from app.core.db import dispose_engine, session_scope
 from app.main import create_app
+from app.pipeline.cost import CostDecision
 from app.pipeline.llm_classifier import OpenRouterClassifier
 from app.prompts.faq_analysis import get_prompt
 from app.schemas.analysis import AnalysisJobRead
@@ -215,9 +217,57 @@ async def test_analiz_uctan_uca_calisir(client: AsyncClient) -> None:
         parsed.token_usage.prompt_tokens + parsed.token_usage.completion_tokens
     )
     assert parsed.estimated_cost_usd > 0.0
+    assert parsed.cost_source == "calculated"
+    assert parsed.pricing_snapshot is not None
+    assert parsed.pricing_snapshot.source == "fallback"
+    assert parsed.token_usage.cached_tokens == 0
     # Model gerçekten çağrıldı ve prompt sürümü rapora işlendi.
     assert parsed.prompt_version == "faq_analysis/v1"
     assert parsed.prompt_hash.startswith("sha256:")
+
+
+async def test_satir_filtreleri_uctan_uca_uygulanir(client: AsyncClient) -> None:
+    upload_id, _ = await _ready_upload(client)
+    filters = [{"column": "kanal", "allowed_values": ["web"]}]
+
+    created = await _create(client, upload_id, row_filters=filters)
+    assert created.status_code == 202
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    result = await client.get(f"/api/v1/analyses/{analysis_id}/result")
+    parsed = AnalysisReport.model_validate(result.json())
+
+    # Kaynak toplamı değişmez; 20 mobil satır filtre tarafından elenir.
+    assert parsed.source_summary.total_rows == 40
+    assert [row_filter.model_dump() for row_filter in parsed.source_summary.row_filters] == filters
+    assert parsed.preprocessing_summary.analyzed_count == 20
+    assert parsed.preprocessing_summary.discarded_count == 20
+    assert parsed.preprocessing_summary.unique_count == 5
+
+
+async def test_migration_oncesi_bos_fiyat_snapshot_yedekle_calisir(
+    client: AsyncClient,
+) -> None:
+    upload_id, _ = await _ready_upload(client)
+    created = await _create(client, upload_id)
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+
+    # Migration var olan job'lara `{}` yazar. Worker bunu model hatası
+    # saymamalı; sürümlenmiş yedek fiyatla devam etmeli.
+    async with session_scope() as session:
+        await session.execute(
+            text("UPDATE analyses SET pricing_snapshot='{}'::jsonb WHERE id=:i"),
+            {"i": str(analysis_id)},
+        )
+        await session.commit()
+
+    assert await tasks.run_analysis(analysis_id) == "completed"
+    result = await client.get(f"/api/v1/analyses/{analysis_id}/result")
+    parsed = AnalysisReport.model_validate(result.json())
+
+    assert parsed.pricing_snapshot is not None
+    assert parsed.pricing_snapshot.source == "fallback"
 
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
@@ -268,6 +318,20 @@ async def test_whitelist_disi_model_reddedilir(client: AsyncClient) -> None:
 async def test_olmayan_kolon_reddedilir(client: AsyncClient) -> None:
     upload_id, _ = await _ready_upload(client)
     response = await _create(client, upload_id, text_column="olmayan_kolon")
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
+
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_olmayan_filtre_kolonu_reddedilir(client: AsyncClient) -> None:
+    upload_id, _ = await _ready_upload(client)
+    response = await _create(
+        client,
+        upload_id,
+        row_filters=[{"column": "olmayan", "allowed_values": ["x"]}],
+    )
 
     assert response.status_code == 422
     assert response.json()["code"] == "SHEET_OR_COLUMN_NOT_FOUND"
@@ -460,6 +524,59 @@ async def test_iptal_de_anahtari_siler(client: AsyncClient) -> None:
 # =====================================================================
 # FAZ 3 — LLM yolları (hepsi sahte transport üzerinden, GERÇEK AĞ YOK)
 # =====================================================================
+
+
+async def test_api_on_tahmini_benzersiz_deger_sayisini_kullanir(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def capture_estimate(
+        record_count: int,
+        average_length: float,
+        model_id: str,
+        **kwargs: Any,
+    ) -> CostDecision:
+        captured.update(
+            record_count=record_count,
+            average_length=average_length,
+            model_id=model_id,
+            settings=kwargs.get("settings"),
+            prompt=kwargs.get("prompt"),
+        )
+        return CostDecision(
+            estimated_prompt_tokens=0,
+            estimated_completion_tokens=0,
+            estimated_cost_usd=0.0,
+            max_cost_usd=0.0,
+            upper_prompt_tokens=0,
+            upper_completion_tokens=0,
+            upper_cost_usd=0.0,
+        )
+
+    monkeypatch.setattr(analyses_api, "estimate_profile_cost_range", capture_estimate)
+    upload_id, profile = await _ready_upload(client)
+
+    created = await _create(client, upload_id)
+    assert created.status_code == 202
+
+    message_column = next(
+        column
+        for sheet in profile["sheets"]
+        if sheet["name"] == "Mesajlar"
+        for column in sheet["columns"]
+        if column["name"] == "mesaj"
+    )
+    assert message_column["non_empty_count"] == 40
+    assert message_column["unique_count"] == 5
+    assert captured["record_count"] == 5
+    assert captured["settings"] is not None
+    assert getattr(captured["prompt"], "version", None) == "faq_analysis/v1"
+
+    analysis_id = created.json()["analysis_id"]
+    await client.delete(f"/api/v1/analyses/{analysis_id}")
+    await client.delete(f"/api/v1/uploads/{upload_id}")
 
 
 async def test_maliyet_tavani_asiminda_istek_reddedilir_ve_hic_cagri_yapilmaz(

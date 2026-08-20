@@ -1145,25 +1145,37 @@
                           "label": "Claude Sonnet 4.6",
                           "input_cost_per_million": 3.0,
                           "output_cost_per_million": 15.0,
-                          "context_window": 1000000
+                          "cache_read_cost_per_million": 0.3,
+                          "cache_write_cost_per_million": 3.75,
+                          "context_window": 1000000,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         },
                         {
                           "id": "openai/gpt-4.1-mini",
                           "label": "GPT-4.1 mini",
                           "input_cost_per_million": 0.4,
                           "output_cost_per_million": 1.6,
-                          "context_window": 1047576
+                          "cache_read_cost_per_million": 0.1,
+                          "cache_write_cost_per_million": null,
+                          "context_window": 1047576,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         },
                         {
                           "id": "google/gemini-2.5-flash",
                           "label": "Gemini 2.5 Flash",
                           "input_cost_per_million": 0.3,
                           "output_cost_per_million": 2.5,
-                          "context_window": 1048576
+                          "cache_read_cost_per_million": 0.03,
+                          "cache_write_cost_per_million": 0.0833333333333,
+                          "context_window": 1048576,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         }
                       ],
                       "default_model": "google/gemini-2.5-flash",
-                      "default_prompt_version": "faq_analysis/v1"
+                      "default_prompt_version": "faq_analysis/v3"
                     }
                   }
                 }
@@ -1288,8 +1300,22 @@
                     "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
                     "sheet_name": "Mesajlar",
                     "text_column": "mesaj",
+                    "row_filters": [
+                      {
+                        "column": "direction",
+                        "allowed_values": [
+                          "Kullanıcı"
+                        ]
+                      },
+                      {
+                        "column": "message_type",
+                        "allowed_values": [
+                          "text"
+                        ]
+                      }
+                    ],
                     "model": "google/gemini-2.5-flash",
-                    "prompt_version": "faq_analysis/v1",
+                    "prompt_version": "faq_analysis/v3",
                     "top_n": 8,
                     "max_cost_usd": 10.0
                   }
@@ -2118,6 +2144,7 @@
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
@@ -2133,7 +2160,6 @@
                           "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
                           "count": 11680,
                           "percentage": 24.8,
-                          "confidence": 0.94,
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
@@ -2144,7 +2170,6 @@
                           "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
                           "count": 8102,
                           "percentage": 17.2,
-                          "confidence": 0.91,
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
@@ -2155,7 +2180,6 @@
                           "canonical_question": "Harç ödemesini nasıl yaparım?",
                           "count": 5748,
                           "percentage": 12.2,
-                          "confidence": 0.89,
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
@@ -2166,7 +2190,6 @@
                           "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
                           "count": 4523,
                           "percentage": 9.6,
-                          "confidence": 0.87,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
                           ]
@@ -2176,7 +2199,6 @@
                           "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
                           "count": 3311,
                           "percentage": 7.0,
-                          "confidence": 0.85,
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
@@ -2187,7 +2209,6 @@
                           "canonical_question": "Mazeret sınavına nasıl başvurulur?",
                           "count": 2204,
                           "percentage": 4.7,
-                          "confidence": 0.82,
                           "redacted_examples": [
                             "mazeret sınavı başvuru"
                           ]
@@ -2197,7 +2218,6 @@
                           "canonical_question": "Not itirazı nasıl yapılır?",
                           "count": 1640,
                           "percentage": 3.5,
-                          "confidence": 0.78,
                           "redacted_examples": [
                             "notuma itiraz etmek istiyorum"
                           ]
@@ -2207,7 +2227,6 @@
                           "canonical_question": "Öğrenci belgesi nasıl alınır?",
                           "count": 1129,
                           "percentage": 2.4,
-                          "confidence": 0.76,
                           "redacted_examples": [
                             "öğrenci belgesi lazım"
                           ]
@@ -2258,17 +2277,28 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   },
-                  "Satır sınırı kırpılmış": {
+                  "Satır sınırının üstünde dosya": {
                     "value": {
                       "schema_version": "1.0",
                       "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
@@ -2278,22 +2308,22 @@
                         "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 250000
                       },
                       "preprocessing_summary": {
-                        "analyzed_count": 98893,
+                        "analyzed_count": 248893,
                         "discarded_count": 1107,
-                        "duplicate_count": 32679,
-                        "redacted_count": 5963,
-                        "unique_count": 66214
+                        "duplicate_count": 82246,
+                        "redacted_count": 15008,
+                        "unique_count": 166647
                       },
                       "top_questions": [
                         {
                           "id": "q1",
                           "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
                           "count": 11680,
-                          "percentage": 11.8,
-                          "confidence": 0.94,
+                          "percentage": 4.7,
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
@@ -2303,8 +2333,7 @@
                           "id": "q2",
                           "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
                           "count": 8102,
-                          "percentage": 8.2,
-                          "confidence": 0.91,
+                          "percentage": 3.3,
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
@@ -2314,8 +2343,7 @@
                           "id": "q3",
                           "canonical_question": "Harç ödemesini nasıl yaparım?",
                           "count": 5748,
-                          "percentage": 5.8,
-                          "confidence": 0.89,
+                          "percentage": 2.3,
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
@@ -2325,8 +2353,7 @@
                           "id": "q4",
                           "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
                           "count": 4523,
-                          "percentage": 4.6,
-                          "confidence": 0.87,
+                          "percentage": 1.8,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
                           ]
@@ -2335,8 +2362,7 @@
                           "id": "q5",
                           "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
                           "count": 3311,
-                          "percentage": 3.3,
-                          "confidence": 0.85,
+                          "percentage": 1.3,
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
@@ -2348,7 +2374,7 @@
                           "id": "t1",
                           "name": "Sınav ve takvim",
                           "count": 17195,
-                          "percentage": 17.4,
+                          "percentage": 6.9,
                           "related_question_ids": [
                             "q1",
                             "q5"
@@ -2358,7 +2384,7 @@
                           "id": "t2",
                           "name": "Ders materyalleri",
                           "count": 8102,
-                          "percentage": 8.2,
+                          "percentage": 3.3,
                           "related_question_ids": [
                             "q2"
                           ]
@@ -2367,7 +2393,7 @@
                           "id": "t3",
                           "name": "Ödeme ve kayıt",
                           "count": 10271,
-                          "percentage": 10.4,
+                          "percentage": 4.1,
                           "related_question_ids": [
                             "q3",
                             "q4"
@@ -2377,26 +2403,32 @@
                           "id": "t4",
                           "name": "Belge ve itiraz",
                           "count": 2769,
-                          "percentage": 2.8,
+                          "percentage": 1.1,
                           "related_question_ids": []
                         }
                       ],
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
-                      "warnings": [
-                        {
-                          "code": "ROW_LIMIT_TRUNCATED",
-                          "message": "Sayfada 250.000 satır bulundu; analiz ilk 100.000 satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı."
-                        }
-                      ],
+                      "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   }
                 }
@@ -2677,6 +2709,7 @@
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
                         "text_column": "mesaj",
+                        "row_filters": [],
                         "total_rows": 48213
                       },
                       "preprocessing_summary": {
@@ -2692,7 +2725,6 @@
                           "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
                           "count": 11680,
                           "percentage": 24.8,
-                          "confidence": 0.94,
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
@@ -2703,7 +2735,6 @@
                           "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
                           "count": 8102,
                           "percentage": 17.2,
-                          "confidence": 0.91,
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
@@ -2714,7 +2745,6 @@
                           "canonical_question": "Harç ödemesini nasıl yaparım?",
                           "count": 5748,
                           "percentage": 12.2,
-                          "confidence": 0.89,
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
@@ -2725,7 +2755,6 @@
                           "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
                           "count": 4523,
                           "percentage": 9.6,
-                          "confidence": 0.87,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
                           ]
@@ -2735,7 +2764,6 @@
                           "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
                           "count": 3311,
                           "percentage": 7.0,
-                          "confidence": 0.85,
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
@@ -2746,7 +2774,6 @@
                           "canonical_question": "Mazeret sınavına nasıl başvurulur?",
                           "count": 2204,
                           "percentage": 4.7,
-                          "confidence": 0.82,
                           "redacted_examples": [
                             "mazeret sınavı başvuru"
                           ]
@@ -2756,7 +2783,6 @@
                           "canonical_question": "Not itirazı nasıl yapılır?",
                           "count": 1640,
                           "percentage": 3.5,
-                          "confidence": 0.78,
                           "redacted_examples": [
                             "notuma itiraz etmek istiyorum"
                           ]
@@ -2766,7 +2792,6 @@
                           "canonical_question": "Öğrenci belgesi nasıl alınır?",
                           "count": 1129,
                           "percentage": 2.4,
-                          "confidence": 0.76,
                           "redacted_examples": [
                             "öğrenci belgesi lazım"
                           ]
@@ -2817,14 +2842,25 @@
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
-                      "prompt_version": "faq_analysis/v1",
+                      "prompt_version": "faq_analysis/v3",
                       "prompt_hash": "sha256:2f8a1c9e4b7d",
                       "token_usage": {
                         "prompt_tokens": 1284000,
                         "completion_tokens": 96400,
-                        "total_tokens": 1380400
+                        "total_tokens": 1380400,
+                        "cached_tokens": 0,
+                        "cache_write_tokens": 0
                       },
-                      "estimated_cost_usd": 0.6262
+                      "estimated_cost_usd": 0.6262,
+                      "cost_source": "calculated",
+                      "pricing_snapshot": {
+                        "input_cost_per_million": 0.3,
+                        "output_cost_per_million": 2.5,
+                        "cache_read_cost_per_million": 0.03,
+                        "cache_write_cost_per_million": 0.0833333333333,
+                        "source": "fallback",
+                        "fetched_at": null
+                      }
                     }
                   }
                 }
@@ -3212,6 +3248,25 @@
             "type": "number",
             "minimum": 0.0,
             "title": "Estimated Cost Usd"
+          },
+          "cost_source": {
+            "type": "string",
+            "enum": [
+              "provider",
+              "calculated"
+            ],
+            "title": "Cost Source",
+            "default": "calculated"
+          },
+          "pricing_snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PricingSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3230,7 +3285,9 @@
           "prompt_version",
           "prompt_hash",
           "token_usage",
-          "estimated_cost_usd"
+          "estimated_cost_usd",
+          "cost_source",
+          "pricing_snapshot"
         ],
         "title": "AnalysisReport",
         "description": "GET /api/v1/analyses/{analysis_id}/result — yalnızca \"completed\" iken."
@@ -3251,6 +3308,14 @@
             "type": "string",
             "minLength": 1,
             "title": "Text Column"
+          },
+          "row_filters": {
+            "items": {
+              "$ref": "#/components/schemas/RowFilter"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Row Filters"
           },
           "model": {
             "$ref": "#/components/schemas/ModelId"
@@ -3526,10 +3591,55 @@
             "minimum": 0.0,
             "title": "Output Cost Per Million"
           },
+          "cache_read_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Cost Per Million"
+          },
+          "cache_write_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Cost Per Million"
+          },
           "context_window": {
             "type": "integer",
             "exclusiveMinimum": 0.0,
             "title": "Context Window"
+          },
+          "pricing_source": {
+            "type": "string",
+            "enum": [
+              "openrouter",
+              "fallback"
+            ],
+            "title": "Pricing Source",
+            "default": "fallback"
+          },
+          "pricing_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pricing Updated At"
           }
         },
         "type": "object",
@@ -3538,7 +3648,11 @@
           "label",
           "input_cost_per_million",
           "output_cost_per_million",
-          "context_window"
+          "cache_read_cost_per_million",
+          "cache_write_cost_per_million",
+          "context_window",
+          "pricing_source",
+          "pricing_updated_at"
         ],
         "title": "ModelOption",
         "description": "GET /api/v1/models öğesi.\n\nADR-0001 §6 \"model yalnızca backend whitelist'inden seçilebilir\" diyordu\nama listeyi döndüren endpoint'i tanımlamıyordu. ADR-0002 #1 ile\n`GET /api/v1/models` sözleşmeye dâhil edildi."
@@ -3580,6 +3694,75 @@
           "unique_count"
         ],
         "title": "PreprocessingSummary"
+      },
+      "PricingSnapshot": {
+        "properties": {
+          "input_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Input Cost Per Million"
+          },
+          "output_cost_per_million": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Output Cost Per Million"
+          },
+          "cache_read_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Cost Per Million"
+          },
+          "cache_write_cost_per_million": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Cost Per Million"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "openrouter",
+              "fallback"
+            ],
+            "title": "Source"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_cost_per_million",
+          "output_cost_per_million",
+          "cache_read_cost_per_million",
+          "cache_write_cost_per_million",
+          "source",
+          "fetched_at"
+        ],
+        "title": "PricingSnapshot",
+        "description": "Bir job oluşturulurken sabitlenen model fiyatları."
       },
       "ProblemDetails": {
         "properties": {
@@ -3636,7 +3819,9 @@
       "PromptVersion": {
         "type": "string",
         "enum": [
-          "faq_analysis/v1"
+          "faq_analysis/v1",
+          "faq_analysis/v2",
+          "faq_analysis/v3"
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."
@@ -3685,6 +3870,33 @@
         ],
         "title": "ReadinessResponse"
       },
+      "RowFilter": {
+        "properties": {
+          "column": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Column"
+          },
+          "allowed_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Allowed Values"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "column",
+          "allowed_values"
+        ],
+        "title": "RowFilter",
+        "description": "Bir kolonda izin verilen değerler — filtreler arası AND, değerler arası OR.\n\nFiltre karşılaştırması XLSX hücresinin metne çevrilmiş ve kenar boşlukları\ntemizlenmiş hâliyle TAM eşleşmedir. Regex/substring bilinçli olarak yok:\nkullanıcı verisine karşı tahmin edilemez veya pahalı bir ifade motoru\nçalıştırmıyoruz."
+      },
       "SheetProfile": {
         "properties": {
           "name": {
@@ -3732,6 +3944,13 @@
             "type": "string",
             "title": "Text Column"
           },
+          "row_filters": {
+            "items": {
+              "$ref": "#/components/schemas/RowFilter"
+            },
+            "type": "array",
+            "title": "Row Filters"
+          },
           "total_rows": {
             "type": "integer",
             "minimum": 0.0,
@@ -3743,6 +3962,7 @@
           "filename",
           "sheet_name",
           "text_column",
+          "row_filters",
           "total_rows"
         ],
         "title": "SourceSummary"
@@ -3803,13 +4023,27 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Total Tokens"
+          },
+          "cached_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cached Tokens",
+            "default": 0
+          },
+          "cache_write_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cache Write Tokens",
+            "default": 0
           }
         },
         "type": "object",
         "required": [
           "prompt_tokens",
           "completion_tokens",
-          "total_tokens"
+          "total_tokens",
+          "cached_tokens",
+          "cache_write_tokens"
         ],
         "title": "TokenUsage"
       },
@@ -3835,12 +4069,6 @@
             "minimum": 0.0,
             "title": "Percentage"
           },
-          "confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Confidence"
-          },
           "redacted_examples": {
             "items": {
               "type": "string"
@@ -3855,7 +4083,6 @@
           "canonical_question",
           "count",
           "percentage",
-          "confidence",
           "redacted_examples"
         ],
         "title": "TopQuestion"

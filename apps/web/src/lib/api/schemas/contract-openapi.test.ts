@@ -222,6 +222,8 @@ describe("sözleşme detayları", () => {
         "prompt_hash",
         "token_usage",
         "estimated_cost_usd",
+        "cost_source",
+        "pricing_snapshot",
       ],
     ],
   ])("%s cevap şemasında her alan required", (name, expected) => {

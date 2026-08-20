@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -61,7 +61,23 @@ class Analysis(Base):
     # ---- istek parametreleri (sözleşmedeki AnalysisRequest alanları) ----
     sheet_name: Mapped[str] = mapped_column(String(512), nullable=False)
     text_column: Mapped[str] = mapped_column(String(512), nullable=False)
+    #: AnalysisRequest.row_filters'ın JSON karşılığı. Boş liste filtre yoktur.
+    #: JSONB seçimi bilinçli: filtre sayısı küçük ve job oluşturulduktan sonra
+    #: değişmez; ayrı tablo burada gereksiz join ve lifecycle yükü getirirdi.
+    row_filters: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=list,
+        server_default=text("'[]'::jsonb"),
+    )
     model: Mapped[str] = mapped_column(String(256), nullable=False)
+    #: API job'ı oluştururken alınan canlı/fallback fiyat snapshot'ı.
+    pricing_snapshot: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default=text("'{}'::jsonb"),
+    )
     prompt_version: Mapped[str] = mapped_column(String(128), nullable=False)
     top_n: Mapped[int] = mapped_column(Integer, nullable=False)
     max_cost_usd: Mapped[float] = mapped_column(Float, nullable=False)

@@ -12,8 +12,7 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from app.core.config import MAX_ROWS
-from app.schemas.analysis import PromptVersion
+from app.schemas.analysis import PricingSnapshot, PromptVersion, RowFilter
 from app.schemas.base import ApiModel, UtcDateTime
 from app.schemas.common import WarningCode
 
@@ -37,6 +36,7 @@ class SourceSummary(ApiModel):
     filename: str
     sheet_name: str
     text_column: str
+    row_filters: list[RowFilter] = Field(default_factory=list)
     total_rows: int = Field(ge=0)
 
 
@@ -57,8 +57,6 @@ class TopQuestion(ApiModel):
     count: int = Field(ge=0)
     #: 0-100 aralığında; `preprocessing_summary.analyzed_count`'a göre hesaplanır.
     percentage: float = Field(ge=0, le=100)
-    #: 0-1 aralığında model güven skoru.
-    confidence: float = Field(ge=0, le=1)
     #: PII redakte edilmiş, kırpılmış gerçek kullanıcı mesajları.
     redacted_examples: list[str] = Field(default_factory=list)
 
@@ -84,6 +82,8 @@ class TokenUsage(ApiModel):
     prompt_tokens: int = Field(ge=0)
     completion_tokens: int = Field(ge=0)
     total_tokens: int = Field(ge=0)
+    cached_tokens: int = Field(default=0, ge=0)
+    cache_write_tokens: int = Field(default=0, ge=0)
 
 
 class AnalysisWarning(ApiModel):
@@ -158,12 +158,23 @@ class AnalysisReport(ApiModel):
     whitelist'te olma şartı için de geçerli — bir modeli kullanımdan
     kaldırmak, onunla üretilmiş raporları silmek anlamına gelmemeli.
     """
+    cost_source: Literal["provider", "calculated"] = "calculated"
+    """`provider`: OpenRouter `usage.cost`; `calculated`: snapshot fallback'ı."""
+    pricing_snapshot: PricingSnapshot | None = None
 
     @model_validator(mode="after")
     def _report_invariants(self) -> Self:
         prep = self.preprocessing_summary
-        considered = min(self.source_summary.total_rows, MAX_ROWS)
-        if prep.analyzed_count + prep.discarded_count != considered:
+        # ANALİZ KIRPMAZ. Bu satır daha önce `min(total_rows, MAX_ROWS)`
+        # diyordu ve `workers/tasks.py` ile çelişiyordu: worker her zaman TÜM
+        # satırları işliyor. Sonuç, 100.000 satırı aşan HER dosyada
+        # sınıflandırma bittikten (yani LLM parası harcandıktan) sonra
+        # doğrulama hatasıydı; kullanıcı yalnızca `INTERNAL_ERROR` görüyordu.
+        # 505.442 satırlık gerçek veriyle ölçüldü.
+        #
+        # `MAX_ROWS` artık kesme eşiği değil, `UploadProfile.exceeds_row_limit`
+        # üzerinden "bu dosya büyük, uzun sürer ve pahalıdır" uyarısının eşiği.
+        if prep.analyzed_count + prep.discarded_count != self.source_summary.total_rows:
             raise ValueError(
                 "analyzed_count + discarded_count, işlenen satır sayısına eşit olmalı."
             )
@@ -175,6 +186,8 @@ class AnalysisReport(ApiModel):
         usage = self.token_usage
         if usage.total_tokens != usage.prompt_tokens + usage.completion_tokens:
             raise ValueError("total_tokens, prompt_tokens + completion_tokens olmalı.")
+        if usage.cached_tokens + usage.cache_write_tokens > usage.prompt_tokens:
+            raise ValueError("Cache tokenları prompt_tokens değerini aşamaz.")
 
         question_ids = [question.id for question in self.top_questions]
         if len(question_ids) != len(set(question_ids)):
@@ -204,10 +217,9 @@ class AnalysisReport(ApiModel):
         ):
             raise ValueError("related_question_ids aynı soru id'sini tekrarlayamaz.")
 
-        truncated = self.source_summary.total_rows > MAX_ROWS
-        has_warning = any(
-            warning.code == WarningCode.ROW_LIMIT_TRUNCATED for warning in self.warnings
-        )
-        if truncated is not has_warning:
-            raise ValueError("ROW_LIMIT_TRUNCATED uyarısı satır sınırıyla uyumlu olmalı.")
+        # `ROW_LIMIT_TRUNCATED` ↔ satır sınırı değişmezi KALDIRILDI: kesme
+        # diye bir şey olmadığı için uyarı da üretilmiyor. Kod
+        # `WarningCode`'da bırakıldı — üretici-kapalı/tüketici-açık sözleşme
+        # (ADR-0002 #2) gereği bir kodu ÜRETMEYİ bırakmak kırıcı değil, ve
+        # eski raporlar hâlâ o kodu taşıyor olabilir.
         return self

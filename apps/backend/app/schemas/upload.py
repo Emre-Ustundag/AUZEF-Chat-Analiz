@@ -59,9 +59,13 @@ class UploadProfile(ApiModel):
     exceeds_row_limit: bool = False
     """ADR-0002 #2: satır sınırı hard reject DEĞİL.
 
-    Upload her zaman tam profillenir ve bu bayrak set edilir; analiz ilk
-    `MAX_ROWS` satırı işleyip rapora `ROW_LIMIT_TRUNCATED` uyarısı ekler.
-    Bu yüzden sınır aşımı için ayrı bir ErrorCode yoktur.
+    Upload her zaman tam profillenir ve bu bayrak set edilir. Bu yüzden sınır
+    aşımı için ayrı bir ErrorCode yoktur.
+
+    ANLAMI: "bu dosya büyük — analiz uzun sürer ve pahalıdır". KIRPMA DEĞİL.
+    Eskiden "analiz ilk `MAX_ROWS` satırı işler" deniyordu ama worker hiçbir
+    zaman öyle çalışmadı; çelişki 100.000 satırı aşan her dosyada rapor
+    doğrulamasını düşürüyordu. Analiz her zaman tüm satırları işler.
     """
 
     @model_validator(mode="after")

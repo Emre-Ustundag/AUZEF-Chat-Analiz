@@ -1,6 +1,7 @@
 """Ayar kaynakları, ortam ayrımı ve fail-fast doğrulama."""
 
 import base64
+import os
 from pathlib import Path
 
 import pytest
@@ -49,6 +50,20 @@ def test_defaults_match_adr_limits() -> None:
     assert settings.max_uncompressed_bytes == 4 * 1024 * 1024 * 1024
     assert settings.analysis_timeout_seconds == 45 * 60
     assert settings.idempotency_ttl_seconds == 24 * 60 * 60
+    # Test süreci gerçek ağa çıkmasın diye conftest bu alanı env'den
+    # kapatır; üretim varsayılanını alan tanımından doğruluyoruz.
+    assert Settings.model_fields["pricing_refresh_enabled"].default is True
+    assert settings.pricing_cache_ttl_seconds == 60 * 60
+    assert settings.pricing_stale_ttl_seconds == 7 * 24 * 60 * 60
+
+
+def test_pricing_stale_cache_taze_cacheden_kisa_olamaz() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            pricing_cache_ttl_seconds=3_600,
+            pricing_stale_ttl_seconds=60,
+        )
 
 
 #: Ölçülmüş OOXML genişleme oranı. 130,9 MB'lık gerçekçi bir dosyanın
@@ -153,3 +168,21 @@ def test_production_accepts_valid_master_key() -> None:
 
 def test_log_level_is_case_insensitive() -> None:
     assert Settings(_env_file=None, log_level="warning").log_level == "WARNING"
+
+
+def test_tests_are_isolated_from_the_developer_env_file() -> None:
+    """`.env` testlere SIZMAMALI — regresyon.
+
+    `core/config.py` repo kökündeki `.env`'i çalışma dizininden bağımsız
+    okuyor. Bu geliştirici kolaylığı doğru, ama testlere sızdığında
+    `test_master_key_degisirse_cozulemez` sessizce etkisizleşiyordu: `.env`
+    içindeki `AUZEF_BACKEND_MASTER_KEY` iki Settings örneğine de aynı anahtarı
+    türettiriyor ve "master key değişirse çözülemez" iddiası çözebiliyordu.
+
+    CI'da `.env` bulunmadığı için orası yeşil kalıyor; kusur yalnızca
+    `docker compose` çalıştıran geliştiricinin makinesinde görünüyordu. Bu
+    test yalıtımın kendisini bekçiler (`tests/conftest.py`).
+    """
+    assert Settings.model_config.get("env_file") is None
+    assert not [key for key in os.environ if key.startswith("AUZEF_BACKEND_MASTER_KEY")]
+    assert Settings().backend_master_key is None

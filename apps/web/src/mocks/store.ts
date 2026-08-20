@@ -9,7 +9,7 @@ import type {
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
-import { ERROR_STATUS_BY_CODE, LIMITS, percentageHalfUp } from "@/lib/api/schemas";
+import { ERROR_STATUS_BY_CODE, percentageHalfUp } from "@/lib/api/schemas";
 import { estimateCostUsd } from "@/mocks/catalog";
 
 /**
@@ -49,7 +49,6 @@ export function scenarioFromFilename(filename: string): Scenario {
  * Sözleşmedeki tek kaynaktan geliyor — kendi kopyasını tutsaydı, mock'un
  * ürettiği gövdeler Zod invariant'larından sessizce ayrışabilirdi.
  */
-const MAX_ROWS = LIMITS.MAX_ROWS;
 const ROW_LIMIT_TOTAL_ROWS = 250_000;
 
 interface UploadRecord {
@@ -449,11 +448,12 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
   if (!record) return null;
   if (stageOf(record).status !== "completed") return null;
 
-  // ADR-0002 #2: satır sınırı aşılırsa iş reddedilmez; ilk MAX_ROWS satır
-  // işlenir ve rapora ROW_LIMIT_TRUNCATED uyarısı eklenir.
-  const truncated = record.scenario === "row-limit";
-  const totalRows = truncated ? ROW_LIMIT_TOTAL_ROWS : 48_213;
-  const considered = Math.min(totalRows, MAX_ROWS);
+  // ADR-0002 #2: satır sınırı aşılırsa iş reddedilmez. KIRPMA DA YOK —
+  // analiz her zaman tüm satırları işler, dolayısıyla `considered` dosyanın
+  // kendi satır sayısıdır ve uyarı üretilmez.
+  const overRowLimit = record.scenario === "row-limit";
+  const totalRows = overRowLimit ? ROW_LIMIT_TOTAL_ROWS : 48_213;
+  const considered = totalRows;
   const discarded = 1_107;
   const analyzed = considered - discarded;
   const unique = Math.round(analyzed * (31_540 / 47_106));
@@ -467,56 +467,48 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       id: "q1",
       canonical_question: "Sınav tarihleri ne zaman açıklanacak?",
       count: 11_680,
-      confidence: 0.94,
       examples: ["sınav tarihleri belli mi", "vize ne zaman"],
     },
     {
       id: "q2",
       canonical_question: "Ders materyallerine nereden ulaşabilirim?",
       count: 8_102,
-      confidence: 0.91,
       examples: ["ders kitabı nerede", "pdf'leri bulamıyorum"],
     },
     {
       id: "q3",
       canonical_question: "Harç ödemesini nasıl yaparım?",
       count: 5_748,
-      confidence: 0.89,
       examples: ["harç yatırma", "ödeme yapamıyorum"],
     },
     {
       id: "q4",
       canonical_question: "Kayıt yenileme işlemi nasıl yapılır?",
       count: 4_523,
-      confidence: 0.87,
       examples: ["kayıt yenilemedim ne olur"],
     },
     {
       id: "q5",
       canonical_question: "Sınav yerimi nereden öğrenebilirim?",
       count: 3_311,
-      confidence: 0.85,
       examples: ["sınav yeri", "hangi binada"],
     },
     {
       id: "q6",
       canonical_question: "Mazeret sınavına nasıl başvurulur?",
       count: 2_204,
-      confidence: 0.82,
       examples: ["mazeret sınavı başvuru"],
     },
     {
       id: "q7",
       canonical_question: "Not itirazı nasıl yapılır?",
       count: 1_640,
-      confidence: 0.78,
       examples: ["notuma itiraz etmek istiyorum"],
     },
     {
       id: "q8",
       canonical_question: "Öğrenci belgesi nasıl alınır?",
       count: 1_129,
-      confidence: 0.76,
       examples: ["öğrenci belgesi lazım"],
     },
   ];
@@ -537,6 +529,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       filename: uploads.get(record.request.upload_id)?.filename ?? "veri.xlsx",
       sheet_name: record.request.sheet_name,
       text_column: record.request.text_column,
+      row_filters: record.request.row_filters,
       total_rows: totalRows,
     },
     preprocessing_summary: {
@@ -551,7 +544,6 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       canonical_question: q.canonical_question,
       count: q.count,
       percentage: percentageHalfUp(q.count, analyzed),
-      confidence: q.confidence,
       redacted_examples: q.examples,
     })),
     themes: themes.map((theme) => {
@@ -579,16 +571,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     }),
     executive_summary:
       "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
-    warnings: truncated
-      ? [
-          {
-            code: "ROW_LIMIT_TRUNCATED",
-            // ADR-0002 #2: uyarı mesajı KULLANICIYA HAZIR Türkçedir; kod
-            // serbest string olduğu için arayüz mesaj uyduramaz.
-            message: `Dosyada ${ROW_LIMIT_TOTAL_ROWS.toLocaleString("tr")} satır bulundu; analiz ilk ${MAX_ROWS.toLocaleString("tr")} satırla sınırlandırıldı. Sonuçlar bu alt küme üzerinden hesaplandı.`,
-          },
-        ]
-      : [],
+    warnings: [],
     model: record.request.model,
     prompt_version: record.request.prompt_version,
     prompt_hash: "sha256:2f8a1c9e4b7d",
@@ -596,7 +579,11 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       prompt_tokens: 1_284_000,
       completion_tokens: 96_400,
       total_tokens: 1_380_400,
+      cached_tokens: 0,
+      cache_write_tokens: 0,
     },
     estimated_cost_usd: estimateCostUsd(record.request.model),
+    cost_source: "calculated",
+    pricing_snapshot: null,
   };
 }

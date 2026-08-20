@@ -17,7 +17,7 @@ SAYISAL INVARIANT'LAR (ADR-0002 §3 #2/#5, `test_fixture_invariants.py`):
   * `exceeds_row_limit` == en az bir sheet MAX_ROWS'u aşıyor
   * her kolonda `non_empty_count + empty_count == sheet.row_count`
   * `source_summary.total_rows` == analiz edilen sheet'in satır sayısı
-  * `analyzed_count + discarded_count` == min(total_rows, MAX_ROWS)
+  * `analyzed_count + discarded_count` == total_rows (analiz KIRPMAZ)
   * `unique_count + duplicate_count == analyzed_count`
   * `total_tokens == prompt_tokens + completion_tokens`
   * `estimated_cost_usd` katalogdan hesaplanır
@@ -39,8 +39,10 @@ from app.schemas.analysis import (
     AnalysisJob,
     AnalysisRequest,
     AnalysisStatus,
+    PricingSnapshot,
+    RowFilter,
 )
-from app.schemas.common import ErrorItem, ProblemDetails, WarningCode
+from app.schemas.common import ErrorItem, ProblemDetails
 from app.schemas.health import LivenessResponse, ReadinessCheckResponse, ReadinessResponse
 from app.schemas.report import (
     AnalysisReport,
@@ -227,56 +229,48 @@ _QUESTIONS: list[dict[str, Any]] = [
         "id": "q1",
         "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
         "count": 11_680,
-        "confidence": 0.94,
         "examples": ["sınav tarihleri belli mi", "vize ne zaman"],
     },
     {
         "id": "q2",
         "canonical_question": "Ders materyallerine nereden ulaşabilirim?",
         "count": 8_102,
-        "confidence": 0.91,
         "examples": ["ders kitabı nerede", "pdf'leri bulamıyorum"],
     },
     {
         "id": "q3",
         "canonical_question": "Harç ödemesini nasıl yaparım?",
         "count": 5_748,
-        "confidence": 0.89,
         "examples": ["harç yatırma", "ödeme yapamıyorum"],
     },
     {
         "id": "q4",
         "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
         "count": 4_523,
-        "confidence": 0.87,
         "examples": ["kayıt yenilemedim ne olur"],
     },
     {
         "id": "q5",
         "canonical_question": "Sınav yerimi nereden öğrenebilirim?",
         "count": 3_311,
-        "confidence": 0.85,
         "examples": ["sınav yeri", "hangi binada"],
     },
     {
         "id": "q6",
         "canonical_question": "Mazeret sınavına nasıl başvurulur?",
         "count": 2_204,
-        "confidence": 0.82,
         "examples": ["mazeret sınavı başvuru"],
     },
     {
         "id": "q7",
         "canonical_question": "Not itirazı nasıl yapılır?",
         "count": 1_640,
-        "confidence": 0.78,
         "examples": ["notuma itiraz etmek istiyorum"],
     },
     {
         "id": "q8",
         "canonical_question": "Öğrenci belgesi nasıl alınır?",
         "count": 1_129,
-        "confidence": 0.76,
         "examples": ["öğrenci belgesi lazım"],
     },
 ]
@@ -300,8 +294,11 @@ def build_report(
     Tema `count`/`percentage` TÜM mesajları yansıtır; yalnızca
     `related_question_ids` raporda gerçekten yer alan sorulara filtrelenir.
     """
-    # ADR-0002 #2: sınır aşılırsa iş reddedilmez, ilk MAX_ROWS satır işlenir.
-    considered = min(sheet_rows, MAX_ROWS)
+    # ADR-0002 #2: sınır aşılırsa iş reddedilmez. KIRPMA DA YOKTUR — analiz
+    # her zaman tüm satırları işler, dolayısıyla `considered` sheet'in kendi
+    # satır sayısıdır. Burada eskiden `min(sheet_rows, MAX_ROWS)` yazıyordu ve
+    # fixture'ı worker'ın hiç uygulamadığı bir semantiğe göre üretiyordu.
+    considered = sheet_rows
     discarded = EMPTY_MESSAGE_ROWS
     analyzed = considered - discarded
     # Normal fixture'daki 31.540 / 47.106 oranı büyük korpusta korunur.
@@ -324,6 +321,8 @@ def build_report(
                 related_question_ids=[qid for qid in theme["question_ids"] if qid in included_ids],
             )
         )
+
+    model_option = next(model for model in MODEL_LIST.models if model.id == DEFAULT_MODEL)
 
     return AnalysisReport(
         schema_version="1.0",
@@ -349,7 +348,6 @@ def build_report(
                 canonical_question=question["canonical_question"],
                 count=question["count"],
                 percentage=percentage_half_up(question["count"], analyzed),
-                confidence=question["confidence"],
                 redacted_examples=question["examples"],
             )
             for question in included
@@ -373,18 +371,15 @@ def build_report(
         ),
         # Sabit yazılmaz: katalog fiyatı değişince sessizce yanlış olurdu.
         estimated_cost_usd=estimate_cost_usd(DEFAULT_MODEL, PROMPT_TOKENS, COMPLETION_TOKENS),
-    )
-
-
-def row_limit_warning(sheet_rows: int) -> AnalysisWarning:
-    return AnalysisWarning(
-        code=WarningCode.ROW_LIMIT_TRUNCATED,
-        # ADR-0002 #2: mesaj kullanıcıya hazır Türkçedir.
-        message=(
-            f"Sayfada {sheet_rows:,} satır bulundu; analiz ilk "
-            f"{MAX_ROWS:,} satırla sınırlandırıldı. Sonuçlar bu alt "
-            "küme üzerinden hesaplandı."
-        ).replace(",", "."),
+        cost_source="calculated",
+        pricing_snapshot=PricingSnapshot(
+            input_cost_per_million=model_option.input_cost_per_million,
+            output_cost_per_million=model_option.output_cost_per_million,
+            cache_read_cost_per_million=model_option.cache_read_cost_per_million,
+            cache_write_cost_per_million=model_option.cache_write_cost_per_million,
+            source=model_option.pricing_source,
+            fetched_at=model_option.pricing_updated_at,
+        ),
     )
 
 
@@ -394,6 +389,10 @@ ANALYSIS_REQUEST = AnalysisRequest(
     upload_id=UPLOAD_ID,
     sheet_name="Mesajlar",
     text_column="mesaj",
+    row_filters=[
+        RowFilter(column="direction", allowed_values=["Kullanıcı"]),
+        RowFilter(column="message_type", allowed_values=["text"]),
+    ],
     model=DEFAULT_MODEL,
     prompt_version=DEFAULT_PROMPT_VERSION,
     top_n=8,
@@ -581,18 +580,21 @@ def build_cases() -> list[Case]:
             "AnalysisReport",
             build_report(top_n=8),
         ),
-        # Tek başına ADR-0002 #2 ve #5'in çalıştırılabilir spesifikasyonu.
+        # `MAX_ROWS` ÜSTÜ DOSYA — bizi kıran senaryoyu sözleşmeye kilitler.
+        #
+        # Eskiden "truncated" adıyla ve `ROW_LIMIT_TRUNCATED` uyarısıyla
+        # üretiliyordu; kesme hiçbir zaman uygulanmadığı için fixture gerçeği
+        # değil, varsayımı sabitliyordu. Şimdi 250.000 satırlık bir dosyada
+        # `analyzed + discarded == total_rows` olduğunu ve uyarı ÜRETİLMEDİĞİNİ
+        # doğruluyor. Bu case silinseydi, sınır üstü yol sözleşmede hiç
+        # temsil edilmez ve çelişki sessizce geri gelebilirdi.
         Case(
-            "analyses.result.200.truncated",
+            "analyses.result.200.over-row-limit",
             "GET",
             "/api/v1/analyses/{analysis_id}/result",
             200,
             "AnalysisReport",
-            build_report(
-                top_n=5,
-                sheet_rows=SHEET_ROWS_OVER_LIMIT,
-                warnings=[row_limit_warning(SHEET_ROWS_OVER_LIMIT)],
-            ),
+            build_report(top_n=5, sheet_rows=SHEET_ROWS_OVER_LIMIT),
         ),
     ]
 

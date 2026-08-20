@@ -29,10 +29,16 @@ from app.pipeline.classifier import (
     ThemeAssignment,
     _signature_tokens,
 )
-from app.pipeline.cost import CostDecision, estimate_cost, estimate_profile_cost
+from app.pipeline.cost import (
+    CostDecision,
+    cost_for_tokens,
+    estimate_cost,
+    estimate_profile_cost,
+    estimate_profile_cost_range,
+)
 from app.pipeline.preprocess import PreprocessResult, RecordGroup, normalize, preprocess
-from app.prompts.faq_analysis import V1
-from app.schemas.report import AnalysisReport
+from app.prompts.faq_analysis import V1, V2
+from app.schemas.report import AnalysisReport, percentage_half_up
 
 
 @pytest.fixture
@@ -319,9 +325,35 @@ def test_oranlar_adetlerden_turetilir(settings: Settings) -> None:
 
     assert analyzed == 200
     for question in report.top_questions:
-        assert question.percentage == pytest.approx(round(question.count / analyzed * 100, 1))
+        assert question.percentage == percentage_half_up(question.count, analyzed)
     for theme in report.themes:
-        assert theme.percentage == pytest.approx(round(theme.count / analyzed * 100, 1))
+        assert theme.percentage == percentage_half_up(theme.count, analyzed)
+
+
+def test_half_up_esitlik_yuzdesi_rapor_uretmesini_engellemez(settings: Settings) -> None:
+    """2.400 satırdaki %2,25, şemanın beklediği şekilde %2,3 olmalı.
+
+    Python ``round(2.25, 1)`` half-even ile 2,2 döndürür. Bu fark daha önce
+    rapor şemasının doğrulamasını patlatıp LLM işi tamamlandıktan sonra analizi
+    başarısız kılıyordu.
+    """
+    report = aggregate(
+        analysis_id=uuid.uuid4(),
+        preprocess_result=_build({"a": 54, "b": 846, "c": 800, "d": 700}),
+        classification=_classification(),
+        filename="veri.xlsx",
+        sheet_name="Mesajlar",
+        text_column="mesaj",
+        model="anthropic/claude-sonnet-4.6",
+        prompt_version="faq_analysis/v3",
+        classifier_id="test/v1",
+        top_n=10,
+        settings=settings,
+    )
+
+    question = next(question for question in report.top_questions if question.id == "q1")
+    assert question.count == 54
+    assert question.percentage == 2.3
 
 
 def test_tema_toplami_analiz_edilen_kaydi_asmaz(settings: Settings) -> None:
@@ -405,43 +437,6 @@ def test_bilinmeyen_kayit_kimligi_reddedilir(settings: Settings) -> None:
         )
 
 
-def test_confidence_kume_tutarliligindan_turetilir(settings: Settings) -> None:
-    """`confidence` grup içi baskınlıktan DETERMİNİSTİK türetilir.
-
-    Faz 2'de model yok; alan, aynı kanonik soruya düşen kayıt gruplarının
-    en baskınının payıdır. Tek gruplu sorularda doğal olarak 1.0 çıkar —
-    bu "uygulanmamış" demek DEĞİL; birden çok yazım aynı imzayı
-    paylaştığında değer 1.0'ın altına iner.
-    """
-    values = (
-        ["sınav tarihleri ne zaman açıklanacak"] * 30
-        + ["sınav tarihleri ne zaman belli olur"] * 10
-        + ["sınav tarihleri ne zaman"] * 4
-    )
-    result = preprocess(values, settings)
-    classifier = DeterministicClassifier()
-    report = aggregate(
-        analysis_id=uuid.uuid4(),
-        preprocess_result=result,
-        classification=classifier.classify(result.groups),
-        filename="veri.xlsx",
-        sheet_name="Mesajlar",
-        text_column="mesaj",
-        model="anthropic/claude-sonnet-4.6",
-        prompt_version="faq_analysis/v1",
-        classifier_id=classifier.identifier,
-        top_n=10,
-        settings=settings,
-    )
-
-    # Üç yazım tek soruda birleşti; baskın grup 30/44.
-    assert len(report.top_questions) == 1
-    question = report.top_questions[0]
-    assert question.count == 44
-    assert question.confidence == round(30 / 44, 2)
-    assert 0 < question.confidence < 1
-
-
 def test_faz2_token_ve_maliyet_sifir_raporlanir(settings: Settings) -> None:
     """Plan §4: Faz 2'de gerçek token yok, 0 raporlanır."""
     report = _aggregate(top_n=10, settings=settings)
@@ -489,16 +484,99 @@ def test_ucucu_ol_ucu_uctan_uca_gercek_veriyle(settings: Settings) -> None:
 # ------------------------------------------------------------- maliyet tavanı
 
 
-def test_profil_maliyet_tahmini_kayit_sayisiyla_artar() -> None:
-    one = estimate_profile_cost(1, 120.0, "anthropic/claude-sonnet-4.6")
-    hundred = estimate_profile_cost(100, 120.0, "anthropic/claude-sonnet-4.6")
+def test_profil_maliyet_tahmini_kayit_sayisiyla_artar(settings: Settings) -> None:
+    one = estimate_profile_cost(
+        1,
+        120.0,
+        "anthropic/claude-sonnet-4.6",
+        settings=settings,
+        prompt=V1,
+    )
+    hundred = estimate_profile_cost(
+        100,
+        120.0,
+        "anthropic/claude-sonnet-4.6",
+        settings=settings,
+        prompt=V1,
+    )
 
     assert one > 0
-    assert hundred == round(one * 100, 6)
+    assert hundred > one
+    # Çağrı başına sabit JSON/prompt yükü var; bu yüzden maliyet tam doğrusal
+    # değildir ve tek kaydın maliyetini 100'le çarpmak fazla tahmin verir.
+    assert hundred < one * 100
 
 
-def test_profil_maliyet_tahmini_bos_kolonda_sifirdir() -> None:
-    assert estimate_profile_cost(0, 120.0, "anthropic/claude-sonnet-4.6") == 0.0
+def test_profil_maliyet_tahmini_bos_kolonda_sifirdir(settings: Settings) -> None:
+    assert (
+        estimate_profile_cost(
+            0,
+            120.0,
+            "anthropic/claude-sonnet-4.6",
+            settings=settings,
+            prompt=V1,
+        )
+        == 0.0
+    )
+
+
+def test_hiyerarsik_reduce_maliyet_tahmini_aralik_dondurur(settings: Settings) -> None:
+    narrow = settings.model_copy(
+        update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
+    )
+    forecast = estimate_profile_cost_range(
+        30,
+        60.0,
+        "google/gemini-2.5-flash",
+        settings=narrow,
+        prompt=V2,
+        max_cost_usd=0.0001,
+    )
+
+    assert forecast.estimated_cost_usd > 0
+    assert forecast.upper_cost_usd > forecast.estimated_cost_usd
+    assert forecast.upper_prompt_tokens > forecast.estimated_prompt_tokens
+    assert forecast.cost_range_usd == (forecast.estimated_cost_usd, forecast.upper_cost_usd)
+    assert forecast.exceeds is True
+
+
+def test_gercek_smoke_completion_olcumune_yakin_tahmin(settings: Settings) -> None:
+    """2026-08-19 gerçek Gemini çağrısı: 905 input, 469 output token."""
+    values = [
+        "sınav tarihleri ne zaman açıklanacak acaba bilgi alabilir miyim",
+        "ders materyallerine nereden ulaşabilirim linkler çalışmıyor",
+        "harç ödemesini nasıl yaparım banka şubesinden mi",
+        "kayıt yenileme işlemi için son tarih ne zaman",
+        "sınav yerimi nereden öğrenebilirim bilgi yok",
+    ]
+    result = preprocess(values, settings)
+    decision = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=5.0,
+        settings=settings,
+        prompt=V2,
+    )
+
+    actual_cost = cost_for_tokens(905, 469, "google/gemini-2.5-flash")
+
+    assert decision.estimated_completion_tokens == 500
+    assert actual_cost <= decision.estimated_cost_usd <= round(actual_cost * 1.20, 6)
+
+
+def test_coklu_chunk_completion_tahmini_reduce_yukunu_icerir(settings: Settings) -> None:
+    dar = settings.model_copy(update={"llm_chunk_max_records": 3})
+    result = preprocess([f"benzersiz soru numarası {index}" for index in range(7)], dar)
+    decision = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=5.0,
+        settings=dar,
+        prompt=V2,
+    )
+
+    # 3 map çağrısı: 3×200 sabit + 7×60 kayıt; reduce: 200 + 7×50.
+    assert decision.estimated_completion_tokens == 1_570
 
 
 def test_maliyet_tahmini_benzersiz_kayitlardan_hesaplanir(settings: Settings) -> None:

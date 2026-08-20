@@ -3,7 +3,7 @@
 import { FileSpreadsheet, Upload } from "lucide-react";
 import { useCallback, useId, useRef, useState } from "react";
 
-import { formatCount, formatFileSize } from "@/lib/format";
+import { formatFileSize } from "@/lib/format";
 import { LIMITS } from "@/lib/api/schemas";
 import { cn } from "@/lib/utils";
 
@@ -71,8 +71,7 @@ export function FileDropzone({ onFileSelected, disabled }: FileDropzoneProps) {
         </span>
 
         <span className="text-xs text-muted-foreground">
-          Yalnızca .xlsx · en fazla {formatFileSize(LIMITS.MAX_UPLOAD_BYTES)} ·{" "}
-          {formatCount(LIMITS.MAX_ROWS)} satır
+          Yalnızca .xlsx · en fazla {formatFileSize(LIMITS.MAX_UPLOAD_BYTES)}
         </span>
 
         <input

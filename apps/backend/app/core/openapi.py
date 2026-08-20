@@ -67,7 +67,7 @@ _RESPONSE_EXAMPLES: dict[tuple[str, str, str], dict[str, str]] = {
     },
     ("/api/v1/analyses/{analysis_id}/result", "get", "200"): {
         "Tam rapor": "analyses.result.200",
-        "Satır sınırı kırpılmış": "analyses.result.200.truncated",
+        "Satır sınırının üstünde dosya": "analyses.result.200.over-row-limit",
     },
 }
 

@@ -77,6 +77,14 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
             {src.filename} · {src.sheet_name} · {src.text_column} kolonu ·{" "}
             {formatDateTime(report.generated_at)}
           </p>
+          {src.row_filters.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Filtreler:{" "}
+              {src.row_filters
+                .map((rowFilter) => `${rowFilter.column} = ${rowFilter.allowed_values.join(" | ")}`)
+                .join("; ")}
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -154,7 +162,7 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
               hint: `${formatCount(pre.duplicate_count)} tekrar birleştirildi`,
             },
             {
-              label: "Tahmini maliyet",
+              label: report.cost_source === "provider" ? "Gerçek maliyet" : "Hesaplanan maliyet",
               value: formatUsd(report.estimated_cost_usd),
               hint: `${formatCount(report.token_usage.total_tokens)} token`,
             },
@@ -226,6 +234,28 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
                   report.token_usage.completion_tokens,
                 )}`}
               />
+              {report.token_usage.cached_tokens > 0 ? (
+                <Meta
+                  label="Cache'den okunan token"
+                  value={formatCount(report.token_usage.cached_tokens)}
+                />
+              ) : null}
+              {report.token_usage.cache_write_tokens > 0 ? (
+                <Meta
+                  label="Cache'e yazılan token"
+                  value={formatCount(report.token_usage.cache_write_tokens)}
+                />
+              ) : null}
+              {report.pricing_snapshot ? (
+                <Meta
+                  label="Fiyat kaynağı"
+                  value={
+                    report.pricing_snapshot.source === "openrouter"
+                      ? "OpenRouter canlı katalog"
+                      : "Yerel yedek katalog"
+                  }
+                />
+              ) : null}
             </dl>
           </CardContent>
         </Card>

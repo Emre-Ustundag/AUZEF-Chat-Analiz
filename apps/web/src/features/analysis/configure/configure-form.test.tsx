@@ -70,18 +70,26 @@ const models: ModelList = {
       label: "Claude Sonnet 4.6",
       input_cost_per_million: 3,
       output_cost_per_million: 15,
+      cache_read_cost_per_million: 0.3,
+      cache_write_cost_per_million: 3.75,
       context_window: 1_000_000,
+      pricing_source: "fallback",
+      pricing_updated_at: null,
     },
     {
       id: "google/gemini-2.5-flash",
       label: "Gemini 2.5 Flash",
       input_cost_per_million: 0.3,
       output_cost_per_million: 2.5,
+      cache_read_cost_per_million: 0.03,
+      cache_write_cost_per_million: 0.0833333333333,
       context_window: 1_048_576,
+      pricing_source: "fallback",
+      pricing_updated_at: null,
     },
   ],
   default_model: "google/gemini-2.5-flash",
-  default_prompt_version: "faq_analysis/v1",
+  default_prompt_version: "faq_analysis/v3",
 };
 
 function renderForm() {
@@ -130,6 +138,25 @@ describe("ConfigureForm", () => {
     expect(request.model).toBe("google/gemini-2.5-flash");
     expect(request.text_column).toBe("mesaj");
     expect(request.sheet_name).toBe("Mesajlar");
+    expect(request.row_filters).toEqual([]);
+  });
+
+  it("isteğe bağlı satır filtresini isteğe ekler", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Filtre ekle" }));
+    await user.click(screen.getByLabelText("Kolon"));
+    await user.click(await screen.findByRole("option", { name: "kullanici_id" }));
+    await user.type(screen.getByLabelText("Kabul edilen değerler"), "1001, 1002");
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.row_filters).toEqual([
+      { column: "kullanici_id", allowed_values: ["1001", "1002"] },
+    ]);
   });
 
   it("API anahtarını gövdede DEĞİL, ayrı argümanda gönderir", async () => {

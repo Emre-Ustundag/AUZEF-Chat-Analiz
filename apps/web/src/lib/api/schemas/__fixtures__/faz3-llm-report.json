@@ -22,7 +22,6 @@
       "canonical_question": "Sınav ne zaman yapılacak?",
       "count": 16,
       "percentage": 40.0,
-      "confidence": 0.5,
       "redacted_examples": [
         "sınav tarihleri ne zaman açıklanacak acaba bilgi alabilir miyim",
         "sınav yerimi nereden öğrenebilirim bilgi yok"
@@ -33,7 +32,6 @@
       "canonical_question": "Harç ücreti ne kadar?",
       "count": 8,
       "percentage": 20.0,
-      "confidence": 1.0,
       "redacted_examples": ["harç ödemesini nasıl yaparım banka şubesinden mi"]
     },
     {
@@ -41,7 +39,6 @@
       "canonical_question": "Kayıt işlemleri nasıl yapılır?",
       "count": 8,
       "percentage": 20.0,
-      "confidence": 1.0,
       "redacted_examples": ["kayıt yenileme işlemi için son tarih ne zaman"]
     },
     {
@@ -49,7 +46,6 @@
       "canonical_question": "Sınıflandırılamayan kayıtlar",
       "count": 8,
       "percentage": 20.0,
-      "confidence": 1.0,
       "redacted_examples": ["ders materyallerine nereden ulaşabilirim linkler çalışmıyor"]
     }
   ],

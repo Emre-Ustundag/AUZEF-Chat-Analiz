@@ -16,7 +16,7 @@ import hashlib
 from dataclasses import dataclass
 from typing import Any
 
-from app.prompts.faq_analysis import v1
+from app.prompts.faq_analysis import v1, v2, v3
 
 
 @dataclass(frozen=True)
@@ -61,10 +61,30 @@ V1 = PromptBundle(
     reduce_schema=v1.REDUCE_SCHEMA,
 )
 
-_REGISTRY: dict[str, PromptBundle] = {V1.version: V1}
+V2 = PromptBundle(
+    version=v2.VERSION,
+    map_system=v2.MAP_SYSTEM_PROMPT,
+    map_user_template=v2.MAP_USER_TEMPLATE,
+    map_schema=v2.MAP_SCHEMA,
+    reduce_system=v2.REDUCE_SYSTEM_PROMPT,
+    reduce_user_template=v2.REDUCE_USER_TEMPLATE,
+    reduce_schema=v2.REDUCE_SCHEMA,
+)
+
+V3 = PromptBundle(
+    version=v3.VERSION,
+    map_system=v3.MAP_SYSTEM_PROMPT,
+    map_user_template=v3.MAP_USER_TEMPLATE,
+    map_schema=v3.MAP_SCHEMA,
+    reduce_system=v3.REDUCE_SYSTEM_PROMPT,
+    reduce_user_template=v3.REDUCE_USER_TEMPLATE,
+    reduce_schema=v3.REDUCE_SCHEMA,
+)
+
+_REGISTRY: dict[str, PromptBundle] = {V1.version: V1, V2.version: V2, V3.version: V3}
 
 #: `domain/model_catalog.DEFAULT_PROMPT_VERSION` ile aynı olmalı.
-DEFAULT_VERSION = V1.version
+DEFAULT_VERSION = V3.version
 
 
 class UnknownPromptVersionError(Exception):
@@ -90,6 +110,8 @@ def is_known_version(version: str) -> bool:
 __all__ = [
     "DEFAULT_VERSION",
     "V1",
+    "V2",
+    "V3",
     "PromptBundle",
     "UnknownPromptVersionError",
     "get_prompt",

@@ -13,7 +13,9 @@ import pytest
 
 from app.core.config import Settings
 from app.services.xlsx import (
+    SheetOrColumnNotFoundError,
     XlsxRejectedError,
+    iter_column_values,
     profile_xlsx,
     validate_and_profile,
     validate_xlsx,
@@ -209,6 +211,55 @@ def test_satir_siniri_isaretlenir_ama_basarisiz_olmaz(
 def test_satir_siniri_asilmadiginda_isaretlenmez(settings: Settings) -> None:
     profile = validate_and_profile(FIXTURES / "valid_multi_sheet.xlsx", settings)
     assert profile["exceeds_row_limit"] is False
+
+
+def test_satir_filtresi_eslesmeyenleri_none_olarak_korur() -> None:
+    values = list(
+        iter_column_values(
+            FIXTURES / "valid_multi_sheet.xlsx",
+            "Mesajlar",
+            "mesaj",
+            {"kanal": frozenset({"web"})},
+        )
+    )
+
+    # Dosyanın 40 satırı da sayılır; 20 mobil satır filtre tarafından
+    # elenir ve None olur. Atılsaydı rapor toplamı/değişmezi bozulurdu.
+    assert len(values) == 40
+    assert sum(value is not None for value in values) == 20
+    assert sum(value is None for value in values) == 20
+
+
+def test_birden_fazla_satir_filtresi_and_uygular() -> None:
+    first_message = "sınav tarihleri ne zaman açıklanacak acaba bilgi alabilir miyim"
+    values = list(
+        iter_column_values(
+            FIXTURES / "valid_multi_sheet.xlsx",
+            "Mesajlar",
+            "mesaj",
+            {
+                "kanal": frozenset({"web"}),
+                "mesaj": frozenset({first_message}),
+            },
+        )
+    )
+
+    assert len(values) == 40
+    assert [value for value in values if value is not None] == [first_message] * 4
+
+
+def test_bilinmeyen_filtre_kolonu_reddedilir() -> None:
+    with pytest.raises(SheetOrColumnNotFoundError) as exc_info:
+        list(
+            iter_column_values(
+                FIXTURES / "valid_multi_sheet.xlsx",
+                "Mesajlar",
+                "mesaj",
+                {"olmayan": frozenset({"x"})},
+            )
+        )
+
+    assert exc_info.value.reason == "filter_column_not_found"
 
 
 def test_profil_sozlesme_semasina_uyar(settings: Settings) -> None:

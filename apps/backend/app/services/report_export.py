@@ -92,6 +92,10 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
 
     source = report.source_summary
     pre = report.preprocessing_summary
+    serialized_filters = "; ".join(
+        f"{row_filter.column} = {' | '.join(row_filter.allowed_values)}"
+        for row_filter in source.row_filters
+    )
 
     rows: list[tuple[str, str | int | float]] = [
         ("Analiz kimliği", str(report.analysis_id)),
@@ -99,6 +103,7 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ("Dosya", source.filename),
         ("Sayfa", source.sheet_name),
         ("Kolon", source.text_column),
+        ("Satır filtreleri", serialized_filters or "Yok"),
         ("Toplam satır", source.total_rows),
         ("Analiz edilen kayıt", pre.analyzed_count),
         ("Elenen kayıt", pre.discarded_count),
@@ -110,9 +115,38 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
         ("Prompt özeti", report.prompt_hash),
         ("Prompt token", report.token_usage.prompt_tokens),
         ("Yanıt token", report.token_usage.completion_tokens),
+        ("Cache'den okunan token", report.token_usage.cached_tokens),
+        ("Cache'e yazılan token", report.token_usage.cache_write_tokens),
         ("Toplam token", report.token_usage.total_tokens),
-        ("Tahmini maliyet (USD)", report.estimated_cost_usd),
+        ("Maliyet (USD)", report.estimated_cost_usd),
+        (
+            "Maliyet kaynağı",
+            "OpenRouter usage.cost"
+            if report.cost_source == "provider"
+            else "Fiyat snapshot hesabı",
+        ),
     ]
+    if report.pricing_snapshot is not None:
+        snapshot = report.pricing_snapshot
+        rows.extend(
+            [
+                ("Fiyat kataloğu", snapshot.source),
+                ("Girdi fiyatı (USD / 1M)", snapshot.input_cost_per_million),
+                ("Çıktı fiyatı (USD / 1M)", snapshot.output_cost_per_million),
+                (
+                    "Cache okuma fiyatı (USD / 1M)",
+                    snapshot.cache_read_cost_per_million
+                    if snapshot.cache_read_cost_per_million is not None
+                    else "Yok",
+                ),
+                (
+                    "Cache yazma fiyatı (USD / 1M)",
+                    snapshot.cache_write_cost_per_million
+                    if snapshot.cache_write_cost_per_million is not None
+                    else "Yok",
+                ),
+            ]
+        )
     for label, value in rows:
         sheet.append([label, value])
 
@@ -132,7 +166,7 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
 def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
     _write_header(
         sheet,
-        ["Kimlik", "Soru", "Adet", "Oran (%)", "Güven", "Örnek mesajlar (redakte)"],
+        ["Kimlik", "Soru", "Adet", "Oran (%)", "Örnek mesajlar (redakte)"],
     )
     for question in report.top_questions:
         sheet.append(
@@ -142,15 +176,14 @@ def _build_questions_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
                 # ---- ham sayılar: `int` ve `float`, dize DEĞİL ----
                 question.count,
                 question.percentage,
-                question.confidence,
                 _EXAMPLE_SEPARATOR.join(question.redacted_examples),
             ]
         )
-        sheet.cell(row=sheet.max_row, column=6).alignment = Alignment(
+        sheet.cell(row=sheet.max_row, column=5).alignment = Alignment(
             wrap_text=True, vertical="top"
         )
 
-    _autosize(sheet, [16, 60, 10, 12, 10, 70])
+    _autosize(sheet, [16, 60, 10, 12, 70])
 
 
 def _build_themes_sheet(sheet: Worksheet, report: AnalysisReport) -> None:

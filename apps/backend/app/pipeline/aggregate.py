@@ -28,11 +28,13 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, datetime
+from typing import Literal
 from uuid import UUID
 
 from app.core.config import Settings
 from app.pipeline.classifier import Classification
 from app.pipeline.preprocess import PreprocessResult, RecordGroup
+from app.schemas.analysis import PricingSnapshot, RowFilter
 from app.schemas.report import (
     REPORT_SCHEMA_VERSION,
     AnalysisReport,
@@ -42,6 +44,7 @@ from app.schemas.report import (
     Theme,
     TokenUsage,
     TopQuestion,
+    percentage_half_up,
 )
 
 
@@ -57,10 +60,10 @@ class AggregationError(Exception):
 
 def _percentage(count: int, total: int) -> float:
     """Oranı adetten türetir. Tek yer burasıdır; hiçbir yüzde elle yazılmaz."""
-    if total <= 0:
-        return 0.0
-    # Bir ondalık: frontend `formatPercentage` da bu hassasiyeti gösteriyor.
-    return round(count / total * 100, 1)
+    # Rapor şemasının değişmeziyle aynı, float sınır vakalarından bağımsız
+    # half-up kuralı. Python ``round`` eşitlikte half-even kullandığı için
+    # 54 / 2400 gibi değerlerde şema doğrulamasını bozabiliyordu.
+    return percentage_half_up(count, total)
 
 
 def _prompt_hash(classifier_id: str, prompt_version: str) -> str:
@@ -103,9 +106,12 @@ def aggregate(
     classifier_id: str,
     top_n: int,
     settings: Settings,
+    row_filters: list[RowFilter] | None = None,
     extra_warnings: list[AnalysisWarning] | None = None,
     token_usage: TokenUsage | None = None,
     estimated_cost_usd: float = 0.0,
+    cost_source: Literal["provider", "calculated"] = "calculated",
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> AnalysisReport:
     """Gerçek frekanslardan raporu üretir.
 
@@ -123,7 +129,6 @@ def aggregate(
     # ---- soru adetleri: yalnızca RecordGroup.count toplamları ----
     question_counts: dict[str, int] = {}
     question_examples: dict[str, list[str]] = {}
-    question_confidence: dict[str, float] = {}
 
     for question in classification.questions:
         members = [groups[record_id] for record_id in question.record_ids]
@@ -142,13 +147,6 @@ def aggregate(
                 break
         question_examples[question.question_id] = examples
 
-        # Güven skoru DETERMİNİSTİK türetiliyor: grubun en baskın kaydının
-        # toplam içindeki payı. Faz 2'de model yok, dolayısıyla "model güven
-        # skoru" yerine küme tutarlılığı raporlanıyor — bu bir SAPMA DEĞİL,
-        # aynı alanın vekil karşılığı (rapor `prompt_hash` ile işaretli).
-        dominant = max((member.count for member in members), default=0)
-        question_confidence[question.question_id] = round(dominant / total, 2) if total > 0 else 0.0
-
     # ---- Top N kırpması ----
     ordered_questions = sorted(
         classification.questions,
@@ -163,7 +161,6 @@ def aggregate(
             canonical_question=question.canonical_question,
             count=question_counts[question.question_id],
             percentage=_percentage(question_counts[question.question_id], analyzed),
-            confidence=question_confidence[question.question_id],
             redacted_examples=question_examples[question.question_id],
         )
         for question in included
@@ -205,6 +202,7 @@ def aggregate(
             filename=filename,
             sheet_name=sheet_name,
             text_column=text_column,
+            row_filters=list(row_filters or []),
             total_rows=preprocess_result.total_rows,
         ),
         preprocessing_summary=PreprocessingSummary(
@@ -227,6 +225,8 @@ def aggregate(
         # tahmin yazmak raporu yalancı yapardı.
         token_usage=token_usage or TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
         estimated_cost_usd=estimated_cost_usd,
+        cost_source=cost_source,
+        pricing_snapshot=pricing_snapshot,
     )
 
 

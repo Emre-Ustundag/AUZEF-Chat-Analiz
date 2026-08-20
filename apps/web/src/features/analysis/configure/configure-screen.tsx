@@ -49,10 +49,10 @@ export function ConfigureScreen({ upload }: { upload: Upload }) {
           {profile?.exceeds_row_limit && (
             <Alert className="mt-4">
               <AlertCircle className="size-4" aria-hidden="true" />
-              <AlertTitle>Satır sınırı aşıldı</AlertTitle>
+              <AlertTitle>Büyük dosya</AlertTitle>
               <AlertDescription>
-                Dosya varsayılan satır sınırının üzerinde. Analiz yalnızca ilk kayıtları
-                kapsayabilir.
+                Dosya alışılmış boyutun üzerinde. Tüm satırlar analiz edilir; analiz uzun sürer ve
+                maliyeti yüksek olur.
               </AlertDescription>
             </Alert>
           )}

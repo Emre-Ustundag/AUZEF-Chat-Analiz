@@ -16,6 +16,7 @@ describe("idempotency fingerprint'leri", () => {
       upload_id: "00000000-0000-4000-8000-000000000000",
       sheet_name: "Mesajlar",
       text_column: "mesaj",
+      row_filters: [],
       model: "anthropic/claude-sonnet-4.6",
       prompt_version: "faq_analysis/v1",
       top_n: 8,

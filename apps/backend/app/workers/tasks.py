@@ -22,14 +22,14 @@ import tempfile
 import uuid
 from itertools import islice
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from celery.exceptions import SoftTimeLimitExceeded
 from pydantic import ValidationError
 from sqlalchemy import CursorResult, Executable, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import MAX_ROWS, Settings, get_settings
+from app.core.config import Settings, get_settings
 from app.core.db import session_scope
 from app.core.errors import ErrorCode, build_problem
 from app.core.logging import get_logger
@@ -38,7 +38,7 @@ from app.models.analysis import Analysis
 from app.models.upload import Upload
 from app.pipeline.aggregate import AggregationError, aggregate
 from app.pipeline.classifier import RecordClassifier
-from app.pipeline.cost import cost_for_tokens, estimate_cost
+from app.pipeline.cost import cost_for_usage, estimate_cost
 from app.pipeline.llm_classifier import (
     ClassificationCancelledError,
     CostLimitExceededError,
@@ -47,11 +47,17 @@ from app.pipeline.llm_classifier import (
 )
 from app.pipeline.preprocess import Preprocessor, PreprocessResult
 from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
-from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
+from app.schemas.analysis import (
+    STAGE_PROGRESS,
+    TERMINAL_STATUSES,
+    AnalysisStatus,
+    PricingSnapshot,
+    RowFilter,
+)
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import retention, secret_store, storage
-from app.services.openrouter import OpenRouterClient, OpenRouterError
+from app.services import pricing, retention, secret_store, storage
+from app.services.openrouter import OpenRouterClient, OpenRouterError, Usage
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
     XlsxRejectedError,
@@ -226,6 +232,7 @@ def build_classifier(
     settings: Settings,
     on_progress: ProgressCallback | None = None,
     max_cost_usd: float | None = None,
+    pricing_snapshot: PricingSnapshot | None = None,
 ) -> RecordClassifier:
     """Sınıflandırıcıyı kuran TEK değişim noktası (Faz 2 → Faz 3).
 
@@ -245,6 +252,7 @@ def build_classifier(
         settings=settings,
         on_progress=on_progress,
         max_cost_usd=max_cost_usd,
+        pricing_snapshot=pricing_snapshot,
     )
 
 
@@ -260,8 +268,12 @@ def _close_classifier(classifier: RecordClassifier) -> None:
         closer()
 
 
-def _actual_cost(usage: TokenUsage, model_id: str) -> float:
-    """GERÇEKTEN harcanan tahmini tutar — sağlayıcının token sayacından.
+def _actual_cost(
+    usage: Usage,
+    model_id: str,
+    pricing_snapshot: PricingSnapshot,
+) -> tuple[float, Literal["provider", "calculated"]]:
+    """Sağlayıcı tutarını, yoksa snapshot hesabını döndürür.
 
     `pipeline/cost.py`'deki `estimate_cost` ile karıştırılmamalı: o, çağrılar
     BAŞLAMADAN ÖNCE tavan kontrolü için bir tahmin üretir. Bu ise iş bitince,
@@ -273,7 +285,19 @@ def _actual_cost(usage: TokenUsage, model_id: str) -> float:
     hesap burada bir kez daha yazılıydı ve iki kopyanın ayrışması, tavan
     kontrolü ile raporlanan tutarı sessizce birbirinden koparabilirdi.
     """
-    return cost_for_tokens(usage.prompt_tokens, usage.completion_tokens, model_id)
+    if usage.cost_usd is not None:
+        return round(usage.cost_usd, 6), "provider"
+    return (
+        cost_for_usage(
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            cached_tokens=usage.cached_tokens,
+            cache_write_tokens=usage.cache_write_tokens,
+            model_id=model_id,
+            pricing_snapshot=pricing_snapshot,
+        ),
+        "calculated",
+    )
 
 
 def _chunk_progress_callback(
@@ -416,6 +440,7 @@ async def _preprocess_in_batches(
     local_path: Path,
     sheet_name: str,
     text_column: str,
+    row_filters: list[RowFilter],
     expected_rows: int,
     settings: Settings,
 ) -> PreprocessResult:
@@ -434,7 +459,10 @@ async def _preprocess_in_batches(
     taşınıyor; aksi hâlde event loop dakikalarca bloklanırdı.
     """
     preprocessor = Preprocessor(settings)
-    values = iter_column_values(local_path, sheet_name, text_column)
+    filter_map = {
+        row_filter.column: frozenset(row_filter.allowed_values) for row_filter in row_filters
+    }
+    values = iter_column_values(local_path, sheet_name, text_column, filter_map)
 
     start = STAGE_PROGRESS[AnalysisStatus.PREPROCESSING]
     end = STAGE_PROGRESS[AnalysisStatus.ANALYZING]
@@ -616,7 +644,9 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
 
         sheet_name = analysis.sheet_name
         text_column = analysis.text_column
+        row_filters = [RowFilter.model_validate(item) for item in analysis.row_filters]
         model = analysis.model
+        pricing_snapshot_payload = analysis.pricing_snapshot
         prompt_version = analysis.prompt_version
         top_n = analysis.top_n
         max_cost_usd = analysis.max_cost_usd
@@ -636,17 +666,11 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         selected = next((s for s in profile.sheets if s.name == sheet_name), None)
         if selected is not None:
             expected_rows = selected.row_count
-        if profile.exceeds_row_limit:
-            # Plan §3.2 (g): satır sınırı aşımı işi DURDURMAZ, uyarı olur.
-            warnings.append(
-                AnalysisWarning(
-                    code="ROW_LIMIT_TRUNCATED",
-                    message=(
-                        f"Dosya {MAX_ROWS} satır sınırının üstünde; "
-                        "analiz tüm satırlar üzerinde çalıştı."
-                    ),
-                )
-            )
+        # `exceeds_row_limit` burada UYARIYA DÖNÜŞMÜYOR. Eskiden
+        # `ROW_LIMIT_TRUNCATED` üretiliyordu ama mesajı bile "analiz tüm
+        # satırlar üzerinde çalıştı" diyordu: kod adı ile içeriği çelişiyordu
+        # ve raporda kesme olduğunu ima ediyordu. Kesme yok; bayrak artık
+        # yalnızca yükleme ekranında "bu dosya büyük" bilgisi.
 
     # Geçici dizin `with` ile yönetiliyor: hata yolunda da kaynak dosya
     # diskte kalmasın (ADR §9 retention).
@@ -688,9 +712,12 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             # veriyor (gerekçe orada). Geniş handler'dan önce gelmek ZORUNDA:
             # `Exception` alt sınıfı olduğu için aksi hâlde yutulur.
             raise
-        except Exception:
+        except Exception as exc:
             # ADR §9: hata cevabına dosya içeriği veya iz sızmaz.
-            logger.exception("analysis_download_failed", extra={"analysis_id": str(analysis_id)})
+            logger.exception(
+                "analysis_download_failed",
+                extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
+            )
             return await _fail(analysis_id, "INTERNAL_ERROR", "Kaynak dosya alınamadı.")
 
         # --------------------------------------------------- preprocessing
@@ -704,6 +731,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
                 local_path=local_path,
                 sheet_name=sheet_name,
                 text_column=text_column,
+                row_filters=row_filters,
                 expected_rows=expected_rows,
                 settings=settings,
             )
@@ -725,8 +753,15 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             )
         except SoftTimeLimitExceeded:
             raise  # bkz. `run_analysis`
-        except Exception:
-            logger.exception("analysis_preprocess_failed", extra={"analysis_id": str(analysis_id)})
+        except Exception as exc:
+            logger.exception(
+                "analysis_preprocess_failed",
+                extra={
+                    "analysis_id": str(analysis_id),
+                    "exception_type": type(exc).__name__,
+                    "validation_locations": _validation_locations(exc),
+                },
+            )
             return await _fail(analysis_id, "INTERNAL_ERROR", "Veri hazırlanırken hata oluştu.")
 
     # Log satırında MESAJ İÇERİĞİ YOK; yalnızca sayaçlar (ADR §9).
@@ -759,6 +794,18 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "Seçilen model artık kullanılabilir modeller listesinde değil.",
         )
 
+    try:
+        pricing_snapshot = PricingSnapshot.model_validate(pricing_snapshot_payload)
+    except ValidationError:
+        # Migration öncesi oluşturulmuş/kuyrukta kalmış job'lar boş JSON
+        # taşıyabilir. Fiyat bilinmiyor diye tavanı 0 USD'ye düşürmek
+        # yerine kodla birlikte sürümlenen fallback kullanılır.
+        pricing_snapshot = pricing.fallback_pricing_snapshot(model)
+        logger.warning(
+            "analysis_pricing_snapshot_fallback",
+            extra={"analysis_id": str(analysis_id), "model": model},
+        )
+
     # ---- prompt'u BURADA çöz ----
     # Maliyet tahmini prompt'un boyutunu bilmek zorunda: map system prompt'u
     # her chunk'ta yeniden gönderiliyor ve tahminin en büyük eksik kalemi
@@ -786,12 +833,18 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         max_cost_usd,
         settings=settings,
         prompt=prompt_bundle,
+        pricing_snapshot=pricing_snapshot,
     )
     logger.info(
         "analysis_cost_estimated",
         extra={
             "analysis_id": str(analysis_id),
+            "estimated_prompt_tokens": decision.estimated_prompt_tokens,
+            "estimated_completion_tokens": decision.estimated_completion_tokens,
             "estimated_cost_usd": decision.estimated_cost_usd,
+            "upper_prompt_tokens": decision.upper_prompt_tokens,
+            "upper_completion_tokens": decision.upper_completion_tokens,
+            "upper_cost_usd": decision.upper_cost_usd,
             "max_cost_usd": decision.max_cost_usd,
         },
     )
@@ -817,13 +870,16 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             extra={
                 "analysis_id": str(analysis_id),
                 "estimated_cost_usd": decision.estimated_cost_usd,
+                "upper_cost_usd": decision.upper_cost_usd,
                 "max_cost_usd": decision.max_cost_usd,
             },
         )
         return await _fail(
             analysis_id,
             "COST_LIMIT_EXCEEDED",
-            f"Tahmini maliyet ({decision.estimated_cost_usd:.4f} USD) belirlediğiniz "
+            "Tahmini maliyet aralığı "
+            f"({decision.estimated_cost_usd:.4f}–{decision.upper_cost_usd:.4f} USD) "
+            f"belirlediğiniz "
             f"{decision.max_cost_usd} USD sınırının üzerinde. Analiz başlatılmadı. "
             "Maliyet sınırını yükseltebilir veya daha ucuz bir model seçebilirsiniz.",
         )
@@ -859,6 +915,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             # kullanıcının kendi anahtarından çıktığı için tavan harcandıkça
             # da bakılıyor.
             max_cost_usd=max_cost_usd,
+            pricing_snapshot=pricing_snapshot,
         )
     except UnknownPromptVersionError:
         logger.warning(
@@ -870,7 +927,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "SHEET_OR_COLUMN_NOT_FOUND",
             "Seçilen prompt sürümü tanımlı değil.",
         )
-    except Exception:
+    except Exception as exc:
         # Sınıflandırıcı KURULAMADI. Buradan bir istisnanın kaçmasına izin
         # verilemez: `run_analysis`'te yalnızca `finally` var, dolayısıyla
         # istisna Celery'ye kadar gider ve DB satırı sonsuza kadar
@@ -879,7 +936,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         # FIRLATMAZ".
         logger.exception(
             "analysis_classifier_build_failed",
-            extra={"analysis_id": str(analysis_id)},
+            extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
         )
         return await _fail(analysis_id, "INTERNAL_ERROR", "Analiz başlatılamadı.")
     finally:
@@ -922,25 +979,31 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
         return await _fail(analysis_id, exc.code, exc.detail, retry_after=exc.retry_after)
     except SoftTimeLimitExceeded:
         raise  # bkz. `run_analysis`
-    except Exception:
-        logger.exception("analysis_classify_failed", extra={"analysis_id": str(analysis_id)})
+    except Exception as exc:
+        logger.exception(
+            "analysis_classify_failed",
+            extra={
+                "analysis_id": str(analysis_id),
+                "exception_type": type(exc).__name__,
+                "validation_locations": _validation_locations(exc),
+            },
+        )
         return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sınıflandırma tamamlanamadı.")
     finally:
         await asyncio.to_thread(_close_classifier, classifier)
 
     # Gerçek token tüketimi sağlayıcının `usage` bloğundan geliyor; modelin
     # metninden DEĞİL (ADR §4). Faz 2'de burada 0 raporlanıyordu.
-    usage = getattr(classifier, "usage", None)
-    token_usage = (
-        TokenUsage(
-            prompt_tokens=usage.prompt_tokens,
-            completion_tokens=usage.completion_tokens,
-            total_tokens=usage.total_tokens,
-        )
-        if usage is not None
-        else TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+    raw_usage = getattr(classifier, "usage", None)
+    usage = raw_usage if isinstance(raw_usage, Usage) else Usage()
+    token_usage = TokenUsage(
+        prompt_tokens=usage.prompt_tokens,
+        completion_tokens=usage.completion_tokens,
+        total_tokens=usage.total_tokens,
+        cached_tokens=usage.cached_tokens,
+        cache_write_tokens=usage.cache_write_tokens,
     )
-    spent_usd = _actual_cost(token_usage, model)
+    spent_usd, cost_source = _actual_cost(usage, model, pricing_snapshot)
 
     # ------------------------------------------------------- aggregating
     async with session_scope() as session:
@@ -955,6 +1018,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             filename=filename,
             sheet_name=sheet_name,
             text_column=text_column,
+            row_filters=row_filters,
             model=model,
             prompt_version=prompt_version,
             classifier_id=classifier.identifier,
@@ -963,16 +1027,34 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             extra_warnings=warnings,
             token_usage=token_usage,
             estimated_cost_usd=spent_usd,
+            cost_source=cost_source,
+            pricing_snapshot=pricing_snapshot,
         )
-    except AggregationError:
+    except AggregationError as exc:
         # Değişmez ihlali: sınıflandırıcı aynı kaydı iki kez eşlemiş olabilir.
         # Yanlış sayı göstermektense işi başarısız saymak doğrudur (ADR §4).
-        logger.exception("analysis_aggregation_invalid", extra={"analysis_id": str(analysis_id)})
+        logger.exception(
+            "analysis_aggregation_invalid",
+            extra={"analysis_id": str(analysis_id), "exception_type": type(exc).__name__},
+        )
         return await _fail(analysis_id, "PROVIDER_BAD_RESPONSE", "Sonuç doğrulanamadı.")
     except SoftTimeLimitExceeded:
         raise  # bkz. `run_analysis`
-    except Exception:
-        logger.exception("analysis_aggregate_failed", extra={"analysis_id": str(analysis_id)})
+    except Exception as exc:
+        # `run_upload_profiling` ile AYNI gerekçe: traceback loglanamıyor
+        # (`core/logging.py`), o yüzden tip ve şema konumları ayrı alanlara
+        # yazılır. Burada eksikti ve bedeli ölçüldü: rapor değişmezini ihlal
+        # eden bir `ValidationError` çıktıya yalnızca `"exc_info": true`
+        # olarak düştü, kök nedeni bulmak için boru hattını worker dışında
+        # yeniden koşturmak gerekti.
+        logger.exception(
+            "analysis_aggregate_failed",
+            extra={
+                "analysis_id": str(analysis_id),
+                "exception_type": type(exc).__name__,
+                "validation_locations": _validation_locations(exc),
+            },
+        )
         return await _fail(analysis_id, "INTERNAL_ERROR", "Sonuç üretilirken hata oluştu.")
 
     # --------------------------------------------------------- completed
@@ -999,6 +1081,10 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             "analysis_id": str(analysis_id),
             "questions": len(report.top_questions),
             "themes": len(report.themes),
+            "estimated_prompt_tokens": decision.estimated_prompt_tokens,
+            "estimated_completion_tokens": decision.estimated_completion_tokens,
+            "actual_prompt_tokens": token_usage.prompt_tokens,
+            "actual_completion_tokens": token_usage.completion_tokens,
         },
     )
     return AnalysisStatus.COMPLETED.value
