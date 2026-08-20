@@ -61,28 +61,32 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
+#: Kabul edilen uzantılar (plan B1: gerçek dökümler `.csv` olarak geliyor).
+ACCEPTED_EXTENSIONS = (".xlsx", ".csv")
+
+
 def _reject_too_large() -> ApiError:
     limit_mb = MAX_UPLOAD_BYTES // (1024 * 1024)
     return ApiError(
         "UPLOAD_TOO_LARGE",
-        f"En fazla {limit_mb} MB .xlsx yüklenebilir.",
+        f"En fazla {limit_mb} MB .xlsx veya .csv yüklenebilir.",
     )
 
 
 def _validate_filename(filename: str | None) -> str:
-    """Uzantı kontrolü (ADR §9: yalnızca `.xlsx`).
+    """Uzantı kontrolü (`.xlsx` veya `.csv`).
 
-    Bu YALNIZCA ucuz bir ön eleme. Asıl doğrulama worker'daki magic bytes ve
-    OOXML yapı kontrolüdür — uzantı kullanıcı tarafından yazılır ve hiçbir şey
-    kanıtlamaz.
+    Bu YALNIZCA ucuz bir ön eleme. Asıl doğrulama worker'dadır — xlsx için
+    magic bytes ve OOXML yapı kontrolü, csv için kodlama/başlık doğrulaması.
+    Uzantı kullanıcı tarafından yazılır ve hiçbir şey kanıtlamaz.
     """
     if not filename:
         raise ApiError("UPLOAD_INVALID_TYPE", "İstek gövdesinde dosya adı yok.")
 
-    if not filename.lower().endswith(".xlsx"):
+    if not filename.lower().endswith(ACCEPTED_EXTENSIONS):
         raise ApiError(
             "UPLOAD_INVALID_TYPE",
-            "Yalnızca .xlsx dosyaları analiz edilebilir.",
+            "Yalnızca .xlsx veya .csv dosyaları analiz edilebilir.",
         )
     return filename
 
@@ -118,7 +122,8 @@ async def create_upload(
 
     # ---- Katman 2: akış sırasında koşan bayt sayacı ----
     # Geçici dosya diskte tutulur; 130 MB'lık gövde belleğe ALINMAZ (ADR §2).
-    with tempfile.NamedTemporaryFile(suffix=".xlsx") as spool:
+    suffix = ".csv" if filename.lower().endswith(".csv") else ".xlsx"
+    with tempfile.NamedTemporaryFile(suffix=suffix) as spool:
         size_bytes = 0
         # Idempotency fingerprint'i dosyanın SHA-256'sını istiyor (ADR-0002 #3).
         # Hash AYNI geçişte hesaplanıyor: ikinci bir okuma 130 MB'ı diskten

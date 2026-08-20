@@ -97,3 +97,6 @@ $RECYCLE.BIN/
 
 # uv
 .uv-cache/
+
+# Gecici gercek veri ornekleri - repoya girmez (CONTRIBUTING: gercek veri eklenmez)
+docs/dataset-gecici/

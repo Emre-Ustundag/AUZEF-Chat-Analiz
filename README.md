@@ -7,7 +7,7 @@ Projenin ilk kullanım senaryosu, AUZEF chatbot mesajlarından gerçek kullanıc
 > **Proje durumu:** MVP akışı uçtan uca çalışıyor. `docker compose up` ile sekiz
 > uzun ömürlü servis (`proxy`, `web`, `api`, `worker`, `beat`, `postgres`,
 > `redis`, `minio`) ve tek seferlik `migrate`
-> ayağa kalkar; tarayıcıdan yüklenen bir `.xlsx` profillenir, kolon seçilir,
+> ayağa kalkar; tarayıcıdan yüklenen bir `.xlsx` veya `.csv` profillenir, kolon seçilir,
 > analiz OpenRouter üzerinden koşar ve rapor dashboard'da görüntülenip xlsx/JSON
 > olarak dışa aktarılır. Job durumu, iptal, maliyet tavanı, PII redaksiyonu ve
 > retention süpürücüsü de yerinde.
@@ -31,7 +31,7 @@ Binlerce chatbot mesajını manuel olarak incelemek hem zaman alır hem de tekra
 
 ## Hedeflenen MVP akışı
 
-1. Kullanıcı `.xlsx` formatındaki veri dosyasını yükler.
+1. Kullanıcı `.xlsx` veya `.csv` formatındaki veri dosyasını yükler.
 2. Dosyadaki kolonlar algılanır ve analiz edilecek metin kolonu seçilir.
 3. OpenRouter API anahtarı güvenli biçimde backend'e iletilir; sürümlü sistem promptu backend tarafından yönetilir.
 4. Boş, geçersiz veya analiz dışı kayıtlar temizlenir.
@@ -379,7 +379,7 @@ mesajla ATLANIR (bkz. [Açık işler](#açık-işler-ve-bilinen-sınırlar)).
 
 Proje gerçek kullanıcı mesajları ve haricî bir LLM servisiyle çalışacağı için aşağıdaki ilkeler MVP mimarisinin parçasıdır:
 
-- Yalnızca `.xlsx` desteklenir; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosyalar reddedilir.
+- `.xlsx` ve `.csv` desteklenir; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosyalar reddedilir. CSV için kodlama (`utf-8-sig`/`utf-8`/`cp1254`) ve ayraç otomatik tespit edilir.
 - Varsayılan upload sınırı 150 MB, açılmış OOXML tavanı 4 GiB ve satır sınırı 100.000'dir. Upload ve satır sınırı sözleşmede donmuştur; açılmış boyut tavanı ortam ayarıdır (ZIP bomba savunmasının ikincil katmanı — asıl savunma sıkıştırma oranı ve akış sırasında sayan gerçek bayt kontrolüdür).
 - OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır ve loglarda redakte edilir.
 - Anahtar PostgreSQL'e yazılmaz; AES-GCM ile şifrelenmiş, kısa ömürlü bir Redis kaydında tutulur ve işlem sonunda silinir.

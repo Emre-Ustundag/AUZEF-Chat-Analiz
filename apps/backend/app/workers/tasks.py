@@ -50,7 +50,8 @@ from app.prompts.faq_analysis import UnknownPromptVersionError, get_prompt
 from app.schemas.analysis import STAGE_PROGRESS, TERMINAL_STATUSES, AnalysisStatus
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
-from app.services import retention, secret_store, storage
+from app.services import csv_file, retention, secret_store, storage
+from app.services.csv_file import CsvRejectedError
 from app.services.openrouter import OpenRouterClient, OpenRouterError
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
@@ -80,6 +81,16 @@ def _validation_locations(exc: BaseException) -> list[str] | None:
     ]
 
 
+def _is_csv(filename: str) -> bool:
+    """Biçim dallanması TEK yerden (plan B1): uzantı kullanıcı beyanıdır,
+    asıl doğrulamayı her biçimin kendi servisi yapar."""
+    return filename.lower().endswith(".csv")
+
+
+def _source_suffix(filename: str) -> str:
+    return ".csv" if _is_csv(filename) else ".xlsx"
+
+
 async def run_upload_profiling(upload_id: uuid.UUID) -> str:
     """Bir upload'ı doğrular, profilini çıkarır ve sonucu veritabanına yazar.
 
@@ -102,6 +113,7 @@ async def run_upload_profiling(upload_id: uuid.UUID) -> str:
 
         upload.status = UploadStatus.VALIDATING
         storage_key = upload.storage_key
+        filename = upload.filename
         await session.commit()
 
     problem_payload: dict[str, object] | None = None
@@ -110,14 +122,17 @@ async def run_upload_profiling(upload_id: uuid.UUID) -> str:
     # Geçici dizin `with` bloğuyla yönetiliyor: hata yolunda da 130 MB'lık
     # dosya diskte kalmasın (ADR §9 retention).
     with tempfile.TemporaryDirectory(prefix="auzef-upload-") as tmpdir:
-        local_path = Path(tmpdir) / "source.xlsx"
+        local_path = Path(tmpdir) / f"source{_source_suffix(filename)}"
         try:
             storage.download_to_path(storage_key, local_path, settings)
-            raw_profile = validate_and_profile(local_path, settings)
+            if _is_csv(filename):
+                raw_profile = csv_file.validate_and_profile(local_path, settings)
+            else:
+                raw_profile = validate_and_profile(local_path, settings)
             # Şemadan geçiriyoruz: veritabanına sözleşmeye uymayan bir gövde
             # yazmaktansa burada patlamak yeğdir.
             profile_payload = UploadProfile.model_validate(raw_profile).model_dump(mode="json")
-        except XlsxRejectedError as exc:
+        except (XlsxRejectedError, CsvRejectedError) as exc:
             logger.warning(
                 "upload_rejected",
                 extra={"upload_id": str(upload_id), "reason": exc.reason},
@@ -651,7 +666,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
     # Geçici dizin `with` ile yönetiliyor: hata yolunda da kaynak dosya
     # diskte kalmasın (ADR §9 retention).
     with tempfile.TemporaryDirectory(prefix="auzef-analysis-") as tmpdir:
-        local_path = Path(tmpdir) / "source.xlsx"
+        local_path = Path(tmpdir) / f"source{_source_suffix(filename)}"
 
         # ------------------------------------------------------ validating
         async with session_scope() as session:
@@ -662,7 +677,10 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
             await asyncio.to_thread(storage.download_to_path, storage_key, local_path, settings)
             # Dosya Faz 1'de doğrulandı ama ARADA DEĞİŞMİŞ olabilir. Güvenlik
             # kontrolünü atlamak, doğrulanmamış bir zip'i açmak demek (ADR §9).
-            await asyncio.to_thread(validate_xlsx, local_path, settings)
+            if _is_csv(filename):
+                await asyncio.to_thread(csv_file.validate_csv, local_path, settings)
+            else:
+                await asyncio.to_thread(validate_xlsx, local_path, settings)
         except storage.StorageObjectMissingError:
             # BEKLENEN yol, arıza değil: ADR §9 ham dosyayı iş bitiminde
             # siliyor, dolayısıyla aynı upload üzerinde ikinci kez analiz
@@ -675,7 +693,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
                 "JOB_NOT_FOUND",
                 "Kaynak dosya saklama süresi dolduğu için silinmiş. Dosyayı yeniden yükleyin.",
             )
-        except XlsxRejectedError as exc:
+        except (XlsxRejectedError, CsvRejectedError) as exc:
             logger.warning(
                 "analysis_source_rejected",
                 extra={"analysis_id": str(analysis_id), "reason": exc.reason},
@@ -719,7 +737,7 @@ async def _run_analysis_inner(analysis_id: uuid.UUID, settings: Settings) -> str
                 "SHEET_OR_COLUMN_NOT_FOUND",
                 "Seçilen sayfa veya kolon dosyada bulunamadı.",
             )
-        except XlsxRejectedError:
+        except (XlsxRejectedError, CsvRejectedError):
             return await _fail(
                 analysis_id, "UPLOAD_CORRUPT_OR_ENCRYPTED", "Kaynak dosya okunamadı."
             )

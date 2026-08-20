@@ -14,15 +14,15 @@ import type { ErrorCode } from "@/lib/api/schemas";
  */
 export type FileValidationResult = { ok: true } | { ok: false; code: ErrorCode; message: string };
 
-const EMPTY_FILE_MESSAGE = "Seçilen dosya boş. Lütfen geçerli bir .xlsx dosyası seçin.";
+const EMPTY_FILE_MESSAGE = "Seçilen dosya boş. Lütfen geçerli bir .xlsx veya .csv dosyası seçin.";
 
 export function validateFile(file: File): FileValidationResult {
   const name = file.name.toLocaleLowerCase("tr");
 
   // Uzantı kontrolü bilinçli olarak MIME tipinden önce ve tek başına
-  // belirleyici: tarayıcılar .xlsx için işletim sistemine göre farklı
+  // belirleyici: tarayıcılar .xlsx/.csv için işletim sistemine göre farklı
   // (bazen boş) MIME tipi bildiriyor, uzantı ise kullanıcının gördüğü şey.
-  if (!name.endsWith(LIMITS.ACCEPTED_EXTENSION)) {
+  if (!LIMITS.ACCEPTED_EXTENSIONS.some((extension) => name.endsWith(extension))) {
     return {
       ok: false,
       code: "UPLOAD_INVALID_TYPE",

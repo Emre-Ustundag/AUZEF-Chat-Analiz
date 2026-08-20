@@ -53,7 +53,7 @@ describe("mock HTTP response parity", () => {
 
   it("gönderilmiş fakat desteklenmeyen dosyayı 415 ile reddeder", async () => {
     const form = new FormData();
-    form.set("file", new File(["x"], "veri.csv", { type: "text/csv" }));
+    form.set("file", new File(["x"], "veri.txt", { type: "text/plain" }));
     const request = new NextRequest("http://localhost/api/mock/v1/uploads", {
       method: "POST",
       body: form,
@@ -63,6 +63,18 @@ describe("mock HTTP response parity", () => {
 
     expect(response.status).toBe(415);
     expect(body.code).toBe("UPLOAD_INVALID_TYPE");
+  });
+
+  it("CSV dosyasını kabul eder (B1)", async () => {
+    const form = new FormData();
+    form.set("file", new File(["mesaj\nsoru\n"], "veri.csv", { type: "text/csv" }));
+    const request = new NextRequest("http://localhost/api/mock/v1/uploads", {
+      method: "POST",
+      body: form,
+    });
+    const response = await postUpload(request);
+
+    expect(response.status).toBe(202);
   });
 
   it("models route başarılı cevapta trace header'ı yayar", async () => {

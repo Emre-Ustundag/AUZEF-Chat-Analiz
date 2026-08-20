@@ -161,7 +161,7 @@ def build_storage_key(upload_id: uuid.UUID, filename: str) -> str:
     açardı. Yalnızca uzantı korunur, o da sabit listeden.
     """
     suffix = Path(filename).suffix.lower()
-    safe_suffix = suffix if suffix == ".xlsx" else ".bin"
+    safe_suffix = suffix if suffix in {".xlsx", ".csv"} else ".bin"
     return f"uploads/{upload_id}/source{safe_suffix}"
 
 

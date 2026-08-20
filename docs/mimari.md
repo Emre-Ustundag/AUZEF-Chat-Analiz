@@ -12,7 +12,7 @@
 
 ## 1. Bağlam ve hedef
 
-MVP, kullanıcının büyük bir `.xlsx` dosyası yüklemesini; mesajların güvenli biçimde doğrulanıp temizlenmesini; OpenRouter üzerinden LLM ile sık sorulara ve temalara ayrılmasını ve sonucu dashboard'da adet, oran ve özet rapor olarak göstermesini sağlar.
+MVP, kullanıcının büyük bir `.xlsx` veya `.csv` dosyası yüklemesini; mesajların güvenli biçimde doğrulanıp temizlenmesini; OpenRouter üzerinden LLM ile sık sorulara ve temalara ayrılmasını ve sonucu dashboard'da adet, oran ve özet rapor olarak göstermesini sağlar.
 
 Gerçek örnek dosya yaklaşık 130 MB olabildiği için dosya okuma ve LLM analizi tek bir HTTP isteğinde tamamlanmayacaktır. Mimari, asenkron job/worker modelini kullanacaktır.
 
@@ -276,7 +276,7 @@ LLM çıktısı JSON Schema/Pydantic ile doğrulanır. MVP yalnızca structured-
 
 ## 9. Güvenlik ve çalışma sınırları
 
-- MVP yalnızca `.xlsx` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir
+- MVP `.xlsx` ve `.csv` destekler; `.xls`, `.xlsm`, makrolu, şifreli veya bozuk dosya reddedilir. CSV doğrulaması kendi katmanını uygular: zip/OLE2 imzalı veya NUL baytlı "csv" reddedilir, kodlama `utf-8-sig`/`utf-8`/`cp1254` sırasıyla STRICT denenir, ayraç (`,`/`;`/tab) başlık satırından tespit edilir ve dosya akışlı okunur (belleğe topluca alınmaz)
 - Sözleşmede donmuş sıkıştırılmış upload sınırı: 150 MB
 - OOXML açılmış toplam boyut tavanı: 4 GiB. **1 GiB'ti ve yük testinde düştü** (§10 risk 1'in istediği ölçüm): 130,9 MB'lık gerçekçi bir dosya 1,12 GB'a açılıyor ve reddediliyordu. Sıkıştırma oranı 8,7 — bomba eşiğinin (200) çok altında, yani reddedilen şey meşru bir dosyaydı. 150 MB'lık donmuş upload sınırı ile 1 GiB tavan aynı anda doğru olamazdı. Asıl ZIP bomba savunması bu mutlak tavan DEĞİL, üye başına sıkıştırma oranı ve akış sırasında sayan gerçek bayt kontrolüdür; tavan ikincil bir nettir
 - Boyut ve süre sınırları environment config'tir (`AUZEF_` öneki); satır sınırı DEĞİLDİR

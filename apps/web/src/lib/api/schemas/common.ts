@@ -118,8 +118,9 @@ export type ProblemDetails = z.infer<typeof problemDetailsSchema>;
  */
 export const ERROR_MESSAGES_TR: Record<ErrorCode, string> = {
   UPLOAD_TOO_LARGE:
-    "Dosya boyutu sınırı aşıldı. En fazla 150 MB büyüklüğünde bir .xlsx dosyası yükleyebilirsiniz.",
-  UPLOAD_INVALID_TYPE: "Bu dosya türü desteklenmiyor. Yalnızca .xlsx dosyaları analiz edilebilir.",
+    "Dosya boyutu sınırı aşıldı. En fazla 150 MB büyüklüğünde bir .xlsx veya .csv dosyası yükleyebilirsiniz.",
+  UPLOAD_INVALID_TYPE:
+    "Bu dosya türü desteklenmiyor. Yalnızca .xlsx ve .csv dosyaları analiz edilebilir.",
   UPLOAD_CORRUPT_OR_ENCRYPTED:
     "Dosya okunamadı. Bozuk, şifrelenmiş veya makro içeren dosyalar desteklenmez.",
   SHEET_OR_COLUMN_NOT_FOUND:
@@ -168,7 +169,8 @@ export const LIMITS = {
   MAX_UPLOAD_BYTES: 150 * 1024 * 1024,
   MAX_ROWS: 100_000,
   ACCEPTED_MIME_TYPE: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ACCEPTED_EXTENSION: ".xlsx",
+  /** Kabul edilen uzantılar — backend `ACCEPTED_EXTENSIONS` aynası (B1). */
+  ACCEPTED_EXTENSIONS: [".xlsx", ".csv"],
   /** ADR §2: durum sorgulama aralığı 2-3 saniye. */
   POLL_INTERVAL_MS: 2500,
   /** ADR §2: analiz hard timeout'u 45 dakika. */

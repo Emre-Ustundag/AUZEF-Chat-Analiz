@@ -66,12 +66,12 @@ export function FileDropzone({ onFileSelected, disabled }: FileDropzoneProps) {
         </span>
 
         <span className="space-y-1">
-          <span className="block font-medium">Excel dosyasını buraya sürükleyin</span>
+          <span className="block font-medium">Excel veya CSV dosyasını buraya sürükleyin</span>
           <span className="block text-sm text-muted-foreground">veya seçmek için tıklayın</span>
         </span>
 
         <span className="text-xs text-muted-foreground">
-          Yalnızca .xlsx · en fazla {formatFileSize(LIMITS.MAX_UPLOAD_BYTES)} ·{" "}
+          .xlsx veya .csv · en fazla {formatFileSize(LIMITS.MAX_UPLOAD_BYTES)} ·{" "}
           {formatCount(LIMITS.MAX_ROWS)} satır
         </span>
 
@@ -79,7 +79,7 @@ export function FileDropzone({ onFileSelected, disabled }: FileDropzoneProps) {
           ref={inputRef}
           id={inputId}
           type="file"
-          accept=".xlsx"
+          accept=".xlsx,.csv"
           disabled={disabled}
           className="sr-only"
           onChange={(event) => {

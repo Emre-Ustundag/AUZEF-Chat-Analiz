@@ -53,7 +53,7 @@ function fileInput(container: HTMLElement): HTMLInputElement {
  */
 function dropFile(file: File) {
   const dropzone = screen
-    .getByText("Excel dosyasını buraya sürükleyin")
+    .getByText("Excel veya CSV dosyasını buraya sürükleyin")
     .closest("div[class*='border-dashed']");
   if (!dropzone) throw new Error("Bırakma alanı bulunamadı");
 
@@ -69,7 +69,7 @@ describe("UploadScreen", () => {
   it("başlangıçta sürükle-bırak alanını gösterir", () => {
     renderScreen();
 
-    expect(screen.getByText("Excel dosyasını buraya sürükleyin")).toBeInTheDocument();
+    expect(screen.getByText("Excel veya CSV dosyasını buraya sürükleyin")).toBeInTheDocument();
   });
 
   it("sınırları kullanıcıya yükleme öncesi gösterir", () => {
@@ -129,7 +129,7 @@ describe("UploadScreen", () => {
     await user.upload(fileInput(container), xlsxFile());
     await user.click(screen.getByRole("button", { name: "Seçilen dosyayı kaldır" }));
 
-    expect(screen.getByText("Excel dosyasını buraya sürükleyin")).toBeInTheDocument();
+    expect(screen.getByText("Excel veya CSV dosyasını buraya sürükleyin")).toBeInTheDocument();
   });
 
   it("yükleme başarılı olunca profil sayfasına yönlendirir", async () => {

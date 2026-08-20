@@ -53,13 +53,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!file.name.toLocaleLowerCase("tr").endsWith(LIMITS.ACCEPTED_EXTENSION)) {
+  const lowerName = file.name.toLocaleLowerCase("tr");
+  if (!LIMITS.ACCEPTED_EXTENSIONS.some((extension) => lowerName.endsWith(extension))) {
     return problemResponse(
       problem(
         "UPLOAD_INVALID_TYPE",
         415,
         "Desteklenmeyen dosya türü",
-        "Yalnızca .xlsx dosyaları analiz edilebilir.",
+        "Yalnızca .xlsx veya .csv dosyaları analiz edilebilir.",
       ),
     );
   }
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
         "UPLOAD_TOO_LARGE",
         413,
         "Dosya boyutu sınırı aşıldı",
-        "En fazla 150 MB .xlsx yüklenebilir.",
+        "En fazla 150 MB .xlsx veya .csv yüklenebilir.",
       ),
     );
   }
