@@ -33,6 +33,7 @@ import type { ColumnProfile, ConversationConfig, ModelList, Upload } from "@/lib
 import { formatCount } from "@/lib/format";
 
 import { ColumnPicker } from "./column-picker";
+import { FilterValuesInput } from "./filter-values-input";
 import { configureFormSchema, toAnalysisRequest } from "./form-schema";
 import type { ConfigureFormInput, ConfigureFormValues } from "./form-schema";
 
@@ -622,14 +623,12 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                     control={control}
                     name={`row_filters.${index}.allowed_values`}
                     render={({ field }) => (
-                      <Input
+                      <FilterValuesInput
                         id={`row_filter_${index}_values`}
-                        value={field.value.join(", ")}
-                        placeholder="Örn. Kullanıcı, Temsilci"
-                        onChange={(event) => {
-                          const values = event.target.value.split(",").map((value) => value.trim());
-                          field.onChange(values);
-                        }}
+                        values={field.value}
+                        onChange={field.onChange}
+                        placeholder="Örn. Kullanıcı"
+                        aria-describedby={`row_filter_${index}_values_help`}
                       />
                     )}
                   />
@@ -638,8 +637,12 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                       {errors.row_filters[index]?.allowed_values?.message}
                     </p>
                   ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Tam eşleşme kullanılır; birden fazla değeri virgülle ayırın.
+                    <p
+                      id={`row_filter_${index}_values_help`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      Tam eşleşme kullanılır. Her değeri Enter veya virgülle ekleyin; virgül içeren
+                      bir değeri yapıştırıp Enter ile tamamlayın.
                     </p>
                   )}
                 </div>
