@@ -20,7 +20,10 @@ from __future__ import annotations
 
 import json
 import random
+import re
+import threading
 import uuid
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -40,7 +43,7 @@ from app.pipeline.preprocess import ContextTurn, RecordGroup, preprocess
 from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import V1, V2, V4
 from app.services.map_cache import MapCache, build_key
-from app.services.openrouter import OpenRouterClient
+from app.services.openrouter import OpenRouterClient, Usage
 from tests.fake_openrouter import FakeOpenRouter
 
 
@@ -54,6 +57,12 @@ def settings() -> Settings:
         openrouter_backoff_max_seconds=0.002,
         llm_chunk_max_records=3,
         llm_chunk_max_prompt_tokens=10_000,
+        # Bu dosyadaki sahte sağlayıcı yanıtları ÇAĞRI SIRASINA göre
+        # veriyor; eşzamanlı koşuda o sıra değişebilir ve testin kendisi
+        # belirsizleşir. Eşzamanlılığın kendisi aşağıdaki A1 testlerinde,
+        # içerik adresli bir sağlayıcıyla ve sıralı koşuyla karşılaştırarak
+        # doğrulanıyor.
+        llm_map_concurrency=1,
     )
 
 
@@ -112,7 +121,7 @@ class _Provider:
 
 def _classifier(
     settings: Settings,
-    provider: _Provider,
+    provider: Callable[[httpx.Request], httpx.Response],
     **kwargs: Any,
 ) -> OpenRouterClassifier:
     client = OpenRouterClient(
@@ -1128,3 +1137,214 @@ def test_bozuk_onbellek_kaydi_iska_sayilir(settings: Settings) -> None:
     assert result.questions[0].canonical_question == "Sınav?"
     # Bozuk kayıt geçerli olanla değiştirildi.
     assert backend.data[key] != '{"bu": "eski bir bicim"}'
+
+
+# ------------------------------- A1: map çağrıları eşzamanlı, çıktı değişmez
+
+
+class _ContentProvider:
+    """İçerik ADRESLİ sahte sağlayıcı — yanıt çağrı sırasına bağlı DEĞİL.
+
+    Dosyanın geri kalanındaki `_Provider` yanıtları çağrı sırasına göre
+    veriyor; eşzamanlı koşuda o sıra değişeceği için testin kendisi
+    belirsizleşirdi. Burada yanıt yalnızca istek gövdesinin fonksiyonu.
+
+    `reorder=True` iken ilk chunk'ın yanıtı BİLEREK en sona bırakılır (dördüncü
+    chunk bir kapıyı açana kadar bekler). Böylece "sonuçlar geliş sırasına göre
+    işlenirse çıktı değişir mi" sorusu zamanlamaya değil, deterministik bir
+    kapıya bağlanır.
+    """
+
+    def __init__(self, *, reorder: bool = False) -> None:
+        self.reorder = reorder
+        self.lock = threading.Lock()
+        self.istek_sirasi: list[int] = []
+        self.tamamlanma_sirasi: list[int] = []
+        self.reduce_istekleri: list[str] = []
+        self._kapi = threading.Event()
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        user = body["messages"][1]["content"]
+        if body["response_format"]["json_schema"]["name"] == "faq_map":
+            return self._map(user)
+        return self._reduce(user)
+
+    def _map(self, user: str) -> httpx.Response:
+        kayitlar = re.findall(r'<kayit id="(r\d+)">(.*?)</kayit>', user)
+        chunk_index = (int(kayitlar[0][0][1:]) - 1) // 3
+        with self.lock:
+            self.istek_sirasi.append(chunk_index)
+
+        if self.reorder and chunk_index == 0:
+            self._kapi.wait(timeout=5)
+
+        temalar: dict[str, list[str]] = {}
+        for record_id, text in kayitlar:
+            temalar.setdefault(text.split()[0], []).append(record_id)
+
+        payload = {
+            "categories": [
+                {
+                    "category_id": f"c{n}",
+                    "canonical_question": f"{tema} nasıl yapılır?",
+                    "theme": tema,
+                }
+                for n, tema in enumerate(temalar)
+            ],
+            "assignments": [
+                {"record_id": record_id, "category_id": f"c{n}"}
+                for n, record_ids in enumerate(temalar.values())
+                for record_id in record_ids
+            ],
+        }
+
+        if self.reorder and chunk_index == 3:
+            self._kapi.set()
+        with self.lock:
+            self.tamamlanma_sirasi.append(chunk_index)
+        return _ok(payload)
+
+    def _reduce(self, user: str) -> httpx.Response:
+        kategoriler = re.findall(r'<kategori id="(c\d+)" tema="([^"]*)">(.*?)</kategori>', user)
+        with self.lock:
+            self.reduce_istekleri.append(user)
+
+        gruplar: dict[str, dict[str, Any]] = {}
+        for category_id, tema, soru in kategoriler:
+            grup = gruplar.setdefault(
+                tema, {"canonical_question": soru, "theme": tema, "member_category_ids": []}
+            )
+            members = grup["member_category_ids"]
+            assert isinstance(members, list)
+            members.append(category_id)
+        return _ok({"groups": list(gruplar.values())})
+
+
+_A1_TEMALAR = ("sınav", "harç", "ders")
+
+
+def _a1_groups() -> list[RecordGroup]:
+    """15 kayıt = 5 chunk (chunk sınırı 3); her chunk'ta üç tema birden."""
+    return _groups(*[(f"{_A1_TEMALAR[i % 3]} sorusu {i}", 1) for i in range(15)])
+
+
+def _a1_kosu(
+    settings: Settings, *, concurrency: int, reorder: bool = False, reduce_tokens: int | None = None
+) -> tuple[Classification, Usage, _ContentProvider, list[int]]:
+    guncel: dict[str, Any] = {"llm_map_concurrency": concurrency}
+    if reduce_tokens is not None:
+        guncel["llm_reduce_max_prompt_tokens"] = reduce_tokens
+    provider = _ContentProvider(reorder=reorder)
+    ilerleme: list[int] = []
+
+    def on_progress(done: int, total: int) -> bool:
+        ilerleme.append(done)
+        return True
+
+    classifier = _classifier(settings.model_copy(update=guncel), provider, on_progress=on_progress)
+    result = classifier.classify(_a1_groups())
+    return result, classifier.usage, provider, ilerleme
+
+
+def test_eszamanli_map_sirali_kosuyla_bit_bit_ayni_sonucu_verir(settings: Settings) -> None:
+    """A1'in tek koşulu: hız artsın, ÇIKTI DEĞİŞMESİN.
+
+    Eşzamanlı koşuda ilk chunk'ın yanıtı bilerek en sona bırakılıyor. Sonuçlar
+    geldikleri sırada işlenseydi kova sırası — dolayısıyla reduce'a giden
+    kategori sırası ve nihai raporun sıralaması — değişirdi.
+    """
+    sirali, sirali_usage, _, sirali_ilerleme = _a1_kosu(settings, concurrency=1)
+    eszamanli, eszamanli_usage, provider, eszamanli_ilerleme = _a1_kosu(
+        settings, concurrency=4, reorder=True
+    )
+
+    # Gerçekten sıra dışı tamamlandı: ilk chunk dördüncüden SONRA bitti.
+    assert provider.tamamlanma_sirasi.index(0) > provider.tamamlanma_sirasi.index(3)
+
+    assert eszamanli == sirali
+    assert eszamanli_usage == sirali_usage
+    # İlerleme birleştirme noktasında bildirildiği için MONOTON kalır:
+    # beş chunk sırayla 1..5, sondaki 1 reduce aşamasının kendi 1/1 raporu.
+    assert eszamanli_ilerleme[:5] == [1, 2, 3, 4, 5]
+    assert eszamanli_ilerleme == sirali_ilerleme
+
+
+def test_eszamanli_reduce_partileri_de_ayni_sonucu_verir(settings: Settings) -> None:
+    """Tur İÇİNDEKİ batch'ler eşzamanlı; turlar sıralı kalır.
+
+    Dar bir token bütçesiyle birden fazla batch'e zorlanıyor. Kova anahtarı
+    sayacı (`reduce:N`) birleştirme adımında ilerlediği için anahtarlar da
+    sıralı koşudakinin aynısı olmak zorunda.
+    """
+    sirali, _, sirali_provider, _ = _a1_kosu(settings, concurrency=1, reduce_tokens=60)
+    eszamanli, _, eszamanli_provider, _ = _a1_kosu(
+        settings, concurrency=4, reduce_tokens=60, reorder=True
+    )
+
+    assert len(sirali_provider.reduce_istekleri) > 1, "test çok partili reduce'u zorlamalı"
+    assert eszamanli == sirali
+    assert eszamanli_provider.reduce_istekleri == sirali_provider.reduce_istekleri
+
+
+def test_tavan_asilinca_yeni_is_gonderilmez_ucustakiler_beklenir(settings: Settings) -> None:
+    """Aşım payı EN FAZLA `concurrency` çağrıdır — bilinçli takas.
+
+    Sıralı koşuda tavan aşıldığında en fazla 1 fazladan çağrı ödenirdi.
+    Eşzamanlı koşuda uçuşta olan işler tamamlanır (para zaten harcandı,
+    yanıtı çöpe atmak kimseye kazanç sağlamaz) ama YENİ iş gönderilmez.
+    """
+    groups = _groups(*[(f"{i} numarali dersin sinav tarihi ne zaman?", 1) for i in range(400)])
+    eszamanlilik = 4
+    dar = settings.model_copy(update={"llm_map_concurrency": eszamanlilik})
+    chunks = build_chunks(groups, dar)
+    assert len(chunks) > eszamanlilik, "aşım payının ölçülebilmesi için fazladan chunk gerekiyor"
+
+    kilit = threading.Lock()
+    sayac = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        with kilit:
+            sayac["n"] += 1
+        body = json.loads(request.content)
+        ids = re.findall(r'<kayit id="(r\d+)">', body["messages"][1]["content"])
+        payload = {
+            "assignments": [{"record_id": r, "category_id": "c1"} for r in ids],
+            "categories": [
+                {"category_id": "c1", "canonical_question": "Sınav ne zaman?", "theme": "Sınav"}
+            ],
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": json.dumps(payload, ensure_ascii=False)}}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 0, "cost": 1.2},
+            },
+        )
+
+    client = OpenRouterClient(
+        api_key="sk-or-v1-test",
+        model="anthropic/claude-sonnet-4.6",
+        settings=dar,
+        transport=httpx.MockTransport(handler),
+        sleeper=lambda _s: None,
+    )
+    classifier = OpenRouterClassifier(
+        client=client,
+        prompt=V1,
+        model="anthropic/claude-sonnet-4.6",
+        settings=dar,
+        # İlk chunk birleştiğinde 1,2 USD harcanmış olacak; tavan orada aşılır.
+        max_cost_usd=1.0,
+    )
+
+    with pytest.raises(CostLimitExceededError):
+        classifier.classify(groups)
+
+    # Üst sınır `concurrency`: ilk pencerenin dışına çıkılmaz. Alt sınır
+    # sabit değil — henüz BAŞLAMAMIŞ bir iş iptal edilebildiği için pencere
+    # bazen eksik harcanır. Garanti edilen şey tavan.
+    assert 1 <= sayac["n"] <= eszamanlilik, (
+        "tavan aşıldıktan sonra ilk pencerenin dışına çıkılmamalı "
+        f"(gönderilen: {sayac['n']}, eşzamanlılık: {eszamanlilik}, toplam chunk: {len(chunks)})"
+    )

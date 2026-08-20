@@ -505,12 +505,6 @@ kimlik doğrulama YOK — uygulama yalnızca anonim örnek veriyle çalıştır�
 
 ### 5. Büyük veri kümelerinde süre ve 45 dakikalık tavan
 
-> Bu bölümün ilk iki paragrafı **eşzamanlı map gönderimini** varsayar. O
-> değişiklik ayrı bir dalda ilerliyor; birleşmeden önce ayar adının
-> (`AUZEF_LLM_MAP_CONCURRENCY`) ve buradaki sürelerin uygulamayla
-> karşılaştırılması gerekir. Önbellek (üçüncü paragraf) bu daldan bağımsızdır
-> ve bugün çalışır durumdadır.
-
 Gerçek AUZEF dökümüyle ölçüldü: 505.442 satırlık dosya, `direction=Kullanıcı`
 ve `message_type=text` filtreleriyle 63.285 kayda, tekilleştirmeden sonra
 **43.816 benzersiz kayda** iniyor — 120 kayıtlık chunk sınırıyla **366 map

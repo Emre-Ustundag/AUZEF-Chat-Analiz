@@ -14,6 +14,15 @@ Tavan ÜÇ ayrı noktada uygulanıyor ve üçü farklı soruya cevap veriyor:
    tutara göre. Kontrolün chunk'tan SONRA olması bilinçli: harcanmış para
    geri alınamaz, yapılabilecek tek şey kalan chunk'ları göndermemek.
 
+   AŞIM PAYI (bulgu A1): map çağrıları artık eşzamanlı gönderiliyor
+   (`llm_map_concurrency`, varsayılan 8). Tavan aşıldığında YENİ iş
+   gönderilmez ama o an uçuşta olan çağrılar tamamlanır ve faturaya girer.
+   Yani aşım payı sıralı koşudaki 1 çağrı yerine en fazla `concurrency`
+   çağrıdır. Bilinçli takas: karşılığında 40 bin+ benzersiz kayıtlık bir iş
+   45 dakikalık hard timeout'a sığıyor. Henüz başlamamış çağrılar iptal
+   edilir, uçuştakiler ise yarıda kesilmez — para zaten harcandı ve yanıt
+   A3 önbelleğine yazılıp bir sonraki koşuyu ucuzlatıyor.
+
 Üçü de aynı `COST_LIMIT_EXCEEDED` kodunu kullanır (ADR-0002 #10); 1 senkron
 HTTP hatası, 2 ve 3 terminal job hatasıdır.
 
