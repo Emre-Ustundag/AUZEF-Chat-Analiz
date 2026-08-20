@@ -339,8 +339,13 @@ def _estimated_reduce_usage(
 
         # Her partide en az bir çıktı kalır. Bu alt sınır, "her şey tek
         # temaya iner" gibi gerçekçi olmayan bir maliyet tahmini vermeyi
-        # engeller.
-        current = max(len(batch_sizes), int(current * retain_ratio + 0.999))
+        # engeller. Yuvarlama küçük kategori sayılarında (ör. %80 için
+        # 4 -> 4) ilerlemeyi durdurabilir; gerçek reducer gibi o noktada
+        # yeniden aynı turu tahmin etmek yerine eldeki sonuçta dururuz.
+        next_count = max(len(batch_sizes), int(current * retain_ratio + 0.999))
+        if next_count >= current:
+            break
+        current = next_count
 
     return (prompt_tokens, completion_tokens)
 
