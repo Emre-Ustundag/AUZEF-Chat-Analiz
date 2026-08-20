@@ -68,6 +68,7 @@ _RESPONSE_EXAMPLES: dict[tuple[str, str, str], dict[str, str]] = {
     ("/api/v1/analyses/{analysis_id}/result", "get", "200"): {
         "Tam rapor": "analyses.result.200",
         "Satır sınırı kırpılmış": "analyses.result.200.truncated",
+        "Chatbot log raporu (oturum + zaman serisi)": "analyses.result.200.chatbot",
     },
 }
 
@@ -203,7 +204,8 @@ def build_openapi(app: FastAPI) -> dict[str, Any]:
                 body = operation.get("requestBody", {})
                 for media in body.get("content", {}).values():
                     media["examples"] = {
-                        "Tipik analiz isteği": {"value": examples["analyses.request"]}
+                        "Tipik analiz isteği": {"value": examples["analyses.request"]},
+                        "Chatbot log ön ayarı": {"value": examples["analyses.request.chatbot"]},
                     }
 
             if method == "post" and path == "/api/v1/uploads":

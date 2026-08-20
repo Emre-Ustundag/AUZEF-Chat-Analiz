@@ -27,21 +27,26 @@ girecek yer olmayacak.
 from __future__ import annotations
 
 import hashlib
+from collections import Counter
 from datetime import UTC, datetime
 from uuid import UUID
 
 from app.core.config import Settings
 from app.pipeline.classifier import Classification
 from app.pipeline.preprocess import PreprocessResult, RecordGroup
+from app.schemas.analysis import DatasetType
 from app.schemas.report import (
     REPORT_SCHEMA_VERSION,
     AnalysisReport,
+    AnalysisTimeSeries,
     AnalysisWarning,
     PreprocessingSummary,
     SourceSummary,
     Theme,
     TokenUsage,
     TopQuestion,
+    TrendPoint,
+    TrendSeries,
 )
 
 
@@ -75,6 +80,20 @@ def _prompt_hash(classifier_id: str, prompt_version: str) -> str:
     return f"sha256:{digest[:12]}"
 
 
+def _trend_points(members: list[RecordGroup]) -> list[TrendPoint]:
+    """Grupların günlük frekanslarını tek bir artan-tarihli seriye toplar.
+
+    Sayılar `RecordGroup.daily_counts`'tan gelir, yani dosyanın kendisinden.
+    Tarihi çözümlenemeyen kayıtlar seride yoktur; toplamın `count`'tan küçük
+    kalabilmesi bu yüzden beklenen davranıştır (şema doğrulaması `<=` kuralını
+    zorlar).
+    """
+    daily: Counter[str] = Counter()
+    for member in members:
+        daily.update(member.daily_counts)
+    return [TrendPoint(date=date, count=count) for date, count in sorted(daily.items())]
+
+
 def _validate_assignment(
     classification: Classification,
     groups: dict[str, RecordGroup],
@@ -103,6 +122,7 @@ def aggregate(
     classifier_id: str,
     top_n: int,
     settings: Settings,
+    dataset_type: DatasetType = DatasetType.GENERIC,
     extra_warnings: list[AnalysisWarning] | None = None,
     token_usage: TokenUsage | None = None,
     estimated_cost_usd: float = 0.0,
@@ -120,13 +140,20 @@ def aggregate(
 
     analyzed = preprocess_result.analyzed_count
 
+    #: Oturum ve zaman metrikleri yalnızca ön işleme onları gerçekten
+    #: topladıysa üretilir (CHATBOT_LOG + ilgili kolon seçili).
+    track_sessions = preprocess_result.session_count is not None
+    track_dates = preprocess_result.dates_tracked
+
     # ---- soru adetleri: yalnızca RecordGroup.count toplamları ----
     question_counts: dict[str, int] = {}
     question_examples: dict[str, list[str]] = {}
     question_confidence: dict[str, float] = {}
+    question_members: dict[str, list[RecordGroup]] = {}
 
     for question in classification.questions:
         members = [groups[record_id] for record_id in question.record_ids]
+        question_members[question.question_id] = members
         total = sum(member.count for member in members)
         question_counts[question.question_id] = total
 
@@ -157,6 +184,15 @@ def aggregate(
     included = ordered_questions[:top_n]
     included_ids = {question.question_id for question in included}
 
+    def _session_count(members: list[RecordGroup]) -> int | None:
+        """Benzersiz oturum sayısı — sayım yine GERÇEK veriden (ADR §4)."""
+        if not track_sessions:
+            return None
+        sessions: set[str] = set()
+        for member in members:
+            sessions.update(member.session_ids)
+        return len(sessions)
+
     top_questions = [
         TopQuestion(
             id=question.question_id,
@@ -165,16 +201,21 @@ def aggregate(
             percentage=_percentage(question_counts[question.question_id], analyzed),
             confidence=question_confidence[question.question_id],
             redacted_examples=question_examples[question.question_id],
+            session_count=_session_count(question_members[question.question_id]),
         )
         for question in included
     ]
 
     # ---- tema adetleri: KIRPMADAN ETKİLENMEZ (plan §1.2) ----
     themes: list[Theme] = []
+    theme_groups: dict[str, list[RecordGroup]] = {}
     for theme in classification.themes:
         # Temanın adedi, ona bağlı TÜM soruların adedidir — raporda görünüp
         # görünmediklerine bakılmaz.
         count = sum(question_counts.get(qid, 0) for qid in theme.question_ids)
+        theme_groups[theme.theme_id] = [
+            member for qid in theme.question_ids for member in question_members.get(qid, [])
+        ]
         themes.append(
             Theme(
                 id=theme.theme_id,
@@ -183,6 +224,7 @@ def aggregate(
                 percentage=_percentage(count, analyzed),
                 # Plan §1.2: yalnızca raporda yer alan sorulara bağlanır.
                 related_question_ids=[qid for qid in theme.question_ids if qid in included_ids],
+                session_count=_session_count(theme_groups[theme.theme_id]),
             )
         )
     themes.sort(key=lambda theme: (-theme.count, theme.id))
@@ -196,11 +238,32 @@ def aggregate(
         # Değişmez ihlali: temalar analiz edilen kayıttan fazlasını sayamaz.
         raise AggregationError(f"theme_total_exceeds_analyzed:{theme_total}>{analyzed}")
 
+    time_series: AnalysisTimeSeries | None = None
+    if track_dates and dataset_type is DatasetType.CHATBOT_LOG:
+        time_series = AnalysisTimeSeries(
+            daily_totals=_trend_points(preprocess_result.groups),
+            # Yalnızca raporda yer alan sorular: arayüz çözemeyeceği bir
+            # kimliğe seri bağlamamalı (ADR-0002 #5 ile aynı ilke).
+            question_trends=[
+                TrendSeries(
+                    id=question.question_id,
+                    daily=_trend_points(question_members[question.question_id]),
+                )
+                for question in included
+            ],
+            theme_trends=[
+                TrendSeries(id=theme.id, daily=_trend_points(theme_groups[theme.id]))
+                for theme in themes
+            ],
+        )
+
     return AnalysisReport(
         schema_version=REPORT_SCHEMA_VERSION,
         analysis_id=analysis_id,
         status="completed",
         generated_at=datetime.now(UTC),
+        dataset_type=dataset_type,
+        time_series=time_series,
         source_summary=SourceSummary(
             filename=filename,
             sheet_name=sheet_name,
@@ -213,6 +276,7 @@ def aggregate(
             duplicate_count=preprocess_result.duplicate_count,
             redacted_count=preprocess_result.redacted_count,
             unique_count=preprocess_result.unique_count,
+            session_count=preprocess_result.session_count,
         ),
         top_questions=top_questions,
         themes=themes,

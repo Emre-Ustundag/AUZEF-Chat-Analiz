@@ -1,0 +1,23 @@
+{
+  "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+  "sheet_name": "CSV",
+  "text_column": "message_text_clean",
+  "model": "google/gemini-2.5-flash",
+  "prompt_version": "faq_analysis/v1",
+  "top_n": 3,
+  "max_cost_usd": 10.0,
+  "dataset_type": "CHATBOT_LOG",
+  "chatbot_config": {
+    "role_column": "direction",
+    "role_user_values": [
+      "Kullanıcı",
+      "user"
+    ],
+    "session_id_column": "session_id",
+    "timestamp_column": "message_time_tr",
+    "message_type_column": "message_type",
+    "allowed_message_types": [
+      "text"
+    ]
+  }
+}

@@ -111,6 +111,10 @@ def _fingerprint_cases() -> list[dict[str, object]]:
     (2.5): `JSON.stringify(5.0)` → `5`, Python'un varsayılanı `5.0` olurdu ve
     sözleşmenin EN TİPİK gövdesinde ayrışırlardı.
     """
+    # Girdiler DOĞRULANMIŞ gövdenin dump'ıyla birebir aynı: frontend
+    # (`toAnalysisRequest`) tüm alanları her zaman açıkça gönderiyor. Python
+    # fingerprint'i doğrulanmış dump üzerinden hesaplandığı için eksik bir alan
+    # iki dilin canonical JSON'unu sessizce ayrıştırırdı.
     analysis_inputs: list[dict[str, object]] = [
         {
             "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
@@ -120,6 +124,8 @@ def _fingerprint_cases() -> list[dict[str, object]]:
             "prompt_version": "faq_analysis/v1",
             "top_n": 20,
             "max_cost_usd": 5.0,
+            "dataset_type": "GENERIC",
+            "chatbot_config": None,
         },
         {
             "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
@@ -129,6 +135,26 @@ def _fingerprint_cases() -> list[dict[str, object]]:
             "prompt_version": "faq_analysis/v1",
             "top_n": 1,
             "max_cost_usd": 2.5,
+            "dataset_type": "GENERIC",
+            "chatbot_config": None,
+        },
+        {
+            "upload_id": "8f14e45f-ceea-467a-9f6b-2c1d3e4a5b6c",
+            "sheet_name": "CSV",
+            "text_column": "message_text_clean",
+            "model": "google/gemini-2.5-flash",
+            "prompt_version": "faq_analysis/v1",
+            "top_n": 3,
+            "max_cost_usd": 5.0,
+            "dataset_type": "CHATBOT_LOG",
+            "chatbot_config": {
+                "role_column": "direction",
+                "role_user_values": ["Kullanıcı", "user"],
+                "session_id_column": "session_id",
+                "timestamp_column": "message_time_tr",
+                "message_type_column": "message_type",
+                "allowed_message_types": ["text"],
+            },
         },
     ]
 

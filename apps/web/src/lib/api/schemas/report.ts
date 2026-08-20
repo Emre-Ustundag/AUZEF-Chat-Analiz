@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { promptVersionSchema } from "./analysis";
+import { datasetTypeSchema, promptVersionSchema } from "./analysis";
 import { LIMITS } from "./common";
 
 /** Yüzdeyi bir ondalığa exact half-up yuvarlar; backend ile aynı kural. */
@@ -46,6 +46,12 @@ export const preprocessingSummarySchema = z.object({
   redacted_count: z.int().nonnegative(),
   /** Tekilleştirme sonrası LLM'e giden benzersiz kayıt sayısı. */
   unique_count: z.int().nonnegative(),
+  /**
+   * Analize giren kayıtlardaki benzersiz oturum sayısı. Yalnızca
+   * `CHATBOT_LOG` ön ayarında ve oturum kolonu seçiliyken dolu; backend her
+   * cevapta yazar (aksi hâlde `null`).
+   */
+  session_count: z.int().nonnegative().nullable().optional(),
 });
 
 export type PreprocessingSummary = z.infer<typeof preprocessingSummarySchema>;
@@ -60,6 +66,8 @@ export const topQuestionSchema = z.object({
   confidence: z.number().min(0).max(1),
   /** PII redakte edilmiş, kırpılmış gerçek kullanıcı mesajları. */
   redacted_examples: z.array(z.string()).default([]),
+  /** Bu soruyu soran benzersiz oturum sayısı (`CHATBOT_LOG` + oturum kolonu). */
+  session_count: z.int().nonnegative().nullable().optional(),
 });
 
 export type TopQuestion = z.infer<typeof topQuestionSchema>;
@@ -80,9 +88,46 @@ export const themeSchema = z.object({
    * büyük olabilir. Bu beklenen davranıştır.
    */
   related_question_ids: z.array(z.string()).default([]),
+  /** Bu temaya düşen benzersiz oturum sayısı (`CHATBOT_LOG` + oturum kolonu). */
+  session_count: z.int().nonnegative().nullable().optional(),
 });
 
 export type Theme = z.infer<typeof themeSchema>;
+
+/** Tek bir günün adedi; tarih her zaman UTC `YYYY-MM-DD`. */
+export const trendPointSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-MM-DD biçiminde olmalı."),
+  count: z.int().nonnegative(),
+});
+
+export type TrendPoint = z.infer<typeof trendPointSchema>;
+
+/** Bir soru veya temanın günlük kırılımı; `id` ilgili listeye bağlanır. */
+export const trendSeriesSchema = z.object({
+  id: z.string().min(1),
+  daily: z.array(trendPointSchema),
+});
+
+export type TrendSeries = z.infer<typeof trendSeriesSchema>;
+
+/**
+ * Günlük zaman serisi (`CHATBOT_LOG` + zaman kolonu seçiliyken).
+ *
+ * Tarihler her seride artan sıralı ve benzersizdir. Zaman damgası
+ * çözümlenemeyen kayıtlar seriye girmez; bu yüzden serilerin toplamı ilgili
+ * `count` değerinden küçük olabilir, asla büyük olamaz. Bu kurallar raporun
+ * `superRefine` bloğunda doğrulanır (backend `_time_series_invariants` aynası).
+ */
+export const analysisTimeSeriesSchema = z.object({
+  /** Analize giren tüm mesajların günlük toplamı. */
+  daily_totals: z.array(trendPointSchema),
+  /** Yalnızca raporda yer alan (`top_questions`) soruların kırılımı. */
+  question_trends: z.array(trendSeriesSchema),
+  /** Tüm temaların kırılımı. */
+  theme_trends: z.array(trendSeriesSchema),
+});
+
+export type AnalysisTimeSeries = z.infer<typeof analysisTimeSeriesSchema>;
 
 export const tokenUsageSchema = z.object({
   prompt_tokens: z.int().nonnegative(),
@@ -139,11 +184,17 @@ export const analysisReportSchema = z
     status: z.literal("completed"),
     generated_at: z.iso.datetime(),
 
+    /** Analizin çalıştığı veri kümesi ön ayarı; eski raporlarda bulunmayabilir. */
+    dataset_type: datasetTypeSchema.optional(),
+
     source_summary: sourceSummarySchema,
     preprocessing_summary: preprocessingSummarySchema,
 
     top_questions: z.array(topQuestionSchema),
     themes: z.array(themeSchema),
+
+    /** Günlük zaman serisi; yalnızca `CHATBOT_LOG` + zaman kolonu seçiliyken. */
+    time_series: analysisTimeSeriesSchema.nullable().optional(),
 
     executive_summary: z.string(),
     warnings: z.array(analysisWarningSchema).default([]),
@@ -255,6 +306,91 @@ export const analysisReportSchema = z
         path: ["warnings"],
         message: "ROW_LIMIT_TRUNCATED uyarısı satır sınırıyla uyumlu olmalı.",
       });
+    }
+
+    // ---- Oturum sayıları (backend `_session_invariants` aynası) ----
+    const totalSessions = prep.session_count ?? null;
+    const sessionItems: [
+      "top_questions" | "themes",
+      { count: number; session_count?: number | null }[],
+    ][] = [
+      ["top_questions", report.top_questions],
+      ["themes", report.themes],
+    ];
+    for (const [listName, items] of sessionItems) {
+      items.forEach((item, index) => {
+        const sessions = item.session_count ?? null;
+        if (sessions === null) return;
+        if (totalSessions === null || sessions > item.count || sessions > totalSessions) {
+          ctx.addIssue({
+            code: "custom",
+            path: [listName, index, "session_count"],
+            message: "session_count, count ve toplam oturum sayısını aşamaz.",
+          });
+        }
+      });
+    }
+
+    // ---- Zaman serisi (backend `_time_series_invariants` aynası) ----
+    const series = report.time_series ?? null;
+    if (series !== null) {
+      if ((report.dataset_type ?? "GENERIC") === "GENERIC") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["time_series"],
+          message: "time_series yalnızca CHATBOT_LOG raporlarında bulunabilir.",
+        });
+      }
+
+      const checkDates = (points: { date: string; count: number }[], path: (string | number)[]) => {
+        const dates = points.map((point) => point.date);
+        const sortedUnique = [...new Set(dates)].sort();
+        if (dates.length !== sortedUnique.length || dates.some((d, i) => d !== sortedUnique[i])) {
+          ctx.addIssue({
+            code: "custom",
+            path,
+            message: "Tarihler artan sıralı ve benzersiz olmalı.",
+          });
+        }
+        return points.reduce((sum, point) => sum + point.count, 0);
+      };
+
+      if (checkDates(series.daily_totals, ["time_series", "daily_totals"]) > prep.analyzed_count) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["time_series", "daily_totals"],
+          message: "daily_totals toplamı analyzed_count'u aşamaz.",
+        });
+      }
+
+      const questionCounts = new Map(report.top_questions.map((q) => [q.id, q.count]));
+      const themeCounts = new Map(report.themes.map((t) => [t.id, t.count]));
+      const trendLists: ["question_trends" | "theme_trends", Map<string, number>][] = [
+        ["question_trends", questionCounts],
+        ["theme_trends", themeCounts],
+      ];
+      for (const [listName, counts] of trendLists) {
+        const seen = new Set<string>();
+        series[listName].forEach((trend, index) => {
+          if (!counts.has(trend.id) || seen.has(trend.id)) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["time_series", listName, index, "id"],
+              message: "Seri id'si raporda bulunmalı ve tekrarlanamaz.",
+            });
+            return;
+          }
+          seen.add(trend.id);
+          const total = checkDates(trend.daily, ["time_series", listName, index, "daily"]);
+          if (total > counts.get(trend.id)!) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["time_series", listName, index, "daily"],
+              message: "Günlük toplam ilgili count değerini aşamaz.",
+            });
+          }
+        });
+      }
     }
   });
 

@@ -31,7 +31,7 @@ Binlerce chatbot mesajını manuel olarak incelemek hem zaman alır hem de tekra
 
 ## Hedeflenen MVP akışı
 
-1. Kullanıcı `.xlsx` veya `.csv` formatındaki veri dosyasını yükler.
+1. Kullanıcı `.xlsx` veya `.csv` formatındaki veri dosyasını yükler; isterse `Chatbot dökümü` ön ayarını seçip gönderen/oturum/zaman kolonlarını eşler.
 2. Dosyadaki kolonlar algılanır ve analiz edilecek metin kolonu seçilir.
 3. OpenRouter API anahtarı güvenli biçimde backend'e iletilir; sürümlü sistem promptu backend tarafından yönetilir.
 4. Boş, geçersiz veya analiz dışı kayıtlar temizlenir.

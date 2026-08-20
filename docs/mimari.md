@@ -179,6 +179,7 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 ### Analysis
 
 - `POST /api/v1/analyses` — `upload_id`, `sheet_name`, `text_column`, `model`, `prompt_version`, `top_n`, `max_cost_usd`
+  - Opsiyonel veri kümesi ön ayarı: `dataset_type` (`GENERIC` varsayılan, `CHATBOT_LOG`) ve yalnızca `CHATBOT_LOG` ile zorunlu `chatbot_config` (rol/oturum/zaman/mesaj-tipi kolon eşlemesi). `CHATBOT_LOG` seçildiğinde satırlar PII redaksiyonu ve tekilleştirmeden ÖNCE gönderen koluna göre filtrelenir (bot cevapları ve sistem olayları analize girmez); oturum kolonu rapora benzersiz oturum sayıları, zaman kolonu günlük (`YYYY-MM-DD`, UTC) zaman serisi ekler. Rapor gövdesine `dataset_type`, `time_series` ve `session_count` alanları opsiyonel olarak eklendi (ADR-0002 #12: opsiyonel alan sürüm artırmaz). Oturum ve trend sayıları da diğer tüm adetler gibi backend'de deterministik hesaplanır (§4).
 - Model yalnızca JSON Schema structured output desteği doğrulanmış backend whitelist'inden seçilebilir
 - OpenRouter anahtarı yalnızca `X-OpenRouter-Key` header'ında taşınır; reverse proxy ve uygulama loglarında bu header zorunlu olarak redakte edilir
 - `GET /api/v1/analyses/{analysis_id}` — durum, progress, aşama ve güvenli hata

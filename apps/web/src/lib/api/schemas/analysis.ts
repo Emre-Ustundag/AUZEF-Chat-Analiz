@@ -67,6 +67,7 @@ export const modelIdSchema = z.enum([
   "anthropic/claude-sonnet-4.6",
   "openai/gpt-4.1-mini",
   "google/gemini-2.5-flash",
+  "z-ai/glm-5.2:free",
 ]);
 
 export type ModelId = z.infer<typeof modelIdSchema>;
@@ -75,6 +76,43 @@ export type ModelId = z.infer<typeof modelIdSchema>;
 export const promptVersionSchema = z.enum(["faq_analysis/v1"]);
 
 export type PromptVersion = z.infer<typeof promptVersionSchema>;
+
+/**
+ * Veri kümesi ön ayarı. `GENERIC` mevcut düz-metin davranışıdır; `CHATBOT_LOG`
+ * gerçek chatbot dökümleri içindir: satırlar gönderen/rol kolonuna göre
+ * ön filtrelenir (bot cevapları analize girmez), oturum ve zaman kolonları
+ * rapora oturum sayıları ve günlük zaman serisi ekler.
+ */
+export const datasetTypeSchema = z.enum(["GENERIC", "CHATBOT_LOG"]);
+
+export type DatasetType = z.infer<typeof datasetTypeSchema>;
+
+/** Arayüzde gösterilen Türkçe ön ayar adları. */
+export const DATASET_TYPE_LABELS_TR: Record<DatasetType, string> = {
+  GENERIC: "Genel veri",
+  CHATBOT_LOG: "Chatbot dökümü",
+};
+
+/**
+ * `CHATBOT_LOG` ön ayarının kolon eşlemesi. Metin kolonu burada DEĞİL:
+ * `analysisRequestSchema.text_column` iki ön ayarda da aynı anlamı taşır.
+ *
+ * `message_type_column` ile `allowed_message_types` birlikte verilir; bu
+ * eşleşmeyi backend doğrular (Zod tarafında form şeması da kontrol eder).
+ */
+export const chatbotLogConfigSchema = z.object({
+  role_column: z.string().min(1, "Gönderen/rol kolonu seçilmelidir."),
+  role_user_values: z
+    .array(z.string().min(1))
+    .min(1, "En az bir kullanıcı değeri girilmelidir.")
+    .max(20),
+  session_id_column: z.string().min(1).nullable().optional(),
+  timestamp_column: z.string().min(1).nullable().optional(),
+  message_type_column: z.string().min(1).nullable().optional(),
+  allowed_message_types: z.array(z.string().min(1)).min(1).max(20).nullable().optional(),
+});
+
+export type ChatbotLogConfig = z.infer<typeof chatbotLogConfigSchema>;
 
 /**
  * POST /api/v1/analyses gövdesi.
@@ -94,6 +132,14 @@ export const analysisRequestSchema = z.object({
     .number()
     .positive("Maliyet sınırı sıfırdan büyük olmalıdır.")
     .max(100, "Maliyet sınırı en fazla 100 USD olabilir."),
+  /**
+   * Opsiyonel ön ayar; frontend her zaman açıkça gönderir (`toAnalysisRequest`),
+   * backend göndermeyen istemciler için `GENERIC` varsayar. `CHATBOT_LOG`
+   * seçiliyken `chatbot_config` zorunludur — bu eşleşmeyi backend ve form
+   * şeması doğrular (buraya refinement koymak `.omit()` zincirini kırardı).
+   */
+  dataset_type: datasetTypeSchema.optional(),
+  chatbot_config: chatbotLogConfigSchema.nullable().optional(),
 });
 
 export type AnalysisRequest = z.infer<typeof analysisRequestSchema>;

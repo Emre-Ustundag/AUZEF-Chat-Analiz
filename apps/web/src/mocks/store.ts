@@ -5,7 +5,9 @@ import type {
   AnalysisReport,
   AnalysisRequest,
   AnalysisStatus,
+  AnalysisTimeSeries,
   ProblemDetails,
+  TrendPoint,
   Upload,
   UploadStatus,
 } from "@/lib/api/schemas";
@@ -528,11 +530,49 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     { id: "t4", name: "Belge ve itiraz", questionIds: ["q7", "q8"] },
   ];
 
+  // ---- CHATBOT_LOG ön ayarı: oturum sayıları ve günlük zaman serisi ----
+  // Backend ile aynı kurallar taklit edilir: session_count <= count, günlük
+  // toplam <= count (tarihi çözümlenemeyen kayıtlar seriye girmez), tarihler
+  // artan sıralı, seriler yalnızca raporda bulunan id'lere bağlanır.
+  const config = record.request.chatbot_config ?? null;
+  const chatbot = record.request.dataset_type === "CHATBOT_LOG" && config !== null;
+  const trackSessions = chatbot && Boolean(config?.session_id_column);
+  const trackDates = chatbot && Boolean(config?.timestamp_column);
+  const totalSessions = trackSessions ? Math.round(analyzed * 0.6) : null;
+  const sessionsOf = (count: number) =>
+    trackSessions && totalSessions !== null
+      ? Math.min(Math.round(count * 0.7), totalSessions)
+      : null;
+
+  const TREND_DAYS = ["2026-05-29", "2026-05-30", "2026-05-31"];
+  const dailyOf = (count: number): TrendPoint[] =>
+    TREND_DAYS.map((date) => ({ date, count: Math.floor(count / 4) }));
+
+  const includedQuestions = questions.slice(0, record.request.top_n);
+  const timeSeries: AnalysisTimeSeries | null = trackDates
+    ? {
+        daily_totals: TREND_DAYS.map((date, index) => ({
+          date,
+          count: includedQuestions.reduce((sum, q) => sum + dailyOf(q.count)[index].count, 0),
+        })),
+        question_trends: includedQuestions.map((q) => ({ id: q.id, daily: dailyOf(q.count) })),
+        theme_trends: themes.map((theme) => {
+          const count = theme.questionIds.reduce(
+            (sum, id) => sum + (questions.find((q) => q.id === id)?.count ?? 0),
+            0,
+          );
+          return { id: theme.id, daily: dailyOf(count) };
+        }),
+      }
+    : null;
+
   return {
     schema_version: "1.0",
     analysis_id: record.analysisId,
     status: "completed",
     generated_at: new Date().toISOString(),
+    dataset_type: record.request.dataset_type ?? "GENERIC",
+    time_series: timeSeries,
     source_summary: {
       filename: uploads.get(record.request.upload_id)?.filename ?? "veri.xlsx",
       sheet_name: record.request.sheet_name,
@@ -545,14 +585,16 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
       duplicate_count: duplicate,
       redacted_count: Math.round(analyzed * (2_841 / 47_106)),
       unique_count: unique,
+      session_count: totalSessions,
     },
-    top_questions: questions.slice(0, record.request.top_n).map((q) => ({
+    top_questions: includedQuestions.map((q) => ({
       id: q.id,
       canonical_question: q.canonical_question,
       count: q.count,
       percentage: percentageHalfUp(q.count, analyzed),
       confidence: q.confidence,
       redacted_examples: q.examples,
+      session_count: sessionsOf(q.count),
     })),
     themes: themes.map((theme) => {
       // Tema adedi o temaya düşen TÜM mesajları kapsar; top_n kırpması
@@ -575,6 +617,7 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
         count,
         percentage: percentageHalfUp(count, analyzed),
         related_question_ids: theme.questionIds.filter((id) => includedIds.has(id)),
+        session_count: sessionsOf(count),
       };
     }),
     executive_summary:

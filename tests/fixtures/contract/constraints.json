@@ -93,6 +93,61 @@
       "valid": false
     },
     {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "dataset_type",
+      "value": "GENERIC",
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "dataset_type",
+      "value": "bilinmeyen",
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request",
+      "field": "chatbot_config",
+      "value": null,
+      "valid": true
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request.chatbot",
+      "field": "chatbot_config",
+      "value": {
+        "role_column": "",
+        "role_user_values": [
+          "user"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request.chatbot",
+      "field": "chatbot_config",
+      "value": {
+        "role_column": "direction",
+        "role_user_values": []
+      },
+      "valid": false
+    },
+    {
+      "model": "AnalysisRequest",
+      "base": "analyses.request.chatbot",
+      "field": "chatbot_config",
+      "value": {
+        "role_column": "direction",
+        "role_user_values": [
+          "Kullanıcı"
+        ]
+      },
+      "valid": true
+    },
+    {
       "model": "AnalysisJob",
       "base": "analyses.get.200.analyzing",
       "field": "progress",

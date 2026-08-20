@@ -5,5 +5,7 @@
   "model": "google/gemini-2.5-flash",
   "prompt_version": "faq_analysis/v1",
   "top_n": 8,
-  "max_cost_usd": 10.0
+  "max_cost_usd": 10.0,
+  "dataset_type": "GENERIC",
+  "chatbot_config": null
 }

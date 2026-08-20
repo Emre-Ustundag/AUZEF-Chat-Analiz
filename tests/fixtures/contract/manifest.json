@@ -95,6 +95,14 @@
       "file": "analyses.request.json"
     },
     {
+      "id": "analyses.request.chatbot",
+      "method": "POST",
+      "path": "/api/v1/analyses",
+      "status": 202,
+      "model": "AnalysisRequest",
+      "file": "analyses.request.chatbot.json"
+    },
+    {
       "id": "analyses.create.202",
       "method": "POST",
       "path": "/api/v1/analyses",
@@ -149,6 +157,14 @@
       "status": 200,
       "model": "AnalysisReport",
       "file": "analyses.result.200.truncated.json"
+    },
+    {
+      "id": "analyses.result.200.chatbot",
+      "method": "GET",
+      "path": "/api/v1/analyses/{analysis_id}/result",
+      "status": 200,
+      "model": "AnalysisReport",
+      "file": "analyses.result.200.chatbot.json"
     },
     {
       "id": "errors.upload-too-large.413",

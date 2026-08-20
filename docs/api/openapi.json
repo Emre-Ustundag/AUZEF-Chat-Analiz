@@ -1291,7 +1291,34 @@
                     "model": "google/gemini-2.5-flash",
                     "prompt_version": "faq_analysis/v1",
                     "top_n": 8,
-                    "max_cost_usd": 10.0
+                    "max_cost_usd": 10.0,
+                    "dataset_type": "GENERIC",
+                    "chatbot_config": null
+                  }
+                },
+                "Chatbot log ön ayarı": {
+                  "value": {
+                    "upload_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                    "sheet_name": "CSV",
+                    "text_column": "message_text_clean",
+                    "model": "google/gemini-2.5-flash",
+                    "prompt_version": "faq_analysis/v1",
+                    "top_n": 3,
+                    "max_cost_usd": 10.0,
+                    "dataset_type": "CHATBOT_LOG",
+                    "chatbot_config": {
+                      "role_column": "direction",
+                      "role_user_values": [
+                        "Kullanıcı",
+                        "user"
+                      ],
+                      "session_id_column": "session_id",
+                      "timestamp_column": "message_time_tr",
+                      "message_type_column": "message_type",
+                      "allowed_message_types": [
+                        "text"
+                      ]
+                    }
                   }
                 }
               }
@@ -2114,6 +2141,7 @@
                       "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
                       "status": "completed",
                       "generated_at": "2026-08-11T10:12:15.000Z",
+                      "dataset_type": "GENERIC",
                       "source_summary": {
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
@@ -2125,7 +2153,8 @@
                         "discarded_count": 1107,
                         "duplicate_count": 15566,
                         "redacted_count": 2840,
-                        "unique_count": 31540
+                        "unique_count": 31540,
+                        "session_count": null
                       },
                       "top_questions": [
                         {
@@ -2137,7 +2166,8 @@
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q2",
@@ -2148,7 +2178,8 @@
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q3",
@@ -2159,7 +2190,8 @@
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q4",
@@ -2169,7 +2201,8 @@
                           "confidence": 0.87,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q5",
@@ -2180,7 +2213,8 @@
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q6",
@@ -2190,7 +2224,8 @@
                           "confidence": 0.82,
                           "redacted_examples": [
                             "mazeret sınavı başvuru"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q7",
@@ -2200,7 +2235,8 @@
                           "confidence": 0.78,
                           "redacted_examples": [
                             "notuma itiraz etmek istiyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q8",
@@ -2210,7 +2246,8 @@
                           "confidence": 0.76,
                           "redacted_examples": [
                             "öğrenci belgesi lazım"
-                          ]
+                          ],
+                          "session_count": null
                         }
                       ],
                       "themes": [
@@ -2223,7 +2260,8 @@
                             "q1",
                             "q5",
                             "q6"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t2",
@@ -2232,7 +2270,8 @@
                           "percentage": 17.2,
                           "related_question_ids": [
                             "q2"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t3",
@@ -2242,7 +2281,8 @@
                           "related_question_ids": [
                             "q3",
                             "q4"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t4",
@@ -2252,9 +2292,11 @@
                           "related_question_ids": [
                             "q7",
                             "q8"
-                          ]
+                          ],
+                          "session_count": null
                         }
                       ],
+                      "time_series": null,
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
@@ -2274,6 +2316,7 @@
                       "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
                       "status": "completed",
                       "generated_at": "2026-08-11T10:12:15.000Z",
+                      "dataset_type": "GENERIC",
                       "source_summary": {
                         "filename": "auzef-chatbot-mesajlari-buyuk.xlsx",
                         "sheet_name": "Mesajlar",
@@ -2285,7 +2328,8 @@
                         "discarded_count": 1107,
                         "duplicate_count": 32679,
                         "redacted_count": 5963,
-                        "unique_count": 66214
+                        "unique_count": 66214,
+                        "session_count": null
                       },
                       "top_questions": [
                         {
@@ -2297,7 +2341,8 @@
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q2",
@@ -2308,7 +2353,8 @@
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q3",
@@ -2319,7 +2365,8 @@
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q4",
@@ -2329,7 +2376,8 @@
                           "confidence": 0.87,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q5",
@@ -2340,7 +2388,8 @@
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
-                          ]
+                          ],
+                          "session_count": null
                         }
                       ],
                       "themes": [
@@ -2352,7 +2401,8 @@
                           "related_question_ids": [
                             "q1",
                             "q5"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t2",
@@ -2361,7 +2411,8 @@
                           "percentage": 8.2,
                           "related_question_ids": [
                             "q2"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t3",
@@ -2371,16 +2422,19 @@
                           "related_question_ids": [
                             "q3",
                             "q4"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t4",
                           "name": "Belge ve itiraz",
                           "count": 2769,
                           "percentage": 2.8,
-                          "related_question_ids": []
+                          "related_question_ids": [],
+                          "session_count": null
                         }
                       ],
+                      "time_series": null,
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [
                         {
@@ -2397,6 +2451,205 @@
                         "total_tokens": 1380400
                       },
                       "estimated_cost_usd": 0.6262
+                    }
+                  },
+                  "Chatbot log raporu (oturum + zaman serisi)": {
+                    "value": {
+                      "schema_version": "1.0",
+                      "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
+                      "status": "completed",
+                      "generated_at": "2026-08-11T10:12:15.000Z",
+                      "dataset_type": "CHATBOT_LOG",
+                      "source_summary": {
+                        "filename": "auzef-chatbot-dokumu.csv",
+                        "sheet_name": "CSV",
+                        "text_column": "message_text_clean",
+                        "total_rows": 50000
+                      },
+                      "preprocessing_summary": {
+                        "analyzed_count": 6650,
+                        "discarded_count": 43350,
+                        "duplicate_count": 3650,
+                        "redacted_count": 214,
+                        "unique_count": 3000,
+                        "session_count": 2450
+                      },
+                      "top_questions": [
+                        {
+                          "id": "q1",
+                          "canonical_question": "Sınav tarihleri ne zaman açıklanacak?",
+                          "count": 850,
+                          "percentage": 12.8,
+                          "confidence": 0.93,
+                          "redacted_examples": [
+                            "sınav tarihleri belli mi",
+                            "final ne zaman"
+                          ],
+                          "session_count": 620
+                        },
+                        {
+                          "id": "q2",
+                          "canonical_question": "Kayıt yenileme işlemi nasıl yapılır?",
+                          "count": 545,
+                          "percentage": 8.2,
+                          "confidence": 0.9,
+                          "redacted_examples": [
+                            "kayıt yenileme nereden yapılıyor"
+                          ],
+                          "session_count": 410
+                        },
+                        {
+                          "id": "q3",
+                          "canonical_question": "Harç ödemesini nasıl yaparım?",
+                          "count": 352,
+                          "percentage": 5.3,
+                          "confidence": 0.88,
+                          "redacted_examples": [
+                            "harç yatırma",
+                            "ödeme ekranı açılmıyor"
+                          ],
+                          "session_count": 260
+                        }
+                      ],
+                      "themes": [
+                        {
+                          "id": "t1",
+                          "name": "Sınav ve takvim",
+                          "count": 850,
+                          "percentage": 12.8,
+                          "related_question_ids": [
+                            "q1"
+                          ],
+                          "session_count": 620
+                        },
+                        {
+                          "id": "t2",
+                          "name": "Kayıt ve ödeme",
+                          "count": 897,
+                          "percentage": 13.5,
+                          "related_question_ids": [
+                            "q2",
+                            "q3"
+                          ],
+                          "session_count": 655
+                        }
+                      ],
+                      "time_series": {
+                        "daily_totals": [
+                          {
+                            "date": "2026-05-29",
+                            "count": 2140
+                          },
+                          {
+                            "date": "2026-05-30",
+                            "count": 2010
+                          },
+                          {
+                            "date": "2026-05-31",
+                            "count": 1780
+                          }
+                        ],
+                        "question_trends": [
+                          {
+                            "id": "q1",
+                            "daily": [
+                              {
+                                "date": "2026-05-29",
+                                "count": 310
+                              },
+                              {
+                                "date": "2026-05-30",
+                                "count": 290
+                              },
+                              {
+                                "date": "2026-05-31",
+                                "count": 240
+                              }
+                            ]
+                          },
+                          {
+                            "id": "q2",
+                            "daily": [
+                              {
+                                "date": "2026-05-29",
+                                "count": 210
+                              },
+                              {
+                                "date": "2026-05-30",
+                                "count": 180
+                              },
+                              {
+                                "date": "2026-05-31",
+                                "count": 150
+                              }
+                            ]
+                          },
+                          {
+                            "id": "q3",
+                            "daily": [
+                              {
+                                "date": "2026-05-29",
+                                "count": 120
+                              },
+                              {
+                                "date": "2026-05-30",
+                                "count": 140
+                              },
+                              {
+                                "date": "2026-05-31",
+                                "count": 90
+                              }
+                            ]
+                          }
+                        ],
+                        "theme_trends": [
+                          {
+                            "id": "t1",
+                            "daily": [
+                              {
+                                "date": "2026-05-29",
+                                "count": 310
+                              },
+                              {
+                                "date": "2026-05-30",
+                                "count": 290
+                              },
+                              {
+                                "date": "2026-05-31",
+                                "count": 240
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2",
+                            "daily": [
+                              {
+                                "date": "2026-05-29",
+                                "count": 330
+                              },
+                              {
+                                "date": "2026-05-30",
+                                "count": 320
+                              },
+                              {
+                                "date": "2026-05-31",
+                                "count": 240
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "executive_summary": "Chatbot dökümündeki 50.000 satırın 6.650'si gerçek kullanıcı mesajı; bot cevapları ve sistem olayları analize alınmadı. En yoğun başlık sınav takvimi, onu kayıt yenileme ve harç ödemesi izliyor. Sorular üç günlük dönemde 2.450 farklı oturumdan geldi.",
+                      "warnings": [],
+                      "model": "google/gemini-2.5-flash",
+                      "prompt_version": "faq_analysis/v1",
+                      "prompt_hash": "sha256:2f8a1c9e4b7d",
+                      "token_usage": {
+                        "prompt_tokens": 412000,
+                        "completion_tokens": 31200,
+                        "total_tokens": 443200
+                      },
+                      "estimated_cost_usd": 0.2016
                     }
                   }
                 }
@@ -2673,6 +2926,7 @@
                       "analysis_id": "6b1cf3d2-0a44-4f1b-9d64-1c2a7e5f8b90",
                       "status": "completed",
                       "generated_at": "2026-08-11T10:12:15.000Z",
+                      "dataset_type": "GENERIC",
                       "source_summary": {
                         "filename": "auzef-chatbot-mesajlari.xlsx",
                         "sheet_name": "Mesajlar",
@@ -2684,7 +2938,8 @@
                         "discarded_count": 1107,
                         "duplicate_count": 15566,
                         "redacted_count": 2840,
-                        "unique_count": 31540
+                        "unique_count": 31540,
+                        "session_count": null
                       },
                       "top_questions": [
                         {
@@ -2696,7 +2951,8 @@
                           "redacted_examples": [
                             "sınav tarihleri belli mi",
                             "vize ne zaman"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q2",
@@ -2707,7 +2963,8 @@
                           "redacted_examples": [
                             "ders kitabı nerede",
                             "pdf'leri bulamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q3",
@@ -2718,7 +2975,8 @@
                           "redacted_examples": [
                             "harç yatırma",
                             "ödeme yapamıyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q4",
@@ -2728,7 +2986,8 @@
                           "confidence": 0.87,
                           "redacted_examples": [
                             "kayıt yenilemedim ne olur"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q5",
@@ -2739,7 +2998,8 @@
                           "redacted_examples": [
                             "sınav yeri",
                             "hangi binada"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q6",
@@ -2749,7 +3009,8 @@
                           "confidence": 0.82,
                           "redacted_examples": [
                             "mazeret sınavı başvuru"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q7",
@@ -2759,7 +3020,8 @@
                           "confidence": 0.78,
                           "redacted_examples": [
                             "notuma itiraz etmek istiyorum"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "q8",
@@ -2769,7 +3031,8 @@
                           "confidence": 0.76,
                           "redacted_examples": [
                             "öğrenci belgesi lazım"
-                          ]
+                          ],
+                          "session_count": null
                         }
                       ],
                       "themes": [
@@ -2782,7 +3045,8 @@
                             "q1",
                             "q5",
                             "q6"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t2",
@@ -2791,7 +3055,8 @@
                           "percentage": 17.2,
                           "related_question_ids": [
                             "q2"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t3",
@@ -2801,7 +3066,8 @@
                           "related_question_ids": [
                             "q3",
                             "q4"
-                          ]
+                          ],
+                          "session_count": null
                         },
                         {
                           "id": "t4",
@@ -2811,9 +3077,11 @@
                           "related_question_ids": [
                             "q7",
                             "q8"
-                          ]
+                          ],
+                          "session_count": null
                         }
                       ],
+                      "time_series": null,
                       "executive_summary": "Mesajların dörtte birinden fazlası sınav takvimiyle ilgili. Ders materyallerine erişim ve harç ödemesi ikinci ve üçüncü sırada geliyor. Bu üç başlık toplam mesajların yaklaşık yarısını oluşturuyor; chatbot bilgi tabanında öncelikli iyileştirme alanları bunlar.",
                       "warnings": [],
                       "model": "google/gemini-2.5-flash",
@@ -3162,6 +3430,10 @@
             "format": "date-time",
             "title": "Generated At"
           },
+          "dataset_type": {
+            "$ref": "#/components/schemas/DatasetType",
+            "default": "GENERIC"
+          },
           "source_summary": {
             "$ref": "#/components/schemas/SourceSummary"
           },
@@ -3181,6 +3453,16 @@
             },
             "type": "array",
             "title": "Themes"
+          },
+          "time_series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisTimeSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "executive_summary": {
             "type": "string",
@@ -3220,10 +3502,12 @@
           "analysis_id",
           "status",
           "generated_at",
+          "dataset_type",
           "source_summary",
           "preprocessing_summary",
           "top_questions",
           "themes",
+          "time_series",
           "executive_summary",
           "warnings",
           "model",
@@ -3269,6 +3553,20 @@
             "maximum": 100.0,
             "exclusiveMinimum": 0.0,
             "title": "Max Cost Usd"
+          },
+          "dataset_type": {
+            "$ref": "#/components/schemas/DatasetType",
+            "default": "GENERIC"
+          },
+          "chatbot_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatbotLogConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -3299,6 +3597,39 @@
         ],
         "title": "AnalysisStatus",
         "description": "queued -> validating -> preprocessing -> analyzing -> aggregating -> completed\n\nTerminal: completed, failed, cancelled."
+      },
+      "AnalysisTimeSeries": {
+        "properties": {
+          "daily_totals": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPoint"
+            },
+            "type": "array",
+            "title": "Daily Totals"
+          },
+          "question_trends": {
+            "items": {
+              "$ref": "#/components/schemas/TrendSeries"
+            },
+            "type": "array",
+            "title": "Question Trends"
+          },
+          "theme_trends": {
+            "items": {
+              "$ref": "#/components/schemas/TrendSeries"
+            },
+            "type": "array",
+            "title": "Theme Trends"
+          }
+        },
+        "type": "object",
+        "required": [
+          "daily_totals",
+          "question_trends",
+          "theme_trends"
+        ],
+        "title": "AnalysisTimeSeries",
+        "description": "Günlük zaman serisi (`CHATBOT_LOG` + zaman kolonu seçiliyken).\n\nTarihler her seride artan sıralı ve benzersizdir. Zaman damgası\nçözümlenemeyen kayıtlar seriye girmez; bu yüzden serilerin toplamı ilgili\n`count` değerinden KÜÇÜK olabilir, asla büyük olamaz."
       },
       "AnalysisWarning": {
         "properties": {
@@ -3342,6 +3673,84 @@
           "file"
         ],
         "title": "Body_create_upload_api_v1_uploads_post"
+      },
+      "ChatbotLogConfig": {
+        "properties": {
+          "role_column": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Role Column"
+          },
+          "role_user_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Role User Values"
+          },
+          "session_id_column": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id Column"
+          },
+          "timestamp_column": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp Column"
+          },
+          "message_type_column": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Type Column"
+          },
+          "allowed_message_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 20,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Message Types"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role_column",
+          "role_user_values"
+        ],
+        "title": "ChatbotLogConfig",
+        "description": "`CHATBOT_LOG` ön ayarının kolon eşlemesi.\n\nMetin kolonu burada DEĞİL: `AnalysisRequest.text_column` iki ön ayarda da\naynı anlamı taşıyor, ikinci bir kopya sessizce ayrışabilirdi."
       },
       "ColumnProfile": {
         "properties": {
@@ -3398,6 +3807,15 @@
           "sample_values"
         ],
         "title": "ColumnProfile"
+      },
+      "DatasetType": {
+        "type": "string",
+        "enum": [
+          "GENERIC",
+          "CHATBOT_LOG"
+        ],
+        "title": "DatasetType",
+        "description": "Veri kümesi ön ayarı.\n\n`GENERIC` düz metin kolonlu dosyalar içindir ve mevcut davranışı korur.\n`CHATBOT_LOG` gerçek chatbot dökümleri içindir: satırlar gönderen/rol\nkolonuna göre ön filtrelenir (bot cevapları ve sistem olayları analize\ngirmez), oturum ve zaman kolonları rapora session/time-series metrikleri\nekler."
       },
       "ErrorCode": {
         "type": "string",
@@ -3569,6 +3987,18 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Unique Count"
+          },
+          "session_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Count"
           }
         },
         "type": "object",
@@ -3577,7 +4007,8 @@
           "discarded_count",
           "duplicate_count",
           "redacted_count",
-          "unique_count"
+          "unique_count",
+          "session_count"
         ],
         "title": "PreprocessingSummary"
       },
@@ -3775,6 +4206,18 @@
             },
             "type": "array",
             "title": "Related Question Ids"
+          },
+          "session_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Count"
           }
         },
         "type": "object",
@@ -3783,7 +4226,8 @@
           "name",
           "count",
           "percentage",
-          "related_question_ids"
+          "related_question_ids",
+          "session_count"
         ],
         "title": "Theme"
       },
@@ -3847,6 +4291,18 @@
             },
             "type": "array",
             "title": "Redacted Examples"
+          },
+          "session_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Count"
           }
         },
         "type": "object",
@@ -3856,9 +4312,54 @@
           "count",
           "percentage",
           "confidence",
-          "redacted_examples"
+          "redacted_examples",
+          "session_count"
         ],
         "title": "TopQuestion"
+      },
+      "TrendPoint": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Date"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "TrendPoint",
+        "description": "Tek bir günün adedi. Adet, gerçek frekans toplamıdır (ADR §4)."
+      },
+      "TrendSeries": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPoint"
+            },
+            "type": "array",
+            "title": "Daily"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "daily"
+        ],
+        "title": "TrendSeries",
+        "description": "Bir soru veya temanın günlük kırılımı; `id` ilgili listeye bağlanır."
       },
       "Upload": {
         "properties": {
