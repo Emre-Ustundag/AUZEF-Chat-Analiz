@@ -52,7 +52,7 @@ import unicodedata
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from app.core.config import Settings
 from app.core.logging import get_logger
@@ -67,6 +67,7 @@ from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import PromptBundle
 from app.prompts.faq_analysis.v1 import escape_record_text
 from app.schemas.analysis import PricingSnapshot
+from app.services.map_cache import MapCache, build_key
 from app.services.openrouter import OpenRouterClient, Usage
 
 logger = get_logger(__name__)
@@ -167,6 +168,7 @@ class OpenRouterClassifier:
         on_progress: ProgressCallback | None = None,
         max_cost_usd: float | None = None,
         pricing_snapshot: PricingSnapshot | None = None,
+        map_cache: MapCache | None = None,
     ) -> None:
         self._client = client
         self._prompt = prompt
@@ -178,6 +180,13 @@ class OpenRouterClassifier:
         #: kullanmıyor).
         self._max_cost_usd = max_cost_usd
         self._pricing_snapshot = pricing_snapshot
+        #: Tamamlanmış map çağrılarının önbelleği (bulgu A3). VARSAYILAN
+        #: `None` — önbellek yalnızca ENJEKTE EDİLDİĞİNDE devreye girer.
+        #: Sebebi test izolasyonu: sınıflandırıcıyı kuran her test, sahte
+        #: sağlayıcıya kaç çağrı gittiğini sayıyor; kendiliğinden açılan
+        #: paylaşımlı bir önbellek o sayıları testler arasında sızdırırdı.
+        #: Üretimde `workers/tasks.py::_build_classifier` enjekte ediyor.
+        self._map_cache = map_cache
         self._usage = Usage()
         self._repairs = 0
         self._reduce_bucket_serial = 0
@@ -272,24 +281,16 @@ class OpenRouterClassifier:
     ) -> tuple[dict[str, _Bucket], tuple[int, int]]:
         """Bir chunk'ı sınıflandırır; uydurma/tekrar eden kimlikleri eler."""
         rendered = "\n".join(render_record(group) for group in chunk)
-        completion = self._client.complete_structured(
-            system=self._prompt.map_system,
-            user=self._prompt.map_user_template.format(records=rendered),
-            schema=self._prompt.map_schema,
-            schema_name="faq_map",
-            model_type=MapResponse,
-        )
-        self._usage = self._usage + completion.usage
-        self._repairs += completion.repair_attempts
+        response = self._map_completion(index, chunk, rendered)
 
         chunk_ids = {group.record_id for group in chunk}
-        catalog = {category.category_id: category for category in completion.data.categories}
+        catalog = {category.category_id: category for category in response.categories}
 
         buckets: dict[str, _Bucket] = {}
         hallucinated = 0
         duplicated = 0
 
-        for assignment in completion.data.assignments:
+        for assignment in response.assignments:
             record_id = assignment.record_id
 
             # Model, girdide OLMAYAN bir kimlik uydurmuş olabilir. Bu kimlik
@@ -325,6 +326,64 @@ class OpenRouterClassifier:
             assigned.add(record_id)
 
         return buckets, (hallucinated, duplicated)
+
+    def _map_completion(
+        self,
+        index: int,
+        chunk: Sequence[RecordGroup],
+        rendered: str,
+    ) -> MapResponse:
+        """Chunk'ın map yanıtı — önce önbellek, sonra sağlayıcı (bulgu A3).
+
+        Önbellek YALNIZCA sağlayıcı çağrısını atlar; kayıt eşleme
+        muhasebesi (`assigned`, uydurma/tekrar sayaçları) çağıranda ve her
+        koşuda YENİDEN işler. Bu bilinçli: muhasebe chunk SIRASINA bağlı
+        ("ilk eşleme kazanır") ve yarım kalmış bir koşudan gelen kararların
+        önbellekten geri gelmesi, aynı girdiyle farklı rapor üretirdi.
+
+        Önbellekten gelen yanıt `usage`'a EKLENMEZ — o çağrı için para
+        ödenmedi ve rapor gerçek tüketimi göstermek zorunda.
+        """
+        cache = self._map_cache
+        key: str | None = None
+
+        if cache is not None:
+            key = build_key(
+                model=self._model,
+                prompt_text_hash=self._prompt.text_hash,
+                map_schema=self._prompt.map_schema,
+                # Anahtar, isteğe giden METNİN kendisinden türer: kaçış
+                # işlevi değişirse anahtar da değişir, eski yanıt yeni
+                # prompt'un cevabı sayılmaz.
+                rendered_records=rendered,
+            )
+            raw = cache.load(key)
+            if raw is not None:
+                try:
+                    cached = MapResponse.model_validate_json(raw)
+                except ValidationError:
+                    # Biçimi tutmayan kayıt ISKA sayılır: eski bir sürümden
+                    # kalmış olabilir. Çağrı normal yoldan yapılır ve kayıt
+                    # aşağıda üzerine yazılır.
+                    logger.warning("map_cache_invalid_payload", extra={"chunk_index": index})
+                else:
+                    logger.info("map_cache_hit", extra={"chunk_index": index})
+                    return cached
+
+        completion = self._client.complete_structured(
+            system=self._prompt.map_system,
+            user=self._prompt.map_user_template.format(records=rendered),
+            schema=self._prompt.map_schema,
+            schema_name="faq_map",
+            model_type=MapResponse,
+        )
+        self._usage = self._usage + completion.usage
+        self._repairs += completion.repair_attempts
+
+        if cache is not None and key is not None:
+            cache.store(key, completion.data.model_dump_json())
+
+        return completion.data
 
     # ------------------------------------------------------------- reduce aşaması
 

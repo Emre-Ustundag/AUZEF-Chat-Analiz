@@ -151,6 +151,13 @@ class Settings(BaseSettings):
     #: token bütçesi. Map chunk sınırından ayrı tutulur: kayıt ve kategori
     #: şemalarının bağlam maliyeti farklıdır.
     llm_reduce_max_prompt_tokens: int = Field(default=12_000, gt=0)
+    #: Tamamlanmış map chunk'larının Redis'te önbelleklenmesi (bulgu A3).
+    #: Açıkken zaman aşımına uğrayan bir koşunun tamamladığı chunk'lar,
+    #: aynı kayıt/model/prompt ile açılan YENİ analizde tekrar
+    #: ücretlendirilmez. TTL `report_retention_hours` ile aynıdır.
+    #: Kapatmak yalnızca sınıflandırmayı sıfırdan koşturmayı zorunlu kılar;
+    #: doğruluğu etkilemez (`services/map_cache.py`).
+    llm_map_cache_enabled: bool = True
 
     report_retention_hours: int = Field(default=24, gt=0)
     upload_retention_hours: int = Field(default=24, gt=0)

@@ -64,6 +64,7 @@ from app.schemas.analysis import (
 from app.schemas.report import AnalysisWarning, TokenUsage
 from app.schemas.upload import UploadProfile, UploadStatus
 from app.services import pricing, retention, secret_store, storage
+from app.services.map_cache import map_cache_for
 from app.services.openrouter import OpenRouterClient, OpenRouterError, Usage
 from app.services.xlsx import (
     SheetOrColumnNotFoundError,
@@ -261,6 +262,11 @@ def build_classifier(
         on_progress=on_progress,
         max_cost_usd=max_cost_usd,
         pricing_snapshot=pricing_snapshot,
+        # Bulgu A3: tamamlanmış map chunk'ları Redis'te önbelleklenir, böylece
+        # zaman aşımı veya maliyet tavanı yüzünden yarıda kalan bir koşunun
+        # ödenmiş çağrıları yeni analizde ikinci kez ücretlendirilmez.
+        # Önbellek ENJEKSİYONLA açılır (bkz. `OpenRouterClassifier.__init__`).
+        map_cache=map_cache_for(settings),
     )
 
 
