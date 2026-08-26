@@ -67,6 +67,7 @@ describe("idempotency fingerprint'leri", () => {
         message_type_column: "message_type",
         user_role_values: ["Kullanıcı"],
         assistant_role_values: ["Bot"],
+        include_assistant_context: false,
         target_message_types: ["text", "quick_reply"],
         context_message_types: ["text", "quick_reply", "single-choice"],
         max_context_turns: 4,
@@ -82,6 +83,15 @@ describe("idempotency fingerprint'leri", () => {
       analysisFingerprint({
         ...contextual,
         conversation_config: { ...contextual.conversation_config!, max_context_turns: 5 },
+      }),
+    );
+    expect(analysisFingerprint(contextual)).not.toBe(
+      analysisFingerprint({
+        ...contextual,
+        conversation_config: {
+          ...contextual.conversation_config!,
+          include_assistant_context: true,
+        },
       }),
     );
   });

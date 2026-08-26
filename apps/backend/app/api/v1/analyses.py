@@ -334,6 +334,8 @@ def _estimated_seconds_remaining(analysis: Analysis, settings: Settings) -> floa
     5 satırlık bir dosyada da 100.000 satırlık bir dosyada da aynı sayıyı
     gösterirdi. `progress` henüz 0'ken elde veri yok; hard timeout'un
     onda biri makul bir başlangıç tahmini olarak kullanılıyor.
+
+    Sonuç hard timeout ile SINIRLANMAZ; gerekçe aşağıda.
     """
     if analysis.status in TERMINAL_STATUSES:
         return None
@@ -347,7 +349,17 @@ def _estimated_seconds_remaining(analysis: Analysis, settings: Settings) -> floa
         return float(settings.analysis_hard_timeout_seconds // 10)
 
     remaining = elapsed * (100.0 - analysis.progress) / analysis.progress
-    return round(min(remaining, float(settings.analysis_hard_timeout_seconds)), 1)
+
+    # TAVAN YOK. Eskiden `min(remaining, hard_timeout)` vardı ve tahmini 45
+    # dakikaya kırpıyordu: gerçekte 3 saat sürecek bir iş de arayüzde "en fazla
+    # 45 dakika" görünüyordu. Kırpma, işin süreye SIĞMADIĞI bilgisini tam da
+    # kullanıcının hâlâ iptal edip daha ucuz bir yapılandırmayla yeniden
+    # başlayabileceği anda gizliyordu; kullanıcı bunu 45. dakikada
+    # `PROVIDER_TIMEOUT` ile öğreniyordu.
+    #
+    # Tahminin hard timeout'u aşması bir hata değil, sinyaldir. Şema yalnızca
+    # `ge=0` istiyor, dolayısıyla sözleşme değişmiyor.
+    return round(remaining, 1)
 
 
 @router.get(

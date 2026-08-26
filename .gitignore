@@ -97,3 +97,16 @@ $RECYCLE.BIN/
 
 # uv
 .uv-cache/
+
+# Gerçek kurum verisi ASLA commit edilmez (ADR §9).
+# Elimizdeki AUZEF dökümü 505.442 satır ve serbest metninde T.C. numarası,
+# telefon, e-posta ve açık ad-soyad taşıyor. Ardışık düzen bunları LLM'e
+# gitmeden maskeliyor ama DOSYANIN KENDİSİ ham; repoya girerse geçmişten
+# silinmesi pratikte imkânsız olur.
+# Test fixture'ları `tests/fixtures/` altında ve bu kuraldan muaf.
+*.csv
+*.xlsx
+*.xls
+!tests/fixtures/**/*.csv
+!tests/fixtures/**/*.xlsx
+!apps/backend/tests/fixtures/**/*.xlsx

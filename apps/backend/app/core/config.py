@@ -146,6 +146,22 @@ class Settings(BaseSettings):
     openrouter_backoff_max_seconds: float = Field(default=30.0, ge=0)
     openrouter_max_repair_attempts: int = Field(default=2, ge=0)
     llm_chunk_max_records: int = Field(default=120, gt=0)
+    #: Aynı anda uçuşta olabilecek LLM çağrısı (map chunk'ları ve bir reduce
+    #: turundaki batch'ler).
+    #:
+    #: 1'Dİ VE GERÇEK VERİDE YETMEDİ. `llm_classifier.classify` chunk'ları düz
+    #: bir döngüde sırayla gönderiyordu; ölçülen chunk süresi ~26 sn
+    #: (gemini-2.5-flash). Gerçek AUZEF dökümü bağlamsal modda 59.001 benzersiz
+    #: kayıt = 492 chunk üretiyor, yani ~3,5 saat — 45 dakikalık hard timeout'un
+    #: beş katı. Chunk'ı büyütmek çözmez: toplam completion token sabit kaldığı
+    #: için duvar saati de sabit kalır. Ölçeklenen tek boyut eşzamanlılıktır.
+    #:
+    #: BEDELİ, bilinçli kabul edilen iki aşım payı:
+    #:   * maliyet tavanı chunk'tan SONRA bakıldığı için aşım 1 chunk yerine
+    #:     en fazla bu kadar chunk olabilir,
+    #:   * bir chunk hata verdiğinde uçuştaki diğerlerinin parası harcanmış olur.
+    #: 1 yapmak eski, tamamen sıralı davranışa döner.
+    llm_max_concurrency: int = Field(default=8, ge=1, le=32)
     llm_chunk_max_prompt_tokens: int = Field(default=12_000, gt=0)
     #: Reduce aşamasında tek çağrıya gönderilecek kategori metninin yaklaşık
     #: token bütçesi. Map chunk sınırından ayrı tutulur: kayıt ve kategori

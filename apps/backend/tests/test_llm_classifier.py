@@ -20,6 +20,9 @@ from __future__ import annotations
 
 import json
 import random
+import re
+import threading
+import time
 import uuid
 from typing import Any
 
@@ -53,7 +56,19 @@ def settings() -> Settings:
         openrouter_backoff_max_seconds=0.002,
         llm_chunk_max_records=3,
         llm_chunk_max_prompt_tokens=10_000,
+        # Bu dosyadaki sahte sağlayıcı yanıtları GELİŞ SIRASINA göre veriyor,
+        # yani eşzamanlı koşuda hangi chunk'ın hangi yanıtı alacağı belirsiz
+        # olurdu. Birim testleri bu yüzden sıralı sabitlenir; eşzamanlılığın
+        # kendi testleri aşağıda, içerik-adresli bir sağlayıcıyla yazıldı
+        # (bkz. `test_esz*`). Üretim varsayılanı 8'dir ve
+        # `test_esszamanlilik_varsayilani_uretimde_sekiz` onu sabitler.
+        llm_max_concurrency=1,
     )
+
+
+def _with_concurrency(settings: Settings, concurrency: int) -> Settings:
+    """Eşzamanlılığı değiştirilmiş bir kopya (varsayılan 8)."""
+    return settings.model_copy(update={"llm_max_concurrency": concurrency})
 
 
 def _groups(*specs: tuple[str, int]) -> list[RecordGroup]:
@@ -588,6 +603,7 @@ def test_toplama_llm_ciktisinda_da_adetleri_tutturur(settings: Settings) -> None
 
 
 def test_chunk_sinirinda_iptal_edilebilir(settings: Settings) -> None:
+    """Sıralı koşuda iptal, bir sonraki chunk'a HİÇ geçmez."""
     groups = _groups(*[(f"soru {i}", 1) for i in range(9)])
     provider = _Provider([_map({f"r{i}": "c1"}, {"c1": ("S?", "Tema")}) for i in range(1, 10)])
     classifier = _classifier(settings, provider, on_progress=lambda done, _total: done < 2)
@@ -920,3 +936,199 @@ def test_maliyet_tavani_altinda_kalan_is_kesilmez(settings: Settings) -> None:
     assert {r for q in classification.questions for r in q.record_ids} == {
         g.record_id for g in groups
     }, "kayıt kaybı olmamalı"
+
+
+# ------------------------------------------------------------- eşzamanlılık
+#
+# `classify` chunk'ları eskiden düz bir döngüde SIRAYLA gönderiyordu. Ölçülen
+# chunk süresi ~26 sn ve gerçek AUZEF dökümü bağlamsal modda 492 chunk
+# üretiyor: ~3,5 saat, 45 dakikalık hard timeout'un beş katı. Aşağıdaki
+# testler eşzamanlılığın ÇIKTIYI DEĞİŞTİRMEDİĞİNİ ve durdurma garantilerinin
+# sınırlı kaldığını sabitliyor.
+
+
+class _ContentAddressedProvider:
+    """İstediği yanıtı GELİŞ SIRASINA değil, isteğin İÇERİĞİNE göre üretir.
+
+    Eşzamanlı koşuda chunk'lar herhangi bir sırada varabilir; sıraya dayalı
+    sahte sağlayıcı testi kararsız yapardı. Burada her chunk, içindeki kayıt
+    kimliklerinden türeyen deterministik bir yanıt alır — gerçek bir
+    sağlayıcının davranışına da bu daha yakın.
+    """
+
+    _RECORD_ID = re.compile(r'<kayit id="([^"]+)"')
+    _CATEGORY_ID = re.compile(r'<kategori id="([^"]+)"')
+
+    def __init__(self, delay: float = 0.0, claim_shared: str | None = None) -> None:
+        self._delay = delay
+        #: Her chunk'ın AYRICA sahiplendiği kayıt. "İlk eşleme kazanır" kuralı
+        #: chunk sırasına bağlı olduğu için determinizm testinin asıl kaldıracı
+        #: budur: sıra bozulursa kaydı başka bir chunk kapar ve çıktı değişir.
+        self._claim_shared = claim_shared
+        self._lock = threading.Lock()
+        self.map_calls = 0
+        self.reduce_calls = 0
+        self.in_flight = 0
+        self.max_in_flight = 0
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        with self._lock:
+            self.in_flight += 1
+            self.max_in_flight = max(self.max_in_flight, self.in_flight)
+        try:
+            if self._delay:
+                time.sleep(self._delay)
+            prompt = body["messages"][-1]["content"]
+            if body["response_format"]["json_schema"]["name"] == "faq_map":
+                with self._lock:
+                    self.map_calls += 1
+                return _ok(self._map_payload(prompt))
+            with self._lock:
+                self.reduce_calls += 1
+            return _ok(self._reduce_payload(prompt))
+        finally:
+            with self._lock:
+                self.in_flight -= 1
+
+    def _map_payload(self, prompt: str) -> dict[str, Any]:
+        record_ids = self._RECORD_ID.findall(prompt)
+        # Kategori adı chunk'ın İLK kaydından türer: aynı chunk her zaman
+        # aynı kategoriyi üretir, farklı chunk'lar farklı kategori üretir.
+        category = f"kat-{record_ids[0]}"
+        claimed = list(record_ids)
+        if self._claim_shared is not None and self._claim_shared not in claimed:
+            claimed.append(self._claim_shared)
+        return {
+            "categories": [
+                {
+                    "category_id": category,
+                    "canonical_question": f"{record_ids[0]} sorusu?",
+                    "theme": "Tema",
+                }
+            ],
+            "assignments": [
+                {"record_id": record_id, "category_id": category} for record_id in claimed
+            ],
+        }
+
+    def _reduce_payload(self, prompt: str) -> dict[str, Any]:
+        # Kategorileri İKİŞERLİ birleştirir. Hepsini tek gruba toplamak
+        # determinizm testini anlamsız yapardı: çıktı zaten tek kategori olur
+        # ve sıranın bozulduğu görülmezdi.
+        position_ids = self._CATEGORY_ID.findall(prompt)
+        pairs = [position_ids[i : i + 2] for i in range(0, len(position_ids), 2)]
+        return {
+            "groups": [
+                {
+                    "canonical_question": f"Birleşik {members[0]}?",
+                    "theme": f"Tema {index % 3}",
+                    "member_category_ids": members,
+                }
+                for index, members in enumerate(pairs)
+            ]
+        }
+
+
+def _concurrent_classifier(
+    settings: Settings,
+    provider: _ContentAddressedProvider,
+    **kwargs: Any,
+) -> OpenRouterClassifier:
+    client = OpenRouterClient(
+        api_key="sk-test",
+        model="google/gemini-2.5-flash",
+        settings=settings,
+        transport=httpx.MockTransport(provider),
+        sleeper=lambda _s: None,
+        rng=random.Random(0),
+    )
+    return OpenRouterClassifier(
+        client=client,
+        prompt=V1,
+        model="google/gemini-2.5-flash",
+        settings=settings,
+        **kwargs,
+    )
+
+
+def _snapshot(classification: Classification) -> list[tuple[str, str, str, tuple[str, ...]]]:
+    """Karşılaştırılabilir, sıraya duyarlı çıktı özeti."""
+    return [
+        (question.question_id, question.canonical_question, question.theme_id, question.record_ids)
+        for question in classification.questions
+    ]
+
+
+def test_esszamanlilik_varsayilani_uretimde_sekiz() -> None:
+    """Varsayılan sessizce 1'e dönerse zaman aşımı düzeltmesi de geri alınmış olur."""
+    assert Settings().llm_max_concurrency == 8
+
+
+def test_eszamanli_kosu_sirali_kosuyla_ayni_ciktiyi_verir(settings: Settings) -> None:
+    """ASIL GARANTİ: eşzamanlılık bir hız ayarıdır, sonucu değiştirmez.
+
+    `_map_chunk_call` yalnızca ağ çağrısıdır; sıraya duyarlı her şey
+    (`assigned` kümesi, kova anahtarları, `_usage`) ana iş parçacığında ve
+    chunk indeks sırasına göre işlenir. Bu test o tasarımın bekçisi.
+    """
+    groups = _groups(*[(f"soru {i}", i + 1) for i in range(30)])
+
+    # `r1` her chunk tarafından sahipleniliyor: kimin kapacağı yalnızca
+    # birleştirme SIRASI ile belirlenir.
+    sirali = _concurrent_classifier(
+        _with_concurrency(settings, 1), _ContentAddressedProvider(claim_shared="r1")
+    ).classify(groups)
+    eszamanli = _concurrent_classifier(
+        _with_concurrency(settings, 8), _ContentAddressedProvider(claim_shared="r1")
+    ).classify(groups)
+
+    # Test kendini de doğrulasın. Sıra bağımlılığının yaşadığı yer kova
+    # SIRASIDIR: `buckets` chunk sırasına göre doluyor, reduce prompt'u o
+    # sırayı görüyor ve kategorileri İKİŞERLİ eşliyor. Sıra bozulsaydı
+    # eşleşmeler ve dolayısıyla soru başına kayıt kümeleri değişirdi.
+    assert len(sirali.questions) > 1, "reduce her şeyi tek soruya indirdi; test zayıf"
+    ilk_sorunun_kayitlari = set(sirali.questions[0].record_ids)
+    assert ilk_sorunun_kayitlari & {"r1", "r2", "r3"}, "ilk soru ilk chunk'ı içermeli"
+    assert ilk_sorunun_kayitlari & {"r4", "r5", "r6"}, (
+        "ilk soru İKİNCİ chunk'ı da içermeli; içermiyorsa eşleme kova sırasına "
+        "duyarlı değil ve test bir şey kanıtlamıyor"
+    )
+    # Uydurma kimlik yolu da deterministik olmalı: her chunk `r1`'i sahipleniyor.
+    assert sirali.warnings, "beklenen anomali uyarısı üretilmedi"
+
+    assert _snapshot(eszamanli) == _snapshot(sirali)
+    assert eszamanli.themes == sirali.themes
+    assert eszamanli.warnings == sirali.warnings
+
+
+def test_eszamanli_kosu_gercekten_paralel_gonderir(settings: Settings) -> None:
+    """Kod paralel görünüp sırayla koşarsa zaman aşımı düzeltmesi işe yaramaz."""
+    provider = _ContentAddressedProvider(delay=0.05)
+    groups = _groups(*[(f"soru {i}", 1) for i in range(30)])
+
+    _concurrent_classifier(_with_concurrency(settings, 8), provider).classify(groups)
+
+    assert provider.max_in_flight > 1, "çağrılar hâlâ sırayla gidiyor"
+    assert provider.max_in_flight <= 8, "eşzamanlılık tavanı aşıldı"
+
+
+def test_eszamanli_iptalde_kalan_chunklar_gonderilmez(settings: Settings) -> None:
+    """İptal artık 1 chunk'ta değil, en fazla eşzamanlılık kadarında durur.
+
+    Bilinçli takas: uçuştaki çağrıların parası harcanır. Garanti "hiç fazla
+    istek yok" değil, "aşım SINIRLI" — 10 chunk'ın tamamı asla gönderilmez.
+    """
+    groups = _groups(*[(f"soru {i}", 1) for i in range(30)])
+    provider = _ContentAddressedProvider()
+    classifier = _concurrent_classifier(
+        _with_concurrency(settings, 4),
+        provider,
+        on_progress=lambda done, _total: done < 2,
+    )
+
+    with pytest.raises(ClassificationCancelledError):
+        classifier.classify(groups)
+
+    assert 2 <= provider.map_calls <= 2 + 4
+    assert provider.map_calls < 10, "iptal kalan chunk'ları durdurmadı"

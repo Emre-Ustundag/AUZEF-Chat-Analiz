@@ -145,8 +145,9 @@ LLM doğrudan toplam sayı üretmez. Her temizlenmiş mesaj veya benzersiz mesaj
 Analiz iki geriye uyumlu mod taşır. `message` modunda seçilen metin kolonu
 önceki davranışla bağımsız mesajlar olarak işlenir. `contextual_user_turns`
 modunda sınıflandırılan ve sayılan birim yalnız kullanıcı turn'üdür; aynı
-session'daki en fazla 1–8 önceki kullanıcı/bot turn'ü (ayrıca 128–4000 token
-tavanıyla) yalnız bağlam olarak modele verilir. Bot mesajları kategori
+session'daki en fazla 1–8 önceki kullanıcı turn'ü (ayrıca 128–4000 token
+tavanıyla) yalnız bağlam olarak modele verilir. Bot mesajları varsayılan olarak
+elenir; kullanıcı açıkça etkinleştirirse yalnız bağlama girer ve yine kategori
 adetlerine, yüzdelere veya örneklere girmez. Context ve hedef PII'dan
 arındırılır; tekilleştirme anahtarı hedef ile sıralı/canonical rol etiketli
 bağlamdan türetilir, session kimliği LLM'e veya hash'e girmez.

@@ -142,10 +142,10 @@ const models: ModelList = {
   default_prompt_version: "faq_analysis/v3",
 };
 
-function renderForm() {
+function renderForm(currentUpload: Upload = upload) {
   return render(
     <QueryClientProvider client={createQueryClient()}>
-      <ConfigureForm upload={upload} models={models} />
+      <ConfigureForm upload={currentUpload} models={models} />
     </QueryClientProvider>,
   );
 }
@@ -175,7 +175,7 @@ describe("ConfigureForm", () => {
     expect(screen.getByText("metin")).toBeInTheDocument();
   });
 
-  it("varsayılan model ve metin kolonunu seçer", async () => {
+  it("bilinen AUZEF kolonlarında kullanıcı-turn modunu güvenli varsayılan seçer", async () => {
     const user = userEvent.setup();
     renderForm();
 
@@ -189,16 +189,20 @@ describe("ConfigureForm", () => {
     expect(request.text_column).toBe("message_text_clean");
     expect(request.sheet_name).toBe("Mesajlar");
     expect(request.row_filters).toEqual([]);
-    expect(request.analysis_mode).toBe("message");
-    expect(request.conversation_config).toBeNull();
-    expect(request.prompt_version).toBe("faq_analysis/v3");
+    expect(request.analysis_mode).toBe("contextual_user_turns");
+    expect(request.conversation_config.include_assistant_context).toBe(false);
+    expect(request.prompt_version).toBe("faq_analysis/v4");
   });
 
-  it("bilinen CSV kolonlarını bağlamsal modda otomatik önerir ve v4 prompt kullanır", async () => {
+  it("bot cevaplarını yalnız açık kullanıcı seçimiyle bağlama alır", async () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.click(screen.getByRole("radio", { name: /Bağlamsal kullanıcı turları/ }));
+    const checkbox = screen.getByRole("checkbox", {
+      name: /Bot cevaplarını bağlam olarak kullan/,
+    });
+    expect(checkbox).not.toBeChecked();
+    await user.click(checkbox);
     await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
     await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
 
@@ -213,6 +217,7 @@ describe("ConfigureForm", () => {
       message_type_column: "message_type",
       user_role_values: ["Kullanıcı"],
       assistant_role_values: ["Bot"],
+      include_assistant_context: true,
       target_message_types: ["text"],
       context_message_types: ["text", "quick_reply", "single-choice"],
       max_context_turns: 4,
@@ -220,11 +225,36 @@ describe("ConfigureForm", () => {
     });
   });
 
+  it("konuşma eşleme kolonları yoksa bağımsız mesaj moduna geri düşer", async () => {
+    const user = userEvent.setup();
+    const plainUpload: Upload = {
+      ...upload,
+      profile: {
+        ...upload.profile!,
+        sheets: upload.profile!.sheets.map((sheet) => {
+          const columns = sheet.columns.filter((column) =>
+            ["kullanici_id", "message_text_clean"].includes(column.name),
+          );
+          return { ...sheet, column_count: columns.length, columns };
+        }),
+      },
+    };
+    renderForm(plainUpload);
+
+    await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);
+    await user.click(screen.getByRole("button", { name: /Analizi başlat/ }));
+
+    await waitFor(() => expect(createAnalysis).toHaveBeenCalled());
+    const [request] = createAnalysis.mock.calls[0];
+    expect(request.analysis_mode).toBe("message");
+    expect(request.conversation_config).toBeNull();
+    expect(request.prompt_version).toBe("faq_analysis/v3");
+  });
+
   it("otomatik önerilen konuşma kolonunu değiştirmeye izin verir", async () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.click(screen.getByRole("radio", { name: /Bağlamsal kullanıcı turları/ }));
     await user.click(screen.getByLabelText("Oturum kimliği kolonu"));
     await user.click(await screen.findByRole("option", { name: "alternate_session_id" }));
     await user.type(screen.getByLabelText(/OpenRouter API anahtarı/), API_KEY);

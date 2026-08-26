@@ -622,6 +622,7 @@ async def test_baglamsal_analiz_ayarlari_saklanir_ve_profil_tahmini_atlanir(
         "message_type_column": "message_type",
         "user_role_values": ["Kullanıcı"],
         "assistant_role_values": ["Bot"],
+        "include_assistant_context": False,
         "target_message_types": ["text", "quick_reply"],
         "context_message_types": ["text", "quick_reply", "single-choice"],
         "max_context_turns": 4,
@@ -646,6 +647,72 @@ async def test_baglamsal_analiz_ayarlari_saklanir_ve_profil_tahmini_atlanir(
         assert analysis.conversation_config == conversation_config
 
     await client.delete(f"/api/v1/analyses/{analysis_id}")
+    await client.delete(f"/api/v1/uploads/{upload_id}")
+
+
+async def test_baglamsal_worker_botlari_varsayilan_olarak_llmden_ve_rapordan_eler(
+    client: AsyncClient,
+    provider: FakeOpenRouter,
+    tmp_path: Path,
+) -> None:
+    """Gerçek XLSX → preprocessing → V4 payload → target-only rapor zinciri."""
+    path = tmp_path / "user-only-conversation.xlsx"
+    workbook = Workbook()
+    worksheet = workbook.active
+    assert worksheet is not None
+    worksheet.title = "Mesajlar"
+    worksheet.append(["session_id", "message_order", "direction", "message_type", "message"])
+    worksheet.append(["s1", 1, "Bot", "text", "Sınav tarihleri 10 Ağustos'ta."])
+    worksheet.append(["s1", 2, "Kullanıcı", "text", "Ne zaman?"])
+    worksheet.append(["s2", 1, "Bot", "text", "Harç ödemesi yarın açılıyor."])
+    worksheet.append(["s2", 2, "Kullanıcı", "text", "Ne zaman?"])
+    workbook.save(path)
+    workbook.close()
+
+    with path.open("rb") as handle:
+        uploaded = await client.post(
+            "/api/v1/uploads",
+            files={"file": (path.name, handle, "application/octet-stream")},
+        )
+    assert uploaded.status_code == 202
+    upload_id = uuid.UUID(uploaded.json()["upload_id"])
+    assert await tasks.run_upload_profiling(upload_id) == "ready"
+
+    created = await _create(
+        client,
+        upload_id,
+        text_column="message",
+        analysis_mode="contextual_user_turns",
+        conversation_config={
+            "session_id_column": "session_id",
+            "message_order_column": "message_order",
+            "role_column": "direction",
+            "message_type_column": "message_type",
+        },
+        prompt_version="faq_analysis/v4",
+    )
+    assert created.status_code == 202, created.text
+    analysis_id = uuid.UUID(created.json()["analysis_id"])
+    assert await tasks.run_analysis(analysis_id) == "completed"
+
+    provider_payload = json_dumps(provider.requests, ensure_ascii=False)
+    assert "Sınav tarihleri 10 Ağustos'ta." not in provider_payload
+    assert "Harç ödemesi yarın açılıyor." not in provider_payload
+    assert "Ne zaman?" in provider_payload
+    assert "<baglam></baglam>" in provider_payload
+
+    result = await client.get(f"/api/v1/analyses/{analysis_id}/result")
+    assert result.status_code == 200
+    report = AnalysisReport.model_validate(result.json())
+    assert report.source_summary.conversation_config is not None
+    assert report.source_summary.conversation_config.include_assistant_context is False
+    assert report.source_summary.total_rows == 4
+    assert report.preprocessing_summary.analyzed_count == 2
+    assert report.preprocessing_summary.context_only_count == 0
+    assert report.preprocessing_summary.discarded_count == 2
+    assert report.preprocessing_summary.unique_count == 1
+    assert sum(question.count for question in report.top_questions) == 2
+
     await client.delete(f"/api/v1/uploads/{upload_id}")
 
 

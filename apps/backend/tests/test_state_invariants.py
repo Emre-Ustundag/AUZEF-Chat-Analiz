@@ -1,12 +1,16 @@
 """Status'a ve sayısal özetlere bağlı çapraz alan kuralları."""
 
+import uuid
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import MAX_ROWS
-from app.schemas.analysis import AnalysisCreated, AnalysisJob, ModelList
+from app.api.v1.analyses import _estimated_seconds_remaining
+from app.core.config import MAX_ROWS, Settings
+from app.models.analysis import Analysis
+from app.schemas.analysis import AnalysisCreated, AnalysisJob, AnalysisStatus, ModelList
 from app.schemas.report import AnalysisReport, AnalysisWarning, percentage_half_up
 from app.schemas.upload import Upload, UploadCreated
 from tests.conftest import read_fixture
@@ -182,3 +186,30 @@ def test_row_limit_truncated_warning_is_no_longer_produced() -> None:
         }
     )
     assert historical.warnings[0].code == "ROW_LIMIT_TRUNCATED"
+
+
+def test_kalan_sure_tahmini_hard_timeouta_kirpilmaz() -> None:
+    """Süreye sığmayan iş, arayüzde de sığmıyor görünmeli.
+
+    Tahmin eskiden `min(remaining, hard_timeout)` ile 45 dakikaya kırpılıyordu.
+    Gerçek AUZEF dökümü bağlamsal modda ~492 map chunk üretiyor; o iş saatler
+    sürer ama kullanıcı 45. dakikaya kadar "en fazla 45 dakika" görüyor, sonra
+    `PROVIDER_TIMEOUT` yiyordu. Kırpma, işi hâlâ iptal edip daha ucuz bir
+    yapılandırmayla yeniden başlatabileceği anda gerçeği gizliyordu.
+    """
+    settings = Settings()
+    analysis = Analysis(
+        id=uuid.uuid4(),
+        upload_id=uuid.uuid4(),
+        status=AnalysisStatus.ANALYZING,
+        progress=1.0,
+        created_at=datetime.now(UTC) - timedelta(seconds=600),
+    )
+
+    remaining = _estimated_seconds_remaining(analysis, settings)
+
+    assert remaining is not None
+    # %1 ilerlemede 600 saniye geçtiyse kalan ~59.400 saniye: hard timeout'un
+    # (2700) çok üstünde ve bu bilinçli.
+    assert remaining > settings.analysis_hard_timeout_seconds
+    assert remaining == pytest.approx(59_400, rel=0.05)

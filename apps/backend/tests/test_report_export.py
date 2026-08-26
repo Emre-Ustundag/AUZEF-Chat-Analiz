@@ -277,6 +277,7 @@ def test_contextual_metadata_xlsx_formulu_olamaz() -> None:
 
     sheet = load(report)["Özet"]  # type: ignore[index]
     cells = {row[0].value: row[1] for row in sheet.iter_rows(min_row=2)}
+    assert cells["Bot yanıtları bağlamda"].value == "Hayır"
     protected_labels = {
         "Session kolonu",
         "Mesaj sıra kolonu",

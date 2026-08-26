@@ -434,6 +434,14 @@ class ContextualPreprocessor:
             else:
                 canonical_role = None
 
+            # FAQ analizinin hedefi kullanıcı sorularıdır. Bot yanıtları
+            # ancak kullanıcı açıkça bağlama dahil ettiğinde geçmişe girer;
+            # varsayılan kapalı davranışta prompt'a veya context sayacına
+            # sızmadan elenir.
+            if canonical_role == "assistant" and not config.include_assistant_context:
+                result.discarded_count += 1
+                continue
+
             is_target = canonical_role == "user" and message_type in target_types
             if canonical_role is None or message_type not in context_types:
                 result.discarded_count += 1
@@ -494,7 +502,8 @@ class ContextualPreprocessor:
                         self._variants[record_id][redacted] += 1
                         result.analyzed_count += 1
             elif prepared_context is not None:
-                # Bot veya hedef dışı kullanıcı mesajı bir bağlam adayıdır.
+                # Açıkça etkinleştirilmiş bot yanıtı veya hedef dışı kullanıcı
+                # mesajı bir bağlam adayıdır.
                 result.context_only_count += 1
             else:
                 result.discarded_count += 1

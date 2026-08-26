@@ -167,6 +167,10 @@ def _build_summary_sheet(sheet: Worksheet, report: AnalysisReport) -> None:
                 ("Mesaj türü kolonu", config.message_type_column),
                 ("Kullanıcı rol değerleri", " | ".join(config.user_role_values)),
                 ("Bot rol değerleri", " | ".join(config.assistant_role_values)),
+                (
+                    "Bot yanıtları bağlamda",
+                    "Evet" if config.include_assistant_context else "Hayır",
+                ),
                 ("Hedef mesaj türleri", " | ".join(config.target_message_types)),
                 ("Bağlam mesaj türleri", " | ".join(config.context_message_types)),
                 ("Azami geçmiş turn", config.max_context_turns),

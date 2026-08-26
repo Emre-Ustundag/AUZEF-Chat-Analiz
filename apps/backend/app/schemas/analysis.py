@@ -83,8 +83,10 @@ class ConversationConfig(ApiRequestModel):
     """Session bağlamlı kullanıcı-turn analizi için kolon/değer eşlemesi.
 
     Kullanıcı turn'ü sınıflandırılan ve sayılan birimdir. Aynı session'daki
-    önceki kullanıcı/bot mesajları yalnızca bağlamdır; rapor adetlerine
-    girmez. Rol ve mesaj türü değerleri tam eşleşmeyle yorumlanır.
+    önceki kullanıcı mesajları bağlam olabilir. Bot mesajları varsayılan
+    olarak elenir; yalnızca açıkça istendiğinde bağlam olur ve hiçbir zaman
+    rapor adetlerine girmez. Rol ve mesaj türü değerleri tam eşleşmeyle
+    yorumlanır.
     """
 
     session_id_column: str = Field(min_length=1, max_length=512)
@@ -97,6 +99,7 @@ class ConversationConfig(ApiRequestModel):
     assistant_role_values: list[str] = Field(
         default_factory=lambda: ["Bot"], min_length=1, max_length=20
     )
+    include_assistant_context: bool = False
     target_message_types: list[str] = Field(
         # Quick-reply tıklamaları niyeti anlamada bağlam olabilir, fakat
         # varsayılan SSS paydasını kullanıcı buton cevaplarıyla şişirmemeli.

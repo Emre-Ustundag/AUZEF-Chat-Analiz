@@ -193,6 +193,7 @@ describe("analysisRequestSchema", () => {
     expect(result.data.conversation_config).toMatchObject({
       user_role_values: ["Kullanıcı"],
       assistant_role_values: ["Bot"],
+      include_assistant_context: false,
       target_message_types: ["text"],
       context_message_types: ["text", "quick_reply", "single-choice"],
       max_context_turns: 4,

@@ -152,6 +152,7 @@ def _conversation_config(**overrides: object) -> ConversationConfig:
             "message_order_column": "message_order",
             "role_column": "direction",
             "message_type_column": "message_type",
+            "include_assistant_context": True,
             **overrides,
         }
     )
@@ -174,6 +175,30 @@ def _conversation_row(
         message_type=message_type,
         text=text,
     )
+
+
+def test_contextual_bot_baglami_varsayilan_olarak_elenir(settings: Settings) -> None:
+    config = ConversationConfig(
+        session_id_column="session_id",
+        message_order_column="message_order",
+        role_column="direction",
+        message_type_column="message_type",
+    )
+    processor = ContextualPreprocessor(settings, config)
+    processor.consume(
+        [
+            _conversation_row(2, "s1", 1, "Bot", "Sınavlar 10 Ağustos tarihinde."),
+            _conversation_row(3, "s1", 2, "Kullanıcı", "Ne zaman?"),
+        ]
+    )
+    result = processor.finish()
+
+    assert config.include_assistant_context is False
+    assert result.total_rows == 2
+    assert result.analyzed_count == 1
+    assert result.context_only_count == 0
+    assert result.discarded_count == 1
+    assert result.groups[0].context_turns == ()
 
 
 def test_contextual_ayni_hedef_farkli_baglamda_ayri_kalir(settings: Settings) -> None:

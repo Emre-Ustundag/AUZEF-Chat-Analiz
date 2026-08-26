@@ -79,7 +79,9 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
           </p>
           <p className="text-xs text-muted-foreground">
             {src.analysis_mode === "contextual_user_turns"
-              ? "Session bağlamlı kullanıcı turn'leri; bot mesajları yalnız bağlamdır."
+              ? src.conversation_config?.include_assistant_context
+                ? "Yalnız kullanıcı turn'leri sayıldı; bot yanıtları yalnız bağlam olarak kullanıldı."
+                : "Yalnız kullanıcı turn'leri analiz edildi; bot yanıtları elendi."
               : "Her mesaj bağımsız analiz edildi."}
           </p>
           {src.row_filters.length > 0 && (
@@ -241,10 +243,16 @@ export function ReportScreen({ analysisId }: { analysisId: string }) {
                 }
               />
               {src.conversation_config ? (
-                <Meta
-                  label="Session / rol kolonları"
-                  value={`${src.conversation_config.session_id_column} / ${src.conversation_config.role_column}`}
-                />
+                <>
+                  <Meta
+                    label="Session / rol kolonları"
+                    value={`${src.conversation_config.session_id_column} / ${src.conversation_config.role_column}`}
+                  />
+                  <Meta
+                    label="Bot yanıtları bağlamda"
+                    value={src.conversation_config.include_assistant_context ? "Evet" : "Hayır"}
+                  />
+                </>
               ) : null}
               <Meta label="Prompt sürümü" value={report.prompt_version} />
               <Meta label="Prompt özeti" value={report.prompt_hash} mono />

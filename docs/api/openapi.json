@@ -3542,6 +3542,11 @@
             "minItems": 1,
             "title": "Assistant Role Values"
           },
+          "include_assistant_context": {
+            "type": "boolean",
+            "title": "Include Assistant Context",
+            "default": false
+          },
           "target_message_types": {
             "items": {
               "type": "string"
@@ -3584,7 +3589,7 @@
           "message_type_column"
         ],
         "title": "ConversationConfig",
-        "description": "Session bağlamlı kullanıcı-turn analizi için kolon/değer eşlemesi.\n\nKullanıcı turn'ü sınıflandırılan ve sayılan birimdir. Aynı session'daki\nönceki kullanıcı/bot mesajları yalnızca bağlamdır; rapor adetlerine\ngirmez. Rol ve mesaj türü değerleri tam eşleşmeyle yorumlanır."
+        "description": "Session bağlamlı kullanıcı-turn analizi için kolon/değer eşlemesi.\n\nKullanıcı turn'ü sınıflandırılan ve sayılan birimdir. Aynı session'daki\nönceki kullanıcı mesajları bağlam olabilir. Bot mesajları varsayılan\nolarak elenir; yalnızca açıkça istendiğinde bağlam olur ve hiçbir zaman\nrapor adetlerine girmez. Rol ve mesaj türü değerleri tam eşleşmeyle\nyorumlanır."
       },
       "ErrorCode": {
         "type": "string",

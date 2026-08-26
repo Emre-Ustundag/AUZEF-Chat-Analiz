@@ -50,6 +50,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections.abc import Callable, Sequence
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
@@ -67,7 +68,7 @@ from app.pipeline.record_rendering import render_record
 from app.prompts.faq_analysis import PromptBundle
 from app.prompts.faq_analysis.v1 import escape_record_text
 from app.schemas.analysis import PricingSnapshot
-from app.services.openrouter import OpenRouterClient, Usage
+from app.services.openrouter import Completion, OpenRouterClient, Usage
 
 logger = get_logger(__name__)
 
@@ -231,8 +232,15 @@ class OpenRouterClassifier:
         hallucinated = 0
         duplicated = 0
 
-        for index, chunk in enumerate(chunks):
-            chunk_buckets, stats = self._map_chunk(index, chunk, known_ids, assigned)
+        def consume_chunk(
+            index: int,
+            chunk: Sequence[RecordGroup],
+            completion: Completion[MapResponse],
+        ) -> None:
+            nonlocal hallucinated, duplicated
+            chunk_buckets, stats = self._merge_map_chunk(
+                index, chunk, completion, known_ids, assigned
+            )
             buckets.update(chunk_buckets)
             hallucinated += stats[0]
             duplicated += stats[1]
@@ -246,6 +254,8 @@ class OpenRouterClassifier:
 
             if self._on_progress is not None and not self._on_progress(index + 1, len(chunks)):
                 raise ClassificationCancelledError
+
+        self._run_in_order(chunks, self._map_chunk_call, consume_chunk)
 
         # Chunk'lar ARASI birleştirme. Ölçüt CHUNK sayısıdır, kova sayısı
         # değil: tek bir chunk içindeki kategorileri model zaten kendisi
@@ -263,22 +273,75 @@ class OpenRouterClassifier:
 
     # ---------------------------------------------------------------- map aşaması
 
-    def _map_chunk(
+    def _run_in_order[TItem, TResult](
         self,
-        index: int,
-        chunk: Sequence[RecordGroup],
-        known_ids: set[str],
-        assigned: set[str],
-    ) -> tuple[dict[str, _Bucket], tuple[int, int]]:
-        """Bir chunk'ı sınıflandırır; uydurma/tekrar eden kimlikleri eler."""
+        items: Sequence[TItem],
+        call: Callable[[TItem], TResult],
+        consume: Callable[[int, TItem, TResult], None],
+    ) -> None:
+        """`call`'ı sınırlı eşzamanlılıkla koşturur, `consume`'u SIRAYLA çağırır.
+
+        NEDEN VAR: `classify` chunk'ları düz bir döngüde sırayla gönderiyordu.
+        Ölçülen chunk süresi ~26 sn ve gerçek AUZEF dökümü bağlamsal modda 492
+        chunk üretiyor — ~3,5 saat, 45 dakikalık hard timeout'un beş katı. Chunk
+        büyütmek çözmez: toplam completion token sabit kaldığı için duvar saati
+        de sabit kalır.
+
+        DETERMİNİZM: `call` yalnızca ağ çağrısıdır ve `self`'e yazmaz; sıraya
+        duyarlı her şey (`_usage`, `assigned` kümesi, kova anahtarları) tek tek
+        `consume` içinde, ANA iş parçacığında ve indeks sırasına göre işlenir.
+        Bu yüzden çıktı, eşzamanlılık kaç olursa olsun sıralı koşuyla aynıdır.
+
+        `consume` istisna atarsa (maliyet tavanı ya da iptal) YENİ İŞ
+        GÖNDERİLMEZ; kuyrukta bekleyenler iptal edilir, uçuşta olanlar havuz
+        kapanırken tamamlanır. Uçuştaki çağrıların parası harcanmış olur —
+        eşzamanlılığın bilinçli bedeli (bkz. `Settings.llm_max_concurrency`).
+        """
+        if not items:
+            return
+
+        concurrency = max(1, min(self._settings.llm_max_concurrency, len(items)))
+        with ThreadPoolExecutor(max_workers=concurrency, thread_name_prefix="auzef-llm") as pool:
+            pending: dict[int, Future[TResult]] = {}
+            next_to_submit = 0
+            try:
+                for index in range(len(items)):
+                    while next_to_submit < len(items) and len(pending) < concurrency:
+                        pending[next_to_submit] = pool.submit(call, items[next_to_submit])
+                        next_to_submit += 1
+                    consume(index, items[index], pending.pop(index).result())
+            except BaseException:
+                for future in pending.values():
+                    future.cancel()
+                raise
+
+    def _map_chunk_call(self, chunk: Sequence[RecordGroup]) -> Completion[MapResponse]:
+        """SAĞLAYICI ÇAĞRISI — havuzdaki iş parçacığından çalışır.
+
+        Burada `self` üzerinde HİÇBİR yazma yok. `_usage`, `_repairs` ve kova
+        bookkeeping'i `_merge_map_chunk`'ta, ana iş parçacığında ve chunk
+        SIRASINA göre işlenir. Eşzamanlı koşunun sıralı koşuyla birebir aynı
+        çıktıyı vermesi buna dayanıyor: "ilk eşleme kazanır" kuralı chunk
+        sırasına bağlı ve o sıra burada değil, birleştirmede belirleniyor.
+        """
         rendered = "\n".join(render_record(group) for group in chunk)
-        completion = self._client.complete_structured(
+        return self._client.complete_structured(
             system=self._prompt.map_system,
             user=self._prompt.map_user_template.format(records=rendered),
             schema=self._prompt.map_schema,
             schema_name="faq_map",
             model_type=MapResponse,
         )
+
+    def _merge_map_chunk(
+        self,
+        index: int,
+        chunk: Sequence[RecordGroup],
+        completion: Completion[MapResponse],
+        known_ids: set[str],
+        assigned: set[str],
+    ) -> tuple[dict[str, _Bucket], tuple[int, int]]:
+        """Bir chunk yanıtını işler; uydurma/tekrar eden kimlikleri eler."""
         self._usage = self._usage + completion.usage
         self._repairs += completion.repair_attempts
 
@@ -383,7 +446,9 @@ class OpenRouterClassifier:
             # modelin farklı adlar üretmesiyle gereksiz ek çağrı ve maliyet
             # yaratır.
             if len(batches) == 1:
-                final = self._reduce_batch(batches[0], level, 0)
+                final = self._merge_reduce_batch(
+                    batches[0], self._reduce_batch_call(batches[0]), level, 0
+                )
                 self._guard_cost()
                 if self._on_progress is not None and not self._on_progress(1, 1):
                     raise ClassificationCancelledError
@@ -399,20 +464,7 @@ class OpenRouterClassifier:
                 )
                 return final
 
-            next_level: list[_Bucket] = []
-
-            for batch_index, batch in enumerate(batches):
-                # Tek, olağandışı uzun bir kategori token bütçesini tek
-                # başına aşabilir. Kayıt kaybetmemek için çağrı yapmadan
-                # taşınır; diğer partiler yine birleştirilmeye devam eder.
-                if len(batch) == 1:
-                    next_level.extend(batch)
-                    continue
-
-                next_level.extend(self._reduce_batch(batch, level, batch_index))
-                self._guard_cost()
-                if self._on_progress is not None and not self._on_progress(1, 1):
-                    raise ClassificationCancelledError
+            next_level = self._reduce_level(batches, level)
 
             logger.info(
                 "llm_reduce_level_completed",
@@ -448,6 +500,44 @@ class OpenRouterClassifier:
 
         return current
 
+    def _reduce_level(self, batches: list[list[_Bucket]], level: int) -> list[_Bucket]:
+        """Bir hiyerarşi turunun tüm batch'lerini koşturur, çıktıyı SIRAYLA toplar.
+
+        Ayrı bir metot çünkü batch'ler sınırlı eşzamanlılıkla gönderiliyor ve
+        kapanışların tur döngüsünün değişkenlerine bağlanması (ruff B023) hem
+        lint hatası hem de gerçek bir tuzak olurdu.
+
+        Bir turun batch'leri birbirinden bağımsız; TURLAR sıralı kalır, çünkü
+        her tur bir öncekinin çıktısını girdi alır. Sıralı bırakılsaydı gerçek
+        veride reduce tek başına ~18 dakika ekliyor ve map hızlansa bile toplam
+        süre limite dayanıyordu.
+        """
+        next_level: list[_Bucket] = []
+
+        def call_batch(batch: list[_Bucket]) -> Completion[ReduceResponse] | None:
+            # Tek, olağandışı uzun bir kategori token bütçesini tek başına
+            # aşabilir. Kayıt kaybetmemek için çağrı yapmadan taşınır; diğer
+            # partiler yine birleştirilmeye devam eder.
+            if len(batch) == 1:
+                return None
+            return self._reduce_batch_call(batch)
+
+        def consume_batch(
+            batch_index: int,
+            batch: list[_Bucket],
+            completion: Completion[ReduceResponse] | None,
+        ) -> None:
+            if completion is None:
+                next_level.extend(batch)
+                return
+            next_level.extend(self._merge_reduce_batch(batch, completion, level, batch_index))
+            self._guard_cost()
+            if self._on_progress is not None and not self._on_progress(1, 1):
+                raise ClassificationCancelledError
+
+        self._run_in_order(batches, call_batch, consume_batch)
+        return next_level
+
     def _reduce_batches(self, buckets: list[_Bucket]) -> list[list[_Bucket]]:
         """Kategori metinlerini tek reduce çağrısının token bütçesine böler."""
         max_tokens = max(1, self._settings.llm_reduce_max_prompt_tokens)
@@ -468,28 +558,43 @@ class OpenRouterClassifier:
             batches.append(current)
         return batches
 
-    def _reduce_batch(self, buckets: list[_Bucket], level: int, batch_index: int) -> list[_Bucket]:
-        """Bir hiyerarşi turunun tek token-sınırlı reduce çağrısı.
+    def _reduce_batch_call(self, buckets: list[_Bucket]) -> Completion[ReduceResponse]:
+        """SAĞLAYICI ÇAĞRISI — havuzdaki iş parçacığından çalışır.
+
+        `_map_chunk_call` ile aynı kural: `self`'e yazma yok. Kova anahtarı
+        üreten sayaç (`_next_reduce_bucket_key`) ve `_usage`, birleştirmede
+        batch sırasına göre ilerler; aksi hâlde aynı girdi her koşuda farklı
+        anahtarlar üretir ve rapor deterministik olmaktan çıkardı.
 
         Prompt'a yalnızca konumsal kimlik basılır. Model üretimi olan
         ``bucket.key`` hiç prompt'a girmez; böylece delimiter kaçışı veya
         batch'ler arası anahtar çakışması eşleştirmeyi bozamaz.
         """
-        # Konum → kova. Sıra `buckets` listesinin sırası; model yalnızca bu
-        # kimlikleri görüyor ve yalnızca bunları geri yansıtabiliyor.
         by_position = {f"c{index}": bucket for index, bucket in enumerate(buckets)}
         rendered = "\n".join(
             f'<kategori id="{position_id}" tema="{escape_record_text(bucket.theme)}">'
             f"{escape_record_text(bucket.canonical_question)}</kategori>"
             for position_id, bucket in by_position.items()
         )
-        completion = self._client.complete_structured(
+        return self._client.complete_structured(
             system=self._prompt.reduce_system,
             user=self._prompt.reduce_user_template.format(categories=rendered),
             schema=self._prompt.reduce_schema,
             schema_name="faq_reduce",
             model_type=ReduceResponse,
         )
+
+    def _merge_reduce_batch(
+        self,
+        buckets: list[_Bucket],
+        completion: Completion[ReduceResponse],
+        level: int,
+        batch_index: int,
+    ) -> list[_Bucket]:
+        """Bir reduce yanıtını kovalara çevirir; bahsedilmeyenleri taşır."""
+        # Konum → kova. Sıra `buckets` listesinin sırası; model yalnızca bu
+        # kimlikleri görüyor ve yalnızca bunları geri yansıtabiliyor.
+        by_position = {f"c{index}": bucket for index, bucket in enumerate(buckets)}
         self._usage = self._usage + completion.usage
         self._repairs += completion.repair_attempts
 

@@ -84,7 +84,11 @@ Analiz iki aşamalı bir map/reduce yaklaşımı izler:
 - `contextual_user_turns` modu yalnız yapılandırılmış hedef kullanıcı
   turn'lerini sayar; güvenli varsayılan yalnız `text` mesajlarıdır.
   `quick_reply` mesajları varsayılan olarak aynı session'daki sınırlı önceki
-  kullanıcı/bot bağlamına girer ve kullanıcı isterse hedef türlere eklenebilir.
+  kullanıcı bağlamına girer ve kullanıcı isterse hedef türlere eklenebilir.
+  Bot yanıtları varsayılan olarak elenir; yalnız kullanıcı açıkça etkinleştirirse
+  sayılmayan bağlam olarak modele gönderilir.
+  Standart `session_id`, `message_order`, `direction` ve `message_type`
+  kolonları bulunduğunda web arayüzü bu güvenli modu otomatik seçer.
   Böylece “ne zaman?” gibi takip mesajları konuşmadan kopmadan
   sınıflandırılırken bot cevapları ve buton seçimleri FAQ frekansını şişirmez.
 
@@ -474,21 +478,47 @@ Hata bildirimleri ve özellik önerileri için [GitHub Issues](https://github.co
 
 ## Açık işler ve bilinen sınırlar
 
-### 1. Yerelde testlerin bir kısmı sessizce atlanıyor
+### 1. Analiz süresi veri boyutuyla doğrusal büyür ve tavanı vardır
+
+Analiz süresi `(chunk sayısı / AUZEF_LLM_MAX_CONCURRENCY) x ~26 saniye`dir.
+Chunk süresi üretilen completion token'la belirlendiği için chunk'ı büyütmek
+toplam süreyi düşürmez; ölçeklenen tek boyut eşzamanlılıktır.
+
+Gerçek AUZEF dökümüyle ölçüldü (505.442 satır, bağlamsal mod): 59.001
+benzersiz kayıt, 492 chunk. Sıralı koşuda ~3,5 saat, varsayılan eşzamanlılık
+8 ile **~35 dakika** — 45 dakikalık hard timeout'a sığar ama **payı dardır**.
+Belirgin biçimde daha büyük bir veri seti için önce `AUZEF_LLM_MAX_CONCURRENCY`,
+sonra `AUZEF_ANALYSIS_TIMEOUT_SECONDS` yükseltilmelidir.
+
+Bağlamsal modda tekilleştirme bilinçli olarak zayıftır: kayıt kimliği hedef
+mesajın yanında bağlamı da içerdiği için aynı soru farklı bağlamlarda ayrı
+kayıt olur. Aynı dosya `message` modunda 43.816 benzersiz kayıt veriyor.
+
+Süre dolarsa iş `PROVIDER_TIMEOUT` ile kapanır ve **o ana kadar harcanan
+OpenRouter parası karşılıksız kalır**: tamamlanmış chunk sonuçları hiçbir yere
+yazılmadığı için yeniden deneme sıfırdan başlar. Ara kayıt/devam etme
+uygulanmadı.
+
+### 2. Girdi olarak yalnızca `.xlsx` kabul edilir
+
+Kurumdan gelen dökümler CSV ise yükleme öncesinde Excel'e çevrilmelidir; CSV
+sözleşmeye uygun bir hatayla reddedilir, sessizce başarısız olmaz.
+
+### 3. Yerelde testlerin bir kısmı sessizce atlanıyor
 
 Postgres/Redis/MinIO kapalıyken entegrasyon testleri `conftest.py` tarafından
 açık bir mesajla atlanır ama `pytest` yine de **yeşil** görünür.
 `docker compose up -d` olmadan koşan biri entegrasyon regresyonunu göremez.
 CI'da sorun yok: `ci.yml` servisleri kaldırdığı için orada tam koşuyor.
 
-### 2. Uçtan uca testin `stack` projesi CI'da koşmuyor
+### 4. Uçtan uca testin `stack` projesi CI'da koşmuyor
 
 `npm run e2e:mock` her PR'da koşuyor (Docker gerekmez). `npm run e2e:stack`
 gerçek yığına karşı koşan projedir ve CI'da devre dışı: imaj derlemesi +
 sekiz servis demek ve `backend` job'ı aynı entegrasyonu servislere karşı
 zaten ölçüyor. Yerelde `docker compose up -d` sonrası koşulmalı.
 
-### 3. Analiz adımı otomatik uçtan uca testte kapsanmıyor
+### 5. Analiz adımı otomatik uçtan uca testte kapsanmıyor
 
 `stack` projesi upload → profilleme → kolon ekranına kadar gidiyor ve
 BİLEREK durup analiz başlatmıyor: o adım gerçek bir OpenRouter çağrısı ve
@@ -496,7 +526,7 @@ kullanıcının parası. Arayüz tarafındaki analiz akışı (ilerleme → rapo
 dışa aktarma) mock backend'e karşı kapsanıyor; kapsanmayan şey gerçek bir
 LLM koşusunun uçtan uca otomatik doğrulanması.
 
-### 4. Gerçek kurum verisi için ön koşullar
+### 6. Gerçek kurum verisi için ön koşullar
 
 ADR §9: public deployment yapılmaz ve gerçek AUZEF verisi kullanılmadan önce
 SSO/erişim kontrolü ile veri işleme onayı zorunludur. Bugünkü kurulumda

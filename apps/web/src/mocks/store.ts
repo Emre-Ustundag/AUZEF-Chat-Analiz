@@ -463,9 +463,12 @@ export function getAnalysisReportRecord(analysisId: string): AnalysisReport | nu
     analysisMode === "contextual_user_turns"
       ? conversationConfigSchema.parse(record.request.conversation_config)
       : null;
-  // Bağlamsal mock'ta kullanıcı hedefi olmayan satırlar yalnız önceki
-  // konuşma bağlamına girer. Mesaj modu eski adetleri aynen korur.
-  const contextOnly = analysisMode === "contextual_user_turns" ? Math.round(considered * 0.1) : 0;
+  // Bot yanıtları yalnız açık opt-in ile bağlama girer. Varsayılan kapalıyken
+  // mock da onları `context_only_count` içine yazmaz.
+  const contextOnly =
+    analysisMode === "contextual_user_turns" && conversationConfig?.include_assistant_context
+      ? Math.round(considered * 0.1)
+      : 0;
   const discarded = 1_107;
   const analyzed = considered - contextOnly - discarded;
   const unique = Math.round(analyzed * (31_540 / 47_106));

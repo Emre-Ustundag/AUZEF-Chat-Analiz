@@ -167,9 +167,12 @@ def test_v4_duz_mesaj_modunda_reddedilir() -> None:
 
 
 def test_baglamsal_esleme_kolonlari_profilde_dogrulanir() -> None:
-    selected = _validate_selection(_conversation_profile(), _contextual_request())
+    request = _contextual_request()
+    selected = _validate_selection(_conversation_profile(), request)
 
     assert selected.name == "mesaj"
+    assert request.conversation_config is not None
+    assert request.conversation_config.include_assistant_context is False
 
 
 @pytest.mark.parametrize(

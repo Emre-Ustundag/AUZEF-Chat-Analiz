@@ -160,6 +160,38 @@ describe("ReportScreen", () => {
     ).toBeInTheDocument();
   });
 
+  it("bot yanıtlarının elendiğini bağlamsal raporda açıkça gösterir", async () => {
+    getAnalysisReport.mockResolvedValue({
+      ...report,
+      prompt_version: "faq_analysis/v4",
+      source_summary: {
+        ...report.source_summary,
+        analysis_mode: "contextual_user_turns",
+        conversation_config: {
+          session_id_column: "session_id",
+          message_order_column: "message_order",
+          role_column: "direction",
+          message_type_column: "message_type",
+          user_role_values: ["Kullanıcı"],
+          assistant_role_values: ["Bot"],
+          include_assistant_context: false,
+          target_message_types: ["text"],
+          context_message_types: ["text", "quick_reply", "single-choice"],
+          max_context_turns: 4,
+          max_context_tokens: 1000,
+        },
+      },
+    });
+
+    renderScreen();
+
+    expect(
+      await screen.findByText("Yalnız kullanıcı turn'leri analiz edildi; bot yanıtları elendi."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Bot yanıtları bağlamda")).toBeInTheDocument();
+    expect(screen.getByText("Hayır")).toBeInTheDocument();
+  });
+
   it("dışa aktarmayı istenen formatla çalıştırır", async () => {
     downloadAnalysisExport.mockResolvedValue({
       blob: new Blob(["{}"], { type: "application/json" }),

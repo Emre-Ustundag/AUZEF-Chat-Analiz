@@ -117,6 +117,11 @@ services:
       # BYOK anahtarının Redis TTL'i bundan TÜRETİLİR (+5 dk), ayrı ayarlanmaz.
       AUZEF_ANALYSIS_TIMEOUT_SECONDS: ${AUZEF_ANALYSIS_TIMEOUT_SECONDS:-2700}
       AUZEF_ANALYSIS_SOFT_TIMEOUT_SECONDS: ${AUZEF_ANALYSIS_SOFT_TIMEOUT_SECONDS:-2640}
+      # Aynı anda uçuşta olabilecek LLM çağrısı. Analiz süresini belirleyen
+      # asıl ayar bu: gerçek AUZEF dökümü 492 chunk üretiyor ve sıralı koşuda
+      # ~3,5 saat sürüyordu (bkz. .env.example). 1 yapmak sıralı davranışa
+      # döner.
+      AUZEF_LLM_MAX_CONCURRENCY: ${AUZEF_LLM_MAX_CONCURRENCY:-8}
       # ADR §9: master encryption key yalnızca secret manager/environment'ta
       # bulunur. Buradaki değer GELİŞTİRME içindir; üretimde MUTLAKA
       # değiştirilmelidir.
@@ -165,6 +170,11 @@ services:
     # API ile birebir aynı ortam: worker aynı bucket'ı ve aynı veritabanını
     # kullanır (ADR §3, tek kod tabanı).
     environment: *backend-env
+    # ÖLÇÜLMÜŞ sayıdan türetildi: 130 MB'lık dosyanın profillenmesinde worker
+    # tepesi 596 MB (docs/yuk-testi.md) ve `--concurrency=2` iki eşzamanlı
+    # büyük iş demek, yani ~1,2 GB. 2 GB tavan bunu paylı karşılar ve kaçak
+    # bellek kullanımının makineyi swap'e sokmasını engeller.
+    mem_limit: 2g
     depends_on:
       postgres:
         condition: service_healthy

@@ -88,6 +88,7 @@ EXPECTED_FIELDS: list[tuple[type[BaseModel], set[str]]] = [
             "message_type_column",
             "user_role_values",
             "assistant_role_values",
+            "include_assistant_context",
             "target_message_types",
             "context_message_types",
             "max_context_turns",

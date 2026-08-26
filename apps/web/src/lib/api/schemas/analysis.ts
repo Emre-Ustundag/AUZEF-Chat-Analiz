@@ -103,6 +103,7 @@ export const conversationConfigSchema = z
     message_type_column: z.string().trim().min(1, "Mesaj türü kolonu seçilmelidir.").max(512),
     user_role_values: conversationMappingValuesSchema.default(["Kullanıcı"]),
     assistant_role_values: conversationMappingValuesSchema.default(["Bot"]),
+    include_assistant_context: z.boolean().default(false),
     // Quick reply varsayılan olarak yalnız bağlamdır; kullanıcı isterse
     // analiz hedeflerine açıkça ekleyebilir.
     target_message_types: conversationMappingValuesSchema.default(["text"]),

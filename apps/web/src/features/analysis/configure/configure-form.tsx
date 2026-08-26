@@ -69,11 +69,21 @@ function suggestedConversationConfig(columns: readonly ColumnProfile[]): Convers
     message_type_column: exactColumn(columns, KNOWN_COLUMNS.messageType),
     user_role_values: ["Kullanıcı"],
     assistant_role_values: ["Bot"],
+    include_assistant_context: false,
     target_message_types: ["text"],
     context_message_types: ["text", "quick_reply", "single-choice"],
     max_context_turns: 4,
     max_context_tokens: 1000,
   };
+}
+
+function hasCompleteConversationMapping(config: ConversationConfig): boolean {
+  return Boolean(
+    config.session_id_column &&
+    config.message_order_column &&
+    config.role_column &&
+    config.message_type_column,
+  );
 }
 
 function ColumnSelectField({
@@ -157,6 +167,8 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
 
   const sheets = upload.profile?.sheets ?? [];
   const firstSheet = sheets[0];
+  const initialConversationConfig = suggestedConversationConfig(firstSheet?.columns ?? []);
+  const contextualByDefault = hasCompleteConversationMapping(initialConversationConfig);
 
   const {
     control,
@@ -172,10 +184,10 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
       // kullanıcı yine de değiştirebilir.
       text_column: suggestedTextColumn(firstSheet?.columns ?? []),
       row_filters: [],
-      analysis_mode: "message",
-      conversation_config: null,
+      analysis_mode: contextualByDefault ? "contextual_user_turns" : "message",
+      conversation_config: contextualByDefault ? initialConversationConfig : null,
       model: models.default_model,
-      prompt_version: models.default_prompt_version,
+      prompt_version: contextualByDefault ? "faq_analysis/v4" : models.default_prompt_version,
       top_n: 20,
       max_cost_usd: 10,
       openrouter_api_key: "",
@@ -368,8 +380,8 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                         Bağlamsal kullanıcı turları
                       </span>
                       <span className="block text-xs leading-relaxed font-normal text-muted-foreground">
-                        Kullanıcı mesajlarını, aynı oturumdaki önceki kullanıcı ve bot mesajlarıyla
-                        birlikte yorumlar.
+                        Yalnız kullanıcı mesajlarını analiz eder. Bot yanıtları varsayılan olarak
+                        elenir; istenirse yalnız bağlama alınabilir.
                       </span>
                     </span>
                   </Label>
@@ -446,6 +458,34 @@ export function ConfigureForm({ upload, models }: ConfigureFormProps) {
                   )}
                 />
               </div>
+
+              <Controller
+                control={control}
+                name="conversation_config.include_assistant_context"
+                render={({ field }) => (
+                  <label
+                    htmlFor="include_assistant_context"
+                    className="flex cursor-pointer items-start gap-3 rounded-lg border bg-background p-4"
+                  >
+                    <input
+                      id="include_assistant_context"
+                      type="checkbox"
+                      checked={field.value ?? false}
+                      onChange={(event) => field.onChange(event.target.checked)}
+                      className="mt-0.5 size-4 accent-primary"
+                    />
+                    <span className="space-y-1">
+                      <span className="block text-sm font-medium">
+                        Bot cevaplarını bağlam olarak kullan
+                      </span>
+                      <span className="block text-xs leading-relaxed text-muted-foreground">
+                        Kapalıyken bot satırları tamamen elenir. Açıldığında yalnız önceki bağlam
+                        olarak modele gider; soru adetlerine ve yüzdelere hiçbir zaman eklenmez.
+                      </span>
+                    </span>
+                  </label>
+                )}
+              />
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Controller

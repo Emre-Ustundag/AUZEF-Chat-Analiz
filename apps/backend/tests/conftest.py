@@ -38,6 +38,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 #   1. Kabuktan gelen `AUZEF_*` değişkenleri silinir (aşağıdaki
 #      `setdefault` çağrıları ancak böyle GERÇEKTEN varsayılan olur).
 #   2. `.env` dosyası devre dışı bırakılır.
+#
+# Tek istisna test altyapısının kendi port ayarıdır. Makinede 5432 başka bir
+# projeye aitse test PostgreSQL'i farklı bir host portuna bağlanabilir; değer
+# uygulama Settings'ine sızmadan önce ortamdan çıkarılır.
+_test_postgres_port = int(os.environ.pop("AUZEF_TEST_POSTGRES_PORT", "5432"))
 for _leaked in [key for key in os.environ if key.startswith("AUZEF_")]:
     del os.environ[_leaked]
 
@@ -48,7 +53,10 @@ get_settings.cache_clear()
 
 # Settings AUZEF_ önekini kullanır; uygulama modülleri import edilmeden önce
 # host makineden erişilebilen test adreslerini kur.
-os.environ.setdefault("AUZEF_DATABASE_URL", "postgresql+asyncpg://auzef:auzef@127.0.0.1:5432/auzef")
+os.environ.setdefault(
+    "AUZEF_DATABASE_URL",
+    f"postgresql+asyncpg://auzef:auzef@127.0.0.1:{_test_postgres_port}/auzef",
+)
 os.environ.setdefault("AUZEF_REDIS_URL", "redis://127.0.0.1:6379/0")
 os.environ.setdefault("AUZEF_CELERY_BROKER_URL", "redis://127.0.0.1:6379/1")
 os.environ.setdefault("AUZEF_CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/2")
@@ -104,7 +112,7 @@ def _port_open(host: str, port: int, timeout: float = 0.5) -> bool:
         return False
 
 
-REQUIRED_SERVICES = {"postgres": 5432, "redis": 6379, "minio": 9000}
+REQUIRED_SERVICES = {"postgres": _test_postgres_port, "redis": 6379, "minio": 9000}
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
