@@ -47,7 +47,48 @@ MODEL_CATALOG: Final[tuple[ModelOption, ...]] = (
         cache_write_cost_per_million=0.0833333333333,
         context_window=1_048_576,
     ),
+    ModelOption(
+        id=ModelId.GPT_5_6_LUNA,
+        label="GPT-5.6 Luna",
+        input_cost_per_million=0.2,
+        output_cost_per_million=1.2,
+        cache_read_cost_per_million=0.02,
+        cache_write_cost_per_million=0.25,
+        context_window=1_050_000,
+    ),
+    ModelOption(
+        id=ModelId.GPT_5_6_LUNA_PRO,
+        label="GPT-5.6 Luna Pro",
+        input_cost_per_million=0.2,
+        output_cost_per_million=1.2,
+        cache_read_cost_per_million=0.02,
+        cache_write_cost_per_million=0.25,
+        context_window=1_050_000,
+    ),
 )
+
+#: `temperature` gönderilebilecek modeller.
+#:
+#: İstemci `provider={"require_parameters": True}` yolluyor: OpenRouter o
+#: bayrakla, İSTENEN HER parametreyi destekleyen sağlayıcıyı arar. Parametreyi
+#: desteklemeyen bir modele `temperature` eklemek bu yüzden isteği düşürmez,
+#: 404 "No endpoints found that can handle the requested parameters" ile
+#: KOMPLE reddettirir. OpenRouter `/models` çıktısında doğrulandı: Gemini ve
+#: Claude `supported_parameters` içinde `temperature` taşıyor, GPT-5.6 Luna
+#: ailesi taşımıyor.
+MODELS_SUPPORTING_TEMPERATURE: Final[frozenset[str]] = frozenset(
+    {
+        ModelId.CLAUDE_SONNET_4_6.value,
+        ModelId.GPT_4_1_MINI.value,
+        ModelId.GEMINI_2_5_FLASH.value,
+    }
+)
+
+
+def supports_temperature(model_id: str | ModelId) -> bool:
+    """Modelin `temperature` parametresini kabul edip etmediği."""
+    return str(model_id) in MODELS_SUPPORTING_TEMPERATURE
+
 
 MODEL_LIST: Final = ModelList(
     models=list(MODEL_CATALOG),

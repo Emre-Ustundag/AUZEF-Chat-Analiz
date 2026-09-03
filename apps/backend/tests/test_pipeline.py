@@ -48,7 +48,7 @@ from app.pipeline.preprocess import (
     normalize,
     preprocess,
 )
-from app.prompts.faq_analysis import V1, V2
+from app.prompts.faq_analysis import V1, V2, V4, V5
 from app.schemas.analysis import ConversationConfig
 from app.schemas.report import AnalysisReport, percentage_half_up
 from app.services.xlsx import ConversationRow
@@ -778,6 +778,27 @@ def test_hiyerarsik_reduce_maliyet_tahmini_aralik_dondurur(settings: Settings) -
     assert forecast.upper_prompt_tokens > forecast.estimated_prompt_tokens
     assert forecast.cost_range_usd == (forecast.estimated_cost_usd, forecast.upper_cost_usd)
     assert forecast.exceeds is True
+
+
+def test_v5_maliyet_tahmini_refinement_payini_icerir(settings: Settings) -> None:
+    result = preprocess([f"benzersiz kullanıcı sorusu {index}" for index in range(30)], settings)
+    v4 = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=10,
+        settings=settings,
+        prompt=V4,
+    )
+    v5 = estimate_cost(
+        result.groups,
+        "google/gemini-2.5-flash",
+        max_cost_usd=10,
+        settings=settings,
+        prompt=V5,
+    )
+
+    assert v5.estimated_cost_usd > v4.estimated_cost_usd
+    assert v5.upper_cost_usd > v5.estimated_cost_usd
 
 
 def test_gercek_smoke_completion_olcumune_yakin_tahmin(settings: Settings) -> None:

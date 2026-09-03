@@ -43,6 +43,28 @@ export const MOCK_MODELS: readonly ModelOption[] = [
     pricing_source: "fallback",
     pricing_updated_at: null,
   },
+  {
+    id: "openai/gpt-5.6-luna",
+    label: "GPT-5.6 Luna",
+    input_cost_per_million: 0.2,
+    output_cost_per_million: 1.2,
+    cache_read_cost_per_million: 0.02,
+    cache_write_cost_per_million: 0.25,
+    context_window: 1_050_000,
+    pricing_source: "fallback",
+    pricing_updated_at: null,
+  },
+  {
+    id: "openai/gpt-5.6-luna-pro",
+    label: "GPT-5.6 Luna Pro",
+    input_cost_per_million: 0.2,
+    output_cost_per_million: 1.2,
+    cache_read_cost_per_million: 0.02,
+    cache_write_cost_per_million: 0.25,
+    context_window: 1_050_000,
+    pricing_source: "fallback",
+    pricing_updated_at: null,
+  },
 ];
 
 export const DEFAULT_MODEL: ModelId = "google/gemini-2.5-flash";
@@ -54,6 +76,9 @@ export const KNOWN_PROMPT_VERSIONS: readonly PromptVersion[] = [
   "faq_analysis/v2",
   DEFAULT_PROMPT_VERSION,
   "faq_analysis/v4",
+  "faq_analysis/v5",
+  "faq_analysis/v6",
+  "faq_analysis/v7",
 ];
 
 export const MOCK_MODEL_LIST: ModelList = {

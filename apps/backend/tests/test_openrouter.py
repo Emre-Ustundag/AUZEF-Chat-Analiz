@@ -169,6 +169,9 @@ def test_istek_govdesi_sozlesmeye_uyar_ve_tool_cagrilari_kapali(settings: Settin
     assert body["response_format"]["json_schema"]["schema"] == _SCHEMA
     # Whitelist garantisinin çalışma anında kaybolmaması için:
     assert body["provider"]["require_parameters"] is True
+    # Sınıflandırma deterministik olmalı: sağlayıcı varsayılanı aynı prompt'un
+    # aynı veride farklı kategori sayısı üretmesine yol açıyordu.
+    assert body["temperature"] == 0.0
     assert body["model"] == "google/gemini-2.5-flash"
     assert seen["url"] == "https://openrouter.test/api/v1/chat/completions"
     # Anahtar yalnızca Authorization başlığında.
@@ -364,3 +367,26 @@ def test_200_icinde_gelen_hata_govdesi_yakalanir(settings: Settings) -> None:
 
     assert excinfo.value.code == "PROVIDER_BAD_RESPONSE"
     assert "overloaded" not in excinfo.value.detail
+
+
+def test_reasoning_modellerinde_temperature_gonderilmez(settings: Settings) -> None:
+    seen_body: dict[str, Any] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_body.update(json.loads(request.content.decode("utf-8")))
+        return _ok(json.dumps({"label": "test"}))
+
+    client = OpenRouterClient(
+        api_key="sk-test",
+        model="openai/gpt-5.6-luna-pro",
+        settings=settings,
+        transport=httpx.MockTransport(handler),
+    )
+    with client:
+        client.complete_structured(
+            system="s", user="u", schema=_SCHEMA, schema_name="answer", model_type=_Answer
+        )
+
+    assert "temperature" not in seen_body
+    assert seen_body["model"] == "openai/gpt-5.6-luna-pro"
+    assert seen_body["provider"]["require_parameters"] is True

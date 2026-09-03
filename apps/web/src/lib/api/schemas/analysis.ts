@@ -67,6 +67,8 @@ export const modelIdSchema = z.enum([
   "anthropic/claude-sonnet-4.6",
   "openai/gpt-4.1-mini",
   "google/gemini-2.5-flash",
+  "openai/gpt-5.6-luna",
+  "openai/gpt-5.6-luna-pro",
 ]);
 
 export type ModelId = z.infer<typeof modelIdSchema>;
@@ -77,6 +79,9 @@ export const promptVersionSchema = z.enum([
   "faq_analysis/v2",
   "faq_analysis/v3",
   "faq_analysis/v4",
+  "faq_analysis/v5",
+  "faq_analysis/v6",
+  "faq_analysis/v7",
 ]);
 
 export type PromptVersion = z.infer<typeof promptVersionSchema>;
@@ -222,11 +227,16 @@ function validateAnalysisConfiguration(
         message: "Konuşma ayarları yalnızca bağlamsal kullanıcı turları modunda kullanılabilir.",
       });
     }
-    if (request.prompt_version === "faq_analysis/v4") {
+    if (
+      request.prompt_version === "faq_analysis/v4" ||
+      request.prompt_version === "faq_analysis/v5" ||
+      request.prompt_version === "faq_analysis/v6" ||
+      request.prompt_version === "faq_analysis/v7"
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["prompt_version"],
-        message: "faq_analysis/v4 yalnızca bağlamsal kullanıcı turları içindir.",
+        message: "faq_analysis/v4-v7 yalnızca bağlamsal kullanıcı turları içindir.",
       });
     }
     return;
@@ -242,11 +252,16 @@ function validateAnalysisConfiguration(
     return;
   }
 
-  if (request.prompt_version !== "faq_analysis/v4") {
+  if (
+    request.prompt_version !== "faq_analysis/v4" &&
+    request.prompt_version !== "faq_analysis/v5" &&
+    request.prompt_version !== "faq_analysis/v6" &&
+    request.prompt_version !== "faq_analysis/v7"
+  ) {
     ctx.addIssue({
       code: "custom",
       path: ["prompt_version"],
-      message: "Bağlamsal kullanıcı turları modu faq_analysis/v4 kullanmalıdır.",
+      message: "Bağlamsal kullanıcı turları modu faq_analysis/v4-v7 kullanmalıdır.",
     });
   }
 

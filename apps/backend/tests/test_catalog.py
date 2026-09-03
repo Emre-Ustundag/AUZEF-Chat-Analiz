@@ -16,6 +16,8 @@ def test_catalog_and_defaults_are_frozen() -> None:
         "anthropic/claude-sonnet-4.6",
         "openai/gpt-4.1-mini",
         "google/gemini-2.5-flash",
+        "openai/gpt-5.6-luna",
+        "openai/gpt-5.6-luna-pro",
     ]
     assert set(ModelId) == {model.id for model in MODEL_CATALOG}
     assert set(PromptVersion) == set(KNOWN_PROMPT_VERSIONS)
@@ -39,6 +41,8 @@ def test_catalog_matches_verified_openrouter_metadata() -> None:
         ModelId.CLAUDE_SONNET_4_6: (1_000_000, 3, 15),
         ModelId.GPT_4_1_MINI: (1_047_576, 0.4, 1.6),
         ModelId.GEMINI_2_5_FLASH: (1_048_576, 0.3, 2.5),
+        ModelId.GPT_5_6_LUNA: (1_050_000, 0.2, 1.2),
+        ModelId.GPT_5_6_LUNA_PRO: (1_050_000, 0.2, 1.2),
     }
 
 

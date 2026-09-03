@@ -61,6 +61,8 @@ class ModelId(StrEnum):
     CLAUDE_SONNET_4_6 = "anthropic/claude-sonnet-4.6"
     GPT_4_1_MINI = "openai/gpt-4.1-mini"
     GEMINI_2_5_FLASH = "google/gemini-2.5-flash"
+    GPT_5_6_LUNA = "openai/gpt-5.6-luna"
+    GPT_5_6_LUNA_PRO = "openai/gpt-5.6-luna-pro"
 
 
 class PromptVersion(StrEnum):
@@ -70,6 +72,9 @@ class PromptVersion(StrEnum):
     FAQ_ANALYSIS_V2 = "faq_analysis/v2"
     FAQ_ANALYSIS_V3 = "faq_analysis/v3"
     FAQ_ANALYSIS_V4 = "faq_analysis/v4"
+    FAQ_ANALYSIS_V5 = "faq_analysis/v5"
+    FAQ_ANALYSIS_V6 = "faq_analysis/v6"
+    FAQ_ANALYSIS_V7 = "faq_analysis/v7"
 
 
 class AnalysisMode(StrEnum):
@@ -231,15 +236,25 @@ class AnalysisRequest(ApiRequestModel):
                 raise ValueError(
                     "conversation_config yalnızca contextual_user_turns modunda kullanılabilir."
                 )
-            if self.prompt_version is PromptVersion.FAQ_ANALYSIS_V4:
-                raise ValueError("faq_analysis/v4 yalnızca contextual_user_turns içindir.")
+            if self.prompt_version in {
+                PromptVersion.FAQ_ANALYSIS_V4,
+                PromptVersion.FAQ_ANALYSIS_V5,
+                PromptVersion.FAQ_ANALYSIS_V6,
+                PromptVersion.FAQ_ANALYSIS_V7,
+            }:
+                raise ValueError("faq_analysis/v4-v7 yalnızca contextual_user_turns içindir.")
             return self
 
         config = self.conversation_config
         if config is None:
             raise ValueError("contextual_user_turns modu conversation_config gerektirir.")
-        if self.prompt_version is not PromptVersion.FAQ_ANALYSIS_V4:
-            raise ValueError("contextual_user_turns modu faq_analysis/v4 prompt'unu gerektirir.")
+        if self.prompt_version not in {
+            PromptVersion.FAQ_ANALYSIS_V4,
+            PromptVersion.FAQ_ANALYSIS_V5,
+            PromptVersion.FAQ_ANALYSIS_V6,
+            PromptVersion.FAQ_ANALYSIS_V7,
+        }:
+            raise ValueError("contextual_user_turns modu faq_analysis/v4-v7 prompt'unu gerektirir.")
 
         mapped_columns = {
             config.session_id_column,

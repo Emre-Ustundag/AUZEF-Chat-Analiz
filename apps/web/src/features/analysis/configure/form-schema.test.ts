@@ -67,24 +67,24 @@ describe("configureFormSchema", () => {
     ).toBe(false);
   });
 
-  it("bağlamsal modu v4 prompt ve konuşma eşlemesiyle kabul eder", () => {
+  it("bağlamsal modu v5 prompt ve konuşma eşlemesiyle kabul eder", () => {
     expect(
       configureFormSchema.safeParse({
         ...validValues,
         analysis_mode: "contextual_user_turns",
         conversation_config: conversationConfig,
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
       }).success,
     ).toBe(true);
   });
 
-  it("bağlamsal modun config ve v4 prompt kurallarını uygular", () => {
+  it("bağlamsal modun config ve prompt kurallarını uygular", () => {
     expect(
       configureFormSchema.safeParse({
         ...validValues,
         analysis_mode: "contextual_user_turns",
         conversation_config: null,
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
       }).success,
     ).toBe(false);
     expect(
@@ -102,7 +102,7 @@ describe("configureFormSchema", () => {
       configureFormSchema.safeParse({
         ...validValues,
         analysis_mode: "contextual_user_turns",
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
         conversation_config: { ...conversationConfig, max_context_turns: 9 },
       }).success,
     ).toBe(false);
@@ -110,7 +110,7 @@ describe("configureFormSchema", () => {
       configureFormSchema.safeParse({
         ...validValues,
         analysis_mode: "contextual_user_turns",
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
         conversation_config: {
           ...conversationConfig,
           assistant_role_values: ["Kullanıcı"],
@@ -142,17 +142,17 @@ describe("toAnalysisRequest", () => {
     expect(request.row_filters).toEqual(rowFilters);
   });
 
-  it("bağlamsal konuşma eşlemesini ve v4 prompt'u istek gövdesine taşır", () => {
+  it("bağlamsal konuşma eşlemesini ve v5 promptunu istek gövdesine taşır", () => {
     const request = toAnalysisRequest(UPLOAD_ID, {
       ...validValues,
       analysis_mode: "contextual_user_turns",
       conversation_config: conversationConfig,
-      prompt_version: "faq_analysis/v4",
+      prompt_version: "faq_analysis/v5",
     });
 
     expect(request.analysis_mode).toBe("contextual_user_turns");
     expect(request.conversation_config).toEqual(conversationConfig);
-    expect(request.prompt_version).toBe("faq_analysis/v4");
+    expect(request.prompt_version).toBe("faq_analysis/v5");
   });
 
   it("API anahtarını gövdeye KOYMAZ", () => {

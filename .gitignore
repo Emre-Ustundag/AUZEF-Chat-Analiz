@@ -110,3 +110,12 @@ $RECYCLE.BIN/
 !tests/fixtures/**/*.csv
 !tests/fixtures/**/*.xlsx
 !apps/backend/tests/fixtures/**/*.xlsx
+
+# Analiz çalışma dosyaları — yeniden üretilebilir, boyutları büyük
+outputs/analiz/sessions-yil.jsonl
+outputs/analiz/ornek-*.jsonl
+outputs/analiz/atama-*.json
+outputs/analiz/assignments.json
+
+# LibreOffice kilit dosyalari
+.~lock.*#

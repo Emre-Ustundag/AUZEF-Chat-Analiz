@@ -77,6 +77,12 @@ REDUCE_PROMPT_TOKENS_PER_CATEGORY = 24
 EXPECTED_REDUCE_RETAIN_RATIO = 0.50
 CONSERVATIVE_REDUCE_RETAIN_RATIO = 0.80
 
+# V5 kalite geçişinde hangi son kategorilerin şüpheli bulunacağı map çıktısı
+# görülmeden bilinemez. Beklenen senaryo kayıtların dörtte birinin yeniden
+# denetlendiğini, temkinli senaryo ise her kaydın en fazla bir kez refinement'a
+# girdiğini varsayar. Gerçek harcama koşu içinde ayrıca korunur.
+EXPECTED_REFINEMENT_RECORD_RATIO = 0.25
+
 
 def cost_for_tokens(
     prompt_tokens: int,
@@ -353,6 +359,57 @@ def _estimated_reduce_usage(
     return (prompt_tokens, completion_tokens)
 
 
+def _estimated_refinement_usage(
+    *,
+    record_tokens_total: int,
+    chunk_sizes: Sequence[int],
+    record_ratio: float,
+    settings: Settings,
+    prompt: PromptBundle,
+    retain_ratio: float,
+) -> tuple[int, int]:
+    """V5 şüpheli-kategori geçişinin map + yeniden reduce tahmini."""
+    if (
+        not settings.llm_category_refinement_enabled
+        or prompt.refine_system is None
+        or prompt.refine_user_template is None
+        or not chunk_sizes
+        or record_ratio <= 0
+    ):
+        return (0, 0)
+
+    total_records = sum(chunk_sizes)
+    refined_records = min(total_records, max(1, int(total_records * record_ratio + 0.999)))
+    remaining = refined_records
+    refined_chunk_sizes: list[int] = []
+    for size in chunk_sizes:
+        if remaining <= 0:
+            break
+        selected = min(size, remaining)
+        refined_chunk_sizes.append(selected)
+        remaining -= selected
+
+    refine_overhead = _template_tokens(prompt.refine_system) + _template_tokens(
+        prompt.refine_user_template
+    )
+    prompt_tokens = int(record_tokens_total * refined_records / total_records)
+    prompt_tokens += refine_overhead * len(refined_chunk_sizes)
+    completion_tokens = _estimated_map_completion_tokens(refined_chunk_sizes)
+
+    # Refinement birden çok chunk ürettiyse kendi çıktısını, gerçekten bölme
+    # olduysa da tüm son kategorileri yeniden tekilleştirir. İki reduce geçişi
+    # temkinli ve basit bir üst modeldir; küçük işlerde çağrılmayan fazlalık
+    # yalnızca kullanıcı lehine maliyet payı bırakır.
+    category_count = sum(min(size, ESTIMATED_CATEGORIES_PER_CHUNK) for size in refined_chunk_sizes)
+    reduce_prompt, reduce_completion = _estimated_reduce_usage(
+        category_count,
+        settings=settings,
+        prompt=prompt,
+        retain_ratio=retain_ratio,
+    )
+    return (prompt_tokens + 2 * reduce_prompt, completion_tokens + 2 * reduce_completion)
+
+
 def _cost_decision_from_chunk_sizes(
     *,
     record_tokens_total: int,
@@ -394,10 +451,29 @@ def _cost_decision_from_chunk_sizes(
         retain_ratio=CONSERVATIVE_REDUCE_RETAIN_RATIO,
     )
 
-    expected_prompt = map_prompt_tokens + expected_reduce_prompt
-    expected_completion = map_completion_tokens + expected_reduce_completion
-    upper_prompt = map_prompt_tokens + upper_reduce_prompt
-    upper_completion = map_completion_tokens + upper_reduce_completion
+    expected_refine_prompt, expected_refine_completion = _estimated_refinement_usage(
+        record_tokens_total=record_tokens_total,
+        chunk_sizes=chunk_sizes,
+        record_ratio=EXPECTED_REFINEMENT_RECORD_RATIO,
+        settings=settings,
+        prompt=prompt,
+        retain_ratio=EXPECTED_REDUCE_RETAIN_RATIO,
+    )
+    upper_refine_prompt, upper_refine_completion = _estimated_refinement_usage(
+        record_tokens_total=record_tokens_total,
+        chunk_sizes=chunk_sizes,
+        record_ratio=1.0,
+        settings=settings,
+        prompt=prompt,
+        retain_ratio=CONSERVATIVE_REDUCE_RETAIN_RATIO,
+    )
+
+    expected_prompt = map_prompt_tokens + expected_reduce_prompt + expected_refine_prompt
+    expected_completion = (
+        map_completion_tokens + expected_reduce_completion + expected_refine_completion
+    )
+    upper_prompt = map_prompt_tokens + upper_reduce_prompt + upper_refine_prompt
+    upper_completion = map_completion_tokens + upper_reduce_completion + upper_refine_completion
     expected_cost = cost_for_tokens(
         expected_prompt,
         expected_completion,
@@ -466,7 +542,7 @@ def estimate_cost(
     (ADR §10 risk 3) burada doğrudan görünür — 100.000 satırlık bir dosyada
     30.000 benzersiz kayıt varsa tahmin de o oranda düşer.
 
-    DÖRT BİLEŞEN sayılıyor. Önce yalnızca birincisi sayılıyordu ve tahmin
+    BEŞ BİLEŞEN sayılıyor. Önce yalnızca birincisi sayılıyordu ve tahmin
     ölçülen 600/3000/6000 kayıtta sistematik olarak 1.21-1.23x eksik
     kalıyordu:
 
@@ -485,6 +561,9 @@ def estimate_cost(
        kompakt kategori talimatıyla uyumlu biçimde chunk başına en fazla 20
        kategori varsayılır. Bu sayı gerçek tüketim loglarıyla yeniden
        kalibre edilebilir; koşu içi tavan sapmayı ayrıca sınırlar.
+    5. **V5 refinement** — şüpheli son kategorilerin kayıtları ikinci bir map
+       ve gerekirse strict reduce geçişine girer. Beklenen senaryo kayıtların
+       %25'ini, temkinli aralık tamamını en fazla bir kez yeniden fiyatlar.
 
     ONARIM PAYI DA YOK: onarımlar sınırlı (`openrouter_max_repair_attempts`,
     varsayılan 2) ve istisnai. Her tahmine onarım payı eklemek, hiç onarım
