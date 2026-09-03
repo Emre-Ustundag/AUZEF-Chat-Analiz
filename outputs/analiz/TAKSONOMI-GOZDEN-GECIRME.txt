@@ -1,199 +1,183 @@
-# SSS TAKSONOMİSİ — GÖZDEN GEÇİRME (78 madde)
+# SSS TAKSONOMİSİ — GÖZDEN GEÇİRME
+# 95 madde: 70 eski bot kataloğundan + 25 boşluk analizinden
 #
-# Nasıl kullanılır: satırları doğrudan düzenleyin.
-#   - gereksiz maddeyi silin
-#   - ifadeyi düzeltin
-#   - eksik madde ekleyin (sona, herhangi bir başlık altına)
-# Sonra bana 'taksonomi hazır' deyin; bu dosyadan okuyup tam koşuya geçerim.
+# Kaynak: bir yıllık veri (2025-07 → 2026-07), 289.567 yazılı session
+# Örneklem: 3.000 session, aylara orantılı
 #
-# 'katalog' = eski botun kendi soru listesinden, yanında gerçek tıklama sayısı
-# 'boşluk'  = hiçbir katalog maddesine oturmayan konuşmalardan çıkarıldı
-# örneklem  = 2.000 session'lık ön sınıflandırmadaki adet ve ret oranı
+# Satırları doğrudan düzenleyin: gereksizi silin, ifadeyi düzeltin, eksik ekleyin.
+# Bitince 'taksonomi hazır' deyin; 30.000'lik tam koşuya geçerim.
 
-## (katalog)
-  1. Diplomamı ne zaman alabilirim?
-      [katalog · tıklama 918 · örneklem 131, ret %52]
-  2. Mezuniyetim ne zaman sistemde görünür?
-      [katalog · tıklama 835 · örneklem 173, ret %54]
-  3. AUZEF'te yaz okuluna kayıt olmak istiyorum.
-      [katalog · tıklama 462 · örneklem 50, ret %42]
-  4. Ders durum bilgisine nasıl ulaşabilirim?
-      [katalog · tıklama 375 · örneklem 110, ret %52]
-  5. Stajımı yapmadan mezun olabilir miyim?
-      [katalog · tıklama 374 · örneklem 30, ret %83]
-  6. Harf notumu nasıl öğrenebilirim?
-      [katalog · tıklama 296 · örneklem 34, ret %71]
-  7. Ön lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?
-      [katalog · tıklama 272 · örneklem 2, ret %100]
-  8. Yaz okulunda ders alma koşulları nelerdir?
-      [katalog · tıklama 256 · örneklem 19, ret %42]
-  9. FF notum olmamasına rağmen AGNO notum 2.00 dan düşük olduğu için mezun olamıyorum ne yapmalıyım?
-      [katalog · tıklama 247 · örneklem 56, ret %62]
- 10. Harf notumu neden göremiyorum?
-      [katalog · tıklama 231 · örneklem 91, ret %60]
- 11. DD, DC harf notlu derslerim var bunlardan telafiye girmek zorunda mıyım?
-      [katalog · tıklama 224 · örneklem 52, ret %71]
- 12. Açık öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?
-      [katalog · tıklama 219 · örneklem 47, ret %66]
- 13. AGNO nasıl hesaplanır?
-      [katalog · tıklama 207 · örneklem 26, ret %62]
- 14. Sınav giriş belgemi nereden alabilirim?
-      [katalog · tıklama 198 · örneklem 36, ret %39]
- 15. Lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?
-      [katalog · tıklama 172 · örneklem 8, ret %88]
- 16. Soyismim değişti sistemlerde nasıl güncelleyebilirim
-      [katalog · tıklama 158 · örneklem 31, ret %45]
- 17. Daha önce almadığım dersler için mezuniyete üç ders sınavına başvurabilir miyim?
-      [katalog · tıklama 151 · örneklem 8, ret %75]
- 18. Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?
-      [katalog · tıklama 147 · örneklem 20, ret %20]
- 19. Kaç Dönem Kayıt Yenilemezsem Kaydım Silinir?
-      [katalog · tıklama 113 · örneklem 9, ret %78]
- 20. Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?
-      [katalog · tıklama 105 · örneklem 25, ret %64]
- 21. (DC) ve (DD) harf notları neyi ifade eder?
-      [katalog · tıklama 93 · örneklem 19, ret %58]
- 22. Transkript belgemi nasıl alabilirim?
-      [katalog · tıklama 92 · örneklem 42, ret %31]
- 23. Hangi koşulları sağlarsam mezun durumuna gelebilirim?
-      [katalog · tıklama 90 · örneklem 152, ret %53]
- 24. Bitirme(Final) sınav sonuçlarına nereden ulaşabilirim?
-      [katalog · tıklama 90 · örneklem 7, ret %43]
- 25. Onur / Yüksek Onur belgemi nasıl alabilirim?
-      [katalog · tıklama 89 · örneklem 29, ret %62]
- 26. AKSİS' te fotoğrafımı güncellemek istiyorum nasıl yapabilirim?
-      [katalog · tıklama 88 · örneklem 14, ret %29]
- 27. Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?
-      [katalog · tıklama 81 · örneklem 6, ret %100]
- 28. Kayıt yenileme nedir, nasıl yapılır?
-      [katalog · tıklama 80 · örneklem 20, ret %55]
- 29. AUZEF 'ten mezun olduğumda diplomamda “açık öğretim” ibaresi olacak mı?
-      [katalog · tıklama 80 · örneklem 1, ret %0]
- 30. Kaydımı nasıl sildirebilirim?
-      [katalog · tıklama 79 · örneklem 11, ret %55]
- 31. Sınav sonuçlarını harf notu olarak nasıl görüntüleyebilirim.
-      [katalog · tıklama 78 · örneklem 1, ret %0]
- 32. Mezuniyete Üç Ders Sınavı tarihleri ne zamandır?
-      [katalog · tıklama 74 · örneklem 14, ret %43]
- 33. Uzaktan öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?
-      [katalog · tıklama 73 · örneklemde görülmedi]
- 34. Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim?
-      [katalog · tıklama 70 · örneklem 18, ret %78]
- 35. Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?
-      [katalog · tıklama 66 · örneklem 25, ret %52]
- 36. Çocuk Gelişimi Açık Öğretim Lisans programında staj var mı?
-      [katalog · tıklama 66 · örneklem 7, ret %57]
- 37. Staj hakkında bilgi alabilir miyim?
-      [katalog · tıklama 61 · örneklem 30, ret %67]
- 38. Ders alma(Ders seçimi) nasıl yapılır?
-      [katalog · tıklama 61 · örneklem 6, ret %67]
- 39. Mezuniyete Üç Ders Sınavına kimler başvurabilir?
-      [katalog · tıklama 60 · örneklem 7, ret %57]
- 40. Kayıt yenilemediğim dönemin sınavlarına girebilir miyim?
-      [katalog · tıklama 58 · örneklem 2, ret %100]
- 41. Telafi (Bütünleme) sınavında merkez değişikliği yapabilir miyim?
-      [katalog · tıklama 53 · örneklem 9, ret %44]
- 42. Bitirme(Final) sınavına ne zaman gireceğim?
-      [katalog · tıklama 52 · örneklem 3, ret %100]
- 43. Bitirme (Final) sınavlarına nasıl giriş yaparım?
-      [katalog · tıklama 52 · örneklem 1, ret %100]
- 44. Bitirme (Final) sınavına giremedim telafi sınavına girebilir miyim?
-      [katalog · tıklama 51 · örneklem 9, ret %78]
- 45. İstanbul Üniversitesi not dönüşüm tablosuna nereden ulaşabilirim?
-      [katalog · tıklama 49 · örneklem 1, ret %100]
- 46. Öğrenci belgemi nasıl alabilirim?
-      [katalog · tıklama 48 · örneklem 6, ret %50]
- 47. Üstten ders alabilir miyim, üstten ders alma koşulları nelerdir?
-      [katalog · tıklama 47 · örneklem 9, ret %44]
- 48. Kayıtlı olduğum programın ders materyallerine nasıl erişebilirim?
-      [katalog · tıklama 47 · örneklem 26, ret %50]
- 49. Sınav sonuçlarını nasıl görebilirim?
-      [katalog · tıklama 46 · örneklem 34, ret %56]
- 50. AGNO VE ANO nedir?
-      [katalog · tıklama 44 · örneklem 11, ret %73]
- 51. Edu uzantılı öğrenci maili nasıl alınır?
-      [katalog · tıklama 42 · örneklem 14, ret %36]
- 52. Hangi durumlarda alttan ders alabilirim?
-      [katalog · tıklama 41 · örneklem 7, ret %57]
- 53. Okuduğum programda azami süre kaç yıldır?
-      [katalog · tıklama 40 · örneklem 16, ret %75]
- 54. Kayıt yenilemediğim takdirde öğrencilik haklarımdan faydalanabilir miyim?
-      [katalog · tıklama 40 · örneklem 1, ret %100]
- 55. Hangi evrakları e-devlet sistemi üzerinden alabilirim?
-      [katalog · tıklama 40 · örneklemde görülmedi]
- 56. Bitirme sınavına giremezsem ilgili derslerden kalır mıyım?
-      [katalog · tıklama 39 · örneklemde görülmedi]
- 57. AKTS nedir?
-      [katalog · tıklama 38 · örneklem 8, ret %62]
- 58. Telafi (Bütünleme) sınavı için başvuru yapmam gerekiyor mu?
-      [katalog · tıklama 38 · örneklem 8, ret %38]
+#==========================================================================
+# ÇEKİRDEK — eski botun kendi kataloğu, gerçek tıklama sayılarıyla
+#==========================================================================
 
-## Öğrenci Kimliği
- 59. Dijital kimliğimin altındaki süre ne anlama geliyor?
-      [boşluk · yeni · örneklemde görülmedi]
+  1. Referans numarama ve ödeme işlemlerime nereden ulaşabilirim?
+      [10035 tıklama, zirve 2026-02 · örneklem 37, ret %57]
+  2. Ders alma(Ders seçimi) nasıl yapılır?
+      [9582 tıklama, zirve 2025-09 · örneklem 206, ret %61]
+  3. Ders seçimi ne zaman yapılacak?
+      [8441 tıklama, zirve 2025-09 · örneklem 117, ret %38]
+  4. Ödeyeceğim harç miktarına nereden ulaşabilirim?
+      [6415 tıklama, zirve 2026-02 · örneklem 90, ret %64]
+  5. Kayıt yenileme nedir, nasıl yapılır?
+      [5456 tıklama, zirve 2026-02 · örneklem 119, ret %55]
+  6. Derslerimi nasıl görüntüleyebilirim?
+      [4630 tıklama, zirve 2025-09 · örneklem 99, ret %45]
+  7. Diplomamı ne zaman alabilirim?
+      [4040 tıklama, zirve 2026-06 · örneklem 102, ret %55]
+  8. Hangi koşulları sağlarsam mezun durumuna gelebilirim?
+      [2426 tıklama, zirve 2026-02 · örneklem 100, ret %58]
+  9. Kayıt yenileyecek öğrenciler ilgili dönemde ders almak için hangi işlemleri yapmalıdır?
+      [2396 tıklama, zirve 2025-09 · örneklem 1, ret %100]
+ 10. Üstten ders alabilir miyim, üstten ders alma koşulları nelerdir?
+      [2318 tıklama, zirve 2025-09 · örneklem 49, ret %41]
+ 11. Sınavsız İkinci Üniversite kapsamında ne kadar harç ücreti ödemem gerekir?
+      [2289 tıklama, zirve 2026-02 · örneklem 1, ret %100]
+ 12. Ders durum bilgisine nasıl ulaşabilirim?
+      [2262 tıklama, zirve 2025-09 · örneklem 23, ret %57]
+ 13. Ödeme yaptığımı sistemden nasıl görebilirim?
+      [2142 tıklama, zirve 2026-03 · örneklem 14, ret %57]
+ 14. Soyismim değişti sistemlerde nasıl güncelleyebilirim
+      [1950 tıklama, zirve 2025-09 · örneklem 45, ret %51]
+ 15. Mezuniyetim ne zaman sistemde görünür?
+      [1941 tıklama, zirve 2026-06 · örneklem 61, ret %61]
+ 16. Ödememi yaptığım halde sistemde borcum görünüyor, ne yapabilirim?
+      [1778 tıklama, zirve 2026-03 · örneklem 129, ret %49]
+ 17. Ders materyallerimi görüntüleyemiyorum ne yapmalıyım?
+      [1666 tıklama, zirve 2025-09 · örneklem 27, ret %63]
+ 18. Akademik Takvime nasıl ulaşabilirim?
+      [1539 tıklama, zirve 2025-09 · örneklem 17, ret %18]
+ 19. Kaydımı nasıl sildirebilirim?
+      [1373 tıklama, zirve 2025-09 · örneklem 23, ret %35]
+ 20. Kayıt yenilemediğim dönemin sınavlarına girebilir miyim?
+      [1358 tıklama, zirve 2026-02 · örneklem 3, ret %100]
+ 21. Sınav giriş belgemi nereden alabilirim?
+      [1332 tıklama, zirve 2026-04 · örneklem 39, ret %44]
+ 22. Yeni kayıt oldum AKSİS kullanıcı adı ve şifremi nasıl alabilirim?
+      [1312 tıklama, zirve 2025-10 · örneklem 25, ret %36]
+ 23. AUZEF yeni kayıt yaptıran öğrenci ders kaydını nasıl yapabilir?
+      [1276 tıklama, zirve 2025-09 · örneklem 4, ret %50]
+ 24. AUZEF'te yaz okuluna kayıt olmak istiyorum.
+      [1273 tıklama, zirve 2026-06 · örneklem 20, ret %45]
+ 25. Ders alma (Ders seçimi) nedir neden yapılır?
+      [1262 tıklama, zirve 2025-09 · ÖRNEKLEMDE GÖRÜLMEDİ]
+ 26. Hangi durumlarda alttan ders alabilirim?
+      [1228 tıklama, zirve 2025-09 · örneklem 14, ret %57]
+ 27. Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?
+      [1226 tıklama, zirve 2025-07 · örneklem 39, ret %72]
+ 28. Muafiyet zamanını kaçırdım, şimdi muafiyet işlemi yapabilir miyim?
+      [1209 tıklama, zirve 2025-10 · örneklem 44, ret %73]
+ 29. Nasıl kayıt dondurabilirim?
+      [1159 tıklama, zirve 2025-09 · örneklem 50, ret %46]
+ 30. Kayıt dondurma ile ilgili bilgi alabilir miyim?
+      [1102 tıklama, zirve 2025-09 · örneklem 9, ret %44]
+ 31. Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?
+      [1088 tıklama, zirve 2025-07 · örneklem 43, ret %49]
+ 32. Muaf olduğum dersleri nasıl, nereden görebilirim?
+      [1046 tıklama, zirve 2025-10 · örneklem 13, ret %54]
+ 33. Kaç Dönem Kayıt Yenilemezsem Kaydım Silinir?
+      [1020 tıklama, zirve 2025-09 · örneklem 15, ret %53]
+ 34. Stajımı yapmadan mezun olabilir miyim?
+      [992 tıklama, zirve 2026-06 · örneklem 3, ret %33]
+ 35. AUZEF sınav merkezi tercihi nereden yapılır?
+      [976 tıklama, zirve 2025-10 · örneklem 39, ret %46]
+ 36. Harf notumu nasıl öğrenebilirim?
+      [881 tıklama, zirve 2026-06 · örneklem 44, ret %64]
+ 37. Kesin kayıt işlemini tamamlamış bir öğrenci canlı derse nasıl girebilir?
+      [879 tıklama, zirve 2025-09 · örneklem 3, ret %33]
+ 38. Ara Sınav (Vize) sınavında hangi ünitelerden sorumlu oluruz?
+      [861 tıklama, zirve 2025-10 · örneklem 42, ret %48]
+ 39. Sınav sonuçlarını nasıl görebilirim?
+      [852 tıklama, zirve 2025-11 · örneklem 38, ret %50]
+ 40. Derslerime senkronize işlemi yapılmasına rağmen hala sistemimde görünmüyor ne yapmalıyım?
+      [844 tıklama, zirve 2025-09 · örneklem 11, ret %64]
+ 41. Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?
+      [837 tıklama, zirve 2025-07 · örneklem 9, ret %56]
+ 42. Ara sınav (vize) sonuçlarına nereden ulaşabilirim?
+      [834 tıklama, zirve 2025-11 · örneklem 13, ret %38]
+ 43. Daha önce almadığım dersler için mezuniyete üç ders sınavına başvurabilir miyim?
+      [830 tıklama, zirve 2026-06 · örneklem 4, ret %0]
+ 44. AUZEF Mobil uygulamasına kullanıcı adım ve şifremle neden giriş yapamıyorum?
+      [796 tıklama, zirve 2025-10 · örneklem 11, ret %64]
+ 45. Açık öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?
+      [796 tıklama, zirve 2026-06 · örneklem 18, ret %44]
+ 46. Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim?
+      [793 tıklama, zirve 2025-09 · örneklem 27, ret %63]
+ 47. Üstten aldığım derslerimden FF harf notlu dersim var üstten ders alabilir miyim?
+      [790 tıklama, zirve 2025-09 · ÖRNEKLEMDE GÖRÜLMEDİ]
+ 48. AKSİS' te fotoğrafımı güncellemek istiyorum nasıl yapabilirim?
+      [777 tıklama, zirve 2026-04 · örneklem 23, ret %30]
+ 49. Staj hakkında bilgi alabilir miyim?
+      [746 tıklama, zirve 2026-03 · örneklem 40, ret %57]
+ 50. Eğitim(Materyal) ücretimi nasıl öderim?
+      [738 tıklama, zirve 2025-09 · örneklem 176, ret %44]
+ 51. Yaz okulunda ders alma koşulları nelerdir?
+      [723 tıklama, zirve 2026-06 · ÖRNEKLEMDE GÖRÜLMEDİ]
+ 52. FF notum olmamasına rağmen AGNO notum 2.00 dan düşük olduğu için mezun olamıyorum ne yapmalıyım?
+      [696 tıklama, zirve 2026-06 · örneklem 8, ret %62]
+ 53. Harç iadesi için ne yapmalıyım?
+      [676 tıklama, zirve 2026-03 · örneklem 13, ret %69]
+ 54. AGNO nasıl hesaplanır?
+      [654 tıklama, zirve 2026-06 · örneklem 30, ret %57]
+ 55. Harf notumu neden göremiyorum?
+      [641 tıklama, zirve 2026-06 · örneklem 3, ret %0]
+ 56. DD, DC harf notlu derslerim var bunlardan telafiye girmek zorunda mıyım?
+      [632 tıklama, zirve 2026-06 · örneklem 13, ret %46]
+ 57. Staj başvurusunu ne zaman ve nereden yapabilirim?
+      [626 tıklama, zirve 2026-02 · örneklem 10, ret %40]
+ 58. Bir dönemde en fazla kaç Kredi/AKTS ders alabilirim?
+      [619 tıklama, zirve 2025-09 · örneklem 18, ret %50]
+ 59. Hangi koşullarda alt dönemden ders almam gerekir?
+      [603 tıklama, zirve 2025-09 · örneklem 10, ret %40]
+ 60. Kaydımı dondurmuştum, tekrar nasıl açtırabilirim?
+      [597 tıklama, zirve 2025-09 · örneklem 4, ret %100]
+ 61. Ön lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?
+      [594 tıklama, zirve 2026-06 · örneklem 1, ret %100]
+ 62. Mezuniyete Üç Ders Sınavı tarihleri ne zamandır?
+      [590 tıklama, zirve 2025-07 · örneklem 20, ret %45]
+ 63. Kayıtlı olduğum programın ders materyallerine nasıl erişebilirim?
+      [560 tıklama, zirve 2025-09 · örneklem 20, ret %55]
+ 64. Zorunlu stajım var stajdan muaf olabilir miyim?
+      [546 tıklama, zirve 2026-03 · örneklem 19, ret %53]
+ 65. Öğrenci belgemi nasıl alabilirim?
+      [541 tıklama, zirve 2025-09 · örneklem 18, ret %56]
+ 66. Bitirme(Final) sınavına ne zaman gireceğim?
+      [539 tıklama, zirve 2025-12 · örneklem 8, ret %62]
+ 67. Ödememi hangi bankadan yatırmalıyım?
+      [537 tıklama, zirve 2025-09 · örneklem 1, ret %0]
+ 68. Tercih ettiğim sınav merkezi dışında bir merkezde sınava girebilir miyim?
+      [531 tıklama, zirve 2025-10 · örneklem 3, ret %33]
+ 69. Çocuk Gelişimi Açık Öğretim Lisans programında staj var mı?
+      [530 tıklama, zirve 2026-02 · örneklem 4, ret %50]
+ 70. AUZEF sınav tarihleri nerede yayınlanır?
+      [521 tıklama, zirve 2025-10 · örneklem 10, ret %40]
 
-## Dikey Geçiş Sınavı (DGS)
- 60. Çocuk Gelişimi bölümünde DGS ile geçiş imkanı var mı?
-      [boşluk · yeni · örneklemde görülmedi]
+#==========================================================================
+# BOŞLUK ANALİZİ — katalogda karşılığı olmayan, «hiçbiri» kovasından
+#==========================================================================
 
-## Sınav İşlemleri
- 61. Sınav merkezimi nasıl seçebilir veya değiştirebilirim?
-      [boşluk · yeni · örneklemde görülmedi]
- 64. Soyadı değişikliği sınav giriş belgemi etkiler mi?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Kayıt Dondurma
- 62. Bölüm dondurma işlemi yapabilir miyim?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Öğrenci Bilgileri
- 63. Sistemde kaçıncı sınıf olarak gözüküyorum?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Çözüm Merkezi
- 65. Çözüm Merkezi'ne oluşturduğum talepleri nereden takip edebilirim?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Sınav Notları
- 66. Vize sınavına giremedim, finalden kaç almam gerekiyor?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Staj İşlemleri
- 67. Staj yaptığım kurum bilgilerini nasıl değiştirebilirim?
-      [boşluk · yeni · örneklemde görülmedi]
- 70. Staj defterimin onayı ne zaman çıkar?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Ders Kaydı
- 68. Pasif durumdaki derslere kayıt yapılıyor mu?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Mezuniyet İşlemleri
- 69. AUZEF mezuniyet töreni düzenliyor mu?
-      [boşluk · yeni · örneklemde görülmedi]
- 73. Mezun olduğum programın ders içeriklerini nasıl alabilirim?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Harç ve Ödeme
- 71. Harç borcumu nasıl ödeyebilirim?
-      [boşluk · yeni · örneklemde görülmedi]
- 72. Harç dekontuma nasıl ulaşabilirim?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Askerlik İşlemleri
- 74. Askerlik tecilimi kim uzatacak?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Yatay Geçiş
- 75. Kurumlararası yatay geçiş tarihleri ne zaman?
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Sistem Erişimi
- 76. Sisteme giriş yapamıyorum, hata alıyorum.
-      [boşluk · yeni · örneklemde görülmedi]
- 78. Öğrenme Yönetim Sistemi'ne (ÖYS) giriş yapamıyorum.
-      [boşluk · yeni · örneklemde görülmedi]
-
-## Sınav Görevlendirme
- 77. Sınav görevli ücretleri hakkında bilgi alabilir miyim?
-      [boşluk · yeni · örneklemde görülmedi]
+ 71. [Belgeler] Eğitim belgesi nedir, ne işe yarar?
+ 72. [İletişim ve Destek] Çözüm Merkezi'nin geri dönüş süresi ne kadardır?
+ 73. [Akademik Süreçler] Sınıf tekrarı ve sınıf geçme koşulları nelerdir?
+ 74. [Dikey Geçiş Sınavı (DGS)] DGS ile hangi bölümlere başvuru yapabilirim?
+ 75. [Sınavlar] Final sınavlarına veya bütünleme sınavlarına girmezsem ne olur?
+ 76. [Uzaktan Eğitim] Uzaktan eğitim programları nelerdir?
+ 77. [Mezuniyet ve Diploma] Diploma kırdırma işlemi nasıl yapılır?
+ 78. [Sınavlar] Sınav sonuçlarına itiraz nasıl yapılır?
+ 79. [Ödeme İşlemleri] Ödeme zamanı geçtikten sonra ödeme yapabilir miyim?
+ 80. [Ders Seçimi] Seçmeli dersleri almak zorunlu mudur?
+ 81. [Sınavlar] Bütünleme sınavında sınıf geçme puanı kaçtır?
+ 82. [Bölümler] Çocuk Gelişimi bölümü kapatıldı mı?
+ 83. [Yaz Okulu] Yaz okulu başvuru iptali nasıl yapılır?
+ 84. [Yükseköğretim Kurumları Sınavı (YKS)] YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?
+ 85. [Staj] Staj defterindeki eksikleri düzeltmek için ne kadar süre var?
+ 86. [Lisans Tamamlama] Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?
+ 87. [Ödeme İşlemleri] Engelli öğrencilere yönelik materyal ücreti muafiyeti nasıl olur?
+ 88. [Sınavlar] Sınavlar uzaktan mı yoksa yüz yüze mi yapılıyor?
+ 89. [Yatay Geçiş] Merkezi yatay geçiş başvurusu nasıl yapılır?
+ 90. [Belgeler] Transkriptime nereden ulaşabilirim?
+ 91. [Öğrenci İşlemleri] Bölüm değişikliği nasıl yapılır?
+ 92. [Kayıt İşlemleri] Kayıt tarihleri ne zamandır?
+ 93. [Belgeler] Öğrenci kimliği nasıl çıkarılır?
+ 94. [Belgeler] Onur belgemi nereden görebilirim?
+ 95. [Sınavlar] Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?
