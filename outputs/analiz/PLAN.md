@@ -112,17 +112,16 @@ KARAR NOKTASI: sonuçlar tutarlıysa devam, değilse taksonomi revizyonu
 
 ---
 
-## FAZ 4 — Ürünleştirme   (karar)
+## FAZ 4 — Ürünleştirme   (KARAR VERİLDİ: backend'e alınacak)
 
-Bu akış şu an script. İki seçenek:
-  (a) Script olarak kalsın — tek seferlik analiz, dönem dönem elle koşulur
-  (b) Backend'e alınsın — yeni analiz modu, arayüzden koşulur
+AUZEF-Chat-Analiz son kullanıcı seviyesine getirilecek, AYRI ÜRÜN olarak
+kalacak (chatbot paneline taşınmayacak). Hedef kullanıcı teknik olmayan
+biri: model, prompt, sıcaklık, kolon eşlemesi ekranda görünmeyecek.
 
-(b) için gereken: 150 MB yükleme sınırı, tek-sayfa kısıtı ve session
-birimi desteği. Diğer departmanlara yaygınlaştırma hedefi (b)'yi gerektirir
-ama önce bu vaka çalışmalı.
+Rutin akış tek LLM cagri tipi kullanir (bkz. BORU-HATTI.md):
+  hazirlik (deterministik) -> siniflandirma -> raporlama (deterministik)
 
-KARAR NOKTASI: sizin
+Ayrintili karar kaydi ve yarin cevaplanacak dort soru: KARARLAR.md
 
 ---
 
