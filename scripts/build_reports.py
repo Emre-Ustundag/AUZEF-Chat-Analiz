@@ -114,6 +114,24 @@ def main() -> int:
           [[a["month"], a["channel"], "evet" if (a["rej"] or a["fallback"]) else "hayır",
             a["text"][:500]] for a in none[::step][:200]])
 
+    # 6 — KB kapsam bosluğu (varsa)
+    gap_path = ROOT / "outputs" / "analiz" / "kb-bosluk-analizi.json"
+    gap_summary = ""
+    if gap_path.exists():
+        gaps = json.loads(gap_path.read_text(encoding="utf-8"))
+        sheet(wb, "6-KB kapsam boslugu",
+              ["#", "Soru", "Adet", "Sorunlu %", "KB'de var mi", "KB karsiligi"],
+              [[g["no"], g["soru"], g["adet"], g["sorunlu"],
+                "VAR" if g["kb_id"] != "yok" else "YOK",
+                g["kb_soru"]] for g in gaps])
+        cov = sum(g["adet"] for g in gaps if g["kb_id"] != "yok")
+        mis = sum(g["adet"] for g in gaps if g["kb_id"] == "yok")
+        gap_summary = (f"- Yeni botun KB'sinde karsiligi VAR: {cov} (%{cov/total*100:.1f})\n"
+                       f"- KB'de karsiligi YOK: {mis} (%{mis/total*100:.1f})\n"
+                       f"- Taksonomiye hic oturmayan (KB'de de yok): {vol['none']} "
+                       f"(%{vol['none']/total*100:.1f})\n"
+                       f"- **Toplam kapsam boslugu: %{(mis+vol['none'])/total*100:.1f}**")
+
     wb.save(OUT_XLSX)
 
     md = [f"# AUZEF Chatbot Analiz Raporu", "",
@@ -127,6 +145,8 @@ def main() -> int:
           f"içinin %{nf/len(none)*100:.0f}'i sorunlu",
           f"- Sorunlu session (ret veya anlamadı): "
           f"{sum(fail.values())} (%{sum(fail.values())/total*100:.1f})", "",
+          "## Yeni chatbot KB kapsamı", "",
+          gap_summary or "(kb-bosluk-analizi.json bulunamadı)", "",
           "## En çok sorulan 15", "",
           "| # | Soru | Adet | Pay | Sorunlu |", "|---|---|---|---|---|"]
     for qid, c in vol.most_common(16):

@@ -1,0 +1,152 @@
+[
+  {
+    "canonical_question": "Üniversite e-posta adresimi nasıl öğrenebilirim?",
+    "theme": "Öğrenci Bilgileri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Öğrenci affı başvurusu nasıl yapılır?",
+    "theme": "Başvuru İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?",
+    "theme": "Sınavlar",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Hangi lisans veya ön lisans bölümleri bulunmaktadır?",
+    "theme": "Bölümler",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Sınavda kullanılabilecek hesap makineleri hangileridir?",
+    "theme": "Sınavlar",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Kaçıncı sınıfta olduğumu veya kaç dersimin kaldığını nasıl öğrenebilirim?",
+    "theme": "Öğrenci Bilgileri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Derslerim transkriptime neden yansımadı veya güncel değil?",
+    "theme": "Ders İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+    "theme": "Belge Talepleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Bölümlerin yanında yazan 'pasif' ne anlama gelmektedir?",
+    "theme": "Bölümler",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Kayıtlı olduğumu veya kaydımın aktif olup olmadığını nasıl kontrol edebilirim?",
+    "theme": "Kayıt İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Evlilik nedeniyle soyadı değişikliğini sistemde nasıl güncelleyebilirim?",
+    "theme": "Öğrenci Bilgileri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Açıköğretim sınavlarına nerede girebilirim?",
+    "theme": "Sınavlar",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "YKS'ye girmeden ön lisans veya lisans programlarına kayıt olabilir miyim?",
+    "theme": "Kayıt İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Müşteri hizmetleri veya öğrenci işleri ile nasıl iletişime geçebilirim?",
+    "theme": "İletişim",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "İkinci üniversite kapsamında SGK haklarından yararlanabilir miyim?",
+    "theme": "Öğrenci Hakları",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Harç ödemesini kredi kartı ile yapabilir miyim?",
+    "theme": "Ödeme İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+    "theme": "Ders İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Kayıt ücretini ödedikten sonra başka hangi işlemleri yapmalıyım?",
+    "theme": "Kayıt İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Öğrenci işlerine gönderdiğim dilekçenin sonucunu nasıl öğrenebilirim?",
+    "theme": "Belge Talepleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "E-Devlet üzerinde üniversite kaydım neden görünmüyor?",
+    "theme": "Kayıt İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Açıköğretim programlarında öğrenci kartı veriliyor mu?",
+    "theme": "Öğrenci Hakları",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Ders programı ne zaman yayınlanacak?",
+    "theme": "Ders İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "DGS ile hangi bölümlere geçiş yapabilirim?",
+    "theme": "DGS",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Ders içeriklerini veya müfredatı nasıl temin edebilirim?",
+    "theme": "Ders İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  },
+  {
+    "canonical_question": "Ders videoları veya materyalleri açılmıyor, ne yapmalıyım?",
+    "theme": "Ders İşlemleri",
+    "source": "bosluk-analizi",
+    "clicks": 0
+  }
+]

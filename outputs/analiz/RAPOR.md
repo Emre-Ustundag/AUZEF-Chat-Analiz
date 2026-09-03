@@ -2,13 +2,20 @@
 
 Kaynak: bir yıllık döküm (2025-07-10 → 2026-07-10), 6.405.948 satır
 Yazılı session: 289.567 · Örneklem: 29911 (aylara orantılı, sistematik)
-Taksonomi: 95 madde (70 eski bot kataloğundan, 25 boşluk analizinden)
+Taksonomi: 120 madde (70 eski bot kataloğundan, 50 boşluk analizinden)
 
 ## Özet
 
-- Sınıflandırılan: 23550 (%78.7)
-- Taksonomiye oturmayan: 6361 (%21.3), içinin %53'i sorunlu
+- Sınıflandırılan: 25676 (%85.8)
+- Taksonomiye oturmayan: 4235 (%14.2), içinin %53'i sorunlu
 - Sorunlu session (ret veya anlamadı): 15799 (%52.8)
+
+## Yeni chatbot KB kapsamı
+
+- Yeni botun KB'sinde karsiligi VAR: 23097 (%77.2)
+- KB'de karsiligi YOK: 2579 (%8.6)
+- Taksonomiye hic oturmayan (KB'de de yok): 4235 (%14.2)
+- **Toplam kapsam boslugu: %22.8**
 
 ## En çok sorulan 15
 
@@ -37,6 +44,7 @@ Taksonomi: 95 madde (70 eski bot kataloğundan, 25 boşluk analizinden)
 | 95 | Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır? | 67 | %73 |
 | 44 | AUZEF Mobil uygulamasına kullanıcı adım ve şifremle neden giriş yapamıyorum? | 103 | %73 |
 | 64 | Zorunlu stajım var stajdan muaf olabilir miyim? | 128 | %69 |
+| 99 | Hangi lisans veya ön lisans bölümleri bulunmaktadır? | 138 | %68 |
 | 46 | Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim? | 181 | %67 |
 | 23 | AUZEF yeni kayıt yaptıran öğrenci ders kaydını nasıl yapabilir? | 77 | %66 |
 | 86 | Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim? | 122 | %66 |
@@ -48,7 +56,6 @@ Taksonomi: 95 madde (70 eski bot kataloğundan, 25 boşluk analizinden)
 | 16 | Ödememi yaptığım halde sistemde borcum görünüyor, ne yapabilirim? | 1471 | %63 |
 | 91 | Bölüm değişikliği nasıl yapılır? | 77 | %62 |
 | 94 | Onur belgemi nereden görebilirim? | 92 | %62 |
-| 79 | Ödeme zamanı geçtikten sonra ödeme yapabilir miyim? | 96 | %61 |
 
 ## Aylık örneklem hacmi
 

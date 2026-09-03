@@ -1,0 +1,1082 @@
+[
+  {
+    "no": 2,
+    "soru": "Ders alma(Ders seçimi) nasıl yapılır?",
+    "adet": 2004,
+    "sorunlu": 59,
+    "kaynak": "etiya-qna",
+    "kb_id": "29",
+    "kb_soru": "Ders alma(Ders seçimi) nasıl yapılır?"
+  },
+  {
+    "no": 16,
+    "soru": "Ödememi yaptığım halde sistemde borcum görünüyor, ne yapabilirim?",
+    "adet": 1471,
+    "sorunlu": 63,
+    "kaynak": "etiya-qna",
+    "kb_id": "109",
+    "kb_soru": "Ödememi yaptığım halde sistemde borcum görünüyor, ne yapabilirim?"
+  },
+  {
+    "no": 50,
+    "soru": "Eğitim(Materyal) ücretimi nasıl öderim?",
+    "adet": 1439,
+    "sorunlu": 45,
+    "kaynak": "etiya-qna",
+    "kb_id": "26",
+    "kb_soru": "Eğitim(Materyal) ücretimi nasıl öderim?"
+  },
+  {
+    "no": 5,
+    "soru": "Kayıt yenileme nedir, nasıl yapılır?",
+    "adet": 1123,
+    "sorunlu": 52,
+    "kaynak": "etiya-qna",
+    "kb_id": "88",
+    "kb_soru": "Kayıt yenileme nedir, nasıl yapılır?"
+  },
+  {
+    "no": 4,
+    "soru": "Ödeyeceğim harç miktarına nereden ulaşabilirim?",
+    "adet": 984,
+    "sorunlu": 52,
+    "kaynak": "etiya-qna",
+    "kb_id": "226",
+    "kb_soru": "Ödeyeceğim harç miktarına nereden ulaşabilirim?"
+  },
+  {
+    "no": 3,
+    "soru": "Ders seçimi ne zaman yapılacak?",
+    "adet": 977,
+    "sorunlu": 45,
+    "kaynak": "etiya-qna",
+    "kb_id": "254",
+    "kb_soru": "Ders seçimi ne zaman yapılacak?"
+  },
+  {
+    "no": 7,
+    "soru": "Diplomamı ne zaman alabilirim?",
+    "adet": 930,
+    "sorunlu": 57,
+    "kaynak": "etiya-qna",
+    "kb_id": "255",
+    "kb_soru": "Diplomamı ne zaman alabilirim?"
+  },
+  {
+    "no": 6,
+    "soru": "Derslerimi nasıl görüntüleyebilirim?",
+    "adet": 924,
+    "sorunlu": 49,
+    "kaynak": "etiya-qna",
+    "kb_id": "186",
+    "kb_soru": "Derslerimi nasıl görüntüleyebilirim?"
+  },
+  {
+    "no": 8,
+    "soru": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?",
+    "adet": 885,
+    "sorunlu": 59,
+    "kaynak": "etiya-qna",
+    "kb_id": "40",
+    "kb_soru": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?"
+  },
+  {
+    "no": 15,
+    "soru": "Mezuniyetim ne zaman sistemde görünür?",
+    "adet": 596,
+    "sorunlu": 60,
+    "kaynak": "etiya-qna",
+    "kb_id": "252",
+    "kb_soru": "Mezuniyetim ne zaman sistemde görünür?"
+  },
+  {
+    "no": 28,
+    "soru": "Muafiyet zamanını kaçırdım, şimdi muafiyet işlemi yapabilir miyim?",
+    "adet": 461,
+    "sorunlu": 65,
+    "kaynak": "etiya-qna",
+    "kb_id": "118",
+    "kb_soru": "Muafiyet zamanını kaçırdım, şimdi muafiyet işlemi yapabilir miyim?"
+  },
+  {
+    "no": 31,
+    "soru": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?",
+    "adet": 458,
+    "sorunlu": 53,
+    "kaynak": "etiya-qna",
+    "kb_id": "21",
+    "kb_soru": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?"
+  },
+  {
+    "no": 49,
+    "soru": "Staj hakkında bilgi alabilir miyim?",
+    "adet": 442,
+    "sorunlu": 60,
+    "kaynak": "etiya-qna",
+    "kb_id": "259",
+    "kb_soru": "Staj hakkında bilgi alabilir miyim?"
+  },
+  {
+    "no": 10,
+    "soru": "Üstten ders alabilir miyim, üstten ders alma koşulları nelerdir?",
+    "adet": 431,
+    "sorunlu": 47,
+    "kaynak": "etiya-qna",
+    "kb_id": "34",
+    "kb_soru": "Üstten ders alabilir miyim, üstten ders alma koşulları nelerdir?"
+  },
+  {
+    "no": 39,
+    "soru": "Sınav sonuçlarını nasıl görebilirim?",
+    "adet": 426,
+    "sorunlu": 44,
+    "kaynak": "etiya-qna",
+    "kb_id": "150",
+    "kb_soru": "Sınav sonuçlarını nasıl görebilirim?"
+  },
+  {
+    "no": 27,
+    "soru": "Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?",
+    "adet": 421,
+    "sorunlu": 38,
+    "kaynak": "etiya-qna",
+    "kb_id": "145",
+    "kb_soru": "Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?"
+  },
+  {
+    "no": 14,
+    "soru": "Soyismim değişti sistemlerde nasıl güncelleyebilirim",
+    "adet": 405,
+    "sorunlu": 44,
+    "kaynak": "etiya-qna",
+    "kb_id": "206",
+    "kb_soru": "Soyismim değişti sistemlerde nasıl güncelleyebilirim"
+  },
+  {
+    "no": 29,
+    "soru": "Nasıl kayıt dondurabilirim?",
+    "adet": 397,
+    "sorunlu": 45,
+    "kaynak": "etiya-qna",
+    "kb_id": "242",
+    "kb_soru": "Nasıl kayıt dondurabilirim?"
+  },
+  {
+    "no": 92,
+    "soru": "Kayıt tarihleri ne zamandır?",
+    "adet": 385,
+    "sorunlu": 49,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 38,
+    "soru": "Ara Sınav (Vize) sınavında hangi ünitelerden sorumlu oluruz?",
+    "adet": 381,
+    "sorunlu": 52,
+    "kaynak": "etiya-qna",
+    "kb_id": "212",
+    "kb_soru": "Ara Sınav (Vize) sınavında hangi ünitelerden sorumlu oluruz?"
+  },
+  {
+    "no": 36,
+    "soru": "Harf notumu nasıl öğrenebilirim?",
+    "adet": 369,
+    "sorunlu": 49,
+    "kaynak": "etiya-qna",
+    "kb_id": "170",
+    "kb_soru": "Harf notumu nasıl öğrenebilirim?"
+  },
+  {
+    "no": 1,
+    "soru": "Referans numarama ve ödeme işlemlerime nereden ulaşabilirim?",
+    "adet": 362,
+    "sorunlu": 57,
+    "kaynak": "etiya-qna",
+    "kb_id": "52",
+    "kb_soru": "Referans numarama ve ödeme işlemlerime nereden ulaşabilirim?"
+  },
+  {
+    "no": 35,
+    "soru": "AUZEF sınav merkezi tercihi nereden yapılır?",
+    "adet": 357,
+    "sorunlu": 50,
+    "kaynak": "etiya-qna",
+    "kb_id": "5",
+    "kb_soru": "AUZEF sınav merkezi tercihi nereden yapılır?"
+  },
+  {
+    "no": 19,
+    "soru": "Kaydımı nasıl sildirebilirim?",
+    "adet": 321,
+    "sorunlu": 38,
+    "kaynak": "etiya-qna",
+    "kb_id": "244",
+    "kb_soru": "Kaydımı nasıl sildirebilirim?"
+  },
+  {
+    "no": 101,
+    "soru": "Kaçıncı sınıfta olduğumu veya kaç dersimin kaldığını nasıl öğrenebilirim?",
+    "adet": 315,
+    "sorunlu": 53,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 48,
+    "soru": "AKSİS' te fotoğrafımı güncellemek istiyorum nasıl yapabilirim?",
+    "adet": 306,
+    "sorunlu": 34,
+    "kaynak": "etiya-qna",
+    "kb_id": "205",
+    "kb_soru": "AKSİS' te fotoğrafımı güncellemek istiyorum nasıl yapabilirim?"
+  },
+  {
+    "no": 22,
+    "soru": "Yeni kayıt oldum AKSİS kullanıcı adı ve şifremi nasıl alabilirim?",
+    "adet": 287,
+    "sorunlu": 46,
+    "kaynak": "etiya-qna",
+    "kb_id": "87",
+    "kb_soru": "Yeni kayıt oldum AKSİS kullanıcı adı ve şifremi nasıl alabilirim?"
+  },
+  {
+    "no": 21,
+    "soru": "Sınav giriş belgemi nereden alabilirim?",
+    "adet": 272,
+    "sorunlu": 35,
+    "kaynak": "etiya-qna",
+    "kb_id": "228",
+    "kb_soru": "Sınav giriş belgemi nereden alabilirim?"
+  },
+  {
+    "no": 96,
+    "soru": "Üniversite e-posta adresimi nasıl öğrenebilirim?",
+    "adet": 266,
+    "sorunlu": 32,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "223",
+    "kb_soru": "Edu uzantılı öğrenci maili nasıl alınır?"
+  },
+  {
+    "no": 109,
+    "soru": "Müşteri hizmetleri veya öğrenci işleri ile nasıl iletişime geçebilirim?",
+    "adet": 256,
+    "sorunlu": 61,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "267",
+    "kb_soru": "AUZEF'e nasıl ulaşabilirim?"
+  },
+  {
+    "no": 54,
+    "soru": "AGNO nasıl hesaplanır?",
+    "adet": 248,
+    "sorunlu": 55,
+    "kaynak": "etiya-qna",
+    "kb_id": "15",
+    "kb_soru": "AGNO nasıl hesaplanır?"
+  },
+  {
+    "no": 98,
+    "soru": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?",
+    "adet": 229,
+    "sorunlu": 54,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 33,
+    "soru": "Kaç Dönem Kayıt Yenilemezsem Kaydım Silinir?",
+    "adet": 228,
+    "sorunlu": 65,
+    "kaynak": "etiya-qna",
+    "kb_id": "239",
+    "kb_soru": "Kaç Dönem Kayıt Yenilemezsem Kaydım Silinir?"
+  },
+  {
+    "no": 63,
+    "soru": "Kayıtlı olduğum programın ders materyallerine nasıl erişebilirim?",
+    "adet": 221,
+    "sorunlu": 65,
+    "kaynak": "etiya-qna",
+    "kb_id": "181",
+    "kb_soru": "Kayıtlı olduğum programın ders materyallerine nasıl erişebilirim?"
+  },
+  {
+    "no": 105,
+    "soru": "Kayıtlı olduğumu veya kaydımın aktif olup olmadığını nasıl kontrol edebilirim?",
+    "adet": 221,
+    "sorunlu": 52,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 12,
+    "soru": "Ders durum bilgisine nasıl ulaşabilirim?",
+    "adet": 196,
+    "sorunlu": 49,
+    "kaynak": "etiya-qna",
+    "kb_id": "256",
+    "kb_soru": "Ders durum bilgisine nasıl ulaşabilirim?"
+  },
+  {
+    "no": 17,
+    "soru": "Ders materyallerimi görüntüleyemiyorum ne yapmalıyım?",
+    "adet": 188,
+    "sorunlu": 63,
+    "kaynak": "etiya-qna",
+    "kb_id": "44",
+    "kb_soru": "Ders materyallerimi görüntüleyemiyorum ne yapmalıyım?"
+  },
+  {
+    "no": 40,
+    "soru": "Derslerime senkronize işlemi yapılmasına rağmen hala sistemimde görünmüyor ne yapmalıyım?",
+    "adet": 188,
+    "sorunlu": 57,
+    "kaynak": "etiya-qna",
+    "kb_id": "187",
+    "kb_soru": "Derslerime senkronize işlemi yapılmasına rağmen hala sistemimde görünmüyor ne yapmalıyım?"
+  },
+  {
+    "no": 13,
+    "soru": "Ödeme yaptığımı sistemden nasıl görebilirim?",
+    "adet": 182,
+    "sorunlu": 52,
+    "kaynak": "etiya-qna",
+    "kb_id": "108",
+    "kb_soru": "Ödeme yaptığımı sistemden nasıl görebilirim?"
+  },
+  {
+    "no": 46,
+    "soru": "Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim?",
+    "adet": 181,
+    "sorunlu": 67,
+    "kaynak": "etiya-qna",
+    "kb_id": "245",
+    "kb_soru": "Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim?"
+  },
+  {
+    "no": 62,
+    "soru": "Mezuniyete Üç Ders Sınavı tarihleri ne zamandır?",
+    "adet": 178,
+    "sorunlu": 34,
+    "kaynak": "etiya-qna",
+    "kb_id": "172",
+    "kb_soru": "Mezuniyete Üç Ders Sınavı tarihleri ne zamandır?"
+  },
+  {
+    "no": 56,
+    "soru": "DD, DC harf notlu derslerim var bunlardan telafiye girmek zorunda mıyım?",
+    "adet": 177,
+    "sorunlu": 57,
+    "kaynak": "etiya-qna",
+    "kb_id": "208",
+    "kb_soru": "DD, DC harf notlu derslerim var bunlardan telafiye girmek zorunda mıyım?"
+  },
+  {
+    "no": 90,
+    "soru": "Transkriptime nereden ulaşabilirim?",
+    "adet": 170,
+    "sorunlu": 44,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "83",
+    "kb_soru": "Transkript belgemi nasıl alabilirim?"
+  },
+  {
+    "no": 24,
+    "soru": "AUZEF'te yaz okuluna kayıt olmak istiyorum.",
+    "adet": 167,
+    "sorunlu": 45,
+    "kaynak": "etiya-qna",
+    "kb_id": "250",
+    "kb_soru": "AUZEF'te yaz okuluna kayıt olmak istiyorum."
+  },
+  {
+    "no": 58,
+    "soru": "Bir dönemde en fazla kaç Kredi/AKTS ders alabilirim?",
+    "adet": 149,
+    "sorunlu": 46,
+    "kaynak": "etiya-qna",
+    "kb_id": "1",
+    "kb_soru": "Bir dönemde en fazla kaç Kredi/AKTS ders alabilirim?"
+  },
+  {
+    "no": 65,
+    "soru": "Öğrenci belgemi nasıl alabilirim?",
+    "adet": 147,
+    "sorunlu": 44,
+    "kaynak": "etiya-qna",
+    "kb_id": "84",
+    "kb_soru": "Öğrenci belgemi nasıl alabilirim?"
+  },
+  {
+    "no": 26,
+    "soru": "Hangi durumlarda alttan ders alabilirim?",
+    "adet": 143,
+    "sorunlu": 59,
+    "kaynak": "etiya-qna",
+    "kb_id": "61",
+    "kb_soru": "Hangi durumlarda alttan ders alabilirim?"
+  },
+  {
+    "no": 45,
+    "soru": "Açık öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?",
+    "adet": 143,
+    "sorunlu": 51,
+    "kaynak": "etiya-qna",
+    "kb_id": "163",
+    "kb_soru": "Açık öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?"
+  },
+  {
+    "no": 99,
+    "soru": "Hangi lisans veya ön lisans bölümleri bulunmaktadır?",
+    "adet": 138,
+    "sorunlu": 68,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 64,
+    "soru": "Zorunlu stajım var stajdan muaf olabilir miyim?",
+    "adet": 128,
+    "sorunlu": 69,
+    "kaynak": "etiya-qna",
+    "kb_id": "237",
+    "kb_soru": "Zorunlu stajım var stajdan muaf olabilir miyim?"
+  },
+  {
+    "no": 86,
+    "soru": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?",
+    "adet": 122,
+    "sorunlu": 66,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 18,
+    "soru": "Akademik Takvime nasıl ulaşabilirim?",
+    "adet": 121,
+    "sorunlu": 36,
+    "kaynak": "etiya-qna",
+    "kb_id": "253",
+    "kb_soru": "Akademik Takvime nasıl ulaşabilirim?"
+  },
+  {
+    "no": 32,
+    "soru": "Muaf olduğum dersleri nasıl, nereden görebilirim?",
+    "adet": 121,
+    "sorunlu": 60,
+    "kaynak": "etiya-qna",
+    "kb_id": "117",
+    "kb_soru": "Muaf olduğum dersleri nasıl, nereden görebilirim?"
+  },
+  {
+    "no": 59,
+    "soru": "Hangi koşullarda alt dönemden ders almam gerekir?",
+    "adet": 110,
+    "sorunlu": 59,
+    "kaynak": "etiya-qna",
+    "kb_id": "31",
+    "kb_soru": "Hangi koşullarda alt dönemden ders almam gerekir?"
+  },
+  {
+    "no": 66,
+    "soru": "Bitirme(Final) sınavına ne zaman gireceğim?",
+    "adet": 109,
+    "sorunlu": 50,
+    "kaynak": "etiya-qna",
+    "kb_id": "9",
+    "kb_soru": "Bitirme(Final) sınavına ne zaman gireceğim?"
+  },
+  {
+    "no": 42,
+    "soru": "Ara sınav (vize) sonuçlarına nereden ulaşabilirim?",
+    "adet": 108,
+    "sorunlu": 39,
+    "kaynak": "etiya-qna",
+    "kb_id": "144",
+    "kb_soru": "Ara sınav (vize) sonuçlarına nereden ulaşabilirim?"
+  },
+  {
+    "no": 113,
+    "soru": "Kayıt ücretini ödedikten sonra başka hangi işlemleri yapmalıyım?",
+    "adet": 105,
+    "sorunlu": 62,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 44,
+    "soru": "AUZEF Mobil uygulamasına kullanıcı adım ve şifremle neden giriş yapamıyorum?",
+    "adet": 103,
+    "sorunlu": 73,
+    "kaynak": "etiya-qna",
+    "kb_id": "196",
+    "kb_soru": "AUZEF Mobil uygulamasına kullanıcı adım ve şifremle neden giriş yapamıyorum?"
+  },
+  {
+    "no": 79,
+    "soru": "Ödeme zamanı geçtikten sonra ödeme yapabilir miyim?",
+    "adet": 96,
+    "sorunlu": 61,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 104,
+    "soru": "Bölümlerin yanında yazan 'pasif' ne anlama gelmektedir?",
+    "adet": 94,
+    "sorunlu": 56,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 94,
+    "soru": "Onur belgemi nereden görebilirim?",
+    "adet": 92,
+    "sorunlu": 62,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "240",
+    "kb_soru": "Onur / Yüksek Onur belgemi nasıl alabilirim?"
+  },
+  {
+    "no": 89,
+    "soru": "Merkezi yatay geçiş başvurusu nasıl yapılır?",
+    "adet": 85,
+    "sorunlu": 41,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 53,
+    "soru": "Harç iadesi için ne yapmalıyım?",
+    "adet": 82,
+    "sorunlu": 54,
+    "kaynak": "etiya-qna",
+    "kb_id": "262",
+    "kb_soru": "Harç iadesi için ne yapmalıyım?"
+  },
+  {
+    "no": 74,
+    "soru": "DGS ile hangi bölümlere başvuru yapabilirim?",
+    "adet": 81,
+    "sorunlu": 59,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "93",
+    "kb_soru": "Dikey geçiş DGS puan türüyle hangi programlara kayıt yaptırabilirim?"
+  },
+  {
+    "no": 75,
+    "soru": "Final sınavlarına veya bütünleme sınavlarına girmezsem ne olur?",
+    "adet": 81,
+    "sorunlu": 58,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "161",
+    "kb_soru": "Ara sınav (vize), bitirme (final) veya bütünleme (telafi) sınavına girmezsem ne olur?"
+  },
+  {
+    "no": 87,
+    "soru": "Engelli öğrencilere yönelik materyal ücreti muafiyeti nasıl olur?",
+    "adet": 80,
+    "sorunlu": 55,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "3",
+    "kb_soru": "AUZEF'te engelli öğrencilerin ücret indirimi nasıl yapılır?"
+  },
+  {
+    "no": 23,
+    "soru": "AUZEF yeni kayıt yaptıran öğrenci ders kaydını nasıl yapabilir?",
+    "adet": 77,
+    "sorunlu": 66,
+    "kaynak": "etiya-qna",
+    "kb_id": "134",
+    "kb_soru": "AUZEF yeni kayıt yaptıran öğrenci ders kaydını nasıl yapabilir?"
+  },
+  {
+    "no": 70,
+    "soru": "AUZEF sınav tarihleri nerede yayınlanır?",
+    "adet": 77,
+    "sorunlu": 42,
+    "kaynak": "etiya-qna",
+    "kb_id": "141",
+    "kb_soru": "AUZEF sınav tarihleri nerede yayınlanır?"
+  },
+  {
+    "no": 91,
+    "soru": "Bölüm değişikliği nasıl yapılır?",
+    "adet": 77,
+    "sorunlu": 62,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 52,
+    "soru": "FF notum olmamasına rağmen AGNO notum 2.00 dan düşük olduğu için mezun olamıyorum ne yapmalıyım?",
+    "adet": 70,
+    "sorunlu": 64,
+    "kaynak": "etiya-qna",
+    "kb_id": "46",
+    "kb_soru": "FF notum olmamasına rağmen AGNO notum 2.00 dan düşük olduğu için mezun olamıyorum ne yapmalıyım?"
+  },
+  {
+    "no": 82,
+    "soru": "Çocuk Gelişimi bölümü kapatıldı mı?",
+    "adet": 67,
+    "sorunlu": 54,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 95,
+    "soru": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?",
+    "adet": 67,
+    "sorunlu": 73,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 57,
+    "soru": "Staj başvurusunu ne zaman ve nereden yapabilirim?",
+    "adet": 66,
+    "sorunlu": 42,
+    "kaynak": "etiya-qna",
+    "kb_id": "232",
+    "kb_soru": "Staj başvurusunu ne zaman ve nereden yapabilirim?"
+  },
+  {
+    "no": 93,
+    "soru": "Öğrenci kimliği nasıl çıkarılır?",
+    "adet": 65,
+    "sorunlu": 46,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "49",
+    "kb_soru": "Öğrenci kimlik kartımı nasıl alabilirim?"
+  },
+  {
+    "no": 72,
+    "soru": "Çözüm Merkezi'nin geri dönüş süresi ne kadardır?",
+    "adet": 64,
+    "sorunlu": 56,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 111,
+    "soru": "Harç ödemesini kredi kartı ile yapabilir miyim?",
+    "adet": 63,
+    "sorunlu": 54,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 9,
+    "soru": "Kayıt yenileyecek öğrenciler ilgili dönemde ders almak için hangi işlemleri yapmalıdır?",
+    "adet": 62,
+    "sorunlu": 55,
+    "kaynak": "etiya-qna",
+    "kb_id": "32",
+    "kb_soru": "Kayıt yenileyecek öğrenciler ilgili dönemde ders almak için hangi işlemleri yapmalıdır?"
+  },
+  {
+    "no": 117,
+    "soru": "Ders programı ne zaman yayınlanacak?",
+    "adet": 62,
+    "sorunlu": 48,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 67,
+    "soru": "Ödememi hangi bankadan yatırmalıyım?",
+    "adet": 52,
+    "sorunlu": 38,
+    "kaynak": "etiya-qna",
+    "kb_id": "2",
+    "kb_soru": "Ödememi hangi bankadan yatırmalıyım?"
+  },
+  {
+    "no": 102,
+    "soru": "Derslerim transkriptime neden yansımadı veya güncel değil?",
+    "adet": 52,
+    "sorunlu": 60,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 119,
+    "soru": "Ders içeriklerini veya müfredatı nasıl temin edebilirim?",
+    "adet": 52,
+    "sorunlu": 42,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "215",
+    "kb_soru": "Müfredat listesine nereden ulaşabilirim?"
+  },
+  {
+    "no": 55,
+    "soru": "Harf notumu neden göremiyorum?",
+    "adet": 47,
+    "sorunlu": 55,
+    "kaynak": "etiya-qna",
+    "kb_id": "151",
+    "kb_soru": "Harf notumu neden göremiyorum?"
+  },
+  {
+    "no": 30,
+    "soru": "Kayıt dondurma ile ilgili bilgi alabilir miyim?",
+    "adet": 42,
+    "sorunlu": 60,
+    "kaynak": "etiya-qna",
+    "kb_id": "241",
+    "kb_soru": "Kayıt dondurma ile ilgili bilgi alabilir miyim?"
+  },
+  {
+    "no": 41,
+    "soru": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?",
+    "adet": 42,
+    "sorunlu": 67,
+    "kaynak": "etiya-qna",
+    "kb_id": "50",
+    "kb_soru": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?"
+  },
+  {
+    "no": 114,
+    "soru": "Öğrenci işlerine gönderdiğim dilekçenin sonucunu nasıl öğrenebilirim?",
+    "adet": 41,
+    "sorunlu": 61,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 68,
+    "soru": "Tercih ettiğim sınav merkezi dışında bir merkezde sınava girebilir miyim?",
+    "adet": 40,
+    "sorunlu": 65,
+    "kaynak": "etiya-qna",
+    "kb_id": "153",
+    "kb_soru": "Tercih ettiğim sınav merkezi dışında bir merkezde sınava girebilir miyim?"
+  },
+  {
+    "no": 76,
+    "soru": "Uzaktan eğitim programları nelerdir?",
+    "adet": 39,
+    "sorunlu": 38,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 88,
+    "soru": "Sınavlar uzaktan mı yoksa yüz yüze mi yapılıyor?",
+    "adet": 39,
+    "sorunlu": 49,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 60,
+    "soru": "Kaydımı dondurmuştum, tekrar nasıl açtırabilirim?",
+    "adet": 38,
+    "sorunlu": 68,
+    "kaynak": "etiya-qna",
+    "kb_id": "243",
+    "kb_soru": "Kaydımı dondurmuştum, tekrar nasıl açtırabilirim?"
+  },
+  {
+    "no": 78,
+    "soru": "Sınav sonuçlarına itiraz nasıl yapılır?",
+    "adet": 38,
+    "sorunlu": 50,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "260",
+    "kb_soru": "Sınav sonucuna nasıl itiraz edebilirim?"
+  },
+  {
+    "no": 108,
+    "soru": "YKS'ye girmeden ön lisans veya lisans programlarına kayıt olabilir miyim?",
+    "adet": 34,
+    "sorunlu": 76,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 97,
+    "soru": "Öğrenci affı başvurusu nasıl yapılır?",
+    "adet": 30,
+    "sorunlu": 57,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 11,
+    "soru": "Sınavsız İkinci Üniversite kapsamında ne kadar harç ücreti ödemem gerekir?",
+    "adet": 29,
+    "sorunlu": 62,
+    "kaynak": "etiya-qna",
+    "kb_id": "19",
+    "kb_soru": "Sınavsız İkinci Üniversite kapsamında ne kadar harç ücreti ödemem gerekir?"
+  },
+  {
+    "no": 34,
+    "soru": "Stajımı yapmadan mezun olabilir miyim?",
+    "adet": 28,
+    "sorunlu": 71,
+    "kaynak": "etiya-qna",
+    "kb_id": "76",
+    "kb_soru": "Stajımı yapmadan mezun olabilir miyim?"
+  },
+  {
+    "no": 69,
+    "soru": "Çocuk Gelişimi Açık Öğretim Lisans programında staj var mı?",
+    "adet": 28,
+    "sorunlu": 50,
+    "kaynak": "etiya-qna",
+    "kb_id": "73",
+    "kb_soru": "Çocuk Gelişimi Açık Öğretim Lisans programında staj var mı?"
+  },
+  {
+    "no": 120,
+    "soru": "Ders videoları veya materyalleri açılmıyor, ne yapmalıyım?",
+    "adet": 27,
+    "sorunlu": 67,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "44",
+    "kb_soru": "Ders materyallerimi görüntüleyemiyorum ne yapmalıyım?"
+  },
+  {
+    "no": 118,
+    "soru": "DGS ile hangi bölümlere geçiş yapabilirim?",
+    "adet": 25,
+    "sorunlu": 64,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "93",
+    "kb_soru": "Dikey geçiş DGS puan türüyle hangi programlara kayıt yaptırabilirim?"
+  },
+  {
+    "no": 106,
+    "soru": "Evlilik nedeniyle soyadı değişikliğini sistemde nasıl güncelleyebilirim?",
+    "adet": 24,
+    "sorunlu": 50,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "206",
+    "kb_soru": "Soyismim değişti sistemlerde nasıl güncelleyebilirim"
+  },
+  {
+    "no": 37,
+    "soru": "Kesin kayıt işlemini tamamlamış bir öğrenci canlı derse nasıl girebilir?",
+    "adet": 22,
+    "sorunlu": 50,
+    "kaynak": "etiya-qna",
+    "kb_id": "178",
+    "kb_soru": "Kesin kayıt işlemini tamamlamış bir öğrenci canlı derse nasıl girebilir?"
+  },
+  {
+    "no": 20,
+    "soru": "Kayıt yenilemediğim dönemin sınavlarına girebilir miyim?",
+    "adet": 21,
+    "sorunlu": 57,
+    "kaynak": "etiya-qna",
+    "kb_id": "114",
+    "kb_soru": "Kayıt yenilemediğim dönemin sınavlarına girebilir miyim?"
+  },
+  {
+    "no": 107,
+    "soru": "Açıköğretim sınavlarına nerede girebilirim?",
+    "adet": 21,
+    "sorunlu": 33,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 115,
+    "soru": "E-Devlet üzerinde üniversite kaydım neden görünmüyor?",
+    "adet": 20,
+    "sorunlu": 60,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 81,
+    "soru": "Bütünleme sınavında sınıf geçme puanı kaçtır?",
+    "adet": 17,
+    "sorunlu": 71,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 100,
+    "soru": "Sınavda kullanılabilecek hesap makineleri hangileridir?",
+    "adet": 17,
+    "sorunlu": 53,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 116,
+    "soru": "Açıköğretim programlarında öğrenci kartı veriliyor mu?",
+    "adet": 17,
+    "sorunlu": 41,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 73,
+    "soru": "Sınıf tekrarı ve sınıf geçme koşulları nelerdir?",
+    "adet": 16,
+    "sorunlu": 75,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 43,
+    "soru": "Daha önce almadığım dersler için mezuniyete üç ders sınavına başvurabilir miyim?",
+    "adet": 14,
+    "sorunlu": 64,
+    "kaynak": "etiya-qna",
+    "kb_id": "169",
+    "kb_soru": "Daha önce almadığım dersler için mezuniyete üç ders sınavına başvurabilir miyim?"
+  },
+  {
+    "no": 80,
+    "soru": "Seçmeli dersleri almak zorunlu mudur?",
+    "adet": 14,
+    "sorunlu": 57,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 84,
+    "soru": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?",
+    "adet": 12,
+    "sorunlu": 75,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 61,
+    "soru": "Ön lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?",
+    "adet": 11,
+    "sorunlu": 73,
+    "kaynak": "etiya-qna",
+    "kb_id": "66",
+    "kb_soru": "Ön lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?"
+  },
+  {
+    "no": 51,
+    "soru": "Yaz okulunda ders alma koşulları nelerdir?",
+    "adet": 10,
+    "sorunlu": 40,
+    "kaynak": "etiya-qna",
+    "kb_id": "248",
+    "kb_soru": "Yaz okulunda ders alma koşulları nelerdir?"
+  },
+  {
+    "no": 77,
+    "soru": "Diploma kırdırma işlemi nasıl yapılır?",
+    "adet": 10,
+    "sorunlu": 60,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "65",
+    "kb_soru": "Lisans öğrencisiyim; ancak ön lisans diploması almak istiyorum diplomamı nasıl kırdırabilirim?"
+  },
+  {
+    "no": 112,
+    "soru": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+    "adet": 10,
+    "sorunlu": 40,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 25,
+    "soru": "Ders alma (Ders seçimi) nedir neden yapılır?",
+    "adet": 5,
+    "sorunlu": 40,
+    "kaynak": "etiya-qna",
+    "kb_id": "60",
+    "kb_soru": "Ders alma (Ders seçimi) nedir neden yapılır?"
+  },
+  {
+    "no": 103,
+    "soru": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+    "adet": 4,
+    "sorunlu": 50,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 110,
+    "soru": "İkinci üniversite kapsamında SGK haklarından yararlanabilir miyim?",
+    "adet": 3,
+    "sorunlu": 100,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 47,
+    "soru": "Üstten aldığım derslerimden FF harf notlu dersim var üstten ders alabilir miyim?",
+    "adet": 2,
+    "sorunlu": 0,
+    "kaynak": "etiya-qna",
+    "kb_id": "191",
+    "kb_soru": "Üstten aldığım derslerimden FF harf notlu dersim var üstten ders alabilir miyim?"
+  },
+  {
+    "no": 85,
+    "soru": "Staj defterindeki eksikleri düzeltmek için ne kadar süre var?",
+    "adet": 2,
+    "sorunlu": 0,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 83,
+    "soru": "Yaz okulu başvuru iptali nasıl yapılır?",
+    "adet": 1,
+    "sorunlu": 100,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "yok",
+    "kb_soru": ""
+  },
+  {
+    "no": 71,
+    "soru": "Eğitim belgesi nedir, ne işe yarar?",
+    "adet": 0,
+    "sorunlu": 0,
+    "kaynak": "bosluk-analizi",
+    "kb_id": "112",
+    "kb_soru": "Öğrenci durum belgesi nedir ne işe yarar?"
+  }
+]
