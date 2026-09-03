@@ -166,6 +166,26 @@ def test_v4_duz_mesaj_modunda_reddedilir() -> None:
         AnalysisCreate.model_validate(_valid_request() | {"prompt_version": "faq_analysis/v4"})
 
 
+def test_v5_baglamsal_modda_kabul_edilir_duz_mesajda_reddedilir() -> None:
+    with pytest.raises(ValidationError):
+        AnalysisCreate.model_validate(_valid_request() | {"prompt_version": "faq_analysis/v5"})
+
+    parsed = AnalysisCreate.model_validate(
+        _valid_request()
+        | {
+            "analysis_mode": "contextual_user_turns",
+            "conversation_config": {
+                "session_id_column": "session_id",
+                "message_order_column": "message_order",
+                "role_column": "direction",
+                "message_type_column": "message_type",
+            },
+            "prompt_version": "faq_analysis/v5",
+        }
+    )
+    assert parsed.prompt_version.value == "faq_analysis/v5"
+
+
 def test_baglamsal_esleme_kolonlari_profilde_dogrulanir() -> None:
     request = _contextual_request()
     selected = _validate_selection(_conversation_profile(), request)

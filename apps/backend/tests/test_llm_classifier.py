@@ -30,6 +30,7 @@ import httpx
 import pytest
 
 from app.core.config import Settings
+from app.pipeline import llm_classifier as llm_classifier_module
 from app.pipeline.aggregate import aggregate
 from app.pipeline.classifier import Classification
 from app.pipeline.cost import CHARS_PER_TOKEN, build_chunks, estimate_cost
@@ -38,10 +39,13 @@ from app.pipeline.llm_classifier import (
     CostLimitExceededError,
     OpenRouterClassifier,
     _Bucket,
+    _needs_refinement,
 )
 from app.pipeline.preprocess import ContextTurn, RecordGroup, preprocess
 from app.pipeline.record_rendering import render_record
-from app.prompts.faq_analysis import V1, V2, V4
+from app.prompts.faq_analysis import V1, V2, V4, V5
+from app.schemas.common import WarningCode
+from app.schemas.report import AnalysisWarning
 from app.services.map_cache import MapCache, build_key
 from app.services.openrouter import OpenRouterClient
 from tests.fake_openrouter import FakeOpenRouter
@@ -114,7 +118,7 @@ class _Provider:
     def __call__(self, request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
         name = body["response_format"]["json_schema"]["name"]
-        if name == "faq_map":
+        if name in {"faq_map", "faq_refine"}:
             index = len(self.map_calls)
             self.map_calls.append(body)
             return _ok(self.map_responses[index])
@@ -939,6 +943,148 @@ def test_maliyet_tavani_altinda_kalan_is_kesilmez(settings: Settings) -> None:
     }, "kayıt kaybı olmamalı"
 
 
+# ----------------------------------------------- V5 kategori kalite geçişi
+
+
+def test_v5_refinement_adayi_deterministik_esiklerle_secilir(settings: Settings) -> None:
+    normal = _Bucket(key="x", canonical_question="Sınav tarihi ne zaman?", theme="Sınavlar")
+    broad = _Bucket(key="y", canonical_question="Diğer Konular", theme="Genel")
+    composite = _Bucket(
+        key="z",
+        canonical_question="Sınav tarihi ve sınav yeri nedir?",
+        theme="Sınavlar",
+    )
+
+    assert _needs_refinement(
+        broad,
+        unique_count=1,
+        weighted_count=1,
+        total_count=1_000,
+        settings=settings,
+    )
+    assert not _needs_refinement(
+        normal,
+        unique_count=19,
+        weighted_count=100,
+        total_count=1_000,
+        settings=settings,
+    )
+    assert _needs_refinement(
+        normal,
+        unique_count=20,
+        weighted_count=31,
+        total_count=1_000,
+        settings=settings,
+    )
+    assert _needs_refinement(
+        composite,
+        unique_count=20,
+        weighted_count=1,
+        total_count=1_000,
+        settings=settings,
+    )
+
+
+def test_v5_diger_kovasini_atomik_sorulara_boler(settings: Settings) -> None:
+    kalite = settings.model_copy(
+        update={
+            "llm_chunk_max_records": 20,
+            "llm_category_refinement_min_unique_records": 2,
+            "llm_category_refinement_min_percentage": 10.0,
+        }
+    )
+    groups = _groups(
+        ("sınav tarihi ne zaman", 1),
+        ("sınavlar hangi gün", 1),
+        ("sınav yerimi nereden öğrenirim", 1),
+        ("sınava hangi binada gireceğim", 1),
+    )
+    provider = _Provider(
+        map_responses=[
+            _map(
+                {"r1": "other", "r2": "other", "r3": "other", "r4": "other"},
+                {"other": ("Diğer Konular", "Diğer")},
+            ),
+            _map(
+                {"r1": "date", "r2": "date", "r3": "place", "r4": "place"},
+                {
+                    "date": ("Sınav tarihleri ne zaman?", "Sınavlar"),
+                    "place": ("Sınav yeri nereden öğrenilir?", "Sınavlar"),
+                },
+            ),
+        ],
+        reduce_response={
+            "groups": [
+                {
+                    "canonical_question": "Sınav tarihleri ne zaman?",
+                    "theme": "Sınavlar",
+                    "member_category_ids": ["c0"],
+                },
+                {
+                    "canonical_question": "Sınav yeri nereden öğrenilir?",
+                    "theme": "Sınavlar",
+                    "member_category_ids": ["c1"],
+                },
+            ]
+        },
+    )
+
+    result = _classifier(kalite, provider, prompt=V5).classify(groups)
+
+    assert [question.canonical_question for question in result.questions] == [
+        "Sınav tarihleri ne zaman?",
+        "Sınav yeri nereden öğrenilir?",
+    ]
+    assert {record_id for question in result.questions for record_id in question.record_ids} == {
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+    }
+    assert len(result.themes) == 1
+    assert result.themes[0].name == "Sınavlar"
+    assert len(result.themes[0].question_ids) == 2
+    assert len(provider.map_calls) == 2
+    assert len(provider.reduce_calls) == 1
+
+
+def test_v5_refinement_atlanan_kaydi_eski_kovada_korur(settings: Settings) -> None:
+    kalite = settings.model_copy(update={"llm_chunk_max_records": 20})
+    groups = _groups(("anlaşılır soru", 1), ("başka soru", 1))
+    provider = _Provider(
+        map_responses=[
+            _map(
+                {"r1": "other", "r2": "other"},
+                {"other": ("Genel Sorular", "Genel")},
+            ),
+            # Refinement r2'yi atlıyor. Sistem onu kaybetmek yerine eski
+            # kategori etiketiyle taşımak zorunda.
+            _map({"r1": "clear"}, {"clear": ("Anlaşılır soru nedir?", "Destek")}),
+        ],
+        reduce_response={
+            "groups": [
+                {
+                    "canonical_question": "Anlaşılır soru nedir?",
+                    "theme": "Destek",
+                    "member_category_ids": ["c0"],
+                },
+                {
+                    "canonical_question": "Genel Sorular",
+                    "theme": "Genel",
+                    "member_category_ids": ["c1"],
+                },
+            ]
+        },
+    )
+
+    result = _classifier(kalite, provider, prompt=V5).classify(groups)
+
+    assert {record_id for question in result.questions for record_id in question.record_ids} == {
+        "r1",
+        "r2",
+    }
+
+
 # ------------------------------------------------------------- eşzamanlılık
 #
 # `classify` chunk'ları eskiden düz bir döngüde SIRAYLA gönderiyordu. Ölçülen
@@ -1340,3 +1486,177 @@ def test_bozuk_onbellek_kaydi_iska_sayilir(settings: Settings) -> None:
     assert result.questions[0].canonical_question == "Sınav?"
     # Bozuk kayıt geçerli olanla değiştirildi.
     assert backend.data[key] != '{"bu": "eski bir bicim"}'
+
+
+# --------------------------------------- uyarı kodu sözleşmesi (üretim regresyonu)
+
+
+def test_siniflandiricinin_yaydigi_her_uyari_kodu_WarningCode_uyesidir() -> None:
+    """Yayılan kod enum'da yoksa RAPORUN TAMAMI çöper — sessiz bir uyarı değil.
+
+    Bu tam olarak üretimde yaşandı: `LLM_REDUCE_PARTIAL_COVERAGE` reduce'un
+    "ilerleme yok" yolunda yayılıyordu ama `WarningCode`'a hiç eklenmemişti.
+    `AnalysisWarning._producer_uses_known_code` kodu reddedince toplama
+    `ValidationError` ile düştü ve 12 dakikalık analiz INTERNAL_ERROR verdi.
+
+    Kaynağı AST ile tarıyoruz: yeni bir uyarı eklenip enum'a yazılmadığında
+    bu test canlı koşudan ÖNCE düşsün.
+    """
+    import ast
+    import pathlib
+
+    source = pathlib.Path(llm_classifier_module.__file__).read_text(encoding="utf-8")
+    emitted: set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if not (isinstance(func, ast.Attribute) and func.attr == "append"):
+            continue
+        if not (isinstance(func.value, ast.Name) and func.value.id == "warnings"):
+            continue
+        for argument in node.args:
+            if isinstance(argument, ast.Tuple) and argument.elts:
+                first = argument.elts[0]
+                if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                    emitted.add(first.value)
+
+    assert emitted, "uyarı yayan hiçbir çağrı bulunamadı; tarayıcı bozulmuş olmalı"
+    known = {member.value for member in WarningCode}
+    assert emitted <= known, f"WarningCode'a eklenmemiş kodlar: {sorted(emitted - known)}"
+
+
+def test_partial_coverage_uyarisi_rapor_semasindan_gecer(settings: Settings) -> None:
+    """Sınıflandırıcının ürettiği uyarı `AnalysisWarning`'e girebilmeli.
+
+    Eski test yalnızca tuple'daki kodu kontrol ediyordu; şema doğrulamasından
+    geçirmediği için üretimdeki kırılmayı göremedi.
+    """
+    narrow_reduce = settings.model_copy(
+        update={"llm_chunk_max_records": 3, "llm_reduce_max_prompt_tokens": 45}
+    )
+    groups = _groups(*[(f"{letter} sorusu", 1) for letter in "ABCDEF"])
+    labels = {f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("ABC", start=1)}
+    second_labels = {
+        f"c{index}": (f"{letter}?", "Tema") for index, letter in enumerate("DEF", start=1)
+    }
+    provider = _Provider(
+        map_responses=[
+            _map({"r1": "c1", "r2": "c2", "r3": "c3"}, labels),
+            _map({"r4": "c1", "r5": "c2", "r6": "c3"}, second_labels),
+        ],
+        reduce_response={"groups": []},
+    )
+
+    classification = _classifier(narrow_reduce, provider).classify(groups)
+
+    assert classification.warnings, "bu senaryo kısmi kapsama uyarısı üretmeli"
+    for code, message in classification.warnings:
+        warning = AnalysisWarning(code=code, message=message)
+        assert warning.code == code
+
+
+# ------------------------------------ refinement rejim kapısı (maliyet regresyonu)
+
+
+def test_refinement_atomize_ciktida_hic_calismaz(settings: Settings) -> None:
+    """Kategori başına kayıt eşiğin altındaysa refinement çağrısı yapılmamalı.
+
+    Canlı v5 koşusunda reduce 927 kategoride kaldı; refinement 6 kategori seçip
+    çıktıyı 945'e ÇIKARDI ve bölme olduğu için ikinci bir tam reduce turu
+    tetikledi. Atomize rejimde bölünecek geniş kova yoktur; kapı bunu keser.
+    """
+    kalite = settings.model_copy(
+        update={
+            "llm_chunk_max_records": 20,
+            "llm_category_refinement_min_unique_records": 2,
+            "llm_category_refinement_min_percentage": 10.0,
+        }
+    )
+    groups = _groups(
+        ("sınav tarihi ne zaman", 1),
+        ("sınav yerimi nereden öğrenirim", 1),
+        ("diploma ne zaman gelir", 1),
+        ("anlamadım", 1),
+    )
+    # Dört kayıt, dört kategori -> kategori başına 1.0 kayıt (eşik 3.0).
+    # Kovalardan biri açıkça "Diğer" adlı; eşik olmasaydı refinement tetiklenirdi.
+    provider = _Provider(
+        map_responses=[
+            _map(
+                {"r1": "date", "r2": "place", "r3": "diploma", "r4": "other"},
+                {
+                    "date": ("Sınav tarihleri ne zaman?", "Sınavlar"),
+                    "place": ("Sınav yeri nereden öğrenilir?", "Sınavlar"),
+                    "diploma": ("Diploma ne zaman teslim edilir?", "Mezuniyet"),
+                    "other": ("Diğer Konular", "Genel"),
+                },
+            )
+        ],
+        reduce_response={"groups": []},
+    )
+
+    result = _classifier(kalite, provider, prompt=V5).classify(groups)
+
+    assert len(provider.map_calls) == 1, "refinement ek bir map çağrısı yapmamalı"
+    assert {record_id for question in result.questions for record_id in question.record_ids} == {
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+    }
+
+
+def test_refinement_genis_kovada_calismaya_devam_eder(settings: Settings) -> None:
+    """Kapı yalnızca atomize rejimi kesmeli; asıl senaryo bozulmamalı."""
+    kalite = settings.model_copy(
+        update={
+            "llm_chunk_max_records": 20,
+            "llm_category_refinement_min_unique_records": 2,
+            "llm_category_refinement_min_percentage": 10.0,
+        }
+    )
+    groups = _groups(
+        ("sınav tarihi ne zaman", 1),
+        ("sınavlar hangi gün", 1),
+        ("sınav yerimi nereden öğrenirim", 1),
+        ("sınava hangi binada gireceğim", 1),
+    )
+    # Dört kayıt tek kovada -> 4.0 kayıt/kategori, eşiğin üstünde.
+    provider = _Provider(
+        map_responses=[
+            _map(
+                {"r1": "other", "r2": "other", "r3": "other", "r4": "other"},
+                {"other": ("Diğer Konular", "Diğer")},
+            ),
+            _map(
+                {"r1": "date", "r2": "date", "r3": "place", "r4": "place"},
+                {
+                    "date": ("Sınav tarihleri ne zaman?", "Sınavlar"),
+                    "place": ("Sınav yeri nereden öğrenilir?", "Sınavlar"),
+                },
+            ),
+        ],
+        reduce_response={
+            "groups": [
+                {
+                    "canonical_question": "Sınav tarihleri ne zaman?",
+                    "theme": "Sınavlar",
+                    "member_category_ids": ["c0"],
+                },
+                {
+                    "canonical_question": "Sınav yeri nereden öğrenilir?",
+                    "theme": "Sınavlar",
+                    "member_category_ids": ["c1"],
+                },
+            ]
+        },
+    )
+
+    result = _classifier(kalite, provider, prompt=V5).classify(groups)
+
+    assert len(provider.map_calls) == 2, "geniş kovada refinement çalışmalı"
+    assert [question.canonical_question for question in result.questions] == [
+        "Sınav tarihleri ne zaman?",
+        "Sınav yeri nereden öğrenilir?",
+    ]

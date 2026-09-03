@@ -42,6 +42,7 @@ from typing import Any, TypeVar
 import httpx
 from pydantic import BaseModel, ValidationError
 
+from app.core.catalog import supports_temperature
 from app.core.config import Settings
 from app.core.errors import ErrorCode
 from app.core.logging import get_logger
@@ -328,6 +329,17 @@ class OpenRouterClient:
             # HİÇ konmuyor — boş liste göndermek yerine hiç göndermemek,
             # sağlayıcı farklarına karşı daha güvenli.
         }
+        # `temperature` YALNIZCA destekleyen modele konur. Yukarıdaki
+        # `require_parameters` bayrağıyla birlikte, desteklemeyen bir modele
+        # gönderilen parametre isteği düşürmez — 404 "No endpoints found that
+        # can handle the requested parameters" ile KOMPLE reddettirir.
+        #
+        # Karar kataloğa bağlı, model kimliği üzerinde alt dize aramasına
+        # değil: whitelist kapalı bir küme olduğu için açık liste kesindir ve
+        # listeye yeni bir model eklendiğinde varsayılan "gönderme" olur —
+        # yani en kötü ihtimalle determinizm kaybedilir, istek kırılmaz.
+        if supports_temperature(self._model):
+            body["temperature"] = self._settings.llm_temperature
 
         last_error: OpenRouterError | None = None
 
@@ -429,24 +441,63 @@ class OpenRouterClient:
 
         # OpenRouter 200 içinde de hata döndürebiliyor.
         if isinstance(payload, dict) and payload.get("error"):
+            err = payload.get("error")
+            err_msg = err.get("message") if isinstance(err, dict) else str(err)
+            logger.warning(
+                "openrouter_error_payload",
+                extra={"error": err_msg, "model": self._model},
+            )
             raise OpenRouterError(
                 "PROVIDER_BAD_RESPONSE",
+                # Sağlayıcı metni YALNIZCA loga gider: `detail` ProblemDetails ile
+                # dışarı çıkıyor ve upstream mesajı prompt parçası yankılayabilir.
                 "Model sağlayıcısı isteği işleyemedi.",
             )
 
         try:
             choices = payload["choices"]
-            content = choices[0]["message"]["content"]
-        except (KeyError, IndexError, TypeError):
+            choice = choices[0]
+            finish_reason = choice.get("finish_reason")
+            message = choice.get("message", {})
+            content = message.get("content")
+            if content is None and isinstance(message, dict):
+                content = message.get("reasoning_content") or message.get("text")
+        except (KeyError, IndexError, TypeError) as exc:
+            logger.warning(
+                "openrouter_extract_failed",
+                extra={
+                    "payload_keys": (
+                        list(payload.keys()) if isinstance(payload, dict) else str(type(payload))
+                    ),
+                    "model": self._model,
+                    "error": str(exc),
+                },
+            )
             raise OpenRouterError(
                 "PROVIDER_BAD_RESPONSE",
+                # Aynı sebeple istisna metni de kullanıcıya değil loga yazılır.
                 "Model sağlayıcısı beklenen biçimde yanıt vermedi.",
             ) from None
 
         if not isinstance(content, str):
+            logger.warning(
+                "openrouter_content_not_string",
+                extra={
+                    "finish_reason": finish_reason,
+                    "message_keys": (
+                        list(message.keys()) if isinstance(message, dict) else str(type(message))
+                    ),
+                    "model": self._model,
+                },
+            )
+            if finish_reason == "length":
+                raise OpenRouterError(
+                    "PROVIDER_BAD_RESPONSE",
+                    "Model token sınırına ulaştı ve çıktıyı tamamlayamadı (finish_reason: length).",
+                )
             raise OpenRouterError(
                 "PROVIDER_BAD_RESPONSE",
-                "Model sağlayıcısı beklenen biçimde yanıt vermedi.",
+                f"Model sağlayıcısı metin çıktısı üretmedi (finish_reason: {finish_reason}).",
             )
 
         raw_usage = payload.get("usage") or {}

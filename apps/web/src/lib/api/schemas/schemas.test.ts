@@ -171,15 +171,15 @@ describe("analysisRequestSchema", () => {
       false,
     );
     expect(
-      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v5" }).success,
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v8" }).success,
     ).toBe(false);
   });
 
-  it("bağlamsal kullanıcı turlarını v4 prompt ve geçerli eşlemeyle kabul eder", () => {
+  it("bağlamsal kullanıcı turlarını v5 prompt ve geçerli eşlemeyle kabul eder", () => {
     const result = analysisRequestSchema.safeParse({
       ...valid,
       analysis_mode: "contextual_user_turns",
-      prompt_version: "faq_analysis/v4",
+      prompt_version: "faq_analysis/v5",
       conversation_config: {
         session_id_column: "session_id",
         message_order_column: "message_order",
@@ -201,7 +201,7 @@ describe("analysisRequestSchema", () => {
     });
   });
 
-  it("bağlamsal modda config, kolon ayrımı ve v4 prompt zorunludur", () => {
+  it("bağlamsal modda config, kolon ayrımı ve bağlamsal prompt zorunludur", () => {
     const config = {
       session_id_column: "session_id",
       message_order_column: "message_order",
@@ -213,7 +213,7 @@ describe("analysisRequestSchema", () => {
       analysisRequestSchema.safeParse({
         ...valid,
         analysis_mode: "contextual_user_turns",
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
         conversation_config: null,
       }).success,
     ).toBe(false);
@@ -228,7 +228,7 @@ describe("analysisRequestSchema", () => {
       analysisRequestSchema.safeParse({
         ...valid,
         analysis_mode: "contextual_user_turns",
-        prompt_version: "faq_analysis/v4",
+        prompt_version: "faq_analysis/v5",
         conversation_config: { ...config, role_column: "session_id" },
       }).success,
     ).toBe(false);
@@ -248,6 +248,9 @@ describe("analysisRequestSchema", () => {
     ).toBe(false);
     expect(
       analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v4" }).success,
+    ).toBe(false);
+    expect(
+      analysisRequestSchema.safeParse({ ...valid, prompt_version: "faq_analysis/v5" }).success,
     ).toBe(false);
   });
 
@@ -380,12 +383,21 @@ describe("analysisReportSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("tarihsel model kimliğini kabul eder, bilinmeyen prompt sürümünü reddeder", () => {
+  it("tarihsel model ile v5 ve v6 promptunu kabul eder, bilinmeyen sürümü reddeder", () => {
     expect(analysisReportSchema.safeParse({ ...report, model: "retired/model-v1" }).success).toBe(
       true,
     );
     expect(
       analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v5" }).success,
+    ).toBe(true);
+    expect(
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v6" }).success,
+    ).toBe(true);
+    expect(
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v7" }).success,
+    ).toBe(true);
+    expect(
+      analysisReportSchema.safeParse({ ...report, prompt_version: "faq_analysis/v8" }).success,
     ).toBe(false);
   });
 

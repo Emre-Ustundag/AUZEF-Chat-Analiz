@@ -1,4 +1,4 @@
-from app.prompts.faq_analysis import DEFAULT_VERSION, V1, V2, V3, V4, get_prompt
+from app.prompts.faq_analysis import DEFAULT_VERSION, V1, V2, V3, V4, V5, get_prompt
 
 
 def test_v1_metni_tarihsel_surum_olarak_degismedi() -> None:
@@ -52,3 +52,16 @@ def test_v4_v3_reduce_ve_cikti_semalarini_aynen_korur() -> None:
     assert V4.reduce_user_template is V3.reduce_user_template
     assert V4.reduce_schema is V3.reduce_schema
     assert V3.version == DEFAULT_VERSION
+
+
+def test_v5_atomik_niyet_ve_refinement_sozlesmesini_tanimlar() -> None:
+    combined = f"{V5.map_system}\n{V5.map_user_template}\n{V5.reduce_system}\n{V5.refine_system}"
+
+    assert get_prompt("faq_analysis/v5") is V5
+    assert V5.text_hash not in {V1.text_hash, V2.text_hash, V3.text_hash, V4.text_hash}
+    assert "aynı nesne, aynı işlem ve aynı amaç" in combined.casefold()
+    assert "TEMA ATAMASI AYRI BİR KARARDIR" in combined
+    assert "GENİŞ ÇÖP KOVASI YASAĞI" in combined
+    assert V5.refine_system is not None
+    assert V5.refine_user_template is not None
+    assert V5.refine_schema is V5.map_schema

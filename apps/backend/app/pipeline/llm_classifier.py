@@ -52,6 +52,7 @@ import unicodedata
 from collections.abc import Callable, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
+from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -275,6 +276,12 @@ class OpenRouterClassifier:
         needs_reduce = len(chunks) > 1 and len(buckets) > 1
         merged = self._reduce(list(buckets.values())) if needs_reduce else _identity(buckets)
 
+        # V5 kalite geçişi: reduce yalnızca kategorileri BİRLEŞTİREBİLİR;
+        # map'in veya önceki reduce turunun fazla geniş kurduğu bir kovayı
+        # kendi başına bölemez. Şüpheli son kovalar bu yüzden içlerindeki
+        # gerçek, redakte RecordGroup'larla tek seferlik yeniden sınıflanır.
+        merged = self._refine_suspicious_categories(merged, groups)
+
         missing = sorted(known_ids - assigned)
         warnings = self._warnings(hallucinated, duplicated, len(missing))
 
@@ -334,17 +341,44 @@ class OpenRouterClassifier:
         koşuda sağlayıcıya gerçekten ödenen tüketimi içerir.
         """
         rendered = "\n".join(render_record(group) for group in chunk)
+        return self._cached_map_call(
+            rendered_records=rendered,
+            system=self._prompt.map_system,
+            user=self._prompt.map_user_template.format(records=rendered),
+            schema=self._prompt.map_schema,
+            schema_name="faq_map",
+            cache_prompt_hash=self._prompt.text_hash,
+            cache_stage="map",
+        )
+
+    def _cached_map_call(
+        self,
+        *,
+        rendered_records: str,
+        system: str,
+        user: str,
+        schema: dict[str, Any],
+        schema_name: str,
+        cache_prompt_hash: str,
+        cache_stage: str,
+    ) -> Completion[MapResponse]:
+        """Map biçimli bir çağrıyı A3 önbelleği üzerinden çalıştırır.
+
+        Normal map ve V5 refinement aynı çıktı şemasını kullanır fakat aynı
+        istek değildir. `cache_prompt_hash` aşama adıyla ayrıldığı için aynı
+        kayıt listesi refinement yanıtını normal map yanıtı sanamaz.
+        """
         cache = self._map_cache
         key: str | None = None
 
         if cache is not None:
             key = build_key(
                 model=self._model,
-                prompt_text_hash=self._prompt.text_hash,
-                map_schema=self._prompt.map_schema,
+                prompt_text_hash=cache_prompt_hash,
+                map_schema=schema,
                 # Anahtar sağlayıcıya giden metinden türer; kayıt sırası veya
                 # kaçış biçimi değişirse eski yanıt yanlışlıkla kullanılmaz.
-                rendered_records=rendered,
+                rendered_records=rendered_records,
             )
             raw = cache.load(key)
             if raw is not None:
@@ -353,16 +387,16 @@ class OpenRouterClassifier:
                 except ValidationError:
                     # Eski/bozuk kayıt ıska sayılır ve aşağıdaki normal çağrı
                     # yolunda geçerli yanıtla üzerine yazılır.
-                    logger.warning("map_cache_invalid_payload")
+                    logger.warning("map_cache_invalid_payload", extra={"cache_stage": cache_stage})
                 else:
-                    logger.info("map_cache_hit")
+                    logger.info("map_cache_hit", extra={"cache_stage": cache_stage})
                     return Completion(data=cached, usage=Usage())
 
         completion = self._client.complete_structured(
-            system=self._prompt.map_system,
-            user=self._prompt.map_user_template.format(records=rendered),
-            schema=self._prompt.map_schema,
-            schema_name="faq_map",
+            system=system,
+            user=user,
+            schema=schema,
+            schema_name=schema_name,
             model_type=MapResponse,
         )
 
@@ -370,6 +404,208 @@ class OpenRouterClassifier:
             cache.store(key, completion.data.model_dump_json())
 
         return completion
+
+    # ------------------------------------------------------- kalite refinement
+
+    def _refine_suspicious_categories(
+        self,
+        buckets: list[_Bucket],
+        groups: Sequence[RecordGroup],
+    ) -> list[_Bucket]:
+        """V5'te geniş/karma olma riski taşıyan son kovaları bir kez denetler.
+
+        Seçim tamamen deterministiktir; modelden adet veya güven puanı
+        istenmez. "Diğer/Genel" adı, birleşik başlık sinyali veya büyük analiz
+        payı yalnızca ikinci bakışı TETİKLER. Refinement aynı atomik kategoriyle
+        dönebilir; sistem modeli zorla bölmeye mecbur etmez.
+        """
+        if (
+            not self._settings.llm_category_refinement_enabled
+            or self._prompt.refine_system is None
+            or self._prompt.refine_user_template is None
+            or self._prompt.refine_schema is None
+            or not buckets
+        ):
+            return buckets
+
+        by_id = {group.record_id: group for group in groups}
+        total_count = sum(group.count for group in groups)
+
+        # Rejim kapısı: refinement geniş bir kovayı BÖLMEK için vardır. Reduce
+        # zaten kategori başına birkaç kayıt bırakmışsa ortada bölünecek kova
+        # yoktur; bu durumda refinement yalnızca kategori sayısını artırır ve
+        # ardından gereksiz bir reduce turu tetikler (bkz. config yorumu).
+        records_per_category = total_count / len(buckets) if buckets else 0.0
+        if records_per_category < self._settings.llm_category_refinement_min_records_per_category:
+            logger.info(
+                "llm_category_refinement_skipped",
+                extra={
+                    "model": self._model,
+                    "reason": "atomized_output",
+                    "categories": len(buckets),
+                    "records_per_category": round(records_per_category, 2),
+                },
+            )
+            return buckets
+
+        candidates: list[tuple[bool, int, int]] = []
+
+        for position, bucket in enumerate(buckets):
+            members = [by_id[record_id] for record_id in bucket.record_ids if record_id in by_id]
+            weighted_count = sum(member.count for member in members)
+            broad = _has_broad_category_label(bucket)
+            if _needs_refinement(
+                bucket,
+                unique_count=len(members),
+                weighted_count=weighted_count,
+                total_count=total_count,
+                settings=self._settings,
+            ):
+                # Önce açık "Diğer/Genel" kovaları, sonra en büyük kovalar;
+                # eşitlikte mevcut rapor sırası korunur.
+                candidates.append((broad, weighted_count, position))
+
+        candidates.sort(key=lambda item: (not item[0], -item[1], item[2]))
+        selected = {
+            position
+            for _broad, _count, position in candidates[
+                : self._settings.llm_category_refinement_max_categories
+            ]
+        }
+        if not selected:
+            return buckets
+
+        refined_output: list[_Bucket] = []
+        split_occurred = False
+        for position, bucket in enumerate(buckets):
+            if position not in selected:
+                refined_output.append(bucket)
+                continue
+            refined = self._refine_bucket(bucket, by_id)
+            split_occurred = split_occurred or len(refined) > 1
+            refined_output.extend(refined)
+
+        logger.info(
+            "llm_category_refinement_completed",
+            extra={
+                "model": self._model,
+                "selected_categories": len(selected),
+                "input_categories": len(buckets),
+                "output_categories": len(refined_output),
+            },
+        )
+
+        # Bölünen alt kategoriler başka mevcut kovalarla eşdeğer olabilir.
+        # V5'in katı eşdeğerlik reducer'ı bunları tekilleştirir; yalnızca tema
+        # ortaklığı artık birleşme sebebi değildir.
+        if split_occurred and len(refined_output) > 1:
+            return self._reduce(refined_output)
+        return refined_output
+
+    def _refine_bucket(
+        self,
+        original: _Bucket,
+        groups_by_id: dict[str, RecordGroup],
+    ) -> list[_Bucket]:
+        """Tek şüpheli kovayı kendi redakte kayıtlarıyla yeniden sınıflandırır."""
+        members = [
+            groups_by_id[record_id]
+            for record_id in original.record_ids
+            if record_id in groups_by_id
+        ]
+        if not members:
+            return [original]
+
+        chunks = build_chunks(members, self._settings)
+        known_ids = {group.record_id for group in members}
+        assigned: set[str] = set()
+        refined_buckets: dict[str, _Bucket] = {}
+        anomaly_counts = [0, 0]
+
+        def call_chunk(chunk: Sequence[RecordGroup]) -> Completion[MapResponse]:
+            return self._refine_chunk_call(original, chunk)
+
+        def consume_chunk(
+            index: int,
+            chunk: Sequence[RecordGroup],
+            completion: Completion[MapResponse],
+        ) -> None:
+            chunk_buckets, stats = self._merge_map_chunk(
+                index, chunk, completion, known_ids, assigned
+            )
+            refined_buckets.update(chunk_buckets)
+            anomaly_counts[0] += stats[0]
+            anomaly_counts[1] += stats[1]
+            self._guard_cost()
+            # Map ilerlemesi daha önce 90'a ulaşmış olabilir; 1/1 iptali
+            # kontrol ederken ilerlemeyi geriye götürmez.
+            if self._on_progress is not None and not self._on_progress(1, 1):
+                raise ClassificationCancelledError
+
+        self._run_in_order(chunks, call_chunk, consume_chunk)
+
+        missing = [record_id for record_id in original.record_ids if record_id not in assigned]
+        result = list(refined_buckets.values())
+        if missing:
+            # Kalite geçişindeki bir model atlaması veri kaybına veya genel
+            # fallback'e dönüşmez; kayıtlar güvenli biçimde eski kovada kalır.
+            result.append(
+                _Bucket(
+                    key=self._next_reduce_bucket_key(),
+                    canonical_question=original.canonical_question,
+                    theme=original.theme,
+                    record_ids=missing,
+                )
+            )
+
+        if anomaly_counts != [0, 0] or missing:
+            logger.warning(
+                "llm_category_refinement_anomalies",
+                extra={
+                    "model": self._model,
+                    "hallucinated": anomaly_counts[0],
+                    "duplicated": anomaly_counts[1],
+                    "missing": len(missing),
+                },
+            )
+
+        if len(chunks) > 1 and len(result) > 1:
+            return self._reduce(result)
+        return result or [original]
+
+    def _refine_chunk_call(
+        self,
+        original: _Bucket,
+        chunk: Sequence[RecordGroup],
+    ) -> Completion[MapResponse]:
+        """Refinement map çağrısı; normal map'ten ayrı cache alanı kullanır."""
+        system = self._prompt.refine_system
+        template = self._prompt.refine_user_template
+        schema = self._prompt.refine_schema
+        if system is None or template is None or schema is None:  # pragma: no cover
+            raise RuntimeError("refinement_prompt_missing")
+
+        rendered = "\n".join(render_record(group) for group in chunk)
+        original_question = escape_record_text(original.canonical_question)
+        original_theme = escape_record_text(original.theme)
+        user = template.format(
+            original_question=original_question,
+            original_theme=original_theme,
+            records=rendered,
+        )
+        cache_payload = (
+            f'<gecici-kategori tema="{original_theme}">{original_question}'
+            f"</gecici-kategori>\n{rendered}"
+        )
+        return self._cached_map_call(
+            rendered_records=cache_payload,
+            system=system,
+            user=user,
+            schema=schema,
+            schema_name="faq_refine",
+            cache_prompt_hash=f"{self._prompt.text_hash}:refine",
+            cache_stage="refine",
+        )
 
     def _merge_map_chunk(
         self,
@@ -807,6 +1043,38 @@ def _reduce_bucket_tokens(bucket: _Bucket) -> int:
     ölçümü değildir.
     """
     return max(1, int((len(bucket.theme) + len(bucket.canonical_question)) / 3.0) + 12)
+
+
+_BROAD_CATEGORY_LABEL = re.compile(
+    r"\b(diğer|diger|genel|çeşitli|cesitli|muhtelif)(?:\s+konular?|\s+sorular?)?\b",
+    re.IGNORECASE,
+)
+_COMPOSITE_QUESTION = re.compile(r"[,;/]|\b(?:ve|veya)\b", re.IGNORECASE)
+
+
+def _has_broad_category_label(bucket: _Bucket) -> bool:
+    """Model üretimi yakalama kovalarını deterministik olarak tanır."""
+    return _BROAD_CATEGORY_LABEL.search(f"{bucket.canonical_question} {bucket.theme}") is not None
+
+
+def _needs_refinement(
+    bucket: _Bucket,
+    *,
+    unique_count: int,
+    weighted_count: int,
+    total_count: int,
+    settings: Settings,
+) -> bool:
+    """Bir son kategorinin ikinci kalite bakışına girmesi gerekip gerekmediği."""
+    if _has_broad_category_label(bucket):
+        return True
+    if unique_count < settings.llm_category_refinement_min_unique_records:
+        return False
+
+    percentage = weighted_count / total_count * 100 if total_count > 0 else 0.0
+    if percentage >= settings.llm_category_refinement_min_percentage:
+        return True
+    return _COMPOSITE_QUESTION.search(bucket.canonical_question) is not None
 
 
 def _trim(text: str, limit: int = 120) -> str:

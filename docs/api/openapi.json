@@ -1172,6 +1172,28 @@
                           "context_window": 1048576,
                           "pricing_source": "fallback",
                           "pricing_updated_at": null
+                        },
+                        {
+                          "id": "openai/gpt-5.6-luna",
+                          "label": "GPT-5.6 Luna",
+                          "input_cost_per_million": 0.2,
+                          "output_cost_per_million": 1.2,
+                          "cache_read_cost_per_million": 0.02,
+                          "cache_write_cost_per_million": 0.25,
+                          "context_window": 1050000,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
+                        },
+                        {
+                          "id": "openai/gpt-5.6-luna-pro",
+                          "label": "GPT-5.6 Luna Pro",
+                          "input_cost_per_million": 0.2,
+                          "output_cost_per_million": 1.2,
+                          "cache_read_cost_per_million": 0.02,
+                          "cache_write_cost_per_million": 0.25,
+                          "context_window": 1050000,
+                          "pricing_source": "fallback",
+                          "pricing_updated_at": null
                         }
                       ],
                       "default_model": "google/gemini-2.5-flash",
@@ -3412,7 +3434,8 @@
               "COST_LIMIT_APPROACHED",
               "LLM_UNKNOWN_RECORD_ID",
               "LLM_DUPLICATE_ASSIGNMENT",
-              "LLM_UNASSIGNED_RECORDS"
+              "LLM_UNASSIGNED_RECORDS",
+              "LLM_REDUCE_PARTIAL_COVERAGE"
             ]
           },
           "message": {
@@ -3669,7 +3692,9 @@
         "enum": [
           "anthropic/claude-sonnet-4.6",
           "openai/gpt-4.1-mini",
-          "google/gemini-2.5-flash"
+          "google/gemini-2.5-flash",
+          "openai/gpt-5.6-luna",
+          "openai/gpt-5.6-luna-pro"
         ],
         "title": "ModelId",
         "description": "BE-01'de dondurulmuş, structured-output destekli model whitelist'i."
@@ -3956,7 +3981,10 @@
           "faq_analysis/v1",
           "faq_analysis/v2",
           "faq_analysis/v3",
-          "faq_analysis/v4"
+          "faq_analysis/v4",
+          "faq_analysis/v5",
+          "faq_analysis/v6",
+          "faq_analysis/v7"
         ],
         "title": "PromptVersion",
         "description": "Backend'de sürümlenmiş ve dağıtıma dâhil prompt'lar."

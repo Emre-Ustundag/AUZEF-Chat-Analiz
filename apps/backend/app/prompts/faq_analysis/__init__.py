@@ -16,7 +16,7 @@ import hashlib
 from dataclasses import dataclass
 from typing import Any
 
-from app.prompts.faq_analysis import v1, v2, v3, v4
+from app.prompts.faq_analysis import v1, v2, v3, v4, v5, v6, v7
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,10 @@ class PromptBundle:
     reduce_user_template: str
     reduce_schema: dict[str, Any]
 
+    refine_system: str | None = None
+    refine_user_template: str | None = None
+    refine_schema: dict[str, Any] | None = None
+
     @property
     def text_hash(self) -> str:
         """Prompt METİNLERİNİN SHA-256'sı — rapordaki izlenebilirlik çıpası.
@@ -45,9 +49,10 @@ class PromptBundle:
         bir açıklama düzeltmesinde bile değişirdi. Modelin davranışını
         belirleyen asıl şey metinlerdir; hash onları izler.
         """
-        payload = "\n\x00\n".join(
-            (self.version, self.map_system, self.map_user_template, self.reduce_system)
-        )
+        parts = [self.version, self.map_system, self.map_user_template, self.reduce_system]
+        if self.refine_system is not None and self.refine_user_template is not None:
+            parts.extend((self.refine_system, self.refine_user_template))
+        payload = "\n\x00\n".join(parts)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -91,11 +96,53 @@ V4 = PromptBundle(
     reduce_schema=v4.REDUCE_SCHEMA,
 )
 
+V5 = PromptBundle(
+    version=v5.VERSION,
+    map_system=v5.MAP_SYSTEM_PROMPT,
+    map_user_template=v5.MAP_USER_TEMPLATE,
+    map_schema=v5.MAP_SCHEMA,
+    reduce_system=v5.REDUCE_SYSTEM_PROMPT,
+    reduce_user_template=v5.REDUCE_USER_TEMPLATE,
+    reduce_schema=v5.REDUCE_SCHEMA,
+    refine_system=v5.REFINE_SYSTEM_PROMPT,
+    refine_user_template=v5.REFINE_USER_TEMPLATE,
+    refine_schema=v5.REFINE_SCHEMA,
+)
+
+V6 = PromptBundle(
+    version=v6.VERSION,
+    map_system=v6.MAP_SYSTEM_PROMPT,
+    map_user_template=v6.MAP_USER_TEMPLATE,
+    map_schema=v6.MAP_SCHEMA,
+    reduce_system=v6.REDUCE_SYSTEM_PROMPT,
+    reduce_user_template=v6.REDUCE_USER_TEMPLATE,
+    reduce_schema=v6.REDUCE_SCHEMA,
+    refine_system=v6.REFINE_SYSTEM_PROMPT,
+    refine_user_template=v6.REFINE_USER_TEMPLATE,
+    refine_schema=v6.REFINE_SCHEMA,
+)
+
+V7 = PromptBundle(
+    version=v7.VERSION,
+    map_system=v7.MAP_SYSTEM_PROMPT,
+    map_user_template=v7.MAP_USER_TEMPLATE,
+    map_schema=v7.MAP_SCHEMA,
+    reduce_system=v7.REDUCE_SYSTEM_PROMPT,
+    reduce_user_template=v7.REDUCE_USER_TEMPLATE,
+    reduce_schema=v7.REDUCE_SCHEMA,
+    refine_system=v7.REFINE_SYSTEM_PROMPT,
+    refine_user_template=v7.REFINE_USER_TEMPLATE,
+    refine_schema=v7.REFINE_SCHEMA,
+)
+
 _REGISTRY: dict[str, PromptBundle] = {
     V1.version: V1,
     V2.version: V2,
     V3.version: V3,
     V4.version: V4,
+    V5.version: V5,
+    V6.version: V6,
+    V7.version: V7,
 }
 
 #: `domain/model_catalog.DEFAULT_PROMPT_VERSION` ile aynı olmalı.
@@ -128,6 +175,7 @@ __all__ = [
     "V2",
     "V3",
     "V4",
+    "V5",
     "PromptBundle",
     "UnknownPromptVersionError",
     "get_prompt",

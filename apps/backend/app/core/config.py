@@ -145,6 +145,13 @@ class Settings(BaseSettings):
     openrouter_backoff_base_seconds: float = Field(default=1.0, ge=0)
     openrouter_backoff_max_seconds: float = Field(default=30.0, ge=0)
     openrouter_max_repair_attempts: int = Field(default=2, ge=0)
+    #: Sınıflandırma bir yaratıcılık işi değil; sağlayıcı varsayılanı
+    #: (Gemini'de ~1.0) aynı prompt'un aynı veride farklı sonuç vermesine
+    #: yol açıyordu. Ölçüldü: v6 tezgâhında aynı prompt hash'i iki koşuda
+    #: 78 ve 106 kategori üretti (top-20 kapsama %70 ve %64). Bu gürültü
+    #: prompt ayarlamayı imkânsız kılar: iki sürüm arasındaki farkın
+    #: prompt'tan mı örneklemeden mi geldiği ayırt edilemez.
+    llm_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     llm_chunk_max_records: int = Field(default=120, gt=0)
     #: Aynı anda uçuşta olabilecek LLM çağrısı (map chunk'ları ve bir reduce
     #: turundaki batch'ler).
@@ -174,6 +181,24 @@ class Settings(BaseSettings):
     #: Kapatmak yalnızca sınıflandırmayı sıfırdan koşturmayı zorunlu kılar;
     #: doğruluğu etkilemez (`services/map_cache.py`).
     llm_map_cache_enabled: bool = True
+    #: V5 kalite geçişi: reduce sonrasında geniş/karma olma riski taşıyan
+    #: kategoriler, kendi redakte kayıtlarıyla bir kez daha bölme denetimine
+    #: girer. Eski prompt sürümlerinde refinement tanımlı olmadığı için bu
+    #: ayar açık olsa da ek çağrı yapılmaz.
+    llm_category_refinement_enabled: bool = True
+    #: Büyük kategori denetiminde hem benzersiz kayıt tabanı hem de gerçek
+    #: frekans payı aranır. "Diğer/Genel" gibi geniş adlar bu eşiklerden
+    #: bağımsız olarak her zaman şüphelidir.
+    llm_category_refinement_min_unique_records: int = Field(default=20, ge=2)
+    llm_category_refinement_min_percentage: float = Field(default=3.0, gt=0, le=100)
+    #: Tek koşuda kalite maliyetini sınırlayan deterministik üst sınır.
+    llm_category_refinement_max_categories: int = Field(default=12, ge=1, le=50)
+    #: Refinement'ın varsayımı "tepede şişmiş bir çöp kovası var"dır. Çıktı
+    #: zaten atomize olduğunda bölecek kova yoktur: v5 canlı koşusunda 927
+    #: kategoriden 6'sı seçildi, çıktı 945'e ÇIKTI ve bölme olduğu için
+    #: ikinci bir tam reduce tetiklendi — saf maliyet, sıfır fayda. Kategori
+    #: başına ortalama kayıt bu eşiğin altındaysa refinement hiç çalışmaz.
+    llm_category_refinement_min_records_per_category: float = Field(default=3.0, gt=0)
 
     report_retention_hours: int = Field(default=24, gt=0)
     upload_retention_hours: int = Field(default=24, gt=0)
