@@ -30,23 +30,30 @@ Yeni chatbot'un bilgi tabanı (266 soru), eski Etiya botunun kataloğunun **nere
 
 | | Pay | Yıllık konuşma |
 |---|---|---|
-| Bilgi tabanında karşılığı **var** | %77,2 | ~223.600 |
-| Karşılığı **yok** (tanımlı 35 konu) | %8,6 | ~25.000 |
+| Bilgi tabanında karşılığı **var** | %78,8 | ~228.200 |
+| Karşılığı **yok** (tanımlı 33 konu) | % 7,0 | ~20.500 |
 | Hiçbir tanıma oturmayan (uzun kuyruk) | %14,2 | ~41.000 |
-| **Toplam boşluk** | **%22,8** | **~66.000** |
+| **Toplam boşluk** | **%21,2** | **~61.400** |
 
-Yani her dört öğrenci sorusundan yaklaşık birinin sistemde karşılığı yok.
+Yani her beş öğrenci sorusundan birinin sistemde karşılığı yok.
 
 **Önemli nüans:** En çok sorulan 20 konunun 19'u bilgi tabanında mevcut. Boşluk tepe sorularda değil, orta ve uzun kuyrukta. Bilgi tabanı kötü değil — **eksik**.
 
-## 4. Aksiyon: 35 makale
+**Bu rakam tahmin değil, ölçüm.** 35 boşluk konusunun tamamı gerçek chatbot'a soruldu:
 
-Bilgi tabanında karşılığı olmayan 35 konu tespit edildi ve içe aktarılabilir formatta hazırlandı. **En yüksek hacimli 8 tanesi tek başına yılda ~15.600 konuşmayı kapsıyor.**
+- **31'inde bot cevap veremedi** — boşluk doğrulandı
+- 2'sini doğru cevapladı; listeden çıkarıldı
+- 2'sinde *yanlış* cevap verdi — "hangi bölümler bulunmaktadır?" sorusuna staj programları listesini döndürdü
+
+Son madde ayrıca değerlendirilmeli: yanlış cevap, "bilmiyorum" demekten daha risklidir çünkü öğrenci yanlış bilgiyi doğru sanır. Bu iki konu öncelikli işaretlendi.
+
+## 4. Aksiyon: 33 makale
+
+Bilgi tabanında karşılığı olmayan 33 konu, gerçek chatbot'a sorularak doğrulandı ve içe aktarılabilir formatta hazırlandı. **En yüksek hacimli 8 tanesi tek başına yılda ~12.500 konuşmayı kapsıyor.**
 
 | Konu | Yıllık | Sorunlu |
 |---|---|---|
 | Kayıt tarihleri ne zamandır? | ~3.700 | %49 |
-| Kaçıncı sınıftayım / kaç dersim kaldı? | ~3.050 | %53 |
 | Çıkmış sınav soruları ve kitapçıkları | ~2.220 | %54 |
 | Kaydım aktif mi, nasıl kontrol ederim? | ~2.140 | %52 |
 | Hangi lisans/ön lisans bölümleri var? | ~1.340 | %68 |

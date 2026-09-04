@@ -40,8 +40,13 @@ TR = str.maketrans({"ı": "i", "İ": "i", "I": "i", "ş": "s", "Ş": "s", "ğ": 
                     "Ğ": "g", "ü": "u", "Ü": "u", "ö": "o", "Ö": "o", "ç": "c", "Ç": "c"})
 
 
-def ask(base: str, message: str, timeout: int = 120) -> tuple[str, str]:
-    """Bota tek soru sorar. (cevap, hata) doner."""
+def ask(base: str, message: str, timeout: int = 120) -> tuple[str, str, list[str]]:
+    """Bota tek soru sorar. (cevap, hata, oneriler) doner.
+
+    Bot bilmedigi soruda "Sunlari sormak istemis olabilirsiniz" deyip oneri
+    listesi sunuyor. Oneriler cevap sayilmaz, ama isabetliyse "az kalmis"
+    demektir — o yuzden kaydediliyor.
+    """
     req = urllib.request.Request(
         f"{base.rstrip('/')}/widget-chat",
         data=json.dumps({"message": message}).encode("utf-8"),
@@ -51,16 +56,19 @@ def ask(base: str, message: str, timeout: int = 120) -> tuple[str, str]:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             payload = json.load(r)
     except urllib.error.HTTPError as exc:
-        return "", f"HTTP {exc.code}: {exc.read().decode()[:160]}"
+        return "", f"HTTP {exc.code}: {exc.read().decode()[:160]}", []
     except Exception as exc:  # noqa: BLE001
-        return "", f"{type(exc).__name__}: {exc}"
+        return "", f"{type(exc).__name__}: {exc}", []
+
+    sug = payload.get("suggestions")
+    sug = [s for s in sug if isinstance(s, str)] if isinstance(sug, list) else []
 
     # Cevap alaninin adi surume gore degisebilir; en olasi adlari sirayla dene.
     for k in ("answer", "response", "message", "text", "reply", "content"):
         v = payload.get(k)
         if isinstance(v, str) and v.strip():
-            return v.strip(), ""
-    return "", f"cevap alani bulunamadi; anahtarlar: {list(payload)[:8]}"
+            return v.strip(), "", sug
+    return "", f"cevap alani bulunamadi; anahtarlar: {list(payload)[:8]}", sug
 
 
 def looks_unknown(answer: str) -> bool:
@@ -121,8 +129,8 @@ def main() -> int:
 
     rows = []
     for i, g in enumerate(gaps, 1):
-        answer, err = ask(base, g["soru"])
-        rows.append({**g, "bot_cevabi": answer, "hata": err,
+        answer, err, sug = ask(base, g["soru"])
+        rows.append({**g, "bot_cevabi": answer, "hata": err, "oneriler": sug,
                      "kalip_bilmiyorum": looks_unknown(answer) if answer else None})
         mark = "HATA" if err else ("bilmiyor" if looks_unknown(answer) else "cevapladi")
         print(f"  {i:>2}/{len(gaps)} [{mark:>9}] {g['soru'][:56]}")
