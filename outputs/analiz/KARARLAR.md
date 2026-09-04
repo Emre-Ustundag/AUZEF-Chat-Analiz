@@ -21,32 +21,35 @@ sorunları rutin akışta ortaya çıkmıyor.
 **Bayatlama göstergesi `«hiçbiri»` oranı.** Her koşuda zaten hesaplanıyor.
 Şu an %14,2. Belirgin yükselirse taksonomi gerçeklikten kopmuş demektir.
 
-## Yarın cevaplanacaklar
+## Cevaplandı (yönetim görüşmesi sonrası)
 
-1. **OpenRouter anahtarı nerede duracak?**
-   Görüş: `.env`'de, kullanıcı hiç erişmemeli — anahtarı elden vermek daha
-   büyük bir zafiyet. UYARI: bugün maliyeti frenleyen tek şey anahtarın
-   kullanıcıda olması. Kodda toplam bütçe sınırı, kullanıcı başına sınır ve
-   koşu sayısı sınırı YOK; ayrıca sistemde hiç kimlik modeli yok
-   (`analyses` ve `uploads` dışında tablo yok, giriş yok, rol yok).
-   Anahtar taşınacaksa bütçe tavanı ve erişim kontrolü AYNI ANDA gelmeli.
+1. **OpenRouter anahtarı** → `.env`'de duracak, kullanıcı erişemeyecek,
+   hesap limiti 50 USD. NOT: bu limit HESAP GENELİ; kullanıcı ya da koşu
+   başına değil. Bir kişi aylık bütçeyi bir öğleden sonra bitirebilir.
+   Uygulama içi tavan (aylık toplam sayaç) anahtarla birlikte gelmeli.
 
-2. **Geçmiş raporlar ne kadar saklanacak?**
-   Görüş: kesinlikle saklanmalı — hem dönemler arası karşılaştırma için hem
-   de kullanıcı raporu kaybederse yeniden analiz koşmasın diye. Şu an
-   `report_retention_hours` ve `upload_retention_hours` ikisi de 24.
-   KVKK için kullanışlı ayrım: yükleme (ham konuşma) kısa sürede silinir,
-   rapor (redakte + toplulaştırılmış) uzun saklanır. İkisi ayrı ayar.
+2. **Geçmiş raporlar** → saklanacak, hukuki engel yok.
+   `upload_retention_hours` kısa kalabilir (ham konuşmayı tutmaya gerek yok),
+   `report_retention_hours` uzun olacak. Somut süre kod aşamasında.
 
-3. **Raporlar ekranda mı görünecek?**
-   Görüş: görünmeli, excel'de okumak analiz işi değil dosya işi. NOT:
-   saklama + ekranda gösterim + dönemsel karşılaştırma tek bir pakettir,
-   üç ayrı talep değil. Mevcut ekran yalnızca `top_questions` ve `themes`
-   gösteriyor; ürettiğimiz altı rapor için arayüz yok.
+3. **Raporlar ekranda** → görünecek. Saklama + gösterim + dönemsel
+   karşılaştırma tek pakettir. Mevcut ekran yalnızca `top_questions` ve
+   `themes` gösteriyor; ürettiğimiz altı rapor için arayüz yok.
 
-4. **Analizi kim koşacak?**
-   Belirleyici soru. Kendi ekipse kimlik gerekmez, iş küçük. AUZEF'te başka
-   bir birimse giriş + rol + bütçe kontrolü gerekir, iş belirgin büyür.
+4. **Kullanıcı profili** → KARMA. Teknik olmayan kişiler koşacak, bir kısmı
+   ekip içinden bir kısmı değil.
+
+   >>> BU CEVAP KAPSAMI BÜYÜTÜYOR. Kimlik artık zorunlu: kullanıcı tablosu,
+   >>> giriş, en az iki rol (koşabilen / görebilen), kim ne koştu kaydı,
+   >>> aylık bütçe sayacı. Sistemde şu an bunların HİÇBİRİ yok.
+   >>> İyi haber: desen chatbot'ta zaten var (editor/admin/super_admin).
+   >>> Ürünleştirmenin en büyük tek kalemi bu olacak.
+
+5. **Tam veri koşusu** → YAPILMAYACAK. Yönetim zorunlu tutmadı, karar bize
+   bırakıldı. Gerekçe: 2.597 chunk ≈ 39-48 USD ve ~4 saat; sayılar anlamlı
+   ölçüde değişmiyor (±%10 hata payı, sıralama sağlam). Daha önemlisi 50 USD
+   tek seferlik harcama değil işletme bütçesi — aylık koşu ~3 USD, yani
+   ~16 aylık operasyon. Değişmeyecek bir ölçüm için 13 ayı yakmak mantıksız.
 
 ## Açık teknik konu
 
@@ -57,6 +60,14 @@ LLM RAG yedeği); tam karşılığı olmayan soruya makul cevap üretiyor olabil
 
 Doğrulaması ucuz: 35 boşluk sorusunu gerçek bota sor, hangilerinde
 gerçekten düştüğünü gör. Liste ya doğrulanır ya kısalır.
+
+BETİK HAZIR: `scripts/validate_gaps_against_bot.py`
+Chatbot lokalde ayağa kalkınca:
+    export OPENROUTER_API_KEY=...
+    python3 scripts/validate_gaps_against_bot.py http://localhost
+Uç nokta `POST /widget-chat`, gövde `{"message": "..."}`.
+Önce deterministik "bilmiyorum" kalıbı aranır, sonra tek LLM çağrısıyla
+cevabın soruyu karşılayıp karşılamadığı değerlendirilir.
 
 ## Taşınabilirlik notu
 
