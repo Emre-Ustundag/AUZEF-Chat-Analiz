@@ -1,0 +1,18 @@
+{
+  "alias_matches": {
+    "blake2b": "f9a0de93056c80826019a4e532c14fcd784fbbb9a8caa25b6c84d10ab9c4e7b2",
+    "name": "alias-session-matches.jsonl"
+  },
+  "extract_blake2b": "19850c3cb4b81069208376a530546d92e585cbd749ad82e0309e244263bff1a2",
+  "extract_file": "sessions-extract.jsonl",
+  "extracted_sessions": 3491,
+  "messages": 70368,
+  "missing_sessions": [],
+  "requested_sessions": 3491,
+  "source": {
+    "blake2b": "ed2ab424dcf536366f16bac4d4e88bb08a46f2caf78ece2576ce60bb43dc6ac8",
+    "name": "chatbot.xlsx",
+    "rows_scanned": 6405948
+  },
+  "user_turns": 12180
+}
