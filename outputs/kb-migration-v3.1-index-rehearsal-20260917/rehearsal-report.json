@@ -1,0 +1,1496 @@
+{
+  "started_at": "2026-09-17T17:21:57.100675+00:00",
+  "disposable_database": "auzef_migration_v31_test_20260917172157",
+  "meili_index": "qna_migration_v31_test_20260917172157",
+  "qdrant_collection": "qna_migration_v31_test_20260917172157",
+  "steps": {
+    "real_resources_before": {
+      "ok": true,
+      "result": {
+        "db": {
+          "database": "auzef_bot",
+          "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+          "active_qna": 311,
+          "aliases": 2696,
+          "guards": 0
+        },
+        "meili": {
+          "indexes": [
+            "auzef_qna_index"
+          ],
+          "index": "auzef_qna_index",
+          "updated_at": "2026-09-14 12:05:39.482120",
+          "documents": 311,
+          "documents_digest": "fd87b04d563d97f2535ad0fd2e038de119723cdd4b199dc6dc7eb13fbb8a34c8",
+          "settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f"
+        },
+        "qdrant": {
+          "collections": [
+            "auzef_qna_vectors"
+          ],
+          "collection": "auzef_qna_vectors",
+          "points_count": 3006,
+          "points": 3006,
+          "points_digest": "98404b8b81a62417afbe868f033559c0f601c3bd749f509ae1794eff1e7411ea",
+          "vector_config": "size=1024 distance=<Distance.COSINE: 'Cosine'> hnsw_config=None quantization_config=None on_disk=None memory=None datatype=None multivector_config=None"
+        }
+      }
+    },
+    "disposable_db_clone": {
+      "ok": true,
+      "result": {
+        "database": "auzef_migration_v31_test_20260917172157",
+        "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+        "active_qna": 311,
+        "aliases": 2696,
+        "guards": 0
+      }
+    },
+    "test_resources_created": {
+      "ok": true,
+      "result": {
+        "meili_index": "qna_migration_v31_test_20260917172157",
+        "meili_settings_match_real": true,
+        "qdrant_collection": "qna_migration_v31_test_20260917172157",
+        "qdrant_vectors": "size=1024 distance=<Distance.COSINE: 'Cosine'> hnsw_config=None quantization_config=None on_disk=None memory=None datatype=None multivector_config=None"
+      }
+    },
+    "seed_index_sync": {
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "meili_index": "qna_migration_v31_test_20260917172157",
+        "qdrant_collection": "qna_migration_v31_test_20260917172157",
+        "active": 311,
+        "failures": []
+      }
+    },
+    "seed_consistency": {
+      "ok": true,
+      "result": {
+        "label": "seed",
+        "status": "PASS",
+        "failures": [],
+        "db": {
+          "database": "auzef_migration_v31_test_20260917172157",
+          "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+          "active_qna": 311,
+          "aliases": 2696,
+          "guards": 0
+        },
+        "meili": {
+          "index": "qna_migration_v31_test_20260917172157",
+          "documents": 311,
+          "expected": 311
+        },
+        "qdrant": {
+          "collection": "qna_migration_v31_test_20260917172157",
+          "points": 3006,
+          "expected": 3006
+        },
+        "reencode": {}
+      }
+    },
+    "backup": {
+      "ok": true,
+      "result": {
+        "created_at": "2026-09-17T17:35:52.044171+00:00",
+        "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+        "snapshot_file_blake2b": "07d4f6f6ee4eb4e60085dd3561baeaad0dddb9bb173113190893144e2b19f4c2",
+        "pg_dump_file": "admin-qna-tables.dump",
+        "pg_dump_blake2b": "75cf3ae01d00cf633eff4c5d66ef62da3812085ebe8b1ab18b6574dee40be327",
+        "pg_dump_tables": [
+          "qna",
+          "qna_queries",
+          "qna_routing_guards",
+          "qna_tags"
+        ],
+        "counts": {
+          "qna": 311,
+          "aliases": 2696,
+          "guards": 0
+        },
+        "restore_hint": "Önce rollback modu denenir. O başarısızsa bu dump bakım penceresinde, uygulama durdurulmuş hâlde ve önce ayrı bir rehearsal DB'sinde doğrulanarak restore edilir; ardından index-sync tüm aktif QnA id'leriyle çalıştırılır."
+      }
+    },
+    "pre_migration_alias_positions": {
+      "ok": true,
+      "result": {
+        "phase": "pre",
+        "status": "PASS",
+        "failures": [],
+        "alias_moves_checked": 47,
+        "alias_moves_ok": 47,
+        "named_regressions": {
+          "muafiyet_otomatik": [
+            {
+              "case": 13,
+              "alias": "Muafiyetim otomatik gerçekleşmemiş",
+              "source": 306,
+              "target": null,
+              "target_ref": "NEW-01",
+              "meili": [
+                306
+              ],
+              "qdrant": [
+                306
+              ],
+              "ok": true
+            }
+          ],
+          "tercih_sistemi_giris": [
+            {
+              "case": 62,
+              "alias": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim",
+              "source": 309,
+              "target": null,
+              "target_ref": "NEW-02",
+              "meili": [
+                309
+              ],
+              "qdrant": [
+                309
+              ],
+              "ok": true
+            }
+          ],
+          "okula_ara_verme": [
+            {
+              "case": 202,
+              "alias": "Okuluma ara vermek zorunda kaldım.tekrar dönmek istiyorum",
+              "source": 319,
+              "target": null,
+              "target_ref": "NEW-05",
+              "meili": [
+                319
+              ],
+              "qdrant": [
+                319
+              ],
+              "ok": true
+            },
+            {
+              "case": 203,
+              "alias": "Okuluma ara vermek zorunda kaldım.tekrar geri dönebilirmiyim",
+              "source": 319,
+              "target": null,
+              "target_ref": "NEW-05",
+              "meili": [
+                319
+              ],
+              "qdrant": [
+                319
+              ],
+              "ok": true
+            }
+          ],
+          "sinavlar_ayni_oturum": [
+            {
+              "case": 312,
+              "alias": "Merhaba İşletme 1. sınıf öğrencisiyim. İktisat İstatistik ve Matematik sınavım tek otrumda mı gerçekleşecek?",
+              "source": 327,
+              "target": null,
+              "target_ref": "NEW-07",
+              "meili": [
+                327
+              ],
+              "qdrant": [
+                327
+              ],
+              "ok": true
+            }
+          ],
+          "edevlet_transkript": [
+            {
+              "case": 429,
+              "alias": "E devletteki transcrıpt belgemde kredi notum farklı19:",
+              "source": 337,
+              "target": null,
+              "target_ref": "NEW-09",
+              "meili": [
+                337
+              ],
+              "qdrant": [
+                337
+              ],
+              "ok": true
+            }
+          ]
+        },
+        "new11": {
+          "alias": "Lisans tamamlama programları nelerdir",
+          "source": 318,
+          "meili": [
+            318
+          ],
+          "qdrant": [
+            318
+          ],
+          "ok": true
+        },
+        "created_searchable": [],
+        "docs_with_self_canonical_alias": [],
+        "multi_owner_alias_texts": [
+          "Kaydımı yeniden aktif hale getirmek istiyorum"
+        ]
+      }
+    },
+    "apply": {
+      "ok": true,
+      "result": {
+        "status": "APPLIED",
+        "integrity": "PASS",
+        "integrity_passes": 136,
+        "committed_units": 43,
+        "unit_order": [
+          "guard_only",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "update",
+          "alias_move",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "create",
+          "promotion"
+        ],
+        "created_ids": {
+          "NEW-01": 381,
+          "NEW-02": 382,
+          "NEW-03": 383,
+          "NEW-04": 384,
+          "NEW-05": 385,
+          "NEW-06": 386,
+          "NEW-07": 387,
+          "NEW-08": 388,
+          "NEW-09": 389,
+          "NEW-10": 390,
+          "NEW-12": 391,
+          "NEW-13": 392,
+          "NEW-14": 393,
+          "NEW-15": 394,
+          "NEW-11": 395
+        },
+        "ex319": [
+          {
+            "type": "journal",
+            "status": "COMMITTED",
+            "unit": "guard_only:EX-319",
+            "kind": "guard_only",
+            "ref": "EX-319",
+            "qna_id": 319,
+            "guard_ref": "GUARD-EX-319",
+            "skipped_content_update": {
+              "ref": "EX-319",
+              "status": "BLOCKED_CASE_214"
+            }
+          }
+        ],
+        "index_sync": {
+          "status": "PASS",
+          "meili_index": "qna_migration_v31_test_20260917172157",
+          "qdrant_collection": "qna_migration_v31_test_20260917172157",
+          "active": 57,
+          "removed": [],
+          "failures": []
+        },
+        "index_ids": [
+          14,
+          21,
+          39,
+          40,
+          88,
+          91,
+          94,
+          103,
+          150,
+          151,
+          166,
+          171,
+          186,
+          215,
+          256,
+          261,
+          266,
+          306,
+          307,
+          308,
+          309,
+          310,
+          312,
+          314,
+          315,
+          316,
+          318,
+          319,
+          320,
+          322,
+          325,
+          326,
+          327,
+          329,
+          330,
+          332,
+          336,
+          337,
+          341,
+          344,
+          345,
+          346,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          391,
+          392,
+          393,
+          394,
+          395
+        ]
+      }
+    },
+    "db_integrity": {
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "passes": 136,
+        "failures": []
+      }
+    },
+    "post_index_consistency": {
+      "ok": true,
+      "result": {
+        "label": "post",
+        "status": "PASS",
+        "failures": [],
+        "db": {
+          "database": "auzef_migration_v31_test_20260917172157",
+          "snapshot_digest": "bf84e2c51424d7aa0e55b2f368f316029a30634b8d916ba1fbc0761025c7f41a",
+          "active_qna": 326,
+          "aliases": 2695,
+          "guards": 11
+        },
+        "meili": {
+          "index": "qna_migration_v31_test_20260917172157",
+          "documents": 326,
+          "expected": 326
+        },
+        "qdrant": {
+          "collection": "qna_migration_v31_test_20260917172157",
+          "points": 3020,
+          "expected": 3020
+        },
+        "reencode": {
+          "points": 536,
+          "min_cosine": 0.9999998807907104,
+          "below_0_999": []
+        }
+      }
+    },
+    "post_migration_index_assertions": {
+      "ok": true,
+      "result": {
+        "phase": "post",
+        "status": "PASS",
+        "failures": [],
+        "alias_moves_checked": 47,
+        "alias_moves_ok": 47,
+        "named_regressions": {
+          "muafiyet_otomatik": [
+            {
+              "case": 13,
+              "alias": "Muafiyetim otomatik gerçekleşmemiş",
+              "source": 306,
+              "target": 381,
+              "target_ref": "NEW-01",
+              "meili": [
+                381
+              ],
+              "qdrant": [
+                381
+              ],
+              "ok": true
+            }
+          ],
+          "tercih_sistemi_giris": [
+            {
+              "case": 62,
+              "alias": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim",
+              "source": 309,
+              "target": 382,
+              "target_ref": "NEW-02",
+              "meili": [
+                382
+              ],
+              "qdrant": [
+                382
+              ],
+              "ok": true
+            }
+          ],
+          "okula_ara_verme": [
+            {
+              "case": 202,
+              "alias": "Okuluma ara vermek zorunda kaldım.tekrar dönmek istiyorum",
+              "source": 319,
+              "target": 385,
+              "target_ref": "NEW-05",
+              "meili": [
+                385
+              ],
+              "qdrant": [
+                385
+              ],
+              "ok": true
+            },
+            {
+              "case": 203,
+              "alias": "Okuluma ara vermek zorunda kaldım.tekrar geri dönebilirmiyim",
+              "source": 319,
+              "target": 385,
+              "target_ref": "NEW-05",
+              "meili": [
+                385
+              ],
+              "qdrant": [
+                385
+              ],
+              "ok": true
+            }
+          ],
+          "sinavlar_ayni_oturum": [
+            {
+              "case": 312,
+              "alias": "Merhaba İşletme 1. sınıf öğrencisiyim. İktisat İstatistik ve Matematik sınavım tek otrumda mı gerçekleşecek?",
+              "source": 327,
+              "target": 387,
+              "target_ref": "NEW-07",
+              "meili": [
+                387
+              ],
+              "qdrant": [
+                387
+              ],
+              "ok": true
+            }
+          ],
+          "edevlet_transkript": [
+            {
+              "case": 429,
+              "alias": "E devletteki transcrıpt belgemde kredi notum farklı19:",
+              "source": 337,
+              "target": 389,
+              "target_ref": "NEW-09",
+              "meili": [
+                389
+              ],
+              "qdrant": [
+                389
+              ],
+              "ok": true
+            }
+          ]
+        },
+        "new11": {
+          "alias": "Lisans tamamlama programları nelerdir",
+          "source": 318,
+          "meili": [],
+          "qdrant": [],
+          "new_id": 395,
+          "meili_top": [
+            395,
+            92,
+            332
+          ],
+          "qdrant_top": [
+            395,
+            320,
+            320
+          ],
+          "own_alias": [],
+          "ok": true
+        },
+        "created_searchable": [
+          {
+            "ref": "NEW-01",
+            "qna_id": 381,
+            "meili_top": [
+              381,
+              35,
+              337
+            ],
+            "qdrant_top": [
+              381,
+              381,
+              306
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-02",
+            "qna_id": 382,
+            "meili_top": [
+              382,
+              153,
+              313
+            ],
+            "qdrant_top": [
+              382,
+              315,
+              315
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-03",
+            "qna_id": 383,
+            "meili_top": [
+              383,
+              109,
+              108
+            ],
+            "qdrant_top": [
+              383,
+              25,
+              311
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-04",
+            "qna_id": 384,
+            "meili_top": [
+              384,
+              54,
+              139
+            ],
+            "qdrant_top": [
+              384,
+              384,
+              228
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-05",
+            "qna_id": 385,
+            "meili_top": [
+              385,
+              110,
+              162
+            ],
+            "qdrant_top": [
+              385,
+              385,
+              241
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-06",
+            "qna_id": 386,
+            "meili_top": [
+              386,
+              109,
+              252
+            ],
+            "qdrant_top": [
+              386,
+              14,
+              386
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-07",
+            "qna_id": 387,
+            "meili_top": [
+              387,
+              149,
+              57
+            ],
+            "qdrant_top": [
+              387,
+              387,
+              329
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-08",
+            "qna_id": 388,
+            "meili_top": [
+              388,
+              329,
+              391
+            ],
+            "qdrant_top": [
+              388,
+              388,
+              329
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-09",
+            "qna_id": 389,
+            "meili_top": [
+              389,
+              56,
+              344
+            ],
+            "qdrant_top": [
+              389,
+              337,
+              344
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-10",
+            "qna_id": 390,
+            "meili_top": [
+              390,
+              310,
+              21
+            ],
+            "qdrant_top": [
+              390,
+              310,
+              310
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-12",
+            "qna_id": 391,
+            "meili_top": [
+              391,
+              162,
+              172
+            ],
+            "qdrant_top": [
+              391,
+              172,
+              172
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-13",
+            "qna_id": 392,
+            "meili_top": [
+              392,
+              341,
+              319
+            ],
+            "qdrant_top": [
+              392,
+              392,
+              341
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-14",
+            "qna_id": 393,
+            "meili_top": [
+              393,
+              341,
+              152
+            ],
+            "qdrant_top": [
+              393,
+              393,
+              341
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-15",
+            "qna_id": 394,
+            "meili_top": [
+              394,
+              322,
+              266
+            ],
+            "qdrant_top": [
+              394,
+              323,
+              110
+            ],
+            "ok": true
+          },
+          {
+            "ref": "NEW-11",
+            "qna_id": 395,
+            "meili_top": [
+              395,
+              92,
+              332
+            ],
+            "qdrant_top": [
+              395,
+              320,
+              320
+            ],
+            "ok": true
+          }
+        ],
+        "docs_with_self_canonical_alias": [],
+        "multi_owner_alias_texts": [
+          "Kaydımı yeniden aktif hale getirmek istiyorum"
+        ]
+      }
+    },
+    "guard_runtime_smoke": {
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "failures": [],
+        "counts": {
+          "normal": 3,
+          "guarded_queries": 21,
+          "guarded_qna": 11,
+          "temporal_queries": 6
+        },
+        "results": {
+          "normal": [
+            {
+              "qna_id": 381,
+              "ref": "NEW-01",
+              "full_pipeline_source": "academic_calendar",
+              "full_pipeline_hit": false,
+              "qna_chain_source": "meilisearch",
+              "qna_chain_hit": true,
+              "selector_in_pool": true,
+              "selector_source": "llm",
+              "selector_hit": true,
+              "ok": true
+            },
+            {
+              "qna_id": 14,
+              "ref": "EX-14",
+              "full_pipeline_source": "meilisearch",
+              "full_pipeline_hit": true,
+              "qna_chain_source": "meilisearch",
+              "qna_chain_hit": true,
+              "selector_in_pool": true,
+              "selector_source": "llm",
+              "selector_hit": true,
+              "ok": true
+            },
+            {
+              "qna_id": 1,
+              "ref": null,
+              "full_pipeline_source": "meilisearch",
+              "full_pipeline_hit": true,
+              "qna_chain_source": "meilisearch",
+              "qna_chain_hit": true,
+              "selector_in_pool": true,
+              "selector_source": "llm",
+              "selector_hit": true,
+              "ok": true
+            }
+          ],
+          "guarded": [
+            {
+              "qna_id": 319,
+              "ref": "EX-319",
+              "guard_ref": "GUARD-EX-319",
+              "query": "Af başvurusu nasıl yapılır?",
+              "fallback_leak": false,
+              "fallback_source": "meilisearch",
+              "qna_chain_leak": false,
+              "qna_chain_source": "meilisearch",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 336,
+              "ref": "EX-336",
+              "guard_ref": "GUARD-EX-336",
+              "query": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 382,
+              "ref": "NEW-02",
+              "guard_ref": "GUARD-NEW-02",
+              "query": "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 382,
+              "ref": "NEW-02",
+              "guard_ref": "GUARD-NEW-02",
+              "query": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim",
+              "fallback_leak": false,
+              "fallback_source": "none",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 385,
+              "ref": "NEW-05",
+              "guard_ref": "GUARD-NEW-05",
+              "query": "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 385,
+              "ref": "NEW-05",
+              "guard_ref": "GUARD-NEW-05",
+              "query": "Okuluma ara vermek zorunda kaldım.tekrar dönmek istiyorum",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 385,
+              "ref": "NEW-05",
+              "guard_ref": "GUARD-NEW-05",
+              "query": "Okuluma ara vermek zorunda kaldım.tekrar geri dönebilirmiyim",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 387,
+              "ref": "NEW-07",
+              "guard_ref": "GUARD-NEW-07",
+              "query": "Derslerimin sınavları aynı oturumda mı yapılacak?",
+              "fallback_leak": false,
+              "fallback_source": "none",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 387,
+              "ref": "NEW-07",
+              "guard_ref": "GUARD-NEW-07",
+              "query": "Merhaba İşletme 1. sınıf öğrencisiyim. İktisat İstatistik ve Matematik sınavım tek otrumda mı gerçekleşecek?",
+              "fallback_leak": false,
+              "fallback_source": "none",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 388,
+              "ref": "NEW-08",
+              "guard_ref": "GUARD-NEW-08",
+              "query": "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 388,
+              "ref": "NEW-08",
+              "guard_ref": "GUARD-NEW-08",
+              "query": "Sadece bir ders dersten FF almışım.yaz okulu na mı yoksa üç ders sınavına mı başvuru yapmam gerekiyor",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 390,
+              "ref": "NEW-10",
+              "guard_ref": "GUARD-NEW-10",
+              "query": "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "meilisearch",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 390,
+              "ref": "NEW-10",
+              "guard_ref": "GUARD-NEW-10",
+              "query": "Sınavsız üniversite kayıt ne zaman",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "meilisearch",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 391,
+              "ref": "NEW-12",
+              "guard_ref": "GUARD-NEW-12",
+              "query": "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 391,
+              "ref": "NEW-12",
+              "guard_ref": "GUARD-NEW-12",
+              "query": "Merhaba tek ders sınavı ne zaman açıklanacak",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 392,
+              "ref": "NEW-13",
+              "guard_ref": "GUARD-NEW-13",
+              "query": "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 392,
+              "ref": "NEW-13",
+              "guard_ref": "GUARD-NEW-13",
+              "query": "2025-2026 bahar dönemi notları neden gözükmüyor",
+              "fallback_leak": false,
+              "fallback_source": "meilisearch",
+              "qna_chain_leak": false,
+              "qna_chain_source": "meilisearch",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 393,
+              "ref": "NEW-14",
+              "guard_ref": "GUARD-NEW-14",
+              "query": "Bahar dönemi sınav sonuçları açıklandı mı?",
+              "fallback_leak": false,
+              "fallback_source": "qdrant_vector",
+              "qna_chain_leak": false,
+              "qna_chain_source": "qdrant_vector",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 393,
+              "ref": "NEW-14",
+              "guard_ref": "GUARD-NEW-14",
+              "query": "Bahar Sınavları açıklanmadı mı?",
+              "fallback_leak": false,
+              "fallback_source": "none",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 393,
+              "ref": "NEW-14",
+              "guard_ref": "GUARD-NEW-14",
+              "query": "2026 Bahar Vize sonuçları açıklandı mı?",
+              "fallback_leak": false,
+              "fallback_source": "academic_calendar",
+              "qna_chain_leak": false,
+              "qna_chain_source": "none",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            },
+            {
+              "qna_id": 395,
+              "ref": "NEW-11",
+              "guard_ref": "GUARD-NEW-11",
+              "query": "Lisans tamamlama programları nelerdir?",
+              "fallback_leak": false,
+              "fallback_source": "meilisearch",
+              "qna_chain_leak": false,
+              "qna_chain_source": "meilisearch",
+              "without_guard_qna_chain_returns_it": true,
+              "without_guard_qna_chain_source": "meilisearch",
+              "selector_in_pool": true,
+              "selector_answered": true,
+              "declined_in_pool": true,
+              "declined_leak": false,
+              "declined_source": "llm",
+              "ok": true
+            }
+          ],
+          "ex319": {
+            "guard_ref": "GUARD-EX-319",
+            "valid_until": "2026-12-09",
+            "row_identical_to_backup": true,
+            "planned_moves_out_of_319": [
+              202,
+              203,
+              212,
+              213
+            ],
+            "aliases_equal_backup_minus_planned_moves": true,
+            "retained_cases_on_319": [
+              {
+                "case": 205,
+                "alias": "Merhaba öğrenci affı ile ilgili bilgi almak istiyorum",
+                "db": true,
+                "meili": true,
+                "qdrant": true
+              },
+              {
+                "case": 206,
+                "alias": "Merhaba ben öğrenci affı ile ilgili bilgi almak istiyorum",
+                "db": true,
+                "meili": true,
+                "qdrant": true
+              },
+              {
+                "case": 214,
+                "alias": "2025 döneminde lisans kaydı yaptırdım harç yatrmamıştım ama aktif kaydım bulunuyor lisans kaydımı aktifleştirebilirmiyim",
+                "db": true,
+                "meili": true,
+                "qdrant": true
+              }
+            ],
+            "in_window_selector_pool_has_319": true,
+            "in_window_selector_answered": true,
+            "expired_selector_pool_has_319": false,
+            "expired_answer_is_319": false,
+            "expired_fallback_is_319": false,
+            "ok": true
+          },
+          "temporal_counterfactual": [
+            {
+              "ref": "NEW-10",
+              "qna_id": 390,
+              "query": "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "meilisearch",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "academic_calendar"
+            },
+            {
+              "ref": "NEW-10",
+              "qna_id": 390,
+              "query": "Sınavsız üniversite kayıt ne zaman",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "meilisearch",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "academic_calendar"
+            },
+            {
+              "ref": "NEW-12",
+              "qna_id": 391,
+              "query": "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "qdrant_vector",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "academic_calendar"
+            },
+            {
+              "ref": "NEW-12",
+              "qna_id": 391,
+              "query": "Merhaba tek ders sınavı ne zaman açıklanacak",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "qdrant_vector",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "academic_calendar"
+            },
+            {
+              "ref": "NEW-13",
+              "qna_id": 392,
+              "query": "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "qdrant_vector",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "qdrant_vector"
+            },
+            {
+              "ref": "NEW-13",
+              "qna_id": 392,
+              "query": "2025-2026 bahar dönemi notları neden gözükmüyor",
+              "without_guard_fallback_returns_it": true,
+              "without_guard_source": "meilisearch",
+              "with_guard_fallback_returns_it": false,
+              "with_guard_source": "meilisearch",
+              "full_pipeline_returns_it": false,
+              "full_pipeline_source": "meilisearch"
+            }
+          ],
+          "temporal_counterfactual_demonstrated_refs": [
+            "NEW-10",
+            "NEW-12",
+            "NEW-13"
+          ]
+        }
+      }
+    },
+    "rollback": {
+      "ok": true,
+      "result": {
+        "status": "ROLLED_BACK",
+        "restored_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+        "counts": {
+          "foreign_changes": 0,
+          "delete_qna": 15,
+          "restore_qna": 26,
+          "restore_alias_owner": 47,
+          "reinsert_alias": 1,
+          "guard_restore": 0,
+          "guard_delete": 11,
+          "reindex_ids": 57
+        },
+        "index_sync": {
+          "status": "PASS",
+          "meili_index": "qna_migration_v31_test_20260917172157",
+          "qdrant_collection": "qna_migration_v31_test_20260917172157",
+          "active": 42,
+          "removed": [
+            381,
+            382,
+            383,
+            384,
+            385,
+            386,
+            387,
+            388,
+            389,
+            390,
+            391,
+            392,
+            393,
+            394,
+            395
+          ],
+          "failures": []
+        }
+      }
+    },
+    "rollback_index_consistency": {
+      "ok": true,
+      "result": {
+        "label": "rollback",
+        "status": "PASS",
+        "failures": [],
+        "db": {
+          "database": "auzef_migration_v31_test_20260917172157",
+          "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+          "active_qna": 311,
+          "aliases": 2696,
+          "guards": 0
+        },
+        "meili": {
+          "index": "qna_migration_v31_test_20260917172157",
+          "documents": 311,
+          "expected": 311
+        },
+        "qdrant": {
+          "collection": "qna_migration_v31_test_20260917172157",
+          "points": 3006,
+          "expected": 3006
+        },
+        "reencode": {}
+      }
+    },
+    "rollback_equals_seed": {
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "failures": [],
+        "left": "seed",
+        "right": "rollback",
+        "meili_documents": [
+          311,
+          311
+        ],
+        "qdrant_points": [
+          3006,
+          3006
+        ],
+        "min_vector_cosine": 0.9999998211860657
+      }
+    },
+    "rollback_alias_positions": {
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "alias_moves_ok": 47,
+        "new11": {
+          "alias": "Lisans tamamlama programları nelerdir",
+          "source": 318,
+          "meili": [
+            318
+          ],
+          "qdrant": [
+            318
+          ],
+          "ok": true
+        },
+        "failures": []
+      }
+    },
+    "cleanup": {
+      "ok": true,
+      "result": {
+        "resources": {
+          "name": "qna_migration_v31_test_20260917172157",
+          "meili_delete_status": "succeeded",
+          "qdrant_deleted": true,
+          "meili_index_remaining": false,
+          "qdrant_collection_remaining": false,
+          "work_dir_remaining": false,
+          "status": "PASS"
+        },
+        "database_dropped": true,
+        "database_remaining": false
+      }
+    },
+    "real_resources_after": {
+      "ok": true,
+      "result": {
+        "db": {
+          "database": "auzef_bot",
+          "snapshot_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+          "active_qna": 311,
+          "aliases": 2696,
+          "guards": 0
+        },
+        "meili": {
+          "indexes": [
+            "auzef_qna_index"
+          ],
+          "index": "auzef_qna_index",
+          "updated_at": "2026-09-14 12:05:39.482120",
+          "documents": 311,
+          "documents_digest": "fd87b04d563d97f2535ad0fd2e038de119723cdd4b199dc6dc7eb13fbb8a34c8",
+          "settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f"
+        },
+        "qdrant": {
+          "collections": [
+            "auzef_qna_vectors"
+          ],
+          "collection": "auzef_qna_vectors",
+          "points_count": 3006,
+          "points": 3006,
+          "points_digest": "98404b8b81a62417afbe868f033559c0f601c3bd749f509ae1794eff1e7411ea",
+          "vector_config": "size=1024 distance=<Distance.COSINE: 'Cosine'> hnsw_config=None quantization_config=None on_disk=None memory=None datatype=None multivector_config=None"
+        }
+      },
+      "comparison": {
+        "db_snapshot_digest": true,
+        "meili_documents_digest": true,
+        "meili_settings_digest": true,
+        "meili_updated_at": true,
+        "meili_index_list": true,
+        "qdrant_points_digest": true,
+        "qdrant_collection_list": true
+      }
+    }
+  },
+  "status": "PASS",
+  "finished_at": "2026-09-17T17:44:54.800477+00:00"
+}

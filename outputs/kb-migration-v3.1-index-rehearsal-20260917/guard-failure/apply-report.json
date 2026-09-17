@@ -1,0 +1,6 @@
+{
+  "mode": "apply",
+  "status": "PARTIAL_FAILED",
+  "failed_unit": "create:NEW-02",
+  "next": "rollback modunu backup snapshot ile çalıştır"
+}
