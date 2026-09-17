@@ -1,0 +1,1986 @@
+{
+  "schema_version": "auzef-kb-mutation-plan-v3.1-final",
+  "generated_at": "2026-09-17T09:14:52.448142+00:00",
+  "apply_mode": "DRY_RUN_ONLY",
+  "database_writes_performed": false,
+  "sources": [
+    "/home/feitcagri/İndirilenler/AUZEF-QnA-dogrulanmis-konsolidasyon-v2-20260916.xlsx",
+    "/home/feitcagri/İndirilenler/AUZEF-abi-son-kontrol-20260916-duzenlendi.xlsx",
+    "/home/feitcagri/İndirilenler/qna_export.csv",
+    "outputs/session-eval-20260914/qna-catalog-20260915.json",
+    "Kullanıcının 17.09.2026 tarihli nihai Çözüm Merkezi kuralı ve takip kararları"
+  ],
+  "preconditions": {
+    "expected_active_qna_count": 311,
+    "require_exact_current_question_and_answer_match": true,
+    "require_exact_alias_source_match": true,
+    "require_routing_guard_capability_for_controlled_targets": true,
+    "abort_on_any_mismatch": true
+  },
+  "stats": {
+    "reviewed_cases": 68,
+    "content_ready_cases": 67,
+    "ready_without_new_runtime_guard": 53,
+    "guard_dependent_cases_excluding_pending": 14,
+    "pending_cases": 1,
+    "update_qna_total": 27,
+    "update_qna_ready": 26,
+    "update_qna_blocked": 1,
+    "create_qna_normal": 14,
+    "atomic_alias_to_canonical_promotion": 1,
+    "move_alias_normal": 47,
+    "routing_guard": 11,
+    "unchanged_existing_qna": 5,
+    "expected_active_qna_after_full_apply": 326,
+    "projected_gold_after_content_resolution": {
+      "ready": 490,
+      "needs_context": 25,
+      "needs_kb": 1,
+      "total": 516
+    }
+  },
+  "qna_mutations": [
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-14",
+      "qna_id": 14,
+      "csv_row": 14,
+      "expected_current": {
+        "question": "Kayıt olduğum program hakkında bilgiye nereden ulaşabilirim?",
+        "answer": "auzef.istanbul.edu.tr de yer alan  ‘Programlar’ sekmesinden  kayıt olunan programın ismine tıklanır. Kayıt olduğunuz AUZEF programı hakkındaki genel bilgiye  bölüm sayfalarından ulaşabilirsiniz. \nBu sayfada;\n- Program Hakkında genel bilgi\n- Dersler\n- Akademik Kadro\n- Mezuniyet Şartları gibi bilgiler bulunmaktadır."
+      },
+      "set": {
+        "question": "Kayıt olduğum program hakkında bilgiye nereden ulaşabilirim?",
+        "answer": "Merhaba, kayıtlı olduğunuz programa ilişkin bilgilere auzef.istanbul.edu.tr adresindeki “Programlar” bölümünden ilgili programı seçerek ulaşabilirsiniz. Program sayfasında program hakkında genel bilgiler, dersler ve diğer akademik içerikler yer almaktadır."
+      },
+      "cases": [
+        425
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-21",
+      "qna_id": 21,
+      "csv_row": 21,
+      "expected_current": {
+        "question": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?",
+        "answer": "Daha önce ÖSYM kılavuzunda yer alan herhangi bir yükseköğretim kurumundan mezunsanız ya da öğrenciliğiniz devam ediyorsa \"Sınavsız İkinci Üniversite\" kapsamında aynı düzey ya da alt düzeydeki programlara kayıt olabilirsiniz. Kayıt tarihleri arasında basvuru.istanbul.edu.tr adresinden sınavsız ikinci üniversite başvurusu için hesap oluşturulur. Hesap aktivasyon işlemi tamamlanır. Aynı sisteme giriş yapılarak bilgi güncelleme ve tercih işlemleri gerçekleştirilir. Fakülte onayından sonra materyal ücreti yatırılarak kayıt tamamlanır.UYARI: Sistemler sadece kayıt tarihleri içerisinde aktif olmaktadır. Sınavsız İkinci Üniversite hakkında ayrıntılı bilgi için \"ikinciuniversite.istanbul.edu.tr\" ikinciuniversite.istanbul.edu.tr adresini ziyaret ediniz."
+      },
+      "set": {
+        "question": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?",
+        "answer": "Merhaba, daha önce ÖSYM kılavuzunda yer alan bir yükseköğretim kurumundan mezunsanız veya öğrenciliğiniz devam ediyorsa Sınavsız İkinci Üniversite kapsamında aynı düzey ya da alt düzeydeki programlara başvurabilirsiniz. Başvurular kayıt tarihleri içerisinde basvuru.istanbul.edu.tr adresi üzerinden çevrim içi olarak yapılmaktadır. Başvuru öncesinde güncel programları, başvuru koşullarını ve kayıt kılavuzunu auzef.istanbul.edu.tr adresinden kontrol etmenizi öneririz."
+      },
+      "cases": [
+        190
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Mevcut cevaptaki uygunluk koşulları korunarak abi cevabındaki başvuru yönlendirmesi eklendi. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-39",
+      "qna_id": 39,
+      "csv_row": 39,
+      "expected_current": {
+        "question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?",
+        "answer": "Mezuniyet durumunuz için transkript belgenizden, aldığınız derslerin AKTS/Kredi durumunu görüntüleyebilir ve gerekli hesaplamayı yapabilirsiniz.\nNOT: Transkriptinizi AKSİS - Not Kartı ekranından görüntüleyebilirsiniz."
+      },
+      "set": {
+        "question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?",
+        "answer": "Merhaba, programınızı tamamlamak için gerekli AKTS miktarını ve mevcut durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada tamamladığınız ve kalan derslerinizi de görüntüleyebilirsiniz."
+      },
+      "cases": [
+        102
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-40",
+      "qna_id": 40,
+      "csv_row": 40,
+      "expected_current": {
+        "question": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?",
+        "answer": "Öğrencilerimizin mezun durumuna gelebilmeleri için; \n- Tüm dönemlerine ait zorunlu derslerini almış, olması \n- FF harf notuna sahip olmaması. \n- Minimum 2.00 ortalamaya sahip olması. \n- Tamamlamaları gereken AKTS miktarını tamamlamış ya da aşmış olmaları gerekmektedir."
+      },
+      "set": {
+        "question": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?",
+        "answer": "Merhaba, mezuniyet için programınızdaki tüm zorunlu dersleri tamamlamış olmanız, FF harf notunuzun bulunmaması, genel not ortalamanızın en az 2.00 olması ve program için gerekli AKTS miktarını tamamlamış olmanız gerekmektedir.\n\nBu şartları sağladığınızda öğrencilik statünüz “Mezun” olarak güncellenecektir. Güncel eğitim durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz."
+      },
+      "cases": [
+        77
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-88",
+      "qna_id": 88,
+      "csv_row": 88,
+      "expected_current": {
+        "question": "Kayıt yenileme nedir, nasıl yapılır?",
+        "answer": "Kayıt yenileme, akademik takvimde belirtilen tarihler arasında öğrencinin materyal/öğrenim ücretinin ödemesi ve devamında ders alım işlemlerinin tamamlanması anlamına gelmektedir. Dönem dersi olmayan öğreciler ödeme yapsa dahi ders alım işlemi olmayacağı için kayıt yenilemiş sayılmamaktadır. Detaylı bilgi için ilgili tarihlerde yayınlanan kayıt yenileme kılavuzunu inceleyiniz."
+      },
+      "set": {
+        "question": "Kayıt yenileme nedir, nasıl yapılır?",
+        "answer": "Merhaba, kayıt yenileme; akademik takvimde belirtilen tarihler içerisinde ilgili döneme ait materyal/öğrenim ücretinin ödenmesi ve gerekiyorsa ders alma işlemlerinin tamamlanmasıdır. Kayıt yenileme işleminiz tamamlandığında öğrencilik statünüz “Devamlı Öğrenci” olarak güncellenir; kayıt yenileme yapılmayan dönemlerde “Pasif Öğrenci” olarak görünebilirsiniz. İlgili dönemde dersiniz bulunmaması gibi özel durumlarda kayıt yenileme süreci farklılık gösterebilir."
+      },
+      "cases": [
+        46
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Mevcut tanım korunup aktif/pasif öğrenci bilgisi eklendi. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-91",
+      "qna_id": 91,
+      "csv_row": 91,
+      "expected_current": {
+        "question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?",
+        "answer": "Sağlıkta lisans tamamlama programlarına başvuru şartları, tercih ve yerleştirme işlemleri YÖK tarafından yapılmaktadır, Ayrıntılı bilgiye \"http://www.yok.gov.tr/\" buradan ulaşabilirsiniz. Ayrıca sağlıkta lisans tamamlama programlarından olan Acil yardım ve Afet Yönetimi(Açık Öğretim), Sosyal Hizmet(Açık Öğretim) ve Sağlık Yönetimi(Açık Öğretim) programlarına DGS puan türü ile de öğrenci kabul edilmektedir."
+      },
+      "set": {
+        "question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?",
+        "answer": "Merhaba, Sağlıkta Lisans Tamamlama programlarına yerleştirme işlemleri Yükseköğretim Kurulu (YÖK) tarafından yürütülmektedir. Başvuru yapıp yapamayacağınızı öğrenmek için YÖK tarafından yayımlanan güncel Sağlıkta Lisans Tamamlama duyuru ve kılavuzlarını takip etmeniz gerekmektedir."
+      },
+      "cases": [
+        191,
+        193,
+        194
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-94",
+      "qna_id": 94,
+      "csv_row": 94,
+      "expected_current": {
+        "question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?",
+        "answer": "Aşağıda AUZEF kayıt türleri ve koşulları yer almaktadır. \n\nYKS sınavı: En az lise veya dengi okul mezunu olacak/olan adaylar YKS' ye girip programa yerleşmesi koşuluyla, \n\nDikey Geçiş Sınavı(DGS): Meslek Yüksekokulları ve Açık Öğretim Fakültesinin ön lisans programlarından mezun olacak/olan adaylar DGS' ye girip programa yerleşmesi koşuluyla, \n\nYatay Geçiş: Herhangi bir Fakülte/Yüksekokul' da  öğrenci olup Fakültemizde öğrenimine devam etmek isteyen öğrenciler Yatay geçiş ile başvurup programa yerleşmesi koşuluyla,\n\nSağlıkta Lisans Tamamlama: YÖK ün belirlediği şartları sağlayan, sağlık programlarından mezun olan adaylar ve YÖK tarafından programa yerleşmesi koşuluyla,  \n\nYabancı Öğrenci Sınavı(YÖS): Yurtdışından veya Yabancı Uyruklu Öğrenci Sınavı girip İstanbul Üniversitesi tarafından  programa yerleşmesi koşuluyla,\n\nSınavsız İkinci Üniversite: Herhangi bir yükseköğretim programından mezun olanlar ile halen öğrenim gören öğrenciler sınava girmeden Fakültemize başvurarak kayıt olabilirler.\n\n * Fakültemizden (AUZEF) mezun olanlar Sınavsız İkinci Üniversite ile yeni bir programa başvuru yapabilirler; ancak halen kayıtlı olan öğrenciler sınavsız ikinci üniversiteye başvuru yapamazlar."
+      },
+      "set": {
+        "question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?",
+        "answer": "Merhaba, AUZEF’e kayıt işlemleri başvuru türüne göre değişmektedir. YKS, İkinci Üniversite, DGS veya diğer kayıt türlerinden hangisi kapsamında başvuru yapacağınıza göre süreç farklılık gösterir."
+      },
+      "cases": [
+        372,
+        373,
+        482
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-103",
+      "qna_id": 103,
+      "csv_row": 103,
+      "expected_current": {
+        "question": "Materyal ücreti yıllık mı yoksa dönemlik mi yatırılır?",
+        "answer": "Materyal ücreti güz ve bahar dönemi olmak üzere yılda iki kez ödenmektedir."
+      },
+      "set": {
+        "question": "Materyal ücreti yıllık mı yoksa dönemlik mi yatırılır?",
+        "answer": "Merhaba,\n\nMateryal ücreti dönemlik olarak, güz ve bahar dönemlerinde olmak üzere yılda iki kez ödenmektedir. Hangi eğitim-öğretim döneminde bulunuyorsanız, ilgili döneme ait materyal ücretini ödeyerek öğreniminize devam edebilirsiniz. Aynı dönem için ayrıca başka bir borçlandırma yapılmaz."
+      },
+      "cases": [
+        278
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-150",
+      "qna_id": 150,
+      "csv_row": 150,
+      "expected_current": {
+        "question": "Sınav sonuçlarını nasıl görebilirim?",
+        "answer": "Sınav sonuçları ilk olarak \"https://auzefsinav.istanbul.edu.tr/\" buradan ilan edilir, \"https://auzefsinav.istanbul.edu.tr/ \" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yapılır. Daha sonra notlar AKSİS' e aktarılır. Vize ve final sınavlarının ikisi de açıklandıktan sonra notlar AKSİS' e harf notu olarak işlenir."
+      },
+      "set": {
+        "question": "Sınav sonuçlarını nasıl görebilirim?",
+        "answer": "Merhaba, sınav sonuçlarınızı auzefsinav.istanbul.edu.tr adresine giriş yaparak görüntüleyebilirsiniz."
+      },
+      "cases": [
+        461
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-151",
+      "qna_id": 151,
+      "csv_row": 151,
+      "expected_current": {
+        "question": "Harf notumu neden göremiyorum?",
+        "answer": "Bitirme sınav sonuçları yayınlanmadan AKSİS' te harf notları ilan edilmemektedir. Ara sınav ve final sınavlarının ikisi de açıklandıktan sonra notlar AKSİS' e harf notu olarak işlenir."
+      },
+      "set": {
+        "question": "Harf notumu neden göremiyorum?",
+        "answer": "Merhaba, sınav sonuçları açıklandıktan sonra harf notlarının ve ders başarı durumlarının hesaplanması ayrıca gerçekleştirilmektedir. Hesaplama tamamlandığında hangi derslerden başarılı veya başarısız olduğunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz."
+      },
+      "cases": [
+        456
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-166",
+      "qna_id": 166,
+      "csv_row": 166,
+      "expected_current": {
+        "question": "AUZEF'te Ham Başarı Notu (HBN) nedir, bir dersten koşullu ya da doğrudan geçmem için en az kaç almam gerekir?",
+        "answer": "Ham Başarı Notu (HBN), öğrencilerin yarıyıl/yıl içi etkinlikleri ve yarıyıl/yılsonu sınavından aldığı puanın ağırlık katsayısına göre ortalamasının alınması ile hesaplanan puandır. Fakültemiz programlarında HBN, Ara sınavın %30'u; Final/Telafi sınavının %70'i alınarak HBN hesaplanır. \nHBN’si 35’in altında kalan ve/veya Final/Telafi sınavına hakkı olduğu hâlde girmeyen ya da\ndevamsızlık sebebi ile giremeyen öğrencilerin notları bağıl değerlendirme sistemindeki hesaplamaya\ndâhil edilmez. Bunlardan HBN’ si 35’in altında kalan ve/veya bitirme/bütünleme sınavına girmeyen\nöğrenciler doğrudan FF harf notu alarak kalırlar. HBN’ si 100 olan öğrenciler bağıl değerlendirme\nsistemine dâhil edilmezler ve doğrudan AA alırlar."
+      },
+      "set": {
+        "question": "AUZEF'te Ham Başarı Notu (HBN) nedir, bir dersten koşullu ya da doğrudan geçmem için en az kaç almam gerekir?",
+        "answer": "Merhaba, derslerde sabit bir geçme notu bulunmamaktadır. Ham Başarı Notu (HBN), Ara Sınav notunun %30’u ile Bitirme Sınavı notunun %70’i alınarak hesaplanır. HBN’si 35’in altında kalan öğrenciler FF harf notu alır; 35 ve üzerindeki notlar ise bağıl değerlendirme sistemine göre harf notuna dönüştürülür."
+      },
+      "cases": [
+        496
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-171",
+      "qna_id": 171,
+      "csv_row": 171,
+      "expected_current": {
+        "question": "Mezuniyete Üç Ders Sınavına kimler başvurabilir?",
+        "answer": "Mezuniyete üç ders sınavına, mezuniyet şartlarını sağlayan; ancak en fazla 3 dersten başarısız durumda olan öğrenciler başvurabilmektedir. Üç ders sınav başvuruları öncesinde web sayfamızda sınav duyuru şartları yayımlanmaktadır. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\" buradan ulaşabilirsiniz."
+      },
+      "set": {
+        "question": "Mezuniyete Üç Ders Sınavına kimler başvurabilir?",
+        "answer": "Merhaba, Mezuniyete Üç Ders Sınavı’na mezuniyet şartlarını sağlayan ancak en fazla üç dersten başarısız durumda olan öğrenciler başvurabilir. Başvuru koşulları öğrencinin ders ve mezuniyet durumuna göre değerlendirilir. Güncel şartlar, başvuru koşulları ve uygulama detayları için https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi adresini inceleyebilirsiniz."
+      },
+      "cases": [
+        335,
+        336
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Mevcut açık koşul korunup içerik sahibinin resmi bağlantı yönlendirmesi eklendi. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-186",
+      "qna_id": 186,
+      "csv_row": 186,
+      "expected_current": {
+        "question": "Derslerimi nasıl görüntüleyebilirim?",
+        "answer": "Derslerin AUZEF Öğrenme Yönetim Sisteminde görülebilmesi için «Kesin Kayıt» ta olması gerekmektedir. Ödeme yapılmaması ya da dersler «Ders Danışman Onaylandı» veya «Danışman Onay Bekliyor» olduğunda ders seçimi tamamlanmamıştır ve öğrenciler bu durumda sisteminde dersi göremez ve dersin sınavına giremez. Bu öğrenciler derslerinin kesin kayıtta olması için \"https://auzefcozum.istanbul.edu.tr/\" buradan Fakülteyle iletişime geçmelidir."
+      },
+      "set": {
+        "question": "Derslerimi nasıl görüntüleyebilirim?",
+        "answer": "Merhaba,\n\nÖncelikle aksis.istanbul.edu.tr adresine giriş yaparak Öğrenme Yönetim Sistemi üzerinden ilgili dönemde dersinizin bulunup bulunmadığını kontrol ediniz.\n\nİlgili dönemde dersiniz bulunuyor ve ödemenizi tamamladıysanız dönem başlangıç tarihini beklemeniz gerekmektedir. Dönem başlangıcında dersleriniz hâlâ görünmüyorsa Çözüm Merkezi üzerinden talep oluşturabilirsiniz."
+      },
+      "cases": [
+        258
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-256",
+      "qna_id": 256,
+      "csv_row": 256,
+      "expected_current": {
+        "question": "Ders durum bilgisine nasıl ulaşabilirim?",
+        "answer": "Ders durum bilgilerinizi Aksis-Öğrenme Yönetim Sistemine giriş yapıldıktan sonra Eğitim Öğretim İşlemleri'nin altında Müfredat Listesi bölümünden ulaşabilirsiniz Aynı zamanda  transkript belgenizden aldığınız dersler ile programınızdaki ebs.istanbul.edu.tr adresindeki program ders bilgilerinden de karşılaştırma yapabilirsiniz."
+      },
+      "set": {
+        "question": "Ders durum bilgisine nasıl ulaşabilirim?",
+        "answer": "Merhaba, başarısız olduğunuz dersleri aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz. Burada aldığınız, başarılı olduğunuz ve başarısız olduğunuz derslerin tamamını kontrol edebilirsiniz."
+      },
+      "cases": [
+        34
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-261",
+      "qna_id": 261,
+      "csv_row": 261,
+      "expected_current": {
+        "question": "Harç iadesi için ne yapmalıyım?",
+        "answer": "Aşağıdaki bağlantıda tarif edildiği şekilde iade başvurusu yaptığınız taktirde başvurunuz fakültemiz ilgili birimine ulaştıktan sonra ibraz etmiş olduğunuz belgeler incelenecektir.İbraz edilen belgelerin onaylı nüshaları Döner Sermaye İşletme Müdürlüğüne ve Sağlık Kültür Spor Daire Başkanlığına iletilmekte olup, bu kurumlar tarafından da ayrıca  incelenmekte olduğundan iade işlemleri uzun sürebilmektedir. Fakültemize göndermiş olduğunuz belgelerin eksik/hatalı/uygun bulunmaması durumunda sms ile bilgilendirme yapılmaktadır.\"https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri\" https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri"
+      },
+      "set": {
+        "question": "Harç iadesi için ne yapmalıyım?",
+        "answer": "Merhaba, mükerrer ödeme yaptıysanız ücret iadesi için başvuruda bulunabilirsiniz. İade talep dilekçenizi, adınıza kayıtlı banka hesabınıza ait IBAN ve iletişim bilgileriyle birlikte doldurmanız ve iadesini talep ettiğiniz ödemeye ait banka dekontunu eklemeniz gerekmektedir.\n\nİade evraklarının ıslak imzalı olarak kargo yoluyla Fakültemize iletilmesi gerekmektedir. E-posta veya faks yoluyla gönderilen belgeler kabul edilmemektedir. Evraklarınız incelendikten sonra iade işlemi banka aracılığıyla gerçekleştirilecektir."
+      },
+      "cases": [
+        171
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-266",
+      "qna_id": 266,
+      "csv_row": 266,
+      "expected_current": {
+        "question": "AUZEF'e nasıl ulaşabilirim?",
+        "answer": "Adresimiz: Maslak Mah. Bilim Sk. Plaza No:5 Sun Plaza B Blok Maslak / Sarıyer / İSTANBUL AUZEF dijital bir fakültedir. Bu adres dışında herhangi bir şubemiz bulunmamaktadır. Çağrı Merkezi hafta içi mesai saatleri arasında hizmet vermektedir. 0(212) 440 00 44 Bunların dışında sosyal medya hesaplarımızdan da bizlere ulaşabilirsiniz. \"https://www.instagram.com/acikveuzaktan/\" https://www.instagram.com/acikveuzaktan/\"https://twitter.com/acikveuzaktan\" https://twitter.com/acikveuzaktan\"https://auzef.istanbul.edu.tr/\" https://auzef.istanbul.edu.tr/"
+      },
+      "set": {
+        "question": "AUZEF'e nasıl ulaşabilirim?",
+        "answer": "Merhaba, İstanbul Üniversitesi öğrencileri, mezunları ve ön kayıt yaptırmış kişiler AUZEF Çözüm Merkezi’ni kullanabilir. Bunların dışında kalan kişiler sosyal medya hesaplarımız, auzef.istanbul.edu.tr adresi veya 0212 440 00 44 numaralı çağrı merkezi üzerinden bizimle iletişime geçebilir.\n\nFiziksel adresimiz: Maslak Mah. Bilim Sk. Plaza No:5, Sun Plaza B Blok, Maslak / Sarıyer / İstanbul. AUZEF dijital bir fakültedir; bu adres dışında şubemiz bulunmamaktadır. Çağrı Merkezi hafta içi mesai saatleri arasında hizmet vermektedir."
+      },
+      "cases": [
+        252,
+        253
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Nihai iletişim kuralı işlendi: öğrenci, mezun ve ön kayıtlı kişiler Çözüm Merkezi; diğer kişiler sosyal medya, web veya çağrı merkezi. Mevcut fiziksel adres ve çağrı merkezi çalışma saati bilgisi korunmuştur."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-306",
+      "qna_id": 306,
+      "csv_row": 267,
+      "expected_current": {
+        "question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "answer": "Merhaba, ders muafiyeti yalnızca Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. Daha önce öğrenim gördüğünüz yükseköğretim programlarında başarılı olduğunuz diğer dersler için muafiyet talebinde bulunulamaz.\n\nDaha önce bir yükseköğretim programından mezun olduysanız bu ortak zorunlu derslerden muaf sayılırsınız. Hâlen başka bir yükseköğretim programında öğrenciyseniz ve bu derslerden başarılı olduysanız, ilan edilen tarihlerde muafiyet başvurusu yapmanız gerekmektedir.\n\nMuafiyet işlemleri ders seçimlerinden sonra auzef.istanbul.edu.tr adresinde yayımlanan kılavuza göre ve yalnızca AUZEF’e kayıt olunan ilk eğitim-öğretim döneminde gerçekleştirilmektedir. Sonraki dönemlerde muafiyet talebinde bulunulamaz."
+      },
+      "set": {
+        "question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "answer": "Merhaba, ders muafiyeti yalnızca Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. Ders muafiyeti başvuruları e-posta üzerinden alınmamaktadır; başvurular aksis.istanbul.edu.tr adresindeki Öğrenme Yönetim Sistemi üzerinden gerçekleştirilir. Muafiyet başvuru tarihleri ve işlem adımları web sayfamızda duyurulmakta ve başvuru sürecine ilişkin kılavuz yayımlanmaktadır."
+      },
+      "cases": [
+        18
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Mevcut kapsam bilgisi korunup başvuru kanalı/takvimi eklendi. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-307",
+      "qna_id": 307,
+      "csv_row": 268,
+      "expected_current": {
+        "question": "Kaçıncı sınıfta olduğumu nasıl öğrenebilirim?",
+        "answer": "Merhaba, aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden programınıza ait dönem bilgilerini, almanız gereken dersleri, aldığınız dersleri ve başarılı/başarısız olduğunuz dersleri görüntüleyebilirsiniz. Bu bilgiler üzerinden hangi dönemde olduğunuzu ve öğrenim durumunuzu takip edebilirsiniz."
+      },
+      "set": {
+        "question": "Kaçıncı sınıfta olduğumu nasıl öğrenebilirim?",
+        "answer": "Merhaba, yatay geçiş sonrasında başlayacağınız sınıf programınıza ve intibak durumunuza göre değişiklik gösterebilir. Güncel eğitim durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz."
+      },
+      "cases": [
+        27
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-312",
+      "qna_id": 312,
+      "csv_row": 273,
+      "expected_current": {
+        "question": "Mezun olmak için kaç dersim kaldı?",
+        "answer": "Merhaba, mezuniyet için tamamlamanız gereken kredi/AKTS bilgilerini ve kalan derslerinizi aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden görüntüleyebilirsiniz."
+      },
+      "set": {
+        "question": "Mezun olmak için kaç dersim kaldı?",
+        "answer": "Merhaba, mezuniyetinize ne kadar kaldığını ve kalan derslerinizi aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada almanız gereken, tamamladığınız ve kalan dersleri, AKTS durumunuzu ve derslerin hangi dönemlere ait olduğunu görüntüleyebilirsiniz. Programda alınması gereken toplam ders sayısı müfredatınıza ve kayıt yılınıza göre değişiklik gösterebilir."
+      },
+      "cases": [
+        105,
+        109,
+        110,
+        112,
+        119,
+        120
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Aynı QnA'ya gelen 6 onaylı vaka tek kanonik cevapta toplandı. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-314",
+      "qna_id": 314,
+      "csv_row": 275,
+      "expected_current": {
+        "question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?",
+        "answer": "Merhaba, sınav soru kitapçıkları soru itiraz süresi boyunca erişime açılmaktadır. İtiraz süresi sona erdikten sonra kitapçıklar sistemden kaldırılmaktadır. Bu nedenle yalnızca ilgili sınavın itiraz dönemi içerisinde görüntülenebilir."
+      },
+      "set": {
+        "question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?",
+        "answer": "Merhaba, final sınavı soru kitapçıkları sınavın tamamlanmasının ardından 2 günlük soru itiraz süresi boyunca yayımlanmaktadır. İtiraz süresi sona erdikten sonra kitapçıklar yayından kaldırılmaktadır."
+      },
+      "cases": [
+        454,
+        455
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-319",
+      "qna_id": 319,
+      "csv_row": 280,
+      "expected_current": {
+        "question": "Af başvurusu nasıl yapılır?",
+        "answer": "Merhaba, kaydınız silindiyse öğrenci affı kapsamında yeniden başvuruda bulunabilirsiniz. Başvurunuzu basvuru.istanbul.edu.tr adresi üzerinden online olarak gerçekleştirebilirsiniz. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru işlemlerinden önce Öğrenci Affı Başvuru Kılavuzu’nu incelemenizi öneriyoruz."
+      },
+      "set": {
+        "question": "Af başvurusu nasıl yapılır?",
+        "answer": "Merhaba,\n\nDaha önce AUZEF’e kayıt yaptırmış ancak herhangi bir nedenle eğitimine devam edemediği için kaydı silinmiş veya kaydını sildirmiş öğrenciler, şartları sağlamaları hâlinde öğrenci affından yararlanabilmektedir.\n\nBaşvurular AKSİS üzerinden çevrim içi olarak alınmaktadır. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru yapmadan önce öğrenci affı başvuru kılavuzunu incelemenizi öneririz.\n\nDetaylı bilgiye auzef.istanbul.edu.tr adresinden ulaşabilirsiniz."
+      },
+      "cases": [
+        205,
+        206,
+        214
+      ],
+      "status": "BLOCKED_CASE_214",
+      "content_control_ref": "EX-319",
+      "apply_condition": "Vaka 214 sonuçlanmalı veya 214 için retrieval + exact-bypass karantinası kurulmalı.",
+      "source_note": "Davranışsal koruma: vaka 214 sonuçlanmadan veya 214 için retrieval + exact-bypass karantinası uygulanmadan QnA 319 cevabı güncellenmez."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-320",
+      "qna_id": 320,
+      "csv_row": 281,
+      "expected_current": {
+        "question": "AUZEF'te hangi bölümler bulunmaktadır?",
+        "answer": "Merhaba, Fakültemizde yer alan güncel lisans ve önlisans programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz. Programların aktif/pasif durumları da ilgili sayfada yer almaktadır."
+      },
+      "set": {
+        "question": "AUZEF'te hangi bölümler bulunmaktadır?",
+        "answer": "Merhaba, Fakültemizde yer alan güncel lisans ve önlisans programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz."
+      },
+      "cases": [
+        225,
+        226,
+        417
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibinin kısa nihai metni aynen korundu; başvuru ekranında görünmeme cümlesi çıkarıldı."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-322",
+      "qna_id": 322,
+      "csv_row": 283,
+      "expected_current": {
+        "question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+        "answer": "Merhaba, Çözüm Merkezi üzerinden oluşturduğunuz talebin sistemde görünmesi kısa bir süre alabilir. Bir süre sonra “Taleplerim” bölümünü tekrar kontrol etmenizi öneriyoruz. Talebiniz hâlâ görünmüyorsa farklı bir tarayıcı veya cihaz üzerinden yeniden giriş yapabilirsiniz."
+      },
+      "set": {
+        "question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+        "answer": "Merhaba,\n\nİstanbul Üniversitesi öğrencileri, mezunları ve ön kayıt yaptırmış kişiler auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne giriş yaparak şikâyet veya taleplerini iletebilir. Talebiniz ilgili birim tarafından değerlendirilerek sistem üzerinden yanıtlanacaktır.\n\nBu grupların dışında kalan kişiler sosyal medya hesaplarımız, auzef.istanbul.edu.tr adresi veya 0212 440 00 44 numaralı çağrı merkezi üzerinden AUZEF’e ulaşabilir."
+      },
+      "cases": [
+        260,
+        344,
+        350
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Vaka 252 için son teyit edilen kural QnA 322'ye de uygulandı: öğrenci, mezun ve ön kayıtlı kişiler Çözüm Merkezi'ni kullanabilir; diğer kişiler alternatif iletişim kanallarına yönlendirilir."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-325",
+      "qna_id": 325,
+      "csv_row": 286,
+      "expected_current": {
+        "question": "Ders saydırma işlemi nasıl yapılır?",
+        "answer": "Merhaba, Fakültemizde ders saydırma/muafiyet işlemleri yalnızca Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. Daha önce başka bir yükseköğretim programında başarılı olduğunuz diğer dersler için muafiyet talebinde bulunulamaz. Muafiyet işlemleri yalnızca AUZEF’e kayıt olunan ilk eğitim-öğretim döneminde yapılmaktadır."
+      },
+      "set": {
+        "question": "Ders saydırma işlemi nasıl yapılır?",
+        "answer": "Merhaba, Fakültemizde ders saydırma/muafiyet işlemleri genel olarak Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. DGS ile yerleştiğiniz programda daha önce aldığınız derslerin intibak durumunun ayrıca değerlendirilmesi gerekiyorsa auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne talep oluşturabilirsiniz; talebiniz ilgili birim tarafından incelenerek gerekli yönlendirme yapılacaktır."
+      },
+      "cases": [
+        280
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Genel muafiyet kuralı korunup DGS/intibak vakası koşullu bölüm olarak eklendi. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-336",
+      "qna_id": 336,
+      "csv_row": 297,
+      "expected_current": {
+        "question": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?",
+        "answer": "Merhaba, Çocuk Gelişimi Lisans Programına yeni öğrenci alımı durdurulmuştur. Bu nedenle YKS kapsamında tercih yapılamamaktadır."
+      },
+      "set": {
+        "question": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?",
+        "answer": "Merhaba, Çocuk Gelişimi Lisans ve Önlisans Programlarına yeni öğrenci alımı durdurulmuştur. Bu nedenle YKS, DGS veya İkinci Üniversite kapsamında yeni kayıt alınmamaktadır. Programlarda hâlihazırda kayıtlı olan öğrenciler ise eğitimlerine devam edebilirler. Daha önce bu programlarda kayıtlı olup kaydı silinen öğrenciler, öğrenci affı şartlarını sağlamaları hâlinde yeniden başvuruda bulunabilirler."
+      },
+      "cases": [
+        413
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "EX-336",
+      "apply_condition": "İlgili routing guard başarıyla kurulmuş olmalı.",
+      "source_note": "İçerik sahibinin lisans + önlisans ve tüm başvuru türlerini kapsayan cevabı işlendi. Dönemsel/politika kontrollü içeriktir."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-337",
+      "qna_id": 337,
+      "csv_row": 298,
+      "expected_current": {
+        "question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+        "answer": "Merhaba, başarılı olduğunuz derslerin AKTS bilgilerini ve toplam AKTS durumunuzu aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden görüntüleyebilirsiniz."
+      },
+      "set": {
+        "question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+        "answer": "Merhaba, sınav sonuçları açıklandıktan sonra Bağıl Değerlendirme Sistemi (BDS) işlemleri tamamlanır ve dersin harf notu kesinleşir. Harf notu kesinleşen ders transkripte işlenir ve başarılı olunan dersin AKTS/kredi bilgisi de buna göre güncellenir.\n\nGüncel durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Programınıza ait mezuniyet şartlarına ise auzef.istanbul.edu.tr adresindeki ilgili program sayfasının “Mezuniyet Şartları” bölümünden ulaşabilirsiniz.\n\nMezuniyet şartlarını karşılamanız hâlinde mezuniyet işlemleriniz sistem tarafından otomatik olarak başlatılacaktır. Harf notları kesinleşmesine rağmen AKTS/kredi bilgilerinizde güncellenme olmadığını düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturabilirsiniz."
+      },
+      "cases": [
+        421,
+        427
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "421 genel AKTS görüntüleme vakası ile 427 son ders sonrası güncelleme vakası tek ve kapsamlı cevapta birleştirildi."
+    },
+    {
+      "action": "update_qna",
+      "operation_ref": "EX-346",
+      "qna_id": 346,
+      "csv_row": 307,
+      "expected_current": {
+        "question": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+        "answer": "Merhaba, Disiplin Cezası Durum Belgesi talebinizin sonucunu Çözüm Merkezi üzerinden takip edebilirsiniz. Talepler genellikle 24 saat içerisinde yanıtlanmaktadır."
+      },
+      "set": {
+        "question": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+        "answer": "Merhaba, Disiplin Cezası Durum Belgesi talebinizin sonucunu Çözüm Merkezi üzerinden takip edebilirsiniz. Belge e-imza süreci tamamlanana kadar sistemde “Teslim edilecek” olarak görünebilir. E-imza işlemi tamamlandığında bu alan “Görüntüle” olarak güncellenir ve belgenizi sistem üzerinden indirebilirsiniz."
+      },
+      "cases": [
+        500
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Belge türü korunarak 'Teslim edilecek' durumunun anlamı eklendi; genelleştirilmiş ayrı QnA açılmadı. | 17.09.2026 nihai karar işlendi."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-01",
+      "set": {
+        "question": "Otomatik ders muafiyetim neden gerçekleşmedi?",
+        "answer": "Merhaba, İkinci Üniversite kapsamında mezun olarak başvuru yaptıysanız ve ilan edilen muafiyet sürecinde otomatik muafiyet işleminiz gerçekleşmediyse, AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumunuzun incelenmesini sağlayabilirsiniz."
+      },
+      "cases": [
+        13
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Tarih/dönem riski: Hayır. Mevcut 'muafiyet başvurusu' QnA'sından farklı: başvuru değil, sonuçlanmayan otomatik muafiyet."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-02",
+      "set": {
+        "question": "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?",
+        "answer": "Merhaba, sınav merkezi tercih sistemi yalnızca ilan edilen tercih dönemlerinde aktif olmaktadır. Tercih dönemi içerisinde sisteme girişte hata alıyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak destek alabilirsiniz: auzefcozum.istanbul.edu.tr"
+      },
+      "cases": [
+        62
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-02",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Dönemsel. OBS giriş sorunundan ayrıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-03",
+      "set": {
+        "question": "Ödeme yaptığım hâlde statüm neden devamlı öğrenci görünmüyor?",
+        "answer": "Merhaba, materyal/öğrenim ücretinizi ödediyseniz öğrencilik statünüzün “Devamlı Öğrenci” olarak güncellenmesi 24 saati bulabilir. Güncel borcunuz 0 TL olarak görünüyorsa ödemeniz sisteme yansımış demektir ve herhangi bir problem bulunmamaktadır."
+      },
+      "cases": [
+        71
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Tarih/dönem riski: Hayır. OBS giriş sorunundan ayrıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-04",
+      "set": {
+        "question": "Sınav sistemine hangi adresten giriş yapabilirim?",
+        "answer": "Merhaba, sınav sistemine auzefsinav.istanbul.edu.tr adresi üzerinden giriş yapabilirsiniz."
+      },
+      "cases": [
+        159
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Tarih/dönem riski: Hayır. Genel 'sisteme giriş yapamıyorum' QnA'sından ayrıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-05",
+      "set": {
+        "question": "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?",
+        "answer": "Merhaba, kaydınız silindiyse öğrenci affı kapsamında yeniden başvuruda bulunabilirsiniz. Kaydınız hâlen devam ediyor ancak pasif durumdaysa ilgili dönemde kayıt yenileme işleminizi tamamlayarak eğitiminize devam edebilirsiniz."
+      },
+      "cases": [
+        202,
+        203
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-05",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Af döneminde kontrol. İki aynı niyet tek QnA altında birleştirildi."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-06",
+      "set": {
+        "question": "Sistemde eski program bilgilerim neden görünüyor?",
+        "answer": "Merhaba,\n\nMevcut kaydınızı sildirip yeni bir programa kayıt yaptırmanıza rağmen eski program bilgileriniz görünmeye devam ediyorsa, durumunuzun kontrol edilmesi için auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne talep oluşturabilirsiniz."
+      },
+      "cases": [
+        292
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Tarih/dönem riski: Hayır. Bölüm değişikliği sürecinden farklı bir sistem/veri görünümü sorunu."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-07",
+      "set": {
+        "question": "Derslerimin sınavları aynı oturumda mı yapılacak?",
+        "answer": "Merhaba,\n\nSınav oturumları derslere göre değişkenlik gösterebilir. Hangi derslerin aynı oturumda yer alacağı, sınav giriş belgesinin yayımlanmasıyla netleşmektedir. Sınav giriş belgeniz yayımlandığında oturum bilgilerinizi kontrol edebilirsiniz."
+      },
+      "cases": [
+        312
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-07",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Sınav dönemi. Hesap makinesi QnA'sından ayrıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-08",
+      "set": {
+        "question": "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?",
+        "answer": "Merhaba,\n\nTüm derslerinizi almış ve yalnızca bir dersten FF notunuz bulunuyorsa, ilgili eğitim-öğretim yılında güz veya bahar dönemlerinden en az birinde kayıt yenilemiş olmanız şartıyla Mezuniyete Üç Ders Sınavı’na başvurabilirsiniz.\n\nAyrıca isterseniz, ilgili dersi başka bir üniversitenin yaz okulundan almak için de başvuruda bulunabilirsiniz."
+      },
+      "cases": [
+        340
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-08",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Mevzuat değişirse kontrol. Tek ders/üç ders başvuru tarihinden farklı uygunluk/alternatif sorusu."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-09",
+      "set": {
+        "question": "e-Devlet transkriptimdeki bilgiler neden farklı görünüyor?",
+        "answer": "Merhaba, e-Devlet’te yer alan transkript belgenizde kredi veya not bilgilerinin farklı olduğunu düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumun incelenmesini sağlayabilirsiniz."
+      },
+      "cases": [
+        429
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "Tarih/dönem riski: Hayır. AKTS yükselmedi QnA'sından ayrıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-10",
+      "set": {
+        "question": "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?",
+        "answer": "Merhaba, İkinci Üniversite kapsamında sınavsız kayıt tarihleri her dönem yayımlanan güncel duyuru ve kayıt kılavuzunda ilan edilmektedir. Güncel kayıt tarihlerini ikinciuniversite.istanbul.edu.tr ve auzef.istanbul.edu.tr adreslerinden kontrol edebilirsiniz. Başvuru dönemi açık olduğunda işlemler basvuru.istanbul.edu.tr adresi üzerinden yapılır."
+      },
+      "cases": [
+        86
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-10",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Production metni sabit tarih içermez. 27 Temmuz–12 Ekim 2026 cevabı yalnız benchmark snapshot olarak mutation planında tutulur."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-12",
+      "set": {
+        "question": "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?",
+        "answer": "Merhaba, Mezuniyete Üç Ders Sınavı sonuçlarının güncel durumunu ilgili sistem ve AUZEF duyuruları üzerinden kontrol edebilirsiniz. Sonuçlara ilişkin güncel duyurular için auzef.istanbul.edu.tr adresini takip edebilirsiniz."
+      },
+      "cases": [
+        333
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-12",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Sınav dönemi. Öğrencinin 'tek ders' ifadesi alias olarak korunur; kanonik soru AUZEF'teki doğru sınav adıyla yazıldı. Production cevabı açıklandı/açıklanmadı iddiası içermez; güncel sonuç kanalına yönlendirir."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-13",
+      "set": {
+        "question": "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?",
+        "answer": "Merhaba, 2025-2026 Bahar Dönemi notlarınız sistemde görünmüyorsa öncelikle aksis.istanbul.edu.tr üzerinden kontrol edebilirsiniz. Notlarınızın eksik olduğunu düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumun incelenmesini sağlayabilirsiniz: auzefcozum.istanbul.edu.tr"
+      },
+      "cases": [
+        459
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-13",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Historical snapshot kanonik sorusu da 2025-2026 Bahar dönemiyle sınırlandırıldı."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-14",
+      "set": {
+        "question": "Bahar dönemi sınav sonuçları açıklandı mı?",
+        "answer": "Merhaba, Bahar Dönemi sınav ve ara sınav sonuçlarına ilişkin güncel duyuruları auzef.istanbul.edu.tr adresinden takip edebilirsiniz."
+      },
+      "cases": [
+        462,
+        463
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-14",
+      "apply_condition": "Routing guard aynı transaction/aktivasyon adımında kurulmalı.",
+      "source_note": "Tarih/dönem riski: Evet — dönemsel/dinamik. İki dönemsel 'açıklandı mı?' sorusu tek dinamik QnA altında birleştirildi."
+    },
+    {
+      "action": "create_qna",
+      "temp_ref": "NEW-15",
+      "set": {
+        "question": "Ön kayıt yaptırdım ancak ücreti süresinde ödemedim; kaydımı daha sonra tamamlayabilir miyim?",
+        "answer": "Merhaba, ön kayıt yapılmış olması tek başına kesin kayıt hakkı sağlamaz. YKS, DGS, yatay geçiş, İkinci Üniversite ve diğer kayıt türlerinde; ilan edilen kayıt tarihleri içerisinde ödeme dâhil tüm kayıt işlemlerinin tamamlanması gerekmektedir. Kayıt süresi içerisinde işlemlerini tamamlamayan adaylar daha sonraki bir tarihte ücret ödeyerek aynı kaydı aktif hâle getiremez ve ilgili kayıt hakkını kaybeder.\n\nİkinci Üniversite kapsamında da başvuru ve ödeme işlemlerinin ilan edilen kayıt süresi içerisinde tamamlanması gerekir.\n\nÖğrenci affı ise daha önce kayıt hakkı kazandığı hâlde kaydını tamamlayamayan veya kaydı silinen kişilere, af kapsamında yeniden başvuru ve kayıt hakkı sağlayan ayrı bir süreçtir. Af kapsamındaki işlemler de ilan edilen başvuru ve kayıt tarihleri içerisinde tamamlanmalıdır."
+      },
+      "cases": [
+        212,
+        213
+      ],
+      "status": "READY",
+      "content_control_ref": null,
+      "apply_condition": null,
+      "source_note": "İçerik sahibinin ön kayıt + ödeme + af ayrımını açıklayan nihai cevabı. Sabit tarih içermez."
+    }
+  ],
+  "alias_mutations": [
+    {
+      "action": "move_alias",
+      "case_no": 13,
+      "alias": "Muafiyetim otomatik gerçekleşmemiş",
+      "expected_source": {
+        "csv_row": 267,
+        "canonical_question": "Ders muafiyeti başvurusu nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-01",
+        "canonical_question": "Otomatik ders muafiyetim neden gerçekleşmedi?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 34,
+      "alias": "Şuan kaç dersten kalmışım",
+      "expected_source": {
+        "csv_row": 268,
+        "canonical_question": "Kaçıncı sınıfta olduğumu nasıl öğrenebilirim?"
+      },
+      "target": {
+        "qna_id": 256,
+        "canonical_question": "Ders durum bilgisine nasıl ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 46,
+      "alias": "Aktif öğrenci nasıl olabilirim",
+      "expected_source": {
+        "csv_row": 269,
+        "canonical_question": "Aktif öğrenci olup olmadığımı nasıl kontrol edebilirim?"
+      },
+      "target": {
+        "qna_id": 88,
+        "canonical_question": "Kayıt yenileme nedir, nasıl yapılır?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 62,
+      "alias": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim",
+      "expected_source": {
+        "csv_row": 270,
+        "canonical_question": "Öğrenci Bilgi Sistemi'ne (OBS) giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "target": {
+        "temp_ref": "NEW-02",
+        "canonical_question": "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 71,
+      "alias": "Merhaba üniversitenin telefon uygulamasına giriş yapamıyorum devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım tek ders için derslerime nereden ulaşıp çalışabilirim sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz",
+      "expected_source": {
+        "csv_row": 270,
+        "canonical_question": "Öğrenci Bilgi Sistemi'ne (OBS) giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "target": {
+        "temp_ref": "NEW-03",
+        "canonical_question": "Ödeme yaptığım hâlde statüm neden devamlı öğrenci görünmüyor?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 77,
+      "alias": "Pekş ben mezun olduğumu nasıl anlarım",
+      "expected_source": {
+        "csv_row": 270,
+        "canonical_question": "Öğrenci Bilgi Sistemi'ne (OBS) giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "target": {
+        "qna_id": 40,
+        "canonical_question": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 86,
+      "alias": "Sınavsız üniversite kayıt ne zaman",
+      "expected_source": {
+        "csv_row": 271,
+        "canonical_question": "Kayıt tarihleri ne zamandır?"
+      },
+      "target": {
+        "temp_ref": "NEW-10",
+        "canonical_question": "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 102,
+      "alias": "Okulu tamamlamak için kaç krediye ihtiyacım var",
+      "expected_source": {
+        "csv_row": 273,
+        "canonical_question": "Mezun olmak için kaç dersim kaldı?"
+      },
+      "target": {
+        "qna_id": 39,
+        "canonical_question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 115,
+      "alias": "Çocuk gelişim önlisansta kaç ders vardir",
+      "expected_source": {
+        "csv_row": 273,
+        "canonical_question": "Mezun olmak için kaç dersim kaldı?"
+      },
+      "target": {
+        "qna_id": 215,
+        "canonical_question": "Müfredat listesine nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 159,
+      "alias": "Sınav sistemine nerden girebilirim",
+      "expected_source": {
+        "csv_row": 276,
+        "canonical_question": "Sisteme giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "target": {
+        "temp_ref": "NEW-04",
+        "canonical_question": "Sınav sistemine hangi adresten giriş yapabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 171,
+      "alias": "İki kere ödeme alındı",
+      "expected_source": {
+        "csv_row": 277,
+        "canonical_question": "Çözüm Merkezi'ne giriş yapamıyorum, ne yapmalıyım?"
+      },
+      "target": {
+        "qna_id": 261,
+        "canonical_question": "Harç iadesi için ne yapmalıyım?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 190,
+      "alias": "Ön lisans bölümü mezunuyum ikinci üniversiteyi okumak istiyorum lisans bölümü seçebiliyormuyum",
+      "expected_source": {
+        "csv_row": 279,
+        "canonical_question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?"
+      },
+      "target": {
+        "qna_id": 21,
+        "canonical_question": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 191,
+      "alias": "Ön lisans çocuk gelişim bölümünden lisans tamamlama sosyal hizmet programı açıköğretim de var mı",
+      "expected_source": {
+        "csv_row": 279,
+        "canonical_question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?"
+      },
+      "target": {
+        "qna_id": 91,
+        "canonical_question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 193,
+      "alias": "Ben Anadolu aöf önlisans mezunuyum, sağlık yönetimi lisans tamamlama kayıt olurmuyum",
+      "expected_source": {
+        "csv_row": 279,
+        "canonical_question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?"
+      },
+      "target": {
+        "qna_id": 91,
+        "canonical_question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 194,
+      "alias": "Lisans hemşirelik tamamlama",
+      "expected_source": {
+        "csv_row": 279,
+        "canonical_question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?"
+      },
+      "target": {
+        "qna_id": 91,
+        "canonical_question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 202,
+      "alias": "Okuluma ara vermek zorunda kaldım.tekrar dönmek istiyorum",
+      "expected_source": {
+        "csv_row": 280,
+        "canonical_question": "Af başvurusu nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-05",
+        "canonical_question": "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 203,
+      "alias": "Okuluma ara vermek zorunda kaldım.tekrar geri dönebilirmiyim",
+      "expected_source": {
+        "csv_row": 280,
+        "canonical_question": "Af başvurusu nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-05",
+        "canonical_question": "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 212,
+      "alias": "İyi günler benim lisans ön kayıdım oldu fakat harç parası yatirmadim şuan ona kayıt yaptırabilirmiyim güz dönemi gelince konteol edebilemisiniz",
+      "expected_source": {
+        "csv_row": 280,
+        "canonical_question": "Af başvurusu nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-15",
+        "canonical_question": "Ön kayıt yaptırdım ancak ücreti süresinde ödemedim; kaydımı daha sonra tamamlayabilir miyim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 213,
+      "alias": "Benim lisan ön kaydı yaptırdım fakat harçarç parasını yaptrmadığım için kaydimi tamamlanmadı kaydımı güz dönemindharç yatırarak dwvam ettirmek istiyorum yasal olarak hakkım varmıdır",
+      "expected_source": {
+        "csv_row": 280,
+        "canonical_question": "Af başvurusu nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-15",
+        "canonical_question": "Ön kayıt yaptırdım ancak ücreti süresinde ödemedim; kaydımı daha sonra tamamlayabilir miyim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 222,
+      "alias": "AUZEF dersler",
+      "expected_source": {
+        "csv_row": 281,
+        "canonical_question": "AUZEF'te hangi bölümler bulunmaktadır?"
+      },
+      "target": {
+        "qna_id": 215,
+        "canonical_question": "Müfredat listesine nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 223,
+      "alias": "AUZEF bölüm dersleri",
+      "expected_source": {
+        "csv_row": 281,
+        "canonical_question": "AUZEF'te hangi bölümler bulunmaktadır?"
+      },
+      "target": {
+        "qna_id": 215,
+        "canonical_question": "Müfredat listesine nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 252,
+      "alias": "İstanbul üniversitesi öğrencisi değilim. Çözüm merkezine soru iletmek istiyorum",
+      "expected_source": {
+        "csv_row": 283,
+        "canonical_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?"
+      },
+      "target": {
+        "qna_id": 266,
+        "canonical_question": "AUZEF'e nasıl ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 253,
+      "alias": "Üniversitenin kayıtlı öğrencisi değilim. Soru sormak istiyorum nereden sorabilirim",
+      "expected_source": {
+        "csv_row": 283,
+        "canonical_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?"
+      },
+      "target": {
+        "qna_id": 266,
+        "canonical_question": "AUZEF'e nasıl ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 258,
+      "alias": "Para ödememe rağmen ders listem neden yok",
+      "expected_source": {
+        "csv_row": 283,
+        "canonical_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?"
+      },
+      "target": {
+        "qna_id": 186,
+        "canonical_question": "Derslerimi nasıl görüntüleyebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 278,
+      "alias": "Ödemem gereken tutarı ödedikten sonra tekrar ödeme yapıp güz döneminde mi başlayacağım",
+      "expected_source": {
+        "csv_row": 286,
+        "canonical_question": "Ders saydırma işlemi nasıl yapılır?"
+      },
+      "target": {
+        "qna_id": 103,
+        "canonical_question": "Materyal ücreti yıllık mı yoksa dönemlik mi yatırılır?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 292,
+      "alias": "Ben lisans programımı değiştirmiştir ancak hala kaydımı sildirdiğim programda gözüküyor burada bilgilerim",
+      "expected_source": {
+        "csv_row": 287,
+        "canonical_question": "Bölüm değişikliği nasıl yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-06",
+        "canonical_question": "Sistemde eski program bilgilerim neden görünüyor?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 312,
+      "alias": "Merhaba İşletme 1. sınıf öğrencisiyim. İktisat İstatistik ve Matematik sınavım tek otrumda mı gerçekleşecek?",
+      "expected_source": {
+        "csv_row": 288,
+        "canonical_question": "Sınavda hesap makinesi kullanabilir miyim?"
+      },
+      "target": {
+        "temp_ref": "NEW-07",
+        "canonical_question": "Derslerimin sınavları aynı oturumda mı yapılacak?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 333,
+      "alias": "Merhaba tek ders sınavı ne zaman açıklanacak",
+      "expected_source": {
+        "csv_row": 290,
+        "canonical_question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-12",
+        "canonical_question": "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 335,
+      "alias": "mezun olmak için 235 akts var tek ders sınavına girebilirmiyim",
+      "expected_source": {
+        "csv_row": 290,
+        "canonical_question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+      },
+      "target": {
+        "qna_id": 171,
+        "canonical_question": "Mezuniyete Üç Ders Sınavına kimler başvurabilir?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 336,
+      "alias": "Tek ders sartı sınavı nedir nasıl olur",
+      "expected_source": {
+        "csv_row": 290,
+        "canonical_question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+      },
+      "target": {
+        "qna_id": 171,
+        "canonical_question": "Mezuniyete Üç Ders Sınavına kimler başvurabilir?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 340,
+      "alias": "Sadece bir ders dersten FF almışım.yaz okulu na mı yoksa üç ders sınavına mı başvuru yapmam gerekiyor",
+      "expected_source": {
+        "csv_row": 290,
+        "canonical_question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+      },
+      "target": {
+        "temp_ref": "NEW-08",
+        "canonical_question": "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 344,
+      "alias": "Çözüm merkezi ile görüşebilirmiyim",
+      "expected_source": {
+        "csv_row": 291,
+        "canonical_question": "Çözüm Merkezi'nin geri dönüş süresi ne kadardır?"
+      },
+      "target": {
+        "qna_id": 322,
+        "canonical_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 350,
+      "alias": "Çözüm merkezine ulaşmak istiyorum",
+      "expected_source": {
+        "csv_row": 291,
+        "canonical_question": "Çözüm Merkezi'nin geri dönüş süresi ne kadardır?"
+      },
+      "target": {
+        "qna_id": 322,
+        "canonical_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 372,
+      "alias": "Merhaba ben uzaktan eğitim almak istiyorum lise mezunuyum çocuk gelişimi okudum lise de yardımcı olur musunuz",
+      "expected_source": {
+        "csv_row": 293,
+        "canonical_question": "Uzaktan eğitim programları nelerdir?"
+      },
+      "target": {
+        "qna_id": 94,
+        "canonical_question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 373,
+      "alias": "Lise çocuk gelişimi mezunuyum uzaktan eğitim almak istiyorum yardımcı olur musunuz",
+      "expected_source": {
+        "csv_row": 293,
+        "canonical_question": "Uzaktan eğitim programları nelerdir?"
+      },
+      "target": {
+        "qna_id": 94,
+        "canonical_question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 417,
+      "alias": "başvuru yapmak istiyorum bölüme fakat bölüm seçme kısmında yer almıyor",
+      "expected_source": {
+        "csv_row": 297,
+        "canonical_question": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      },
+      "target": {
+        "qna_id": 320,
+        "canonical_question": "AUZEF'te hangi bölümler bulunmaktadır?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 425,
+      "alias": "Çocuk gelişimi bölümün başkanı",
+      "expected_source": {
+        "csv_row": 298,
+        "canonical_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?"
+      },
+      "target": {
+        "qna_id": 14,
+        "canonical_question": "Kayıt olduğum program hakkında bilgiye nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 429,
+      "alias": "E devletteki transcrıpt belgemde kredi notum farklı19:",
+      "expected_source": {
+        "csv_row": 298,
+        "canonical_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?"
+      },
+      "target": {
+        "temp_ref": "NEW-09",
+        "canonical_question": "e-Devlet transkriptimdeki bilgiler neden farklı görünüyor?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 454,
+      "alias": "final soruları ne zaman açıklanıyyor",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "qna_id": 314,
+        "canonical_question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 455,
+      "alias": "final soruları ne zaman açıklanaıyor",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "qna_id": 314,
+        "canonical_question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 456,
+      "alias": "Sınav sonuçları neden hesaplanmamış kaç dersten geçmişim göremedim",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "qna_id": 151,
+        "canonical_question": "Harf notumu neden göremiyorum?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 459,
+      "alias": "2025-2026 bahar dönemi notları neden gözükmüyor",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "temp_ref": "NEW-13",
+        "canonical_question": "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 461,
+      "alias": "Sınav sonucu neden görünmüyor",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "qna_id": 150,
+        "canonical_question": "Sınav sonuçlarını nasıl görebilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 462,
+      "alias": "Bahar Sınavları açıklanmadı mı?",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "temp_ref": "NEW-14",
+        "canonical_question": "Bahar dönemi sınav sonuçları açıklandı mı?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 463,
+      "alias": "2026 Bahar Vize sonuçları açıklandı mı?",
+      "expected_source": {
+        "csv_row": 302,
+        "canonical_question": "Sınav sonuçları ne zaman açıklanır?"
+      },
+      "target": {
+        "temp_ref": "NEW-14",
+        "canonical_question": "Bahar dönemi sınav sonuçları açıklandı mı?"
+      },
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "status": "READY_WITH_GUARD"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 482,
+      "alias": "Üniversiteye nasıl kaydolurum",
+      "expected_source": {
+        "csv_row": 305,
+        "canonical_question": "E-Devlet üzerinde üniversite kaydım neden görünmüyor?"
+      },
+      "target": {
+        "qna_id": 94,
+        "canonical_question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    },
+    {
+      "action": "move_alias",
+      "case_no": 496,
+      "alias": "Dersi geçme notu",
+      "expected_source": {
+        "csv_row": 306,
+        "canonical_question": "Bütünleme sınavında sınıf geçme puanı kaçtır?"
+      },
+      "target": {
+        "qna_id": 166,
+        "canonical_question": "AUZEF'te Ham Başarı Notu (HBN) nedir, bir dersten koşullu ya da doğrudan geçmem için en az kaç almam gerekir?"
+      },
+      "exact_alias_policy": "exact_alias_allowed_after_validation",
+      "status": "READY"
+    }
+  ],
+  "atomic_promotions": [
+    {
+      "action": "promote_alias_to_new_qna_canonical",
+      "operation_ref": "NEW-11",
+      "atomic": true,
+      "case_no": 195,
+      "expected_source": {
+        "csv_row": 279,
+        "canonical_question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?",
+        "alias": "Lisans tamamlama programları nelerdir"
+      },
+      "target": {
+        "temp_ref": "NEW-11",
+        "question": "Lisans tamamlama programları nelerdir?",
+        "answer": "Merhaba, Fakültemizde yer alan lisans tamamlama programlarını auzef.istanbul.edu.tr adresindeki “Lisans Tamamlama Programları” bölümünden inceleyebilirsiniz."
+      },
+      "steps_in_one_transaction": [
+        "Kaynak QnA altında exact alias 'Lisans tamamlama programları nelerdir' bulunmalı.",
+        "Alias kaldırma ve yeni kanonik QnA oluşturma aynı transaction içinde yapılmalı.",
+        "Kanonik soru ayrıca alias olarak eklenmemeli."
+      ],
+      "status": "READY_WITH_GUARD",
+      "content_control_ref": "NEW-11",
+      "cases": [
+        195
+      ],
+      "source_note": "Atomik promotion precondition: QnA 318 altında exact alias \"Lisans tamamlama programları nelerdir\" bulunmalı. Alias kaldırılır ve soru işaretli biçim yeni kanonik soru olur; duplicate alias eklenmez. Tarih/dönem riski: Program listesi değişebilir."
+    }
+  ],
+  "routing_guard_mutations": [
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-02",
+      "target": {
+        "temp_ref": "NEW-02"
+      },
+      "cases": [
+        62
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_availability",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "AUZEF sınav merkezi tercih duyuruları",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-05",
+      "target": {
+        "temp_ref": "NEW-05"
+      },
+      "cases": [
+        202,
+        203
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "policy_sensitive",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "Kayıt durumu ve öğrenci affı duyuruları",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-EX-319",
+      "target": {
+        "qna_id": 319,
+        "operation_ref": "EX-319"
+      },
+      "cases": [
+        205,
+        206,
+        214
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "blocked_shared_qna_update",
+      "valid_from": null,
+      "valid_until": "2026-12-09",
+      "on_expiry": "block_target_and_fallback_to_current_source",
+      "source_of_truth": "Güncel Öğrenci Affı duyurusu ve kılavuzu",
+      "apply_phase": "BEFORE_QNA_UPDATE",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-07",
+      "target": {
+        "temp_ref": "NEW-07"
+      },
+      "cases": [
+        312
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_schedule",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "Sınav giriş belgesi",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-08",
+      "target": {
+        "temp_ref": "NEW-08"
+      },
+      "cases": [
+        340
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "policy_review",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "Mezuniyete Üç Ders Sınavı mevzuatı ve yaz okulu kuralları",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-10",
+      "target": {
+        "temp_ref": "NEW-10"
+      },
+      "cases": [
+        86
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_source_with_historical_benchmark",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "İkinci Üniversite güncel kayıt duyurusu",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-11",
+      "target": {
+        "temp_ref": "NEW-11"
+      },
+      "cases": [
+        195
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_catalog",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "AUZEF Lisans Tamamlama Programları sayfası",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-12",
+      "target": {
+        "temp_ref": "NEW-12"
+      },
+      "cases": [
+        333
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_result_status",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "Mezuniyete Üç Ders Sınavı sonuç duyurusu",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-13",
+      "target": {
+        "temp_ref": "NEW-13"
+      },
+      "cases": [
+        459
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "historical_term_snapshot",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "AKSİS ve AUZEF Çözüm Merkezi",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-NEW-14",
+      "target": {
+        "temp_ref": "NEW-14"
+      },
+      "cases": [
+        462,
+        463
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "dynamic_announcement",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "AUZEF Duyurular",
+      "apply_phase": "WITH_QNA_ACTIVATION",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    },
+    {
+      "action": "upsert_routing_guard",
+      "guard_ref": "GUARD-EX-336",
+      "target": {
+        "qna_id": 336,
+        "operation_ref": "EX-336"
+      },
+      "cases": [
+        413
+      ],
+      "exact_bypass": "disabled",
+      "selector_mode": "semantic_selector_only",
+      "content_mode": "policy_snapshot",
+      "valid_from": null,
+      "valid_until": null,
+      "on_expiry": "source_check_or_evergreen_answer",
+      "source_of_truth": "AUZEF Programlar ve güncel öğrenci alım duyuruları",
+      "apply_phase": "BEFORE_QNA_UPDATE",
+      "failure_policy": "DO_NOT_UPDATE_OR_ACTIVATE_TARGET",
+      "requires_runtime_capability": true,
+      "status": "REQUIRED"
+    }
+  ],
+  "content_controls": [
+    {
+      "target_ref": "NEW-02",
+      "cases": [
+        62
+      ],
+      "content_mode": "dynamic_availability",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "AUZEF sınav merkezi tercih duyuruları",
+      "production_rule": "Sistemin açık olup olmadığını güncel duyurudan doğrula; sabit tarih üretme."
+    },
+    {
+      "target_ref": "NEW-05",
+      "cases": [
+        202,
+        203
+      ],
+      "content_mode": "policy_sensitive",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "Kayıt durumu ve öğrenci affı duyuruları",
+      "production_rule": "Aktif/pasif kayıt ile silinmiş kayıt ayrımını koru; af ayrıntısını güncel duyuruya bağla."
+    },
+    {
+      "target_ref": "EX-319",
+      "cases": [
+        205,
+        206,
+        214
+      ],
+      "content_mode": "blocked_shared_qna_update",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": "2026-12-09",
+      "source_of_truth": "Güncel Öğrenci Affı duyurusu ve kılavuzu",
+      "production_rule": "QnA 319 güncellemesi, vaka 214 çözülmeden veya 214 için davranışsal karantina kurulmadan uygulanmaz. Mevcut tarihli cevap 9 Aralık 2026 sonrasında bloke edilmelidir.",
+      "block_if_expired": true,
+      "migration_status": "BLOCKED_CASE_214"
+    },
+    {
+      "target_ref": "NEW-07",
+      "cases": [
+        312
+      ],
+      "content_mode": "dynamic_schedule",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "Sınav giriş belgesi",
+      "production_rule": "Oturum bilgisi sınav giriş belgesinden doğrulanır."
+    },
+    {
+      "target_ref": "NEW-08",
+      "cases": [
+        340
+      ],
+      "content_mode": "policy_review",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "Mezuniyete Üç Ders Sınavı mevzuatı ve yaz okulu kuralları",
+      "production_rule": "Mevzuat değişikliğinde yeniden onayla."
+    },
+    {
+      "target_ref": "NEW-10",
+      "cases": [
+        86
+      ],
+      "content_mode": "dynamic_source_with_historical_benchmark",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "İkinci Üniversite güncel kayıt duyurusu",
+      "production_rule": "Production cevabı sabit tarih içermez; güncel duyuruya yönlendirir. 2026 tarihli cevap yalnız benchmark snapshot olarak tutulur.",
+      "benchmark_snapshot": {
+        "answer": "Merhaba,\n\nİkinci Üniversite kapsamında sınavsız kayıtlar 27 Temmuz–12 Ekim 2026 tarihleri arasında gerçekleştirilmektedir.\n\nBaşvuru: basvuru.istanbul.edu.tr\nDetaylı bilgi: ikinciuniversite.istanbul.edu.tr",
+        "as_of": "2026-09-16",
+        "valid_from": "2026-07-27",
+        "valid_until": "2026-10-12"
+      }
+    },
+    {
+      "target_ref": "NEW-11",
+      "cases": [
+        195
+      ],
+      "content_mode": "dynamic_catalog",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "AUZEF Lisans Tamamlama Programları sayfası",
+      "production_rule": "QnA 318 altındaki birebir alias, yeni QnA'nın kanonik sorusuna atomik olarak terfi ettirilir; duplicate alias eklenmez."
+    },
+    {
+      "target_ref": "NEW-12",
+      "cases": [
+        333
+      ],
+      "content_mode": "dynamic_result_status",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "Mezuniyete Üç Ders Sınavı sonuç duyurusu",
+      "production_rule": "Açıklandı/açıklanmadı iddiası üretme; güncel sonuç kanalına yönlendir."
+    },
+    {
+      "target_ref": "NEW-13",
+      "cases": [
+        459
+      ],
+      "content_mode": "historical_term_snapshot",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "AKSİS ve AUZEF Çözüm Merkezi",
+      "production_rule": "2025-2026 Bahar ifadesini benchmark bağlamında koru; yeni dönemlere genelleme."
+    },
+    {
+      "target_ref": "NEW-14",
+      "cases": [
+        462,
+        463
+      ],
+      "content_mode": "dynamic_announcement",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "AUZEF Duyurular",
+      "production_rule": "Sonuç durumu güncel duyurudan okunur; kalıcı exact cevap verme."
+    },
+    {
+      "target_ref": "EX-336",
+      "cases": [
+        413
+      ],
+      "content_mode": "policy_snapshot",
+      "exact_alias_policy": "selector_only_no_permanent_bypass",
+      "as_of": "2026-09-16",
+      "valid_until": null,
+      "source_of_truth": "AUZEF Programlar ve güncel öğrenci alım duyuruları",
+      "production_rule": "Yeni öğrenci alımı politikası değişirse yeniden onayla."
+    }
+  ],
+  "pending": [
+    {
+      "case_no": 214,
+      "action": "no_change",
+      "reason": "Aktif/pasif devam eden kayıt ile tamamlanmamış veya silinmiş kayıt ayrımı net değil. Bu nedenle paylaşılan QnA 319 cevap güncellemesi de blokludur.",
+      "current_csv_row": 280,
+      "current_canonical_question": "Af başvurusu nasıl yapılır?",
+      "blocks_operation_ref": "EX-319"
+    }
+  ],
+  "postconditions": {
+    "reviewed_case_coverage": 68,
+    "pending_only": [
+      214
+    ],
+    "no_duplicate_case_numbers": true,
+    "no_permanent_exact_bypass_for_content_controlled_targets": true,
+    "qna_319_unchanged_until_case_214_resolution_or_quarantine": true,
+    "new_11_has_no_duplicate_canonical_alias": true
+  },
+  "source_workbook": "/home/feitcagri/İndirilenler/AUZEF-QnA-dogrulanmis-konsolidasyon-v3.1-final-20260917.xlsx",
+  "source_workbook_blake2b": "cb244512805fa1b4500d58226b1c235f99a4b20a3271eee47ec626bb9edcedbe"
+}
