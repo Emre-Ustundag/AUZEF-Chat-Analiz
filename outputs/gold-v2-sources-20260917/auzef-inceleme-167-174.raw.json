@@ -1,0 +1,1226 @@
+{
+  "schema_version": "simple-gold-review-result-v1",
+  "source_digest": "84d4c0b4450be2667365d46b40d2c569c217b540f69a9af312c4959a4606de34",
+  "case_count": 174,
+  "completed_count": 167,
+  "reviews": [
+    {
+      "case_no": 1,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "100, 306, 51",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 12,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "306",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 13,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, İkinci Üniversite kapsamında mezun olarak başvuru yaptıysanız ve ilan edilen muafiyet sürecinde otomatik muafiyet işleminiz gerçekleşmediyse, AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumunuzun incelenmesini sağlayabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 18,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, ders muafiyeti başvuruları e-posta üzerinden alınmamaktadır. Başvurular aksis.istanbul.edu.tr adresindeki Öğrenme Yönetim Sistemi üzerinden gerçekleştirilmektedir. Muafiyet başvuru tarihleri ve işlem adımları web sayfamızda duyurulmakta, ayrıca başvuru sürecine ilişkin kılavuz yayımlanmaktadır.",
+      "complete": true
+    },
+    {
+      "case_no": 27,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, yatay geçiş sonrasında başlayacağınız sınıf programınıza ve intibak durumunuza göre değişiklik gösterebilir. Güncel eğitim durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 34,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, başarısız olduğunuz dersleri aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz. Burada aldığınız, başarılı olduğunuz ve başarısız olduğunuz derslerin tamamını kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 36,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, başarısız olduğunuz dersleri aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz. Burada aldığınız, başarılı olduğunuz ve başarısız olduğunuz derslerin tamamını kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 46,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, ilgili dönem için materyal/öğrenim ücretinizi ödeyerek kayıt yenileme işleminizi tamamladığınızda öğrencilik statünüz “Devamlı Öğrenci” olarak güncellenir. Kayıt yenileme yapmadığınız dönemlerde ise “Pasif Öğrenci” statüsünde görünürsünüz.",
+      "complete": true
+    },
+    {
+      "case_no": 52,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "308",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 61,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "315",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 62,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, sınav merkezi tercihi için auzefsinav.istanbul.edu.tr adresine giriş yapmanız gerekmektedir. Giriş sırasında kullanıcı bilgileriniz kabul edilmiyorsa “Şifremi Unuttum” seçeneğini kullanabilir veya e-Devlet ile giriş yapabilirsiniz.\n\nMateryal/öğrenim ücretinizi ödediyseniz ancak sistem yine de sizi tanımıyorsa, durumunuzun kontrol edilmesi için AUZEF Çözüm Merkezi üzerinden talep oluşturabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 64,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, yardımcı olabilmemiz için sorunuzu biraz daha açık ve detaylı şekilde iletebilir misiniz?",
+      "complete": true
+    },
+    {
+      "case_no": 65,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Gold sorguyla uyumsuz/eksik | Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 68,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 69,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "323, 309",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 70,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "309, 207",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 71,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, materyal/öğrenim ücretinizi ödediğiniz hâlde statünüz “Devamlı Öğrenci” olarak görünmüyorsa durumunuzun kontrol edilmesi için AUZEF Çözüm Merkezi üzerinden talep oluşturabilirsiniz: auzefcozum.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 73,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "309",
+      "review_note": "Merhaba, öncelikle farklı bir cihaz veya güncel bir tarayıcı üzerinden tekrar giriş yapmanızı öneriyoruz. Sorun devam ederse AUZEF Çözüm Merkezi üzerinden talep oluşturarak yaşadığınız problemi iletebilirsiniz: auzefcozum.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 74,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "309, 315",
+      "review_note": "Merhaba, öncelikle farklı bir cihaz veya güncel bir tarayıcı üzerinden tekrar giriş yapmanızı öneriyoruz. Sorun devam ederse AUZEF Çözüm Merkezi üzerinden talep oluşturarak yaşadığınız problemi iletebilirsiniz: auzefcozum.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 75,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nHangi sistem veya uygulama üzerinden problem yaşadığınızı paylaşabilir misiniz? Böylece sizi doğru şekilde yönlendirebiliriz.",
+      "complete": true
+    },
+    {
+      "case_no": 76,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 77,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, mezuniyet için programınızdaki tüm zorunlu dersleri tamamlamış olmanız, FF harf notunuzun bulunmaması, genel not ortalamanızın en az 2.00 olması ve program için gerekli AKTS miktarını tamamlamış olmanız gerekmektedir.\n\nBu şartları sağladığınızda öğrencilik statünüz “Mezun” olarak güncellenecektir. Güncel eğitim durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 80,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "310",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 86,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nİkinci Üniversite kapsamında sınavsız kayıtlar 27 Temmuz–12 Ekim 2026 tarihleri arasında gerçekleştirilmektedir.\n\nBaşvuru: basvuru.istanbul.edu.tr\nDetaylı bilgi: ikinciuniversite.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 88,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "324",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 89,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "324",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 92,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "311, 308",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 102,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, programınızı tamamlamak için gerekli AKTS miktarını ve mevcut durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada tamamladığınız ve kalan derslerinizi de görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 104,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "81",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 105,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, kaç dönem dersiniz kaldığını doğrudan tek bir alanda göremezsiniz. aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kalan derslerinizi ve hangi dönemlere ait olduklarını kontrol ederek öğrenim durumunuzu takip edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 106,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 107,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 109,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Programınızda almanız gereken toplam ders sayısı müfredatınıza ve kayıt yılınıza göre değişiklik gösterebilir. Güncel derslerinizi aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz. Burada almanız gereken, başarılı olduğunuz ve kalan derslerinizi kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 110,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, mezuniyetinize ne kadar kaldığını aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada tamamladığınız ve kalan derslerinizi, AKTS durumunuzu ve hangi dönemlere ait olduklarını görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 112,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, mezuniyetinize ne kadar kaldığını aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada tamamladığınız ve kalan derslerinizi, AKTS durumunuzu ve hangi dönemlere ait olduklarını görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 115,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, İlgili programdaki dersleri auzef.istanbul.edu.tr adresinden ilgili program sayfasını açıp “Dersler” sekmesine girerek görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 119,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, lisans programınızı tamamlamanıza ne kadar kaldığını aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz. Burada tamamladığınız ve kalan derslerinizi, AKTS durumunuzu ve dönem bilgilerinizi görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 120,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, mezun olabilmek için program müfredatınızda yer alan tüm zorunlu derslerden başarılı olmanız gerekmektedir. Kalan derslerinizi aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 127,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "313",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 134,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "266",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 146,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "314",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 153,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "179",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 159,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, sınav sistemine auzefsinav.istanbul.edu.tr adresi üzerinden giriş yapabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 160,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "196, 316",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 164,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "315",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 169,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "316",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 171,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, mükerrer ödeme yaptıysanız ücret iadesi için başvuruda bulunabilirsiniz. İade talep dilekçenizi, adınıza kayıtlı banka hesabınıza ait IBAN ve iletişim bilgileriyle birlikte doldurmanız ve iadesini talep ettiğiniz ödemeye ait banka dekontunu eklemeniz gerekmektedir.\n\nİade evraklarının ıslak imzalı olarak kargo yoluyla Fakültemize iletilmesi gerekmektedir. E-posta veya faks yoluyla gönderilen belgeler kabul edilmemektedir. Evraklarınız incelendikten sonra iade işlemi banka aracılığıyla gerçekleştirilecektir.",
+      "complete": true
+    },
+    {
+      "case_no": 185,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "317",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 189,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "328",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 190,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, İkinci Üniversite kapsamında önlisans mezunları yalnızca önlisans programlarına başvuru yapabilirler. Lisans programlarına İkinci Üniversite kapsamında başvuru yapılamamaktadır.",
+      "complete": true
+    },
+    {
+      "case_no": 191,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Sağlıkta Lisans Tamamlama programlarına yerleştirme işlemleri Yükseköğretim Kurulu (YÖK) tarafından yürütülmektedir. Başvuru yapıp yapamayacağınızı öğrenmek için YÖK tarafından yayımlanan güncel Sağlıkta Lisans Tamamlama duyuru ve kılavuzlarını takip etmeniz gerekmektedir.",
+      "complete": true
+    },
+    {
+      "case_no": 193,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Sağlıkta Lisans Tamamlama programlarına yerleştirme işlemleri Yükseköğretim Kurulu (YÖK) tarafından yürütülmektedir. Başvuru yapıp yapamayacağınızı öğrenmek için YÖK tarafından yayımlanan güncel Sağlıkta Lisans Tamamlama duyuru ve kılavuzlarını takip etmeniz gerekmektedir.",
+      "complete": true
+    },
+    {
+      "case_no": 194,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Sağlıkta Lisans Tamamlama programlarına yerleştirme işlemleri Yükseköğretim Kurulu (YÖK) tarafından yürütülmektedir. Başvuru yapıp yapamayacağınızı öğrenmek için YÖK tarafından yayımlanan güncel Sağlıkta Lisans Tamamlama duyuru ve kılavuzlarını takip etmeniz gerekmektedir.",
+      "complete": true
+    },
+    {
+      "case_no": 195,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Fakültemizde yer alan lisans tamamlama programlarını auzef.istanbul.edu.tr adresindeki “Lisans Tamamlama Programları” bölümünden inceleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 199,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 200,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "319, 333",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 202,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, kaydınız silindiyse öğrenci affı kapsamında yeniden başvuruda bulunabilirsiniz. Kaydınız hâlen devam ediyor ancak pasif durumdaysa ilgili dönemde kayıt yenileme işleminizi tamamlayarak eğitiminize devam edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 203,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, kaydınız silindiyse öğrenci affı kapsamında yeniden başvuruda bulunabilirsiniz. Kaydınız hâlen devam ediyor ancak pasif durumdaysa ilgili dönemde kayıt yenileme işleminizi tamamlayarak eğitiminize devam edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 205,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nDaha önce AUZEF’e kayıt yaptırmış ancak herhangi bir nedenle eğitimine devam edemediği için kaydı silinmiş veya kaydını sildirmiş öğrenciler, şartları sağlamaları hâlinde öğrenci affından yararlanabilmektedir.\n\nBaşvurular AKSİS üzerinden çevrim içi olarak alınmaktadır. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru yapmadan önce öğrenci affı başvuru kılavuzunu incelemenizi öneririz.\n\nDetaylı bilgiye auzef.istanbul.edu.tr adresinden ulaşabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 206,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nDaha önce AUZEF’e kayıt yaptırmış ancak herhangi bir nedenle eğitimine devam edemediği için kaydı silinmiş veya kaydını sildirmiş öğrenciler, şartları sağlamaları hâlinde öğrenci affından yararlanabilmektedir.\n\nBaşvurular AKSİS üzerinden çevrim içi olarak alınmaktadır. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru yapmadan önce öğrenci affı başvuru kılavuzunu incelemenizi öneririz.\n\nDetaylı bilgiye auzef.istanbul.edu.tr adresinden ulaşabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 209,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 211,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "319, 333",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 212,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nYeni kayıt işlemlerinin, ilan edilen kayıt tarihleri içerisinde gerekli ödeme ve diğer kayıt adımları tamamlanarak sonuçlandırılması gerekmektedir. Belirtilen süre içinde kaydınız tamamlanmadıysa, güz döneminde yalnızca ödeme yaparak aynı kayıt işlemini devam ettirmeniz mümkün değildir.\n",
+      "complete": true
+    },
+    {
+      "case_no": 213,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nYeni kayıt işlemlerinin, ilan edilen kayıt tarihleri içerisinde gerekli ödeme ve diğer kayıt adımları tamamlanarak sonuçlandırılması gerekmektedir. Belirtilen süre içinde kaydınız tamamlanmadıysa, güz döneminde yalnızca ödeme yaparak aynı kayıt işlemini devam ettirmeniz mümkün değildir.\n",
+      "complete": true
+    },
+    {
+      "case_no": 214,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\n2025 dönemindeki kayıt işleminizin tamamlanabilmesi için ilgili kayıt tarihleri içerisinde gerekli ödemenin yapılması ve kaydın aktifleştirilmesi gerekiyordu. Bu nedenle mevcut kaydınızı şu aşamada yalnızca ödeme yaparak aktifleştirmeniz mümkün değildir.\n\nAncak şartları sağlamanız hâlinde öğrenci affı kapsamında başvuru yapabilirsiniz. Başvurular AKSİS üzerinden çevrim içi olarak gerçekleştirilmektedir.\n",
+      "complete": true
+    },
+    {
+      "case_no": 216,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "310",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 222,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, AUZEF programlarına ait dersleri auzef.istanbul.edu.tr adresindeki “Programlar” bölümünden ilgili programa tıklayıp “Dersler” sekmesini açarak görüntüleyebilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 223,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, AUZEF programlarına ait dersleri auzef.istanbul.edu.tr adresindeki “Programlar” bölümünden ilgili programa tıklayıp “Dersler” sekmesini açarak görüntüleyebilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 225,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nGüncel programlarımıza auzef.istanbul.edu.tr/tr/content/programlar/ adresinden ulaşabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 226,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nGüncel programlarımıza auzef.istanbul.edu.tr/tr/content/programlar/ adresinden ulaşabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 229,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "320, 317",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 232,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "320",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 233,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "320, 317",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 234,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 237,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 245,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "266",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 248,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 252,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nÇözüm Merkezi yalnızca İstanbul Üniversitesi öğrencileri tarafından kullanılabilmektedir. Öğrenci değilseniz, sorularınız için çağrı merkezimiz veya sosyal medya hesaplarımız üzerinden bize ulaşabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 253,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Öğrenci değilseniz, sorularınız için çağrı merkezimiz veya sosyal medya hesaplarımız üzerinden bize ulaşabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 258,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nÖncelikle aksis.istanbul.edu.tr adresine giriş yaparak Öğrenme Yönetim Sistemi üzerinden ilgili dönemde dersinizin bulunup bulunmadığını kontrol ediniz.\n\nİlgili dönemde dersiniz bulunuyor ve ödemenizi tamamladıysanız dönem başlangıç tarihini beklemeniz gerekmektedir. Dönem başlangıcında dersleriniz hâlâ görünmüyorsa Çözüm Merkezi üzerinden talep oluşturabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 260,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nİstanbul Üniversitesi öğrencisiyseniz, auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne giriş yaparak şikâyet veya talebinizi iletebilirsiniz. Talebiniz ilgili birim tarafından değerlendirilerek sistem üzerinden yanıtlanacaktır.\n",
+      "complete": true
+    },
+    {
+      "case_no": 264,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "323",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 267,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "323",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 269,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "323",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 273,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "324",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 277,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "325, 306",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 278,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nMateryal ücreti dönemlik olarak, güz ve bahar dönemlerinde olmak üzere yılda iki kez ödenmektedir. Hangi eğitim-öğretim döneminde bulunuyorsanız, ilgili döneme ait materyal ücretini ödeyerek öğreniminize devam edebilirsiniz. Aynı dönem için ayrıca başka bir borçlandırma yapılmaz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 280,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nDGS ile yerleştiğiniz programda daha önce aldığınız derslerin intibak işlemleri hakkında bilgi almak için auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne talep oluşturabilirsiniz. Talebiniz ilgili birim tarafından değerlendirilerek gerekli yönlendirme yapılacaktır.\n",
+      "complete": true
+    },
+    {
+      "case_no": 281,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "325",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 284,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "325, 306",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 292,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nMevcut kaydınızı sildirip yeni bir programa kayıt yaptırmanıza rağmen eski program bilgileriniz görünmeye devam ediyorsa, durumunuzun kontrol edilmesi için auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne talep oluşturabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 306,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "327, 334",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 307,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "327, 334",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 312,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nSınav oturumları derslere göre değişkenlik gösterebilir. Hangi derslerin aynı oturumda yer alacağı, sınav giriş belgesinin yayımlanmasıyla netleşmektedir. Sınav giriş belgeniz yayımlandığında oturum bilgilerinizi kontrol edebilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 318,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "327, 334 | 327, 334",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 319,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 331,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "329",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 332,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nTek ders sınavına katılabilmek için ilan edilen başvuru/kayıt süresi içerisinde işlemlerinizi tamamlamış olmanız gerekmektedir. Kayıt yaptırmadıysanız sınava katılım sağlayamazsınız.\n",
+      "complete": true
+    },
+    {
+      "case_no": 333,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\nTek ders sınavı sonuçları en kısa süre içerisinde açıklanacaktır. Sonuçlar açıklandığında ilgili sistem üzerinden kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 335,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nMezuniyete Üç Ders Sınavı’na katılım şartları öğrencinin ders ve mezuniyet durumuna göre değerlendirilmektedir.\n\nSınava kimlerin katılabileceği, başvuru koşulları ve diğer detaylara aşağıdaki bağlantıdan ulaşabilirsiniz:\n\nhttps://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\n",
+      "complete": true
+    },
+    {
+      "case_no": 336,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nMezuniyete Üç Ders Sınavı, mezuniyet aşamasına gelmiş ve mezun olabilmek için belirli sayıda dersi kalan öğrenciler için uygulanan bir sınavdır. Sınava katılım, öğrencinin ders ve mezuniyet durumunun ilgili şartlara uygun olmasına bağlıdır.\n\nSınavın başvuru koşulları, kimlerin katılabileceği ve uygulamaya ilişkin detaylara aşağıdaki bağlantıdan ulaşabilirsiniz:\n\nhttps://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\n",
+      "complete": true
+    },
+    {
+      "case_no": 338,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "329",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 340,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nTüm derslerinizi almış ve yalnızca bir dersten FF notunuz bulunuyorsa, ilgili eğitim-öğretim yılında güz veya bahar dönemlerinden en az birinde kayıt yenilemiş olmanız şartıyla Mezuniyete Üç Ders Sınavı’na başvurabilirsiniz.\n\nAyrıca isterseniz, ilgili dersi başka bir üniversitenin yaz okulundan almak için de başvuruda bulunabilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 344,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\n\nİstanbul Üniversitesi öğrencisiyseniz auzefcozum.istanbul.edu.tr adresi üzerinden Çözüm Merkezi’ne giriş yaparak talebinizi iletebilirsiniz.\n",
+      "complete": true
+    },
+    {
+      "case_no": 345,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "316",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 347,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "330",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 350,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, AUZEF Çözüm Merkezi’ne auzefcozum.istanbul.edu.tr adresi üzerinden ulaşabilirsiniz. Sisteme AKSİS kullanıcı adı ve şifrenizle veya e-Devlet ile giriş yaparak talep oluşturabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 355,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "82, 331",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 362,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 365,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "332",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 366,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "57",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 367,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "332",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 370,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "332",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 371,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "332, 320",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 372,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, lise mezunu adaylar AUZEF programlarına YKS kapsamında yerleşerek kayıt yaptırabilirler. Çocuk Gelişimi alanında lise mezunu olmanız tek başına sınavsız kayıt hakkı sağlamaz. Güncel açıköğretim ve uzaktan öğretim programlarını auzef.istanbul.edu.tr adresindeki “Programlar” bölümünden, başvuru ve tercih süreçlerini ise ÖSYM duyurularından takip edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 373,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, lise mezunu adaylar AUZEF programlarına YKS kapsamında yerleşerek kayıt yaptırabilirler. Çocuk Gelişimi alanında lise mezunu olmanız tek başına sınavsız kayıt hakkı sağlamaz. Güncel açıköğretim ve uzaktan öğretim programlarını auzef.istanbul.edu.tr adresindeki “Programlar” bölümünden, başvuru ve tercih süreçlerini ise ÖSYM duyurularından takip edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 376,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "333",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 379,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "333, 319",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 381,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "319",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 397,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "335",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 398,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "335",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 399,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "335",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 400,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "335",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 405,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "335",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 407,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "328",
+      "review_note": "Gold sorguyla uyumsuz/eksik — Gold QnA eşlemesini değiştir",
+      "complete": true
+    },
+    {
+      "case_no": 413,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "328",
+      "review_note": "Belirgin veri sorunu yok — Gold ve KB içeriğini uzmanla incele",
+      "complete": true
+    },
+    {
+      "case_no": 415,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "320",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 416,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 417,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Fakültemizde yer alan güncel lisans ve önlisans programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz. Başvuru ekranında bir program görünmüyorsa ilgili program o başvuru türü kapsamında öğrenci alımına açık olmayabilir.",
+      "complete": true
+    },
+    {
+      "case_no": 421,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, toplam AKTS bilginizi aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz. Burada başarılı olduğunuz dersleri ve toplam AKTS durumunuzu kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 422,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "10, 150, 337",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 423,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "1",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 424,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Gold sorguyla uyumsuz/eksik — Gold QnA eşlemesini değiştir",
+      "complete": true
+    },
+    {
+      "case_no": 425,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Fakültemizde Çocuk Gelişimi Programı için bölüm başkanı bulunmamaktadır; program koordinatörü bulunmaktadır. Koordinatör bilgisi dönemsel olarak değişebildiği için güncel bilgiye program sayfasından ulaşabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 427,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba,\nGüncel AKTS durumunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden kontrol edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 429,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, e-Devlet’te yer alan transkript belgenizde kredi veya not bilgilerinin farklı olduğunu düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumun incelenmesini sağlayabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 436,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "325 | 325",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 438,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 440,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "338",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 445,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Gold sorguyla uyumsuz/eksik | Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 446,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Gold sorguyla uyumsuz/eksik | Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 447,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 449,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "140, 170",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 452,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "341",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 454,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, final sınavı soru kitapçıkları sınavın tamamlanmasının ardından 2 günlük soru itiraz süresi boyunca yayımlanmaktadır. İtiraz süresi sona erdikten sonra kitapçıklar yayından kaldırılmaktadır.",
+      "complete": true
+    },
+    {
+      "case_no": 455,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, final sınavı soru kitapçıkları sınavın tamamlanmasının ardından 2 günlük soru itiraz süresi boyunca yayımlanmaktadır. İtiraz süresi sona erdikten sonra kitapçıklar yayından kaldırılmaktadır.",
+      "complete": true
+    },
+    {
+      "case_no": 456,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, sınav sonuçları açıklandıktan sonra harf notlarının ve ders başarı durumlarının hesaplanması ayrıca gerçekleştirilmektedir. Hesaplama tamamlandığında hangi derslerden başarılı veya başarısız olduğunuzu aksis.istanbul.edu.tr adresinde “Öğrenme Yönetim Sistemi > Eğitim-Öğretim İşlemleri > Müfredat Listesi” bölümünden görüntüleyebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 457,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 459,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, 2025-2026 Bahar Dönemi notlarınız sistemde görünmüyorsa öncelikle aksis.istanbul.edu.tr üzerinden kontrol edebilirsiniz. Notlarınızın eksik olduğunu düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumun incelenmesini sağlayabilirsiniz: auzefcozum.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 460,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "150",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 461,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, 2025-2026 Bahar Dönemi notlarınız sistemde görünmüyorsa öncelikle aksis.istanbul.edu.tr üzerinden kontrol edebilirsiniz. Notlarınızın eksik olduğunu düşünüyorsanız AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumun incelenmesini sağlayabilirsiniz: auzefcozum.istanbul.edu.tr",
+      "complete": true
+    },
+    {
+      "case_no": 462,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, Bahar Dönemi sınav ve sonuç açıklama tarihlerini akademik takvim üzerinden takip edebilirsiniz: auzef.istanbul.edu.tr/tr/content/akademik-takvim\n",
+      "complete": true
+    },
+    {
+      "case_no": 463,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, 2026 Bahar Dönemi Ara Sınav sonuçlarına ilişkin güncel duyuruları auzef.istanbul.edu.tr adresinden takip edebilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 464,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "342, 131",
+      "review_note": "Gold sorguyla uyumsuz/eksik — Gold QnA eşlemesini değiştir",
+      "complete": true
+    },
+    {
+      "case_no": 469,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "342, 131",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 470,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "129",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 471,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "342, 129",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 472,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "342, 129",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 473,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "129",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 474,
+      "human_decision": "İkisi de kabul edilebilir",
+      "accepted_qna_ids": "343, 330",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 480,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "344, 125 | 344, 125",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 482,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, üniversiteye kayıt işlemleri başvuru türüne göre değişmektedir. YKS, İkinci Üniversite, DGS veya diğer kayıt türlerinden hangisi kapsamında kayıt olmak istediğinizi belirtirseniz size uygun yönlendirmeyi yapabiliriz. Güncel kayıt süreçleri ve kılavuzlara auzef.istanbul.edu.tr adresindeki “Aday Öğrenciler” ve “Duyurular” bölümlerinden ulaşabilirsiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 483,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "344",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 487,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "345",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 491,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "345",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 492,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 496,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, derslerde sabit bir geçme notu bulunmamaktadır. Ham Başarı Notu (HBN), Ara Sınav notunun %30’u ile Bitirme Sınavı notunun %70’i alınarak hesaplanır. HBN’si 35’in altında kalan öğrenciler FF harf notu alır; 35 ve üzerindeki notlar ise bağıl değerlendirme sistemine göre harf notuna dönüştürülür.",
+      "complete": true
+    },
+    {
+      "case_no": 500,
+      "human_decision": "İkisi de sorunlu",
+      "accepted_qna_ids": "",
+      "review_note": "Merhaba, belge e-imza süreci tamamlanana kadar sistemde “Teslim edilecek” olarak görünebilir. E-imza işlemi tamamlandığında bu alan “Görüntüle” olarak güncellenecek ve belgenizi sistem üzerinden indirebileceksiniz.",
+      "complete": true
+    },
+    {
+      "case_no": 502,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "complete": true
+    },
+    {
+      "case_no": 503,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "55",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 506,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "347",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 508,
+      "human_decision": "4o daha iyi",
+      "accepted_qna_ids": "348",
+      "review_note": "",
+      "complete": true
+    },
+    {
+      "case_no": 514,
+      "human_decision": "Bağlam olmadan değerlendirilemez",
+      "accepted_qna_ids": "",
+      "review_note": "",
+      "complete": false
+    },
+    {
+      "case_no": 516,
+      "human_decision": "Luna daha iyi",
+      "accepted_qna_ids": "196",
+      "review_note": "",
+      "complete": true
+    }
+  ]
+}

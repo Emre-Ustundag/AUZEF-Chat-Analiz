@@ -1,0 +1,184 @@
+{
+  "schema_version": "simple-gold-review-resolution-v1",
+  "source_result_blake2b": "67bae1540a7e7985a9f987f928c5688e7c25bb06b3a5806e508f1d42fb3f0895",
+  "resolutions": [
+    {
+      "case_no": 76,
+      "reason": "Önceki turnler 'buraya' ifadesinin derslere/uygulamaya girişi anlattığını kanıtlıyor.",
+      "source": "sessions-yil.jsonl:248332; SessionId 4853d6ab-07d1-4679-9796-f00202cad9dc",
+      "changes": {
+        "review_note": "Önceki mesajlardan öğrencinin derslere/uygulamaya giriş yaptığında sistemden atıldığı anlaşılıyor; oturum geçmişi olmadan ‘buraya’ hedefi belirlenemiyor.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 199,
+      "reason": "Kaynak session'da önceki kullanıcı mesajı yok; başvuru türü ve program düzeyi belirsiz.",
+      "source": "sessions-yil.jsonl:270686; SessionId f0efccbd-cfb8-48f7-9f77-3858c67b1274",
+      "changes": {
+        "review_note": "Öğrencinin mezun olacağı program düzeyi ve başvuru yolu (DGS, İkinci Üniversite veya YKS) belirtilmediği için uygun yanıt bağlam olmadan belirlenemiyor.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 248,
+      "reason": "Sonraki turn ve sayfa geçmişi Çözüm Merkezi'nde talep oluşturma hatasını açıklıyor.",
+      "source": "sessions-yil.jsonl:4538; SessionId 21fd8ad2-6f5e-440a-9c63-4a5a83055bae",
+      "changes": {
+        "review_note": "Sonraki mesaj ve sayfa geçmişi, Çözüm Taleplerim bölümünde yeni talep oluşturulamadığını ve 500 hatası alındığını gösteriyor; ilk ifade tek başına yetersiz.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 438,
+      "reason": "Bulunan önceki turnler hedef ifadenin neyi kastettiğini kesinleştirmiyor.",
+      "source": "sessions-yil.jsonl:198902; SessionId 98aedcef-25bc-4cb2-8085-f1594f3a94c3",
+      "changes": {
+        "review_note": "Önceki mesajlar incelendi; akademik takvimde görünmeyen şeyin ders, etkinlik veya öğrencilik durumu olduğu belirlenemedi.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 457,
+      "reason": "Soru tarih bağımlı; aynı session kimliğindeki eski turn gerçek konuşma sürekliliği değil.",
+      "source": "sessions-yil.jsonl:170201; SessionId 0c9c3163-95c6-475c-91fe-9e448e89c57d",
+      "changes": {
+        "review_note": "Soru 23 Şubat 2026 tarihindeki harç ödeme süresini soruyor; doğru cevap dönem ve tarih bağlamına bağlıdır. Aynı session kimliğindeki eski sınav mesajı bu turnün bağlamı değildir.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 492,
+      "reason": "Hedef mesaj, 25 saniye önceki bütünleme geçme notu sorusunun doğrudan devamı.",
+      "source": "sessions-yil.jsonl:168096; SessionId b4244a7a-9081-49c7-b42a-a52914f537cc",
+      "changes": {
+        "review_note": "Önceki mesaj bütünleme sınavında geçme notunu soruyor; ‘50 aldım’ ifadesi bu sorunun doğrudan devamıdır.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 514,
+      "reason": "Soru dönemsel son ödeme tarihini soruyor; kaynak session kayıt türünü ve resmî takvimi kanıtlamıyor.",
+      "source": "sessions-yil.jsonl:96938; SessionId 7799f6d6-0031-4ae0-a90c-fb1e03becad3",
+      "changes": {
+        "review_note": "Soru 2 Ekim 2025 tarihindeki harç son ödeme süresini soruyor; kayıt türü ve ilgili dönemin resmî ödeme takvimi olmadan doğru tarih belirlenemiyor.",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 1,
+      "reason": "QnA 306 genel muafiyet niyetidir; 51 gereksiz dar, 100 ters yöndeki yatay geçiştir.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 51, 100, 306",
+      "changes": {
+        "accepted_qna_ids": "306"
+      }
+    },
+    {
+      "case_no": 70,
+      "reason": "QnA 207 gereksiz biçimde Cerrahpaşa öğrencisi varsayıyor; genel OBS giriş QnA'sı 309 yeterli.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 207, 309",
+      "changes": {
+        "accepted_qna_ids": "309"
+      }
+    },
+    {
+      "case_no": 74,
+      "reason": "Derse girdikten sonra sistemden atılma, parola/OBS yerine ÖYS erişim QnA'sı 179 ile karşılanıyor.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 179, 309, 315",
+      "changes": {
+        "accepted_qna_ids": "179"
+      }
+    },
+    {
+      "case_no": 471,
+      "reason": "Geçiş türü belirtilmediği için Ek Madde 1'e özgü QnA 342 gereksiz dar; genel QnA 129 korunuyor.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 129, 342",
+      "changes": {
+        "accepted_qna_ids": "129"
+      }
+    },
+    {
+      "case_no": 472,
+      "reason": "Genel yatay geçiş isteğinde merkezi geçiş varsayımı gereksiz dar; genel QnA 129 korunuyor.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 129, 342",
+      "changes": {
+        "accepted_qna_ids": "129"
+      }
+    },
+    {
+      "case_no": 474,
+      "reason": "Oluşturulmuş talebe yanıt gelmemesi dönüş süresi QnA'sı 330'dur; 343 yeni talep oluşturmayı anlatır.",
+      "source": "accepted-qna ikinci inceleme; qna-catalog ID 330, 343",
+      "changes": {
+        "accepted_qna_ids": "330"
+      }
+    },
+    {
+      "case_no": 36,
+      "reason": "Aynı session içindeki önceki turn, öğrencinin hangi sınıf/dönemde olduğunu sorduğunu gösteriyor; yinelenen hedef turn temizlenebilir.",
+      "source": "session bağlam ikinci inceleme; accepted-qna-42-audit case 36; qna-catalog ID 307",
+      "changes": {
+        "accepted_qna_ids": "307",
+        "review_note": "Önceki turn, öğrencinin hangi sınıf/dönemde olduğunu sorduğunu gösteriyor; QnA 307 dönem ve öğrenim durumunu nereden göreceğini yanıtlıyor. Art arda yinelenen aynı kullanıcı mesajı replay'de tek turn sayılmalıdır."
+      }
+    },
+    {
+      "case_no": 75,
+      "reason": "Önceki turnler sorunun mobil uygulamada derslere giriş sırasında sistemden atılma olduğunu kesinleştiriyor.",
+      "source": "session bağlam ikinci inceleme; accepted-qna-42-audit case 75; qna-catalog ID 263",
+      "changes": {
+        "accepted_qna_ids": "263",
+        "review_note": "Önceki turnler sorunun mobil uygulamada derslere giriş sırasında sistemden atılma olduğunu gösteriyor; QnA 263 uygulamayı güncelleme ve yeniden giriş yönlendirmesini içeriyor."
+      }
+    },
+    {
+      "case_no": 61,
+      "reason": "Bütünleme sınavına girme ifadesi ayrı niyet değil OBS'ye giriş amacıdır; iki genel giriş cevabı kabul edilebilir, sınav QnA'sı tek başına yeterli değildir.",
+      "source": "session bağlam ikinci inceleme; qna-catalog ID 147, 309, 315",
+      "changes": {
+        "accepted_qna_ids": "309, 315"
+      }
+    },
+    {
+      "case_no": 69,
+      "reason": "Harç ödeme ifadesi ayrı niyet değil OBS'ye giriş amacıdır; tarih/son gün QnA'sı ve SSO QnA'sı soruyu tek başına karşılamaz.",
+      "source": "session bağlam ikinci inceleme; qna-catalog ID 52, 309, 315, 323",
+      "changes": {
+        "accepted_qna_ids": "309, 315"
+      }
+    },
+    {
+      "case_no": 134,
+      "reason": "Aynı kısa ifade kaynakta 42 kez ve 36 session'da telefon/e-posta güncelleme, iletişim ve menü yönlendirmesi gibi farklı anlamlarda kullanılmış.",
+      "source": "session bağlam ikinci inceleme; sessions-yil.jsonl ifade taraması",
+      "changes": {
+        "accepted_qna_ids": "",
+        "review_note": "‘Bilgilerimi güncellemek istiyorum’ ifadesi farklı oturumlarda telefon/e-posta güncelleme, AUZEF ile iletişim ve farklı menülere erişim anlamlarında kullanılıyor; önceki konuşma olmadan tek bir QnA seçilemez ve ifade exact alias yapılmamalıdır.",
+        "evaluation_status_override": "needs_context",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 345,
+      "reason": "Aynı kısa ifade kaynakta 220 kez ve 187 session'da birbirinden farklı taleplerin devamı olarak kullanılmış.",
+      "source": "session bağlam ikinci inceleme; sessions-yil.jsonl ifade taraması",
+      "changes": {
+        "accepted_qna_ids": "",
+        "review_note": "‘Nasıl olacak’ ifadesi çok sayıda farklı talebin devamı olarak kullanılıyor; önceki konuşma olmadan niyet ve doğru QnA belirlenemez ve ifade exact alias yapılmamalıdır.",
+        "evaluation_status_override": "needs_context",
+        "complete": true
+      }
+    },
+    {
+      "case_no": 413,
+      "reason": "Soru dört yıllık Çocuk Gelişimi programının yeni dönemde açılıp açılmayacağına ilişkin güncel kurum kararı istiyor; mevcut QnA'lar bunu yanıtlamıyor.",
+      "source": "session bağlam ikinci inceleme; accepted-qna-42-audit case 413",
+      "changes": {
+        "accepted_qna_ids": "",
+        "review_note": "Öğrenci dört yıllık Çocuk Gelişimi programının yeni dönemde/temmuzda yeniden açılıp açılmayacağını soruyor. Başvuru kanalı ve ilgili dönemin güncel program açma kararı içerik sahibi tarafından netleştirilmeden doğru cevap verilemez.",
+        "evaluation_status_override": "needs_kb",
+        "complete": true
+      }
+    }
+  ]
+}

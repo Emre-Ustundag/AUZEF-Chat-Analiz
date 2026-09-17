@@ -1,0 +1,31 @@
+{
+  "schema_version": "gold-v2-validation-v1",
+  "valid": true,
+  "workbook": {
+    "name": "yanit-gold-inceleme-174.xlsx",
+    "blake2b": "84d4c0b4450be2667365d46b40d2c569c217b540f69a9af312c4959a4606de34"
+  },
+  "review_json": {
+    "name": "auzef-inceleme-174-174.resolved.json",
+    "blake2b": "0a5ce3ee195721ac5e888aca6e3806d908eecaa7fc8a25ef54629787be382ba0"
+  },
+  "qna_catalog": {
+    "name": "qna-catalog-20260915.json",
+    "blake2b": "2c27ec0864eb7ec4f1637bba5337c4dfd9be4ae0aeef1b398ec9c55a109daee7",
+    "active_qna_count": 311
+  },
+  "baseline_aliases": {
+    "name": "alias-session-matches.jsonl",
+    "blake2b": "f9a0de93056c80826019a4e532c14fcd784fbbb9a8caa25b6c84d10ab9c4e7b2",
+    "case_count": 516
+  },
+  "case_count": 516,
+  "review_case_count": 174,
+  "review_status_counts": {
+    "needs_context": 25,
+    "needs_kb": 68,
+    "ready": 81
+  },
+  "error_count": 0,
+  "errors": []
+}

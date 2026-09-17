@@ -1,0 +1,1563 @@
+{
+  "schema_version": "qna-catalog-v1",
+  "generated_at": "2026-09-14T21:09:24.716248+00:00",
+  "source": "local-auzef-chatbot-database",
+  "active_qna_count": 311,
+  "qna": [
+    {
+      "id": 1,
+      "question": "Bir dönemde en fazla kaç Kredi/AKTS ders alabilirim?",
+      "answer": "Bir öğrencinin bir yarıyılında alabileceği azami Kredi/AKTS toplamı, yarıyıl uygulamasında bir yarıyılda tanımlanmış derslerin toplam Kredi/AKTS yükünün %50’sinden fazlasını geçemez. Örneğin; dönem AKTS miktarı 30 ise bu miktarın yarısı kadar daha ders eklenerek toplamda AKTS miktarı 45 AKTS ye kadar çıkarılabilir. Bir döneme ait alınması gereken Kredi/AKTS miktarları programa göre değişiklik gösterebilmektedir. Öğrencilerimiz \"http://auzef.istanbul.edu.tr\" http://auzef.istanbul.edu.tr programlar sekmesinden programını seçerek \"Dersler\" alanından dönemsel Kredi/AKTS miktarına ulaşabilir."
+    },
+    {
+      "id": 2,
+      "question": "Ödememi hangi bankadan yatırmalıyım?",
+      "answer": "Ödeme işlemi \"aksis.istanbul.edu.tr\"  \"Harç Bilgileri\"  alanından yapabilirsiniz. Ayrıca AKSİS ten referans numarası alınarak Halk Bank Şube/ATM’lerinden gerçekleştirilir."
+    },
+    {
+      "id": 3,
+      "question": "AUZEF'te engelli öğrencilerin ücret indirimi nasıl yapılır?",
+      "answer": "%40 ve üzeri engel durumu olup, Materyal ücreti muafiyeti talebinde bulunacak olan öğrencilerimizden aşağıda belirtilen evrakları Fakültemize ulaştırmaları (kargo yoluyla) hâlinde, program süresi ve kayıtlı olunan program sayısı sınırlaması olmaksızın öğrenim/materyal ücreti ve öğrenci katkı payı alınmayacaktır. Gerekli Evraklar: 1- Sağlık Kurulu Raporu: İlgili kurum ve kuruluşlardan alacakları belgenin ıslak imzalı, mühürlü, aslı gibidir onaylı örneği ya da E-Devlet sisteminden alınan elektronik imzalı hali, 2- İndirim/Muafiyet Başvurusu İçin Dilekçe: Başvuran adayın kendisinin doldurduğu talebini belirten ıslak imzalı dilekçe. Ayrıntılı bilgi ve dilekçe örneğine \"https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 4,
+      "question": "Sınavlar hakkında bilgiye nereden erişebilirim?",
+      "answer": "Sınavlarla ilgili ayrıntılı bilgiye web sayfamızdan ulaşabilirsiniz. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/sinavlar-hakkinda\" buradan ulaşabilirsiniz. -Tüm sınav tarihleri güncel olarak web sayfasındaki (\"auzef.istanbul.edu.tr\" auzef.istanbul.edu.tr) \"AKADEMİK TAKVİM\" sayfasında yer alır. -Tüm sınavlar öncesinde, belirlenen tarih aralığında \"https://auzefsinav.istanbul.edu.tr\" https://auzefsinav.istanbul.edu.tr üzerinden sınav merkezi tercihi alınır. Tercih tarihleri (\"https://auzef.istanbul.edu.tr/\" https://auzef.istanbul.edu.tr/) web sayfası, AUZEF sosyal medya hesapları ve SMS ile öğrencilere duyurulur. -Her akademik yarıyılda bir ara sınav (vize) ve bir bitirme (final) sınavı olmak üzere iki sınav yapılmaktadır. Bitirme sınavlarında başarısız olan bir öğrenciler herhangi bir ön şarta bağlı olmaksızın her yarıyılda FF DD ve DC dersleri için bir telafi (bütünleme) sınavına girme hakkına sahiptir. -AUZEF Sınavları (Vize, Final, Bütünleme) akademik takvimde belirtilen gün ve tarihlerde Fakültemizin uygun gördüğü sınav merkezlerinde gözetimli olarak olarak yapılmaktadır. -Fakültemiz tarafından gerçekleştirilen sınavların geneli çoktan seçmeli test şeklinde yapılmaktadır. Her ders için 20 soru sorulmakta ve soruların çözümü için 30 dakika süre verilmektedir. AUZEF tarafından gerçekleştirilen sınavlar yüzyüze olarak yapılır."
+    },
+    {
+      "id": 5,
+      "question": "AUZEF sınav merkezi tercihi nereden yapılır?",
+      "answer": "Sınav merkezi tercih sistemi, her sınav dönemi öncesinde öğrencilerimizin tercihlerini güncelleyebilmeleri için açılmaktadır. Öğrenciler, sınav merkezi tercih işlemlerini her sınav öncesi yönetimce belirlenen ve AUZEF web sayfasında duyurulan tarihler arasında gerçekleştirmelidir. Sınav merkezi tercihi belirlenen tarih aralığında \"https://auzefsinav.istanbul.edu.tr\" https://auzefsinav.istanbul.edu.tr adresi üzerinden öğrenciler tarafından yapılacaktır. Sınav merkezi tercihi aşamasında engelli veya hükümlü olan öğrencilerin engel durumları ile ilgili bilgileri hatasız olarak bildirmeleri gerekmektedir."
+    },
+    {
+      "id": 6,
+      "question": "Canlı derslere nasıl katılırım?",
+      "answer": "Canlı Ders programına AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" alanından ulaşılır. Canlı derslere sadece uzaktan öğretim programı öğrencileri giriş sağlayabilmektedir. Uzaktan öğretim programlarına kayıt olmak için öğrencilerin ÖSYM sınavlarına girmiş ve programa yerleştirilerek kayıt yaptırmış olması gerekmektedir."
+    },
+    {
+      "id": 7,
+      "question": "AUZEF Mobil nedir?",
+      "answer": "AUZEF Mobil, Google Play ve App Store’da yer alan bir uygulamadır. AUZEF Mobil ile ders kitaplarınızı mobil cihazlarınızdan okuyabilir, uygulamayı tabletinize ve telefonlarınıza ücretsiz kurabilirsiniz."
+    },
+    {
+      "id": 8,
+      "question": "(DC) ve (DD) harf notları neyi ifade eder?",
+      "answer": "Bir dersten (DD) ve (DC) harf notlarından birini alan öğrenci o dersi koşullu olarak başarmış sayılır. Mezuniyet aşamasında koşullu başarılı notların, başarılı kabul edilebilmesi için öğrencinin AGNO’ sunun en az 2.00 olması gerekir. Mezuniyet aşamasına gelmiş ve FF harf notlu dersi olmayan ancak AGNO'su 2.00'ın altında kalan öğrenciler bu derslerini tekrar alıp ortalamalarını yükseltmelidir. İlgili dönemlerde de öğrenciler ilgili derslerin sınavına tekrar girerek notlarını yükseltebilir."
+    },
+    {
+      "id": 9,
+      "question": "Bitirme(Final) sınavına ne zaman gireceğim?",
+      "answer": "Sınav tarihleri eğitim-öğretim yılı başında  auzef.istanbul.edu.tr de \"Akademik Takvim\" alanından yayınlanmaktadır. \nBitirme(Final) Telafi(Bütünleme) sınavı ve diğer tüm sınavların tarihlerine Akademik Takvimden ulaşabilirsiniz."
+    },
+    {
+      "id": 10,
+      "question": "Bitirme(Final) sınav sonuçlarına nereden ulaşabilirim?",
+      "answer": "Bitirme (Final) Telafi(Bütünleme) sınav sonuçları ilk olarak \"https://auzefsinav.istanbul.edu.tr\" https://auzefsinav.istanbul.edu.tr/ adresinden ilan edilir, \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yapılır. Daha sonra notlar AKSİS' e aktarılır."
+    },
+    {
+      "id": 11,
+      "question": "Kayıt yenilemeden öğrenci durum belgesi alabilir miyim?",
+      "answer": "Öğrenci Belgesi ve Öğrenci Durum Belgesi sadece \"Devamlı Öğrenci\" statüdeki öğrencilere verilebilir. Kayıt yenilemediğiniz takdirde Öğrenci Belgesi alamazsınız. Kayıt yenilemeyen öğrenciler AKSİS'ten \"Öğrenci Kayıt Yenilemedi Belgesi\" alabilirler."
+    },
+    {
+      "id": 12,
+      "question": "Sınav merkezi tercih tarihlerini kaçırdım nerede sınava gireceğim?",
+      "answer": "Sınav merkez tercihini yapamamış öğrencilerimiz bir önceki sınavda hangi merkezi tercih ettiyse yine aynı şekilde o merkez seçilir. Yeni eğitim öğretim yılında kayıt olan ve ilk defa sınava girip tercihini bildirmeyen öğrencilerimizin sınav merkezi AKSİS’ ten bildirdikleri ikamet şehirleri (MERNİS ADRESİ) olarak belirlenecektir."
+    },
+    {
+      "id": 13,
+      "question": "AUZEF' te dört yanlış bir doğruyu götürüyor mu?",
+      "answer": "YÖK kararıyla ülkemizdeki tüm Açık Öğretim programlarında dört yanlış bir doğruyu götürürken, uzaktan öğretim programlarında yanlış cevaplar dikkate alınmaz.\nAçık öğretim programlarında  doğru cevap sayısından yanlış cevap sayısının dörtte biri çıkarılarak test ham puanı hesaplanır, dört yanlış bir doğru cevabı götürür. Her hatalı cevap 0,25 doğruyu siler, bu da 1.25 puana denk gelir."
+    },
+    {
+      "id": 14,
+      "question": "Kayıt olduğum program hakkında bilgiye nereden ulaşabilirim?",
+      "answer": "auzef.istanbul.edu.tr de yer alan  ‘Programlar’ sekmesinden  kayıt olunan programın ismine tıklanır. Kayıt olduğunuz AUZEF programı hakkındaki genel bilgiye  bölüm sayfalarından ulaşabilirsiniz. \nBu sayfada;\n- Program Hakkında genel bilgi\n- Dersler\n- Akademik Kadro\n- Mezuniyet Şartları gibi bilgiler bulunmaktadır."
+    },
+    {
+      "id": 15,
+      "question": "AGNO nasıl hesaplanır?",
+      "answer": "AGNO; öğrencinin ilk yarıyıldan itibaren aldığı tüm derslerin başarı notlarının kredileriyle çarpımları toplamının ilk yarıyıldan itibaren alınan derslerin kredileri toplamına bölünmesiyle hesaplanır. Alt yarıyıla ait dersin izleyen yarıyılda tekrar edilmesi durumunda alınan not, dersin tekrar edildiği mevcut yarıyıl AGNO hesabına katılır. Hesaplama sonucu, virgülden sonra iki hane olacak şekilde yuvarlatılır."
+    },
+    {
+      "id": 16,
+      "question": "Ağırlık Not Ortalaması (ANO) nasıl hesaplanır?",
+      "answer": "ANO; öğrencinin ilgili yarıyılda aldığı derslerin başarı notlarının, kredileriyle çarpımları toplamının ilgili yarıyıldaki kredi toplamına bölünmesiyle hesaplanır.\nDönem notunu hesaplama işlemi, öğrenci otomasyon sistemi tarafından,(AKSİS) sınavların açıklandığı dönemde yönetmelik esaslarına göre otomatik gerçekleştirilir."
+    },
+    {
+      "id": 17,
+      "question": "AGNO VE ANO nedir?",
+      "answer": "AGNO: Ağırlıklı genel not ortalamasını, ANO: Ağırlıklı not ortalamasını ifade eder."
+    },
+    {
+      "id": 18,
+      "question": "Sınavsız İkinci Üniversite programlarına kayıt olurken evrak göndermem gerekiyor mu?",
+      "answer": "Sınavsız İkinci Üniversite kapsamında kayıt olacak adayların YÖKSİS'te eğitim bilgilerinin bulunması gerekmektedir. Adaylar YÖKSİS eğitim bilgileri ile basvuru.istanbul.edu.tr adresinden başvuru yaparak herhangi bir evrak göndermeden ve fakülteye gelmeden sistemden kayıt işlemlerini tamamlayabilirler. Öğrenci adayları E-Devlet sisteminden de eğitim durumlarını kontrol edebilirler."
+    },
+    {
+      "id": 19,
+      "question": "Sınavsız İkinci Üniversite kapsamında ne kadar harç ücreti ödemem gerekir?",
+      "answer": "Sınavsız İkinci Üniversite programlarının harç ücreti ile ilgili ayrıntılı bilgiyi \"https://auzef.istanbul.edu.tr/tr/content/donem-baslangici/materyal-ucretleri\" buradan inceleyebilirsiniz."
+    },
+    {
+      "id": 20,
+      "question": "Sınavsız İkinci Üniversite kapsamında uzaktan eğitim programlarına kayıt olabilir miyim?",
+      "answer": "Sınavsız İkinci Üniversite kapsamında sadece açık öğretim programlarına kayıt yapılmaktadır. Uzaktan öğretim programlarına ikinci üniversite kapsamında kayıt yapılmamaktadır. Uzaktan öğretim programlarına kayıt olmak için ÖSYM'nin düzenlediği YKS sınavına girip ilgili programa yerleştirilmiş olmanız gerekmektedir."
+    },
+    {
+      "id": 21,
+      "question": "Sınavsız İkinci Üniversite kapsamında kayıt olmak için nasıl başvuru yapabilirim?",
+      "answer": "Daha önce ÖSYM kılavuzunda yer alan herhangi bir yükseköğretim kurumundan mezunsanız ya da öğrenciliğiniz devam ediyorsa \"Sınavsız İkinci Üniversite\" kapsamında aynı düzey ya da alt düzeydeki programlara kayıt olabilirsiniz. Kayıt tarihleri arasında basvuru.istanbul.edu.tr adresinden sınavsız ikinci üniversite başvurusu için hesap oluşturulur. Hesap aktivasyon işlemi tamamlanır. Aynı sisteme giriş yapılarak bilgi güncelleme ve tercih işlemleri gerçekleştirilir. Fakülte onayından sonra materyal ücreti yatırılarak kayıt tamamlanır.UYARI: Sistemler sadece kayıt tarihleri içerisinde aktif olmaktadır. Sınavsız İkinci Üniversite hakkında ayrıntılı bilgi için \"ikinciuniversite.istanbul.edu.tr\" ikinciuniversite.istanbul.edu.tr adresini ziyaret ediniz."
+    },
+    {
+      "id": 22,
+      "question": "Kayıt zamanında duyurulara nasıl ulaşabilirim?",
+      "answer": "Kayıt tarihleri, duyurular, kılavuzlar \"auzef.istanbul.edu.tr\" auzef.istanbul.edu.tr web sayfamızda yayınlanır. Ayrıca tüm duyurularımız gibi kayıt tarihleri de sosyal medya hesaplarımızdan duyurulmaktadır. Duyurulardan anında haberdar olmak için sosyal medya hesaplarımızı takibe alabilirsiniz. Sosyal Medya Hesaplarımız; \"https://www.facebook.com/acikveuzaktanegitim/\"  \"https://www.facebook.com/acikveuzaktanegitim/\" FACEBOOK \"https://twitter.com/acikveuzaktan\"  \"https://twitter.com/acikveuzaktan\" TWITTER \"https://www.instagram.com/acikveuzaktan/\"  \"https://www.instagram.com/acikveuzaktan/\" INSTAGRAM \"https://www.youtube.com/@acikveuzaktan\"  \"https://www.youtube.com/@acikveuzaktan\"YOUTUBE"
+    },
+    {
+      "id": 23,
+      "question": "Hesap Oluşturma işlemini nasıl ve nereden yapabilirim?(YKS, DGS, Lisans Tamamlama, YÖS kaydıyla fakülteye kayıt olan öğrenciler)",
+      "answer": "Öğrenciler AKSİS' te hesap oluşturmak için aksis.istanbul.edu.tr adresine girerek ana sayfada \"Hesap Oluştur\" butonuna tıklamalı ve açılan sayfada yer alan bilgileri eksiksiz doldurmalıdır.  Kullanıcı adı ve hesap doğrulama linki beyan edilen mail adresine gönderilmektedir. Bilgilerinizin doğru olduğuna eminseniz ve hata alıyorsanız çağrı merkezimiz 0212 440 00 44 telefon numarasından bize ulaşabilirsiniz."
+    },
+    {
+      "id": 24,
+      "question": "Hesap oluşturma ve başvuru işlemlerimi nasıl gerçekleştirebilirim?",
+      "answer": "Hesap oluşturma ve başvuru işlemleri, kayıt dönemi yayınlanan kayıt kılavuzları incelenerek yapılmalıdır. Kılavuzlara \"http://auzef.istanbul.edu.tr/kilavuzlar/\" buradan ulaşabilirsiniz. -Sınavsız ikinci üniversite kapsamında kayıt olacak adaylar tüm bilgilere \"http://ikinciuniversite.istanbul.edu.tr/\" http://ikinciuniversite.istanbul.edu.tr/ sayfasından ulaşabilir ya da direkt olarak \"http://basvuru.istanbul.edu.tr\" http://basvuru.istanbul.edu.tr adresinden hesap oluşturup başvuruda bulunabilirler. İstanbul Üniversitesi öğrencileri; \"http://basvuru.istanbul.edu.tr\" http://basvuru.istanbul.edu.tr adresine AKSİS kullanıcı adı ve şifresi ile girerek başvuruda bulunabilirler. Diğer öğrenci adayları ise(YKS, DGS, YÖS, Lisans Tamamlama, Yatay Geçiş) -AKSİS Otomasyon sisteminden yeni hesap oluşturarak sisteme kayıt olup, kılavuzda belirtilen diğer adımları takip etmelidir."
+    },
+    {
+      "id": 25,
+      "question": "Kaydımı yenilemezsem öğrencilik durumum ne olur?",
+      "answer": "Kayıt yenilemeyen öğrencilerin AKSİS ve E- Devlet sisteminde öğrencilik statüsü \"Kayıt Yenilemedi\" olarak işlenir ve öğrenciliği pasif duruma geçer. Kayıt yenilenmeyen yıl/yarıyıllar azami öğrenim süresine dâhil edilir. Kayıt yenilemeyen öğrenciler öğrenci belgesi talep edemez, ilgili dönemin ders materyallerine ulaşamaz ve dönem sınavlarına giremezler. Açıköğretim programlarında 4 dönem; uzaktan eğitim programlarında 8 dönem kayıt yenileme işlemini yerine getirmeyen öğrencilerin kayıtları YÖK'ün 2547 sayılı kanununun 44/c maddesi gereği silinmektedir."
+    },
+    {
+      "id": 26,
+      "question": "Eğitim(Materyal) ücretimi nasıl öderim?",
+      "answer": "Ödeme işlemleri, HALKBANK ATM/Şubelerinden veya AKSİS sayfasındaki online ödeme ekranından yapılmaktadır.\nBanka üzerinden ödeme yapılırken \"Referans Numarası\" adı verilen her öğrenciye özel işlem numarası kullanılmalıdır. \n\"Referans Numarası\"  AKSİS otomasyon sistemindeki Harç Bilgileri bölümünden öğrenilebilmektedir."
+    },
+    {
+      "id": 27,
+      "question": "Evraklarımı AUZEF'e nasıl ulaştırırım?",
+      "answer": "Evrak göndermesi gereken öğrenciler evraklarını kargo ve posta ile fakültemize gönderebilir.\n-Faks, e-mail yoluyla gönderilen ya da fotokopi niteliği taşıyan evraklar kabul edilmemektedir. \n-Kargo ile gönderilen evraklarda gönderim tarihi dikkate alınır. \n-Kayıt evraklarının, en geç son evrak teslim gününde kargoya verilmiş olması gerekmektedir.\n-Gönderim Adresi: İstanbul Üniversitesi Açık ve Uzaktan Eğitim Fakültesi Bilim Sok. No:5 B Blok 34398 Maslak/Sarıyer/İSTANBUL"
+    },
+    {
+      "id": 28,
+      "question": "Kesin Kayıt bilgisine nasıl ulaşırım?",
+      "answer": "Kayıt işlemleri tamamlanan öğrencilerin statüsü AKSİS sistemine \"Devamlı Öğrenci\" olarak işlenir. \n-‘Devamlı Öğrenci’  statüsünde olmak, kesin kayıt işleminin tamamlandığını ifade eder.\n-Statünüzü AKSİS  'Özlük Bilgilerim' bölümünden kontrol edebilirsiniz.\n-AKSİS' e aksis.istanbul.edu.tr adresinden giriş yapabilirsiniz."
+    },
+    {
+      "id": 29,
+      "question": "Ders alma(Ders seçimi) nasıl yapılır?",
+      "answer": "Ders alma, mezun olabilmek için gerekli kredi sayısını tamamlamak üzere ilgili (Güz, Bahar) dönemlerde yapılan ders seçimi işlemine denir. Güz dönemi dersleri güz döneminde, bahar dönemi dersleri bahar döneminde verilmektedir."
+    },
+    {
+      "id": 30,
+      "question": "AUZEF' te öğrenciyken yeniden başka bir programa da kayıt yaptırabilir miyim?",
+      "answer": "ÖSYM tarafından yerleştirilip kayıt yapan öğrencilerin varsa Fakültemizdeki eski kayıtları hangi dönemde eğitim aldığına bakılmaksızın Yönetim Kurulu Kararı ile silinir.Sınavsız İkinci Üniversite kapsamında kayıt yapacak öğrencilerimizin kayıt hakları varsa fakültedeki önceki kayıtlarını sildirmeleri gerekir. AUZEF' te aynı anda birden fazla programda eğitim alınamaz."
+    },
+    {
+      "id": 31,
+      "question": "Hangi koşullarda alt dönemden ders almam gerekir?",
+      "answer": "AUZEF' te öğrenciler, alt dönemlerinden kalmış oldukları  FF ve koşullu geçmiş oldukları DC–DD harf notlu derslerini (notlarını yükseltmek için) alttan alabilirler. \nBaşarıyla geçilmiş alt dönem dersleri not yükseltmek için tekrar alınamaz."
+    },
+    {
+      "id": 32,
+      "question": "Kayıt yenileyecek öğrenciler ilgili dönemde ders almak için hangi işlemleri yapmalıdır?",
+      "answer": "Kayıt yenileyecek öğrenciler, AKSİS' te yer alan  referans numarası ile Halk Bankası şube ve ATM' lerinden ya da AKSİS üzerinden kredi kartı ile ilgili döneme ait materyal/harç ücretlerini yatırmalıdır. \nÖdeme işlemini gerçekleştiren öğrencilerin alt dönemlerden eksik veya kalan dersleri (FF) ile AKTS limiti yeterince zorunlu dönem derslerinin seçimleri AUZEF tarafından yapılmaktadır. Üstten ders alma koşullarını sağlayan öğrencilerimiz, üst dönem derslerini kayıt yenileme kılavuzunda belirtilen şekilde kendileri seçecektir."
+    },
+    {
+      "id": 33,
+      "question": "AKTS nedir?",
+      "answer": "AKTS Öğrencilerin yurt içinde ve yurt dışında aldıkları ve başarılı oldukları ders kredilerinin ve\nnotlarının bir yükseköğretim kurumundan diğerine transfer edilmelerini sağlayan Avrupa kredi transfer sistemini ifade eder."
+    },
+    {
+      "id": 34,
+      "question": "Üstten ders alabilir miyim, üstten ders alma koşulları nelerdir?",
+      "answer": "Açık ve Uzaktan Eğitim Fakültesi programlarında okuyan öğrenciler aşağıdaki şartları sağladıkları takdirde üst yarıyıldan ders alabileceklerdir. Üstten Ders Alma Koşulları: - Kayıt yaptırdığı öğretim yılının ikinci yarıyılından itibaren alması gereken tüm derslerinden başarılı olanlardan AGNO’su 2,50 ve üstünde olan öğrenciler geçtikleri yarıyılın derslerinin yanında ön şartlı veya bağlantılı şartlı olmayan üst yarıyılın ders/derslerini de alabilir. Bunun için öğrencinin gelmiş olduğu sınıfa kadar olan bütün dersleri ile varsa üstten aldığı dersleri de almış ve başarmış olması gerekir. - Fakülteye ilk kez kayıt yaptıran öğrenci, kayıt yaptırdığı öğretim yılının ilk yarıyılında okutulan tüm derslerini almak zorunda olup üst yarıyıllardan ders alamaz. - Lisans programlarında ikinci yarıyıldan ders alan öğrenci altıncı ve sekizinci yarıyıllardan; üçüncü yarıyıldan ders alan öğrenci yedinci yarıyıldan; dördüncü yarıyıldan ders alan öğrenci ise sekizinci yarıyıldan üstten ders alamaz. -Üstten alınan dersler ile beraber alınan toplam kredi miktarı bu maddenin üçüncü fıkrası uyarınca belirlenmiş olan kredi miktarından fazla olamaz. Yönetmeliğe \"https://cdn.istanbul.edu.tr/FileHandler2.ashx?f=yo%CC%88netmelik_20.09.2022.pdf\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 35,
+      "question": "Ders seçimi tamamlanmış öğrenci seçilen dersini bırakabilir mi?",
+      "answer": "Dersler Fakülte tarafından otomatik olarak seçilir. Öğrenci ders alımında değişiklik yapmak istediği takdirde, ders ekle sil döneminde(Akademik Takvimde belirtilen tarihlerde) DD ve DC harf notlu  dersleri için talepte bulunabilir. \nDeğişiklik için ilgili tarihte öğrencinin çözüm merkezinden talep oluşturması gerekmektedir.  Üstten ders alma koşullarını sağlayan öğrencilerimiz, üst dönem derslerini kayıt yenileme kılavuzunda belirtilen şekilde kendileri seçecektir."
+    },
+    {
+      "id": 36,
+      "question": "Kesin kayıt işlemi tamamlanmış bir öğrenci ders materyallerini nereden ve ne zaman görüntüleyebilir",
+      "answer": "Öğrenciler AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" \"Derslerim\" alanından dersin üzerine tıklayarak dersin materyallerine ulaşır. Ders materyallerine akademik takvimde ilan edilen eğitim öğretim başlangıç tarihlerinden itibaren  ulaşılır.  \nMateryaller içinde Kitap (eKitap), Ünite, Konu Anlatımı(video), Ünite Sunumları, Sorularla Öğrenelim alanları bulunur."
+    },
+    {
+      "id": 37,
+      "question": "Muaf olduğum ve (G) ile tanımlanan derslerim not ortalamamı etkiler mi?",
+      "answer": "Başarı notları (G) ile takdir edilen beden eğitimi, güzel sanatlar ve benzeri dersler ile muaf (M) olunan dersler, not ortalamaları hesabına katılmaz."
+    },
+    {
+      "id": 38,
+      "question": "MF harf notu ne anlama gelir?",
+      "answer": "MF harf notlu dersler müfredat dönüşümünde kaldırılmış derslerdir. Öğrenciler bu derslerden sorumlu değildir. MF harf notu bulunan dersler mezuniyet aşamasına gelindiğinde silineceği için toplam AKTS miktarından çıkarılarak hesaplama yapılır."
+    },
+    {
+      "id": 39,
+      "question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?",
+      "answer": "Mezuniyet durumunuz için transkript belgenizden, aldığınız derslerin AKTS/Kredi durumunu görüntüleyebilir ve gerekli hesaplamayı yapabilirsiniz.\nNOT: Transkriptinizi AKSİS - Not Kartı ekranından görüntüleyebilirsiniz."
+    },
+    {
+      "id": 40,
+      "question": "Hangi koşulları sağlarsam mezun durumuna gelebilirim?",
+      "answer": "Öğrencilerimizin mezun durumuna gelebilmeleri için; \n- Tüm dönemlerine ait zorunlu derslerini almış, olması \n- FF harf notuna sahip olmaması. \n- Minimum 2.00 ortalamaya sahip olması. \n- Tamamlamaları gereken AKTS miktarını tamamlamış ya da aşmış olmaları gerekmektedir."
+    },
+    {
+      "id": 41,
+      "question": "Hangi koşullarda dönem uzatmış olurum?",
+      "answer": "Öğrenciler aşağıdaki şartları sağlayamadıkları taktirde dönem uzatmış olurlar;\n- Herhangi bir dönemden eksik (alınmamış) dersinin olması\n- Transkripte FF harf notlu ders olması\n- AGNO puanının 2.00 ortalamanın altında olması\n- Mezuniyet için gerekli toplam AKTS miktarının tamamlanmamış olması"
+    },
+    {
+      "id": 42,
+      "question": "Muaf olduğum dersler not ortalamamı (AGNO) etkiler mi?",
+      "answer": "Başarı notları (G) ile takdir edilen dersler ile muaf (M) olunan dersler, not ortalamaları hesabına katılmaz."
+    },
+    {
+      "id": 43,
+      "question": "Tekrar aldığım derslerde AGNO hesaplanırken hangi başarı notu eklenir?",
+      "answer": "AGNO hesabında, tekrar edilen dersler için en son hesaplanan başarı notu dikkate alınır."
+    },
+    {
+      "id": 44,
+      "question": "Ders materyallerimi görüntüleyemiyorum ne yapmalıyım?",
+      "answer": "İlgili dönem için kaydını yapmış/yenilemiş öğrenciler ders materyallerini AKSİS, AUZEF Öğrenme Yönetim Sistemi alanından görüntülemektedir. Derslerin AUZEF Öğrenme Yönetim Sisteminde görüntülenebilmesi için «Kesin Kayıt» ta olması gerekmektedir. Ödeme yapılmaması ya da ödeme yapıldığı halde derslerin «Ders Danışman Onaylandı» veya «Danışman Onay Bekliyor» da kalması durumunda ders seçimi tamamlanmamıştır ve bu durumdaki öğrenciler ilgili dersi göremez ve dersin sınavına giremez. Her durumda ders materyallerini görüntüleyemeyen öğrencilerin \"https://auzefcozum.istanbul.edu.tr/\" buradan talep oluşturması gerekir."
+    },
+    {
+      "id": 45,
+      "question": "Hangi programların diplomaları Sağlık Bakanlığı tarafından tescillenmektedir?",
+      "answer": "Hemşirelik programının diplomaları Sağlık Bakanlığı tarafından tescillenmektedir. Diplomalar tescillenip hazır hale geldiğinde öğrencilere SMS ile bilgilendirme yapılır. Öğrencilerin diplomalarını kurumumuzdan temin etmeleri gerekmektedir."
+    },
+    {
+      "id": 46,
+      "question": "FF notum olmamasına rağmen AGNO notum 2.00 dan düşük olduğu için mezun olamıyorum ne yapmalıyım?",
+      "answer": "DD veya DC harf notlu(Koşullu Başarılı) derslerinizden sınava girerek AGNO notunuzu yükseltebilirsiniz."
+    },
+    {
+      "id": 47,
+      "question": "Neden 86 TL fazla para ödüyorum?",
+      "answer": "Öğrencilerden Alınacak Katkı Payları ve Öğrenim Ücretlerine ilişkin Cumhurbaşkanlığı Kararı gereği bir yüksek öğretim programında kayıtlı iken ikinci bir üniversite programına kayıt yaptırılması halinde 86 TL'lik katkı payı öğrencinin kendisi tarafından karşılanır. \nFakültemiz Açık öğretim programlarında öğrenim gören, bütün dönemlerini tamamlayıp dönem uzatan veya alttan dersi kalan öğrencilerin harçlarına 86 TL yansıtılır. Ayrıca YÖK’ün 21/08/2015 tarihli 47944 sayılı yazısına ve 13/07/2016 tarihli duyurusuna istinaden Sağlık Alanında Lisans tamamlama programına kayıt yaptıran öğrencilerden 86 TL katkı payı alınır. (md. 6)"
+    },
+    {
+      "id": 48,
+      "question": "Sağlıkta Lisans Tamamlama programında okuyorum neden 86 tl fazla ödüyorum?",
+      "answer": "YÖK’ün 21/08/2015 tarihli 47944 sayılı yazısına ve 13/07/2016 tarihli duyurusuna istinaden Sağlık Alanında Lisans Tamamlama programına kayıt yaptıran öğrencilerden 86 TL katkı payı alınır."
+    },
+    {
+      "id": 49,
+      "question": "Öğrenci kimlik kartımı nasıl alabilirim?",
+      "answer": "Fakültemizde basılı kimlik kartı verilmemektedir. \nFakültemizin hedeflediği dijital dönüşüm süreçlerini geliştirmek adına İstanbul Üniversitesi Senatosu kararı ile öğrenci kimlik kartları dijitalleştirilip kare kodlanarak, doğrulanabilir hale getirilmiştir. \nÖğrenciler AKSİS \"AUZEF Öğrenme Yönetim Sistemi\"  \"Dijital Kimliğim\" alanına tıklayarak QR kodlu kimliklerine ulaşabilir."
+    },
+    {
+      "id": 50,
+      "question": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?",
+      "answer": "Çocuk Gelişimi lisans programında lisans tamamlama yapmak isteyen ön lisans mezunu öğrencilerin, programa kayıt olmak için DGS’yle programa kayıt hakkı kazanmış olması gerekmektedir."
+    },
+    {
+      "id": 51,
+      "question": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı okurken aldığım derslerden muaf olur muyum?",
+      "answer": "Ders muafiyeti; Türk Dili, Yabancı Dil, Atatürk İlkeleri ve İnkılap Tarihi dersleri için uygulanır, daha önce öğrenim görülen yükseköğretim programlarında alınıp, başarılı olunan diğer dersler için muafiyet talebinde bulunulamaz."
+    },
+    {
+      "id": 52,
+      "question": "Referans numarama ve ödeme işlemlerime nereden ulaşabilirim?",
+      "answer": "Referans numaranıza ve ödeme bilgilerinize \"aksis.istanbul.edu.tr\"  \"Harç Bilgileri\"  alanından ulaşabilirsiniz. Ödemeler Referans numarası ile Halk Bank Şube/ATM’lerinden ya da AKSİS sistemi üzerinden online yapılabilir. \n(Referans numarası olmadan Halk Bank Şube/ATM’lerinden ödeme yapılamaz)"
+    },
+    {
+      "id": 53,
+      "question": "Gazi, birinci dereceden şehit veya gazi yakınıyım ( Eş ve Çocuklar) ücret muafiyeti için fakülteye hangi evrakları göndermem gerekiyor?",
+      "answer": "Gerekli Evraklar: 1- Hak Sahiplik Belgesi: Sosyal Güvenlik Kurumu Başkanlığı veya Sosyal Güvenlik İl Müdürlüklerinden temin edilecek \"Hak Sahiplik Belgesi\" aslı ya da E-Devlet'ten alınan elektronik imzalı hali (Resmi mühürle birlikte kurum yetkilisi tarafından imzalanmamış, şehit/gazinin kimlik bilgilerinin yer almadığı ve kanun kapsamı belirtilmemiş yazılar kabul edilmemektedir), 2- Vukuatlı Aile Nüfus Kayıt Örneği: Şehit/gazinin de kimlik bilgilerinin yer aldığı E-Devlet'ten alınan elektronik imzalı ya da Nüfus Müdürlüklerinden alınan evrak, 3- İndirim/Muafiyet Başvurusu İçin Dilekçe: Başvuran adayın kendisinin doldurduğu talebini belirten ıslak imzalı dilekçe. Ayrıntılı bilgi ve dilekçe örneğine \"https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 54,
+      "question": "Öğrenci otomasyon (AKSİS) sistemi nedir, hangi işlemleri bu sistem üzerinden gerkleştirebilirim?",
+      "answer": "Öğrenci otomasyon (AKSİS) sistemi öğrencilerin aktif olarak kullanmak zorunda olduğu, kişisel kullanıcı adı(TC numarası) ve şifreleri ile giriş sağladıkları sistemdir. AKSİS otomasyon sisteminde öğrenciler aşağıdaki işlemleri gerçekleştirmektedir. -Ders alma, dönem dersleri ve hocalarının bilgilerini görüntüleme, -Sınav notları ve AGNO, ANO görüntüleme, -Belge talebi, e-imzalı belge talep ve temin etme, -Öğrenim durumlarını(statülerini) takip etme, -Harç bilgileri, kayıt ve kayıt yenileme dönemlerinde borçlandırma takibi ve kredi veya banka kartı ile ödeme işlemini gerçekleştirme, -Öğrenci Özlük bilgileri görüntüleme, -Staj, Kayıt dondurma/Sildirme vb öğrenci başvuru işlemleri.\" https://aksis.istanbul.edu.tr\"  https://aksis.istanbul.edu.tr"
+    },
+    {
+      "id": 55,
+      "question": "AKSİS sisteminden hangi evrakları e imzalı alabilirim?",
+      "answer": "Öğrenci Belgesi (Türkçe/İngilizce), Transkript Belgesi(Türkçe/İngilizce), Disiplin Cezası Durum Belgesi , Diploma, Ders İçerik Belgesi, Öğrenci Kayıt Yenilemedi ve Öğrenci Durum belgeleri AKSİS' ten e-imzalı olarak alınabilmektedir."
+    },
+    {
+      "id": 56,
+      "question": "Hangi evrakları e-devlet sistemi üzerinden alabilirim?",
+      "answer": "E-devlet sisteminden Öğrenci Belgesi, Transkript Belgesi ve Mezuniyet Belgeleri alınabilmektedir."
+    },
+    {
+      "id": 57,
+      "question": "Açık öğretim ile uzaktan eğitim programları arasındaki fark nedir?",
+      "answer": "Açık öğretim, derslerin bilgisayar vasıtasıyla tamamen sanal ortamda, katılımcının istediği zaman bunları tekrar tekrar izleyebileceği eğitim türüdür. \nUzaktan Öğretim, derslerin bilgisayar vasıtasıyla tamamen sanal ortamda, canlı derslerle ve interaktif olarak  işlendiği, katılımcının istediği zaman bunları tekrar tekrar izleyebileceği eğitimin adıdır. (Ders hocaları internet üzerinden eş zamanlı ders vermektedir.)\nCanlı derslerde devam zorunluluğu bulunmamaktadır.\nAçık öğretim programlarında canlı ders bulunmamaktadır.\n“AUZEF Uzaktan Eğitim Programlarına ÖSYM sınavları ile öğrenci alımı yapılmaktadır.”"
+    },
+    {
+      "id": 58,
+      "question": "AUZEF 'ten mezun olduğumda diplomamda “açık öğretim” ibaresi olacak mı?",
+      "answer": "AUZEF diploma değerinin örgün programların diplomasından bir farkı yoktur; ancak fakülte adı kısmında, “Açık ve Uzaktan Eğitim Fakültesi” ibaresi yer alacaktır."
+    },
+    {
+      "id": 59,
+      "question": "Diplomamın aynı adlı programın örgün eğitiminden mezun bir öğrencinin diplomasından ne farkı var?",
+      "answer": "Diplomanızla aynı programın örgün kısmından mezun olan öğrencilerle aynı haklara sahip olursunuz. Hukuki olarak hiçbir hak kaybı yaşamazsınız."
+    },
+    {
+      "id": 60,
+      "question": "Ders alma (Ders seçimi) nedir neden yapılır?",
+      "answer": "Ders alma, mezun olabilmek için gerekli kredi sayısını tamamlamak üzere ilgili (Güz, Bahar) dönemlerde yapılan ders seçimi işlemine denir. Güz dönemi dersleri güz döneminde, bahar dönemi dersleri bahar döneminde verilmektedir."
+    },
+    {
+      "id": 61,
+      "question": "Hangi durumlarda alttan ders alabilirim?",
+      "answer": "Öğrenciler, kalmış olduğu  (FF harf notlu) dersleri ve  koşullu geçmiş olduğu DC – DD harf notlu derslerini notunu yükseltmek için alabilir.  Bunun dışında olan dersler alttan alınamaz."
+    },
+    {
+      "id": 62,
+      "question": "AUZEF öğrencisi olarak programımın örgün derslerine girebilir miyim?",
+      "answer": "AUZEF öğrencilerinin örgün derslerine katılım hakkı bulunmamaktadır."
+    },
+    {
+      "id": 63,
+      "question": "Hafta sonları Fakülte öğrencileri için takviye ders yapılıyor mu?",
+      "answer": "AUZEF' te hafta sonları ayrıca telafi dersleri yapılmamakta olup, kurumumuz sınavlar haricinde hafta sonları resmî tatildedir."
+    },
+    {
+      "id": 64,
+      "question": "Lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?",
+      "answer": "Kayıtlı olduğu lisans programında en az 240 AKTS kredilik ders alıp tüm dersleri başarıyla tamamlayan, FF notu olmayan, AGNO’su en az 2,00 olan ve diğer yükümlülükleri yerine getiren öğrenciye, kayıtlı olduğu programın lisans diploması verilir"
+    },
+    {
+      "id": 65,
+      "question": "Lisans öğrencisiyim; ancak ön lisans diploması almak istiyorum diplomamı nasıl kırdırabilirim?",
+      "answer": "Meslek yüksekokullarının öğretim planında gösterilen öğrenimi izleyerek derslerin tümünden başarılı olmuş, mezuniyet için gerekli en az 120 AKTS krediyi tamamlamış, AGNO’ su en az 2.00 düzeyinde olan ve ilgili birim tarafından belirlenen bütün çalışmaları tamamlamış öğrenci, koşullu başarılı dersleri olsa dahi öğrenimini bitirmiş sayılır ve ilgili birim yönetim kurulu tarafından mezuniyeti onaylanarak kendisine ilgili birimin ön lisans diploması verilir.\n Lisans öğrenimlerini tamamlamayan veya tamamlayamayan öğrencilere, 18/3/1989 tarihli ve 20112 sayılı Resmi Gazete’ de yayımlanan lisans öğrenimlerini tamamlamayan veya tamamlayamayanların ön lisans diploması almaları veya Meslek Yüksekokullarına İntibakları Hakkında Yönetmelik hükümlerine göre ön lisans diploması verilir. \n• Genel not ortalamasının en az 2,00 olması \n• İlk dört yarıyıldan en az 120 AKTS kredilik ders alınmış olması\n • Atatürk İlkeleri ve İnkılap Tarihi I-II, Yabancı Dil I-II ve Türk Dili I-II derslerinin almış ve derslerden geçilmiş olması gerekmektedir.\nDiploma kırdırmak isteyen öğrencilerin fakülteye ıslak imzalı dilekçe ile başvurması gerekmektedir.\nDiploma kırdıran öğrenciler diploma kırdırdıkları programda öğrenimlerine devam edemez. Programla ilgili tüm hakları diploma kırdırma ile sona erer.\nAlınacak olan diplomada \"Bu diploma alan belirtmemekte sadece ön lisans derecesini belgelemektedir.\" ibaresi yer almaktadır"
+    },
+    {
+      "id": 66,
+      "question": "Ön lisans öğrencisiyim mezun olmam için hangi şartları sağlamalıyım?",
+      "answer": "Kayıtlı olduğu ön lisans programında en az 120 AKTS kredilik ders alıp, tüm dersleri başarıyla tamamlayan, FF notu olmayan, AGNO’su en az 2,00 olan ve diğer yükümlülükleri yerine getiren öğrenciye, kayıtlı olduğu programın ön lisans diploması verilir."
+    },
+    {
+      "id": 67,
+      "question": "Tıbbi Dokümantasyon ve Sekreterlik programı öğrencisiyim programımızda staj (zorunlu ) uygulaması var mı?",
+      "answer": "Tıbbi Dokümantasyon ve Sekreterlik programında staj uygulaması bulunmamaktadır. İsteğe bağlı (gönüllü) staj talepleri fakülte kurulunda görüşülmüş ve mevcut koşullar göz önünde bulundurularak staj talebi uygun görülmemiştir."
+    },
+    {
+      "id": 68,
+      "question": "Programımda zorunlu stajım yok; ancak  gönüllü (kendi isteği ile) staj yapabilir miyim?",
+      "answer": "Fakültemizde zorunlu staj uygulaması bulunmayan programlardaki öğrencilerin isteğe bağlı (gönüllü) staj talepleri fakülte kurulunda görüşülmüş ve mevcut koşullar göz önünde bulundurularak staj talebi uygun görülmemiştir."
+    },
+    {
+      "id": 69,
+      "question": "Çocuk Gelişimi Uzaktan Öğretim Ön Lisans programında zorunlu staj var mı?",
+      "answer": "Çocuk Gelişimi Uzaktan Öğretim Ön Lisans programında zorunlu staj bulunmamaktadır. Ancak kendi ihtiyaç ve istekleri doğrultusunda Çocuk Gelişimi Stajını yapmak isteyen öğrencilerimiz staj takviminde belirtilen başvuru tarihleri arasında staj başvurusu  yapabileceklerdir."
+    },
+    {
+      "id": 70,
+      "question": "Coğrafi Bilgi Sistemleri programı öğrencisiyim zorunlu staj hakkında bilgi almak istiyorum.",
+      "answer": "COĞRAFİ BİLGİ SİSTEMLERİ STAJI\nCoğrafi Bilgi Sistemleri Uzaktan Öğretim Ön lisans Programı için, 2. sınıfın bahar döneminde (4. yarıyılda) “Coğrafi Bilgi Sistemleri Stajı” bulunmaktadır. Stajın süresi 20 iş günüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\nStajın Coğrafi Bilgi Sistemleri ile ilgili proje ve/veya çözüm üreten, mimarlık ve mühendislik bürolarında, bilişim firmalarında, planlama ofislerinde, kamu kuruluşlarında (belediyeler, bakanlıkların merkez ve taşra teşkilatları vb.) yapılması gerekmektedir."
+    },
+    {
+      "id": 71,
+      "question": "Hemşirelik programı öğrencisiyim programımızda staj ya da uygulama dersi var mı?",
+      "answer": "KLİNİK UYGULAMA STAJI\nHemşirelik Açık öğretim Lisans Tamamlama Programı için, 4. sınıfın bahar döneminde (8. yarıyılda) ‘Klinik Uygulama Stajı’ stajı bulunmaktadır. Stajın süresi 20 işgünüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\nİstanbul Üniversitesi Açık Uzaktan Eğitim Fakültesi Hemşirelik Lisans Tamamlama Programına devam eden öğrenciler klinik uygulamalarını, ikamet ettikleri ilde bulunan T.C. Sağlık Bakanlığı Eğitim-Araştırma Hastanesi ya da Üniversite Hastanesi’nin yataklı tedavi biriminde/servisinde yapması zorunludur. İkamet ettikleri ilde belirtilen kurumların bulunmaması durumunda T.C Sağlık Bakanlığı Devlet Hastanesi’nin yataklı tedavi biriminde/servisinde yapabilirler."
+    },
+    {
+      "id": 72,
+      "question": "Endüstri Mühendisliği programı öğrencisiyim staj defterimi en son hangi tarihe kadar göndermem gerekiyor?",
+      "answer": "Staj kılavuzunda belirtilen şekilde işlemlerinizi yapmanız gerekmekte olup kılavuzda staj defteri son gönderim tarihi ilgili dönem için belirtilmektedir. Kılavuz \"https://auzef.istanbul.edu.tr/\" https://auzef.istanbul.edu.tr/ de yayınlanmaktadır."
+    },
+    {
+      "id": 73,
+      "question": "Çocuk Gelişimi Açık Öğretim Lisans programında staj var mı?",
+      "answer": "Çocuk Gelişimi Açıköğretim Lisans programında zorunlu staj bulunmamaktadır. Ancak kendi ihtiyaç ve istekleri doğrultusunda Çocuk Gelişimi Stajını yapmak isteyen öğrencilerimiz staj takviminde belirtilen başvuru tarihleri arasında staj başvurusu  yapabileceklerdir."
+    },
+    {
+      "id": 74,
+      "question": "Bankacılık ve Sigortacılık programı stajı hakkında bilgi alabilir miyim?",
+      "answer": "İŞYERİ UYGULAMASI I\nBankacılık ve Sigortacılık Uzaktan Öğretim Ön lisans Programı için, 1. sınıfın bahar döneminde (2. yarıyılda) “İşyeri Uygulaması I” stajı bulunmaktadır. Stajın süresi 20 iş günüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\n1. Sınıf öğrencilerinin işyeri uygulamalarını (stajlarını) bankalarda yapmaları gerekmektedir.\n\nİŞYERİ UYGULAMASI II\nBankacılık ve Sigortacılık Uzaktan Öğretim Ön lisans Programı için, 2. sınıfın bahar döneminde (4. yarıyılda) “İşyeri Uygulaması II” stajı bulunmaktadır. Stajın süresi 30 iş günüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\n2. sınıf öğrencileri, işyeri uygulamalarını seçtikleri alanlara göre;\n\nSigortacılık Alanı\nSigorta Branş İşlemleri (Teknik Detaylı)\n\nBankacılık Alanı\nİthalat-İhracat\nKrediler\nSigorta Branş İşlemleri (Teknik Detaylı) alanlarında yapmak zorundadır."
+    },
+    {
+      "id": 75,
+      "question": "Dış Ticaret stajı hakkında bilgi alabilir miyim?",
+      "answer": "İŞYERİ UYGULAMASI I \nDış Ticaret Uzaktan Öğretim Ön Lisans Programı için, 1.sınıfın bahar döneminde (2.Yarıyıl) “İşyeri Uygulaması I” stajı bulunmaktadır. Stajın süresi 20 iş günüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\nÖğrenciler işyeri eğitimlerini;\nFirmaların ithalat-İhracat –Dış Ticaret Departmanlarında,\nGümrük Müşavirliklerinde,\nGümrük Müsteşarlığında,\nBankaların Kambiyo Bölümlerinde yapmak zorundadır.\n\nİŞYERİ UYGULAMASI II \nDış Ticaret Uzaktan Öğretim Ön Lisans Programı için, 2.sınıfın bahar döneminde (4.Yarıyıl) “İşyeri Uygulaması II” stajı bulunmaktadır. Stajın süresi 30 iş günüdür ve değerlendirme notu “Başarılı” ya da “Başarısız” olarak verilmektedir.\n\nStajın Yapılacağı Alan ve Kurumlar\nÖğrenciler işyeri eğitimlerini;\nFirmaların ithalat-İhracat –Dış Ticaret Departmanlarında,\nGümrük Müşavirliklerinde,\nGümrük Müsteşarlığında,\nBankaların Kambiyo Bölümlerinde yapmak zorundadır."
+    },
+    {
+      "id": 76,
+      "question": "Stajımı yapmadan mezun olabilir miyim?",
+      "answer": "Staj zorunluluğu bulunan programlarda öğrencilerin mezun olabilmesi için stajını yapmış olması gerekmektedir. Bu programlar \n• Hemşirelik (Açık Öğretim Lisans Tamamlama)\n• Endüstri Mühendisliği (Uzaktan Eğitim Lisans Tamamlama)\n• Coğrafi Bilgi Sistemleri (Uzaktan Eğitim Ön lisans)\n• Bankacılık ve Sigortacılık (Uzaktan Eğitim Ön lisans)\n• Dış Ticaret Programı (Uzaktan Eğitim Ön lisans)\n• İş Sağlığı ve Güvenliği (Açık Öğretim Lisans)\n• Laborant ve Veteriner Sağlık (Açık Öğretim Ön lisans)\n• Sosyal Hizmet (Açık Öğretim Lisans Tamamlama) dır."
+    },
+    {
+      "id": 77,
+      "question": "Çalıştığım (İş yeri) yerde staj yapabilir miyim?",
+      "answer": "Çalıştığınız kurumun, kayıtlı olduğunuz programın staj kılavuzunda belirtilen staj yapılabilecek firma, kurum ve kuruluşların koşullarını sağlaması durumunda yapabilirsiniz. Örneğin bankada çalışan öğrencinin Bankacılık stajını yapması, Üretim yapan firmada çalışan öğrencinin Üretim stajını yapması ya da Belediyede çalışan öğrencinin Coğrafi Bilgi Sistemleri stajını yapabilmesi gibi. Öğrenim gördüğü programla ilgili bir işte çalışmış veya çalışmakta olan öğrenciler, çalışma süresi ile unvanlarını belgelendirmek koşulu ile işletmede mesleki eğitim veya staj uygulamasından muaf olmak için başvuruda bulunabilir. Bu durumda ilgili komisyonu başvuruları inceleyerek karar verir."
+    },
+    {
+      "id": 78,
+      "question": "Çalıştığım süre staj olarak sayılır mı?",
+      "answer": "Zorunlu stajı bulunan programlarda okuyan öğrenciler, ilgili alanlarda olmak koşulu ile staj muafiyetine başvurabilirler. Staj muafiyet işlemleri ve kılavuzuna \"https://cdn.istanbul.edu.tr/FileHandler2.ashx?f=staj-muafiyet-kilavuzu.pdf\" buradan ulaşabilirsiniz. Zorunlu stajı bulunan programlar: • Hemşirelik (Açık Öğretim Lisans Tamamlama) • Endüstri Mühendisliği (Uzaktan Eğitim Lisans Tamamlama) • Coğrafi Bilgi Sistemleri (Uzaktan Eğitim Ön lisans) • Bankacılık ve Sigortacılık (Uzaktan Eğitim Ön lisans) • Dış Ticaret Programı (Uzaktan Eğitim Ön lisans) • İş Sağlığı ve Güvenliği (Açık Öğretim Lisans) • Laborant ve Veteriner Sağlık (Açık Öğretim Ön lisans) • Sosyal Hizmet (Açık Öğretim Lisans Tamamlama) dir."
+    },
+    {
+      "id": 79,
+      "question": "Staj yerimi ben mi bulacağım fakülte mi?",
+      "answer": "Staj yeri bulma sorumluluğu öğrenciye aittir; ancak staj yerinin uygun olup olmadığına \"Staj Komisyonunca\" karar verilir."
+    },
+    {
+      "id": 80,
+      "question": "Hangi programlarda staj uygulaması bulunmaktadır?",
+      "answer": "Zorunlu stajı bulunan programlar\n• Hemşirelik (Açık Öğretim Lisans Tamamlama) \n• Endüstri Mühendisliği (Uzaktan Eğitim Lisans Tamamlama) \n• Coğrafi Bilgi Sistemleri (Uzaktan Eğitim Ön lisans) \n• Bankacılık ve Sigortacılık (Uzaktan Eğitim Ön lisans) \n• Dış Ticaret Programı (Uzaktan Eğitim Ön lisans) \n• İş Sağlığı ve Güvenliği (Açık Öğretim Lisans) \n• Laborant ve Veteriner Sağlık (Açık Öğretim Ön lisans) \n• Sosyal Hizmet (Açık öğretim Lisans Tamamlama) dir.\n\nİsteğe bağlı stajı bulunan programlar ise \n• Çocuk Gelişimi (Açık Öğretim Lisans)\n• Çocuk Gelişimi (Açık Öğretim Ön lisans)\n• Çocuk Gelişimi (Uzaktan Eğitim Ön lisans)dir\nbu programlar dışındaki programlarda zorunlu veya isteğe bağlı staj bulunmamaktadır."
+    },
+    {
+      "id": 81,
+      "question": "Okuduğum programda azami süre kaç yıldır?",
+      "answer": "Öğrenciler, öğrenim süresi iki yıl olan ön lisans programlarını azami dört yıl, öğrenim süresi dört yıl olan lisans programlarını azami yedi yıl, içinde tamamlamak zorundadırlar. Azami süreler içinde katkı payı veya öğrenim ücretinin ödenmemesi, kayıt yenilenmemesi nedeniyle öğrencilerin ilişikleri kesilmez; ancak öğrencilik haklarından faydalanamaz. 2547 sayılı Yükseköğretim Kanunun 44 üncü maddesinin (c) fıkrasına göre üst üste dört dönem kayıt yenileme koşullarını yerine getirmeyen öğrencinin ilgili programdan ilişiği kesilir"
+    },
+    {
+      "id": 82,
+      "question": "AKSİS Şifremi unuttum/kaybettim, nasıl yeni şifre alabilirim?",
+      "answer": "\"http://aksis.istanbul.edu.tr/\" http://aksis.istanbul.edu.tr/ adresinden “Şifremi Unuttum” butonuna tıklayarak gerekli alanları doldurunuz. (Şifreniz AKSİS sisteminde kayıtlı olan telefon ya da e-posta adresinize gönderilecektir.)"
+    },
+    {
+      "id": 83,
+      "question": "Transkript belgemi nasıl alabilirim?",
+      "answer": "Transkript belgenizi AKSİS \"Belge Talepleri\" alanından ya da E-devlet sisteminden E-imzalı olarak alabilirsiniz. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/not-dokumu-(transkript)\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 84,
+      "question": "Öğrenci belgemi nasıl alabilirim?",
+      "answer": "Statünüz \"Devamlı Öğrenci\" ise Öğrenci belgenizi, AKSİS \"Belge Talepleri\" alanından ve E-devlet sisteminden E-imzalı olarak alabilirsiniz. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/ogrenci-belgesi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 85,
+      "question": "AUZEF ’te aynı anda iki programa kayıt olabilir miyim?",
+      "answer": "AUZEF' te aynı anda iki programda okunamamaktadır. Fakülteye kayıt yaptıracak öğrencilerin varsa Fakültedeki önceki kayıtlarını sildirmeleri gerekir. Önceki kayıtlarını sildirmeden, yeni kayıt yaptıran öğrencilerin eski kayıtları hangi yarıyılda veya sınıfta olursa olsun silinir ve yeni kayıtları geçerli sayılır. Bu durumdaki öğrencilerin önceki kayıtlarına ilişkin hakları sona erer."
+    },
+    {
+      "id": 86,
+      "question": "İngilizce öğrenci belgesi alabilir miyim?",
+      "answer": "İngilizce öğrenci belgenizi AKSİS \"Belge talepleri\" alanından e-imzalı olarak alabilirsiniz. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/ogrenci-belgesi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 87,
+      "question": "Yeni kayıt oldum AKSİS kullanıcı adı ve şifremi nasıl alabilirim?",
+      "answer": "AUZEF’ e yeni kayıt olduysanız \"http://aksis.istanbul.edu.tr/\" http://aksis.istanbul.edu.tr/ adresinden “Hesap Oluştur” butonunu tıklayarak gerekli alanları doldurunuz. (Kullanıcı adı ve şifreniz e-posta adresine gönderildiği için e-posta adresinizi doğru girdiğinizden emin olunuz.) “Kaydet” butonu tıklandıktan sonra e-posta adresinize kullanıcı adı ve şifre onay linki gönderilecektir. “Kullanıcı Aktifleştirme Bağlantısı”na tıklayarak parolanızı aktifleştiriniz. AKSİS sistemine bu kullanıcı adı ve şifre ile giriş yapabilirsiniz."
+    },
+    {
+      "id": 88,
+      "question": "Kayıt yenileme nedir, nasıl yapılır?",
+      "answer": "Kayıt yenileme, akademik takvimde belirtilen tarihler arasında öğrencinin materyal/öğrenim ücretinin ödemesi ve devamında ders alım işlemlerinin tamamlanması anlamına gelmektedir. Dönem dersi olmayan öğreciler ödeme yapsa dahi ders alım işlemi olmayacağı için kayıt yenilemiş sayılmamaktadır. Detaylı bilgi için ilgili tarihlerde yayınlanan kayıt yenileme kılavuzunu inceleyiniz."
+    },
+    {
+      "id": 89,
+      "question": "AUZEF'te ne zaman ve hangi derslerden muafiyet işlemi yapılır?",
+      "answer": "Muafiyet işlemleri kayıt olunan ilk güz döneminde yapılmaktadır. Sonraki yıllarda/dönemlerde muafiyet yapılmamaktadır. Örn: 2022 girişli bir öğrenci sadece kayıt olduğu 2022 yılı güz döneminde muafiyet için başvurabilir. Muafiyet sadece ortak zorunlu dersler olan Atatürk İlkeleri ve İnkılap Tarihi I II, Türk Dili I II ve Yabancı Dil I II derslerinden yapılmaktadır."
+    },
+    {
+      "id": 90,
+      "question": "AUZEF programlarına kayıt olan öğrenciler kütüphane ve yemekhane imkânlarından yararlanabiliyorlar mı?",
+      "answer": "AUZEF programlarına kayıt olan öğrenciler örgün eğitim veren fakültelerin kütüphane ve yemekhane hizmetinden yararlanamaz; ancak isteyen öğrenciler merkez kütüphane hizmetinden yararlanabilir."
+    },
+    {
+      "id": 91,
+      "question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?",
+      "answer": "Sağlıkta lisans tamamlama programlarına başvuru şartları, tercih ve yerleştirme işlemleri YÖK tarafından yapılmaktadır, Ayrıntılı bilgiye \"http://www.yok.gov.tr/\" buradan ulaşabilirsiniz. Ayrıca sağlıkta lisans tamamlama programlarından olan Acil yardım ve Afet Yönetimi(Açık Öğretim), Sosyal Hizmet(Açık Öğretim) ve Sağlık Yönetimi(Açık Öğretim) programlarına DGS puan türü ile de öğrenci kabul edilmektedir."
+    },
+    {
+      "id": 92,
+      "question": "AUZEF bünyesinde bulunan Sağlık Alanında Lisans Tamamlama (SLT) Programları nelerdir?",
+      "answer": "Sağlık Alanında Lisans Tamamlama (SLT)Programları: \n*Acil Yardım ve Afet Yönetimi \n*Hemşirelik \n*Sağlık Yönetimi\n*Sosyal Hizmet"
+    },
+    {
+      "id": 93,
+      "question": "Dikey geçiş DGS puan türüyle hangi programlara kayıt yaptırabilirim?",
+      "answer": "DGS puan türüyle aşağıdaki programlara kayıt olabilirsiniz.*Halkla İlişkiler ve Tanıtım(Uzaktan Öğretim)*Sosyoloji(Açık Öğretim)*İktisat(Açık Öğretim)*İşletme(Açık Öğretim)*Çocuk Gelişimi(Açık Öğretim)"
+    },
+    {
+      "id": 94,
+      "question": "AUZEF’ te nasıl öğrenci (kayıt) olabilirim?",
+      "answer": "Aşağıda AUZEF kayıt türleri ve koşulları yer almaktadır. \n\nYKS sınavı: En az lise veya dengi okul mezunu olacak/olan adaylar YKS' ye girip programa yerleşmesi koşuluyla, \n\nDikey Geçiş Sınavı(DGS): Meslek Yüksekokulları ve Açık Öğretim Fakültesinin ön lisans programlarından mezun olacak/olan adaylar DGS' ye girip programa yerleşmesi koşuluyla, \n\nYatay Geçiş: Herhangi bir Fakülte/Yüksekokul' da  öğrenci olup Fakültemizde öğrenimine devam etmek isteyen öğrenciler Yatay geçiş ile başvurup programa yerleşmesi koşuluyla,\n\nSağlıkta Lisans Tamamlama: YÖK ün belirlediği şartları sağlayan, sağlık programlarından mezun olan adaylar ve YÖK tarafından programa yerleşmesi koşuluyla,  \n\nYabancı Öğrenci Sınavı(YÖS): Yurtdışından veya Yabancı Uyruklu Öğrenci Sınavı girip İstanbul Üniversitesi tarafından  programa yerleşmesi koşuluyla,\n\nSınavsız İkinci Üniversite: Herhangi bir yükseköğretim programından mezun olanlar ile halen öğrenim gören öğrenciler sınava girmeden Fakültemize başvurarak kayıt olabilirler.\n\n * Fakültemizden (AUZEF) mezun olanlar Sınavsız İkinci Üniversite ile yeni bir programa başvuru yapabilirler; ancak halen kayıtlı olan öğrenciler sınavsız ikinci üniversiteye başvuru yapamazlar."
+    },
+    {
+      "id": 95,
+      "question": "Sınavsız İkinci Üniversite kapsamında kayıtlı öğrenciyim, örgün öğretime geçiş yapabilir miyim?",
+      "answer": "İkinci üniversite kapsamında kayıt yaptıran öğrencilerin yatay geçiş hakkı bulunmamaktadır.\nYükseköğretim Kurulu Başkanlığının 16/12/2016 tarih ve 75850160-302.01.06-80321 sayılı yazısı ile “Yükseköğretim Kurumlarında Ön lisans ve Lisans Düzeyindeki Programlar Arasında Geçiş, Çift Anadal Yan Dal ile Kurumlar arası Kredi Transferi Yapılması Esaslarına İlişkin Yönetmelik” kapsamında kurumlararası ve kurum içi yatay geçiş başvurularını kabul sırasında Üniversiteleri Açık ve Uzaktan Eğitim Fakültesinde ikinci üniversite kapsamında öğrenim gören öğrencilerin yatay geçiş başvurusunda bulunup bulunmayacağı konusundaki yazısı 14/12/2016 tarihli Yükseköğretim Yürütme Kurulu toplantısında incelenmiş ve söz konusu talep uygun görülmemiştir. Bu nedenle İkinci üniversite kapsamında kayıt yaptıran öğrencilerin yatay geçiş hakkı bulunmamaktadır."
+    },
+    {
+      "id": 96,
+      "question": "DGS kapsamında kayıt oldum muafiyet başvurusu yapabilir miyim?",
+      "answer": "AUZEF' te sadece ortak zorunlu derslerden muafiyet yapılmaktadır. Bu sebeple DGS kapsamında kayıt olan öğrenciler, bu dersleri tekrar almadığından muafiyet başvurusu yapması gerekmemektedir."
+    },
+    {
+      "id": 97,
+      "question": "Sağlıkta Lisans Tamamlama kapsamında kayıt oldum muafiyet başvurusu yapabilir miyim?",
+      "answer": "AUZEF' te sadece ortak zorunlu derslerden muafiyet yapılmaktadır. Bu sebeple Sağlıkta Lisans Tamamlama kapsamında kayıt olan öğrenciler, bu dersleri tekrar almadığından muafiyet başvurusu yapması gerekmemektedir."
+    },
+    {
+      "id": 98,
+      "question": "Dikey Geçiş (DGS) kayıt türü nedir?",
+      "answer": "Meslek Yüksekokulları ve Açık öğretim Fakültesi ön lisans programı mezunlarından lisans öğrenimine devam etmek isteyenler dikey geçişle AUZEF’ e kayıt yaptırabilmektedirler. Meslek Yüksekokulları ve Açık Öğretim Fakültesi ön lisans programları son sınıf öğrencileri ve mezunlarının, örgün ve açık öğretim lisans programlarına dikey geçiş yapmaları ile ilgili sınav ve yerleştirme işlemleri Ölçme Seçme ve Yerleştirme Merkezi (ÖSYM) tarafından yürütülmektedir."
+    },
+    {
+      "id": 99,
+      "question": "AUZEF’ te seçmeli ders uygulaması var mı?",
+      "answer": "AUZEF programlarında seçmeli ders uygulaması bulunmamaktadır. Bütün dersler zorunludur."
+    },
+    {
+      "id": 100,
+      "question": "Açık öğretim sisteminden örgüne yatay geçiş yapabilir miyim?",
+      "answer": "Açık ve uzaktan öğretimden örgün öğretim programlarına geçiş yapılabilmektedir. “Yükseköğretim Kurumlarında Ön lisans ve Lisans Düzeyindeki Programlar Arasında Geçiş, Çift Anadal, Yan Dal ile Kurumlar Arası Kredi Transferi Yapılması Esaslarına İlişkin Yönetmelik” in 6/4 maddesinde “Açık veya uzaktan öğretimden diğer açık veya uzaktan öğretim diploma programlarına yatay geçiş yapılabilir. Açık ve uzaktan öğretimden örgün öğretim programlarına geçiş yapılabilmesi için, öğrencinin öğrenim görmekte olduğu programdaki genel not ortalamasının 100 üzerinden 80 veya üzeri olması veya kayıt olduğu yıldaki merkezi yerleştirme puanının, geçmek istediği üniversitenin diploma programının o yılki taban puanına eşit veya yüksek olması gerekir” denilmektedir. Sınavsız İkinci Üniversite kapsamında kayıt yaptırmış olan öğrenciler yatay geçiş yapamazlar. Yatay geçiş ile ilgili diğer koşulların geçiş yapılacak ilgili üniversiteden öğrenilmesi gerekmektedir."
+    },
+    {
+      "id": 101,
+      "question": "AUZEF' te yüksek lisans programı var mı?",
+      "answer": "AUZEF' te  yüksek lisans programı bulunmamaktadır."
+    },
+    {
+      "id": 102,
+      "question": "AUZEF'te eğitim dili nedir? İngilizce programlar var mı?",
+      "answer": "AUZEF' te eğitim dili Türkçedir, eğitim dili İngilizce olan program bulunmamaktadır."
+    },
+    {
+      "id": 103,
+      "question": "Materyal ücreti yıllık mı yoksa dönemlik mi yatırılır?",
+      "answer": "Materyal ücreti güz ve bahar dönemi olmak üzere yılda iki kez ödenmektedir."
+    },
+    {
+      "id": 104,
+      "question": "Referans numarası nedir, ne işe yarar?",
+      "answer": "Referans numarası, materyal ücretinin yatırabilmesi için sistem tarafından öğrencinin ilgili kaydına tanımlanmış kişiye özgü numaradır. Öğrenci dönemlik materyal ücretini Halk bankası ATM/Şubelerinden bu numaraya yatırır ya da AKSİS üzerinden sanal pos ise ödemesini gerçekleştirir."
+    },
+    {
+      "id": 105,
+      "question": "Ön kayıt yaptırdıktan sonra öğrenci belgesi alabilir miyim?",
+      "answer": "Ön kayıt yaptırdıktan hemen sonra öğrenci belgesi alamazsınız, öğrenci belgesi almak için kayıt işlemlerinin tamamlanması ve statünüzün \"Devamlı Öğrenci\" olması gerekmektedir."
+    },
+    {
+      "id": 106,
+      "question": "Açık öğretim sistemindeki programlardan mezun olanlar Sınavsız İkinci Üniversite kapsamında kayıt yaptırabilirler mi?",
+      "answer": "YÖK'e bağlı herhangi bir üniversiteden mezun olmak ya da bu üniversitelerde öğrenciliği devam edenler ile yurtdışından mezun olup YÖK'ten denklik alan herkes Sınavsız İkinci Üniversite kapsamında Fakültemize kayıt olabilir."
+    },
+    {
+      "id": 107,
+      "question": "Kayıt yenilemediğim takdirde borçlandırma yapılıyor mu?",
+      "answer": "Kayıt yenileme döneminde statüsü \"Kayıt Yenilemedi\" olan tüm öğrenciler için borçlandırma yapılır. Öğrenciler sadece okuyacakları(okudukları) dönemin harcını ödemektedir. Kayıt yenileme yapılmayan dönemin borcu öğrenciden talep edilmez, sonraki dönemlere aktarılmaz."
+    },
+    {
+      "id": 108,
+      "question": "Ödeme yaptığımı sistemden nasıl görebilirim?",
+      "answer": "Öğrenciler ödeme durumlarını AKSİS \" Harç Bilgileri\" alanından görüntüleyebilir. Ödeme yapılması durumunda sistemde borç ‘0’ olarak görünecektir."
+    },
+    {
+      "id": 109,
+      "question": "Ödememi yaptığım halde sistemde borcum görünüyor, ne yapabilirim?",
+      "answer": "Talep veya dilekçe oluşturarak ödeme yaptığına dair dekontu Fakülteye iletmesi gerekmektedir. Bu durumda gerekli kontroller sağlanıp öğrenciye dönüş yapılmaktadır."
+    },
+    {
+      "id": 110,
+      "question": "Okumadığım dönemin ücretini gelecek dönemde ödemek zorunda mıyım?",
+      "answer": "Okumadığınız dönemin ücretini gelecek dönemlerde ödemeniz gerekmez. Kayıt yenilemediğiniz döneme ait borçlandırma dönem sonunda sıfırlanır."
+    },
+    {
+      "id": 111,
+      "question": "Kayıt yenilemediğim takdirde öğrencilik haklarımdan faydalanabilir miyim?",
+      "answer": "Kayıt yenilemeyen öğrencilerin öğrencilik haklarından faydalanmaları mümkün değildir."
+    },
+    {
+      "id": 112,
+      "question": "Öğrenci durum belgesi nedir ne işe yarar?",
+      "answer": "Öğrenci durum belgesi, kayıt yenilemeyen öğrencilerin fakültemizde öğrenciliğinin pasif statüde devam ettiğini gösteren evraktır."
+    },
+    {
+      "id": 113,
+      "question": "Kayıt yenilemediğim takdirde askerlik tecilim bozulur mu?",
+      "answer": "Sınavsız İkinci Üniversite kapsamında veya daha önceden aynı ya da üst düzeyde öğrenim alıp tekrardan yerleştirilme sonucu kayıt yaptıran öğrencilerimiz haricindeki öğrencilerin tecil işlemleri mezuniyetine ya da Fakültemizdeki ilişiği devam ettiği sürece 28 yaşına kadar yapılmaktadır."
+    },
+    {
+      "id": 114,
+      "question": "Kayıt yenilemediğim dönemin sınavlarına girebilir miyim?",
+      "answer": "Kayıt yenilemediğiniz takdirde pasif öğrenci konumunda olacağınızdan, sınavlara ve derslere giriş yapamazsınız."
+    },
+    {
+      "id": 115,
+      "question": "Kayıt yenilemeden \"AUZEF Öğrenme Yönetim Sisteminden\" dersleri takip edebilir miyim?",
+      "answer": "Kayıt yenilemediğiniz takdirde pasif öğrenci konumunda olacağınızdan,  \"AUZEF Öğrenme Yönetim Sisteminde\" ders materyali görüntüleyemezsiniz. Kayıt yenilemeyen öğrencilerin ilgili dönem dersleri seçilmediğinden ders materyalleri sayfasında yer almaz. Sistemde sadece AKSİS' te ilgili dönem için seçilen dersler görüntülenmektedir."
+    },
+    {
+      "id": 116,
+      "question": "Muafiyetten kimler yararlanabilir?",
+      "answer": "Daha önce herhangi bir yükseköğrenim kurumunda öğrenci olup ortak zorunlu derslerini geçmiş ve/veya mezun olmuş olan öğrenciler muafiyet hakkından faydalanabilir. Sadece lise mezuniyeti bulunan öğrencilerin muafiyet hakkı yoktur."
+    },
+    {
+      "id": 117,
+      "question": "Muaf olduğum dersleri nasıl, nereden görebilirim?",
+      "answer": "Muaf olduğunuz dersleri AKSİS sisteminden görüntüleyebilirsiniz. Ortak zorunlu derslerden muaf olan öğrencilerin transkript belgelerinde ilgili dersler (M) harf notu olarak işlenir, öğrenciler transkript belgelerinden muaf derslerini görüntüleyebilmektedir."
+    },
+    {
+      "id": 118,
+      "question": "Muafiyet zamanını kaçırdım, şimdi muafiyet işlemi yapabilir miyim?",
+      "answer": "Muafiyet işlemi AUZEF'e kayıt olunan ilk eğitim-öğretim döneminde yapılır, sonraki dönemlerde muafiyet talebinde bulunulamaz"
+    },
+    {
+      "id": 119,
+      "question": "Örgün program öğrencisiyim, zorunlu ortak derslerimi nereden takip edebilirim?",
+      "answer": "Örgün eğitim gören öğrenciler zorunlu ortak derslerini \"https://eogren.istanbul.edu.tr/\" https://eogren.istanbul.edu.tr/ sisteminden takip edebilirler."
+    },
+    {
+      "id": 120,
+      "question": "Askerlik tecil işlemleri için hangi belgeyi almam gerekir?",
+      "answer": "Askerlik tecil işlemleri için belge almanıza gerek yoktur, öğrencilik verileriniz YÖKSİS e aktarılmakta ve ASAL (Askeralma Genel Müdürlüğü) tarafından ihtiyaç halinde bu veriler çekilmektedir. Not: İkinci üniversite kapsamında yapılan kayıtlarda askerlik tecil işlemleri fakültemiz tarafından yapılmamaktadır. Askerlik işlemleri mezun durumda olmayan, okuyan öğrenciler için ilk üniversiteleri tarafından yapılmaktadır. Fakültemize diğer üniversitenizden kaydınızı sildirdiğinize dair belge ile müracaat etmeniz durumunda verileriniz sisteme aktarılmakta ve tecil işlemi gerçekleşmektedir.) Ayrıntılı bilgiye \"https://www.msb.gov.tr/Genel/icerik/sikca-sorulan-sorular\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 121,
+      "question": "Öğrenim kurumlarından terk, ilişik kesme veya mezun olmam durumunda kaç yaşına kadar ertelememi yaptırabilirim?",
+      "answer": "7179 sayılı Askeralma Kanunu 20’nci madde 3’üncü fıkrası gereğince yükümlülerin askerlikleri istekleri halinde mezuniyet veya ilişik kesme tarihinden itibaren;\na) Lise veya dengi okuldan mezun olanların üç yıl,\nb) Mesleki ve Teknik Liselerden mezun olanların altı yıl,\nc) Fakülte, Yüksekokul veya Meslek Yüksekokullarından ilişikleri kesilenler ile Meslek Yüksekokulundan mezun olanların iki yıl,\nç) Dört yıl ve daha uzun süreli yükseköğretim kurumlarından mezun olanların iki yıl,\nd) Yüksek lisans eğitimini tamamlayanlar bir yıl, süreyle ertelenir.\nBu erteleme süreleri; lise veya dengi okul mezunları için 22, mesleki ve teknik lise mezunları için 25, fakülte, yüksekokul veya meslek yüksekokullarından ilişikleri kesilenler ile meslek yüksekokulu mezunları için 28, dört yıl ve daha uzun süreli yükseköğretim kurumu mezunları için 32 yaşını tamamladıkları yılın sonunu geçemez.\nYurt dışındaki yükseköğretim kurumlarından mezun olanlara denklik işlemlerini tamamlamaları için ilave bir yıl süre verilir."
+    },
+    {
+      "id": 122,
+      "question": "Öğrenimime devam ederken askerlik görevimi yapabilir miyim?",
+      "answer": "Açık ve uzaktan öğretim programlarında okuyan öğrenciler dilediği takdirde askerlik görevini okurken yapabilir."
+    },
+    {
+      "id": 123,
+      "question": "Sınavsız İkinci Üniversiteyle kayıt yaptırdığımda askerlik tecil işlemlerinden faydalanabilir miyim?",
+      "answer": "Sınavsız İkinci Üniversite kapsamında kayıt olan öğrencilerin askerlik tecil işlemleri Fakültemiz tarafından yapılmamaktadır. Askerlik işlemleri mezun durumda olmayan, okuyan öğrenciler için ilk üniversiteleri tarafından yapılmaktadır. Fakültemize diğer üniversitenizden kaydınızı sildirdiğinize dair belge ile müracaat etmeniz durumunda verileriniz sisteme aktarılmakta ve tecil işlemi gerçekleşmektedir."
+    },
+    {
+      "id": 124,
+      "question": "Sınavsız İkinci Üniversiteyle kayıt olduktan sonra örgün öğretimdeki kaydımı sildirdim, askerlik tecil işlemlerinden yararlanabilir miyim?",
+      "answer": "Fakültemize diğer üniversitenizden kaydınızı sildirdiğinize dair belge ile müracaat etmeniz durumunda verileriniz sisteme aktarılmakta ve tecil işlemi gerçekleşmektedir."
+    },
+    {
+      "id": 125,
+      "question": "Paso (akbil/şehir içi ulaşım kartı) çıkartmam için hangi işlemleri yapmam gerekir?",
+      "answer": "Paso (akbil/şehir içi ulaşım kartı)çıkarmak için Fakültemizden aldığınız öğrenci belgesi ile ya da sistem üzerinden bulunduğunuz şehirdeki ulaşım bürolarına başvurmanız gerekir."
+    },
+    {
+      "id": 126,
+      "question": "Pasif öğrenci ile kayıt donduran öğrenci arasında ne fark var?",
+      "answer": "Azami eğitim-öğretim süreleri; iki yıllık ön lisans öğrenimi için 4 yıl, dört yıllık fakülte ve yüksekokullar için 7 yıldır. Kayıt yenilemeyen öğrencilerin kayıt yenilemediği her dönem azami süreden düşer; fakat kayıt donduran öğrencinin kayıt dondurduğu dönem/dönemler azami süreden düşmez."
+    },
+    {
+      "id": 127,
+      "question": "Türkçe Yeterlilik belgesini alamazsam kaydım silinir mi?",
+      "answer": "Türkçe Yeterlilik Belgesi alamayan ya da Türkçe yeterlilik sınavından yeterli düzeyde not alamayan öğrenciler ilgili dönemde ders alamamaktadırlar. Öğrencilerin ders alabilmeleri için en az B seviyesinde not alıp, İÜ Yabancı Diller bölümünden sisteme işletmeleri gerekir. Bütün YÖS öğrencileri kayıtlarının devam edebilmesi için Türkçe Yeterliliklerini C seviyesine yükseltmek zorundadırlar."
+    },
+    {
+      "id": 128,
+      "question": "YÖS Türkçe yeterlilik değerlendirilmesi neye göre belirlenmektedir?",
+      "answer": "Türkçe Yeterlilik Belgesi düzeyleri aşağıdaki gibidir.\n1. C1 ve C2 Düzeyi: Türkçe düzeyi yeterlidir. Kayıt hakkı kazandığı programa kaydı yapılır.           \n2. B1 ve B2 Düzeyi: Türkçe düzeyi yeterli değil; ancak geliştirilebilir. Türkçe kursu almak şartıyla kayıt hakkı kazandığı programa kaydı yapılır. \nÖğrenci en geç üçüncü eğitim ve öğretim yılının başına kadar Türkçe düzeyini (C1-C2) düzeyine yükselttiğini belgelemelidir. \nBu süre sonunda Türkçesi hala (B1-B2) düzeyinde olanlar dil düzeyini (C1-C2) seviyesine çıkarıncaya kadar eğitim ve öğretimine devam edemezler.                                                                                                                                        \n3. A1 ve A2  Düzeyi: Türkçe düzeyi yetersizdir. Türkçe kursu almalıdır. Bu durumda olanlar en geç üçüncü eğitim ve öğretim yılının başına kadar Türkçe düzeyini (C1-C2) düzeyine yükselttiğini belgelemelidir. Türkçe yeterlilik düzeyini, (C1-C2) düzeyine yükseltenlere bu fıkranın birinci bendi, (B1-B2) düzeyine yükseltenlere ikinci bendi hükmü uygulanır."
+    },
+    {
+      "id": 129,
+      "question": "Yatay geçiş işlemleri ile ilgili detaylı bilgiye nereden ulaşabiliriz?",
+      "answer": "Yatay geçiş ile Fakültemize kayıt olmak isteyen öğrencilerin istenilen koşulları sağlayıp başvuruda bulunmaları gerekmektedir. Detaylı bilgi için üniversitenin resmi web sayfası ve \"http://ogrenci.istanbul.edu.tr/\" http://ogrenci.istanbul.edu.tr/ adresinden başvuru koşullarını inceleyiniz. Başka bir üniversiteye ya da fakülteye yatay geçiş yapmak isteyen öğrencilerin başvuracakları birimin şartlarını yerine getirmesi gerekmektedir. Sınavsız ikinci üniversite kapsamında kayıt olan öğrencilerin yatay geçiş yapma hakkı bulunmamaktadır."
+    },
+    {
+      "id": 130,
+      "question": "Hangi yarıyıllarda yatay geçiş yapabilirim?",
+      "answer": "Yatay geçişler için; a)Eğitim süresi 2 yıl olan (önlisans) eşdeğer diploma programının; ikinci ve üçüncü yarıyılı, b)Eğitim süresi 4 yıl olan (lisans) eşdeğer diploma programının; üçüncü, dördüncü, beşinci ve altıncı yarıyılı, için kontenjan ayrılabilir. Ayrıntılı bilgi için \"http://ogrenci.istanbul.edu.tr\" http://ogrenci.istanbul.edu.tr adresinden ayrıntılı bilgiye ulaşabilirsiniz."
+    },
+    {
+      "id": 131,
+      "question": "Yatay geçiş başvuruları hangi tarihlerde yapılmakta ve nerede ilan edilmektedir?",
+      "answer": "Yatay geçiş başvuru tarihleri ve şartları \"http://ogrenci.istanbul.edu.tr \" http://ogrenci.istanbul.edu.tr adresinde Güz/Bahar yarıyılları başlarında ilan edilmektedir, ilgili adresten duyuruları takip ediniz."
+    },
+    {
+      "id": 132,
+      "question": "Yurt dışında ikamet ediyorum, öğrenci belgesini nasıl alabilirim?",
+      "answer": "Öğrenci belgenizi AKSİS \"Belge Talepleri\" alanından ya da e-devlet sisteminden e-imzalı olarak alabilirsiniz. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/ogrenci-belgesi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 133,
+      "question": "Hangi durumlarda öğrenci belgesi verilmez?",
+      "answer": "Öğrenci Belgesi sadece AKSİS' te statüsü \"Devamlı Öğrenci\" olan ilgili dönem için kayıt yenilemiş öğrenciler tarafından alınabilmektedir. Güz ve bahar dönemleri dışında kalan sürelerde, kayıt dondurduğunuz veya kayıt yenileme işleminizi yapmadığınız dönemlerde  öğrenci belgesi alamazsınız."
+    },
+    {
+      "id": 134,
+      "question": "AUZEF yeni kayıt yaptıran öğrenci ders kaydını nasıl yapabilir?",
+      "answer": "Öğrenciler, AKSİS' te yer alan referans numarası ile Halk Bankası şube ve ATM lerinden ya da AKSİS üzerinden kredi kartı ile ilgili döneme ait materyal/harç ücretlerini yatırmalıdır, ödeme işlemini gerçekleştiren öğrencilerin ders seçimleri AUZEF tarafından yapılmaktadır."
+    },
+    {
+      "id": 135,
+      "question": "Yatay geçişte ders muafiyeti nasıl yapılır?",
+      "answer": "Fakültemiz programlarına Yatay Geçiş kapsamında başvurusu kabul edilen ve kesin kayıt için hak kazanan öğrenci adaylarının muafiyet işlemleri aşağıdaki maddeler doğrultusunda yapılmaktadır. \n1) Muafiyet yapılacak dersin içeriği ile Fakültemizde karşılığı olan dersin içeriğinin benzerlik oranının minimum %70 olması gerekmektedir. \n2) Muafiyet yapılacak dersin AKTS/Kredi miktarının Fakültemizde karşılığı olan dersin AKTS/Kredi miktarına eşit ya da daha fazla olması gerekmektedir. \n3) Başarılı olunan birden fazla dersin Fakültemizde tek derse karşılık gelmesi durumunda, muafiyet işlemleri ders içeriklerinin ve toplam AKTS/Kredi miktarının ilk iki maddedeki uyumlulukları ve yeterlilikleri göz önünde bulundurularak yapılacaktır."
+    },
+    {
+      "id": 136,
+      "question": "İkinci üniversite kapsamında kayıt oldum başka bir programa yatay geçiş yapabilir miyim?",
+      "answer": "Yükseköğretim Kurulu Başkanlığının 16/12/2016 tarih ve 75850160-302.01.06-80321 sayılı yazısı ile “Yükseköğretim Kurumlarında Ön lisans ve Lisans Düzeyindeki Programlar Arasında Geçiş, Çift Anadal Yan Dal ile Kurumlararası Kredi Transferi Yapılması Esaslarına İlişkin Yönetmelik” kapsamında kurumlararası ve kurum içi yatay geçiş başvurularını kabul sırasında Üniversitelerin Açık ve Uzaktan Eğitim Fakültesinde ikinci üniversite kapsamında öğrenim gören öğrencilerin yatay geçiş başvurusunda bulunup bulunmayacağı konusundaki yazısı 14/12/2016 tarihli Yükseköğretim Yürütme Kurulu toplantısında incelenmiş ve söz konusu talep uygun görülmemiştir. Bu nedenle İkinci üniversite kapsamında kayıt yaptıran öğrencilerin yatay geçiş hakkı bulunmamaktadır."
+    },
+    {
+      "id": 137,
+      "question": "Programımda azami süremi aştığımda indirimli ulaşım kartı alabilir miyim?",
+      "answer": "Azami süresini aşan öğrenciler, indirimli ulaşım kartı hakkını kaybeder. Bu durumdaki öğrencilere belediyeler tarafından indirimli ulaşım kartı hakkı verilmez."
+    },
+    {
+      "id": 138,
+      "question": "(AA), (BA), (BB), (CB) ve (CC) harf notları neyi ifade eder?",
+      "answer": "Bir dersten (AA), (BA), (BB), (CB) ve (CC) harf notlarından birini alan öğrenci o dersi başarmış sayılır ve o dersten bir daha sınava girmez."
+    },
+    {
+      "id": 139,
+      "question": "(FF) harf notunu neyi ifade eder?",
+      "answer": "Bir dersten (FF) harf notunu alan öğrenci o dersten başarısız olmuş sayılır ve ilgili dersin sınavına tekrar girerek notunu başarılı şekilde yükseltmelidir"
+    },
+    {
+      "id": 140,
+      "question": "Sınav sonuçlarını harf notu olarak nasıl görüntüleyebilirim.",
+      "answer": "Final (Bitirme) veya Telafi (Bütünleme) sınav sonuçları AKSİS' te ilan edildikten sonra tüm derslerin bağıl değerlendirmesi yapılarak harf notları ilan edilir. AKSİS Not Kartı ekranı ve Sınav Sonuçları ve Notlar kısmından veya Öğrenme Yönetim Sistemi üzerindeki Sınav Sonuçları ekranından görüntüleyebilirsiniz."
+    },
+    {
+      "id": 141,
+      "question": "AUZEF sınav tarihleri nerede yayınlanır?",
+      "answer": "Sınav tarihleri eğitim-öğretim yılı başında auzef.istanbul.edu.tr  \"Akademik Takvim\" alanında  yayınlanmaktadır.\nSınavlar, her bir ders için her yarıyılda en az bir ara sınav, bir bitirme sınavı ve bir bütünleme sınavı (bitirme sınavının telafisi) olmak üzere yüz yüze gözetimli olarak yapılır."
+    },
+    {
+      "id": 142,
+      "question": "Sınav merkezleri nerelerdir?",
+      "answer": "Açık ve uzaktan eğitim programlarındaki tüm sınavlar Türkiye’nin tüm illeri ve KKTC’de dahil olmak üzere toplamda 112 sınav merkezinde gerçekleştirilmektedir. Sınav merkezleri Fakülte Yönetim Kurulu onayı ile arttırılabilir veya azaltılabilir. \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/sinav-merkezleri\" Buradan sınav merkezlerine ulaşabilirsiniz."
+    },
+    {
+      "id": 143,
+      "question": "Ara sınavlara (vize) nasıl giriş yapılır ?",
+      "answer": "Öğrencilerimiz, sınav giriş belgelerini \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yaparak alır. Sınav merkezlerine sınav giriş belgesi ve T.C. Kimlik Kartı ya da sınav giriş belgesinde belirtilen diğer muadil kimlik kartları ile girebilirler. Sınav giriş belgeleri sınavın uygulanacağı hafta itibarıyla \"https://auzefsinav.istanbul.edu.tr/ \" https://auzefsinav.istanbul.edu.tr/ de yayınlanır."
+    },
+    {
+      "id": 144,
+      "question": "Ara sınav (vize) sonuçlarına nereden ulaşabilirim?",
+      "answer": "Ara sınav (Vize) sonuçları ilk olarak \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresinden ilan edilir. \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yapılır. Daha sonra notlar AKSİS' e aktarılır."
+    },
+    {
+      "id": 145,
+      "question": "Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?",
+      "answer": "Mezuniyete üç ders sınavı hakkı olan öğrenciler başvuru tarihlerinde AKSİS' ten sınav için başvuru yapmalıdır. Başvurusu onaylanan öğrenciler sınav tarihinden bir hafta önce, sınav giriş belgelerini https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yaparak alır. Sınav merkezlerine sınav giriş belgesi ve T.C. Kimlik Kartı ya da sınav giriş belgesinde belirtilen diğer muadil kimlik kartları ile girebilirler. Mezuniyete Üç Ders Sınavı Başvuru Koşullarına \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 146,
+      "question": "Bitirme (Final) sınavı esnasında yapılması gereken işlemler nelerdir?",
+      "answer": "Öğrencilerimiz ilgili sınav merkezlerinde gerekli kontroller sonrasında sınav salonlarına alınır.\n- Sınav süreleri ve sınav esnasında dikkat edilmesi gereken konular daha öncesinde(Sınav giriş belgelerinde ve sınav kitapçıklarının arkasında ilgili uyarılar yer almaktadır) öğrencilerimize bildirilir.\n- Öğrencilerimiz bu doğrultuda sınavlarını sürdürürler."
+    },
+    {
+      "id": 147,
+      "question": "Telafi (Bütünleme) sınavına nasıl katılabilirim?",
+      "answer": "Öğrencilerin DD, DC, FF harf notlu derslerinden telafi sınavına girebilmeleri için herhangi bir başvuru yapmaları gerekmez. İlgili dersler için otomatik olarak sınav hazırlanmaktadır. Öğrencilerimiz, sınav giriş belgelerini \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yaparak alır. Sınav merkezlerine sınav giriş belgesi ve T.C. Kimlik Kartı ya da sınav giriş belgesinde belirtilen diğer muadil kimlik kartları ile girebilirler. Sınav giriş belgeleri sınavdan 1 hafta önce \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ de yayınlanır."
+    },
+    {
+      "id": 148,
+      "question": "Telafi(Bütünleme) sınavında dikkat etmem gereken durumlar nelerdir?",
+      "answer": "- Sınav süreleri ve sınav esnasında dikkat edilmesi gereken konular sınav giriş belgelerinde ve sınav kitapçıklarında yazılı olarak yer almaktadır.\n- DD ve DC harf notu dersleri bulunan öğrenciler notlarını yükseltmek istemezlerse, optikte girmek istemedikleri derse ait alanda işaretleme yapmamalıdır. İşaretleme yapıldığı takdirde öğrencinin aldığı son not geçerli olacaktır."
+    },
+    {
+      "id": 149,
+      "question": "AUZEF sınavları kaç oturumda yapılır?",
+      "answer": "Öğrencilerimizin bir dönemde aldıkları derslerin sınavları üç oturum olarak düzenlenir.\n-  Öğrencilerimiz ilgili oturumda sorumlu oldukları derslerin sınavlarını belirtilen süreler dâhilinde tamamlar."
+    },
+    {
+      "id": 150,
+      "question": "Sınav sonuçlarını nasıl görebilirim?",
+      "answer": "Sınav sonuçları ilk olarak \"https://auzefsinav.istanbul.edu.tr/\" buradan ilan edilir, \"https://auzefsinav.istanbul.edu.tr/ \" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yapılır. Daha sonra notlar AKSİS' e aktarılır. Vize ve final sınavlarının ikisi de açıklandıktan sonra notlar AKSİS' e harf notu olarak işlenir."
+    },
+    {
+      "id": 151,
+      "question": "Harf notumu neden göremiyorum?",
+      "answer": "Bitirme sınav sonuçları yayınlanmadan AKSİS' te harf notları ilan edilmemektedir. Ara sınav ve final sınavlarının ikisi de açıklandıktan sonra notlar AKSİS' e harf notu olarak işlenir."
+    },
+    {
+      "id": 152,
+      "question": "AUZEF’te her dönem için kaç sınav yapılır?",
+      "answer": "AUZEF’te her yarıyılda en az bir ara sınav(vize), bir bitirme sınavı(final) ve telafi sınavı(bütünleme) olmak üzere 3 sınav yapılır. Ayrıca yılda bir defa olmak üzere bahar dönemi sonunda akademik takvimde belirtilen tarihte Mezuniyete Üç Ders sınavı yapılmaktadır. Sınavlar sınav merkezlerinde gözetimli olarak yüz yüze yapılır."
+    },
+    {
+      "id": 153,
+      "question": "Tercih ettiğim sınav merkezi dışında bir merkezde sınava girebilir miyim?",
+      "answer": "Sınav merkezi tercih sistemi her sınav dönemi öncesinde öğrencilerimizin tercihlerini güncelleyebilmeleri için açılmaktadır. Öğrencilerimiz sınavlarına “Sınav Merkezi Tercihi” döneminde tercih ettikleri sınav merkezinde girmek zorundadırlar. Belirlenen tarihler dışında sınav merkezi tercihi değiştirilemez. Tercihlere ait duyuru web sayfasından duyurulur."
+    },
+    {
+      "id": 154,
+      "question": "Cep telefonum ile sınava girebilir miyim?",
+      "answer": "Sınav salonlarına kesinlikle CEP TELEFONU ile girilemez."
+    },
+    {
+      "id": 155,
+      "question": "Sınava girerken yanımda ne götürmeliyim?",
+      "answer": "Öğrencilerimizin sınava girebilmeleri için yanlarında Sınav Giriş Belgesi ve T.C. Kimlik Kartı ya da sınav giriş belgesinde belirtilen diğer muadil kimlik kartlarının bulunması yeterlidir. Sınav giriş belgeleri \"https://auzefsinav.istanbul.edu.tr/\" buradan AKSİS kullanıcı adı ve şifresi ile giriş yapılarak alınır. Sınav giriş belgeleri sınavdan 1 hafta önce \"https://auzefsinav.istanbul.edu.tr/\" burada yayınlanır."
+    },
+    {
+      "id": 156,
+      "question": "Sınav notlarıma nereden ulaşabilirim?",
+      "answer": "Sınav sonuçları ilk olarak\"https://auzefsinav.istanbul.edu.tr/\"  https://auzefsinav.istanbul.edu.tr/ adresinden ilan edilir, \"https://auzefsinav.istanbul.edu.tr/\" https://auzefsinav.istanbul.edu.tr/ adresine AKSİS kullanıcı adı ve şifresi ile giriş yapılır. Daha sonra notlar AKSİS' e aktarılır. Vize ve final olmak üzere iki sınav sonucu da açıklandıktan sonra sınav sonuçları AKSİS' e harf notu olarak işlenir."
+    },
+    {
+      "id": 157,
+      "question": "Her ders için vize ve bitirme (final) notunun etki oranı nedir?",
+      "answer": "Bir ders için Ham Başarı Puanı, hesaplanırken vizenin  %30’ u, bitirme(final) notunun  ise %70’ i dikkate alınarak hesaplama yapılır."
+    },
+    {
+      "id": 158,
+      "question": "Telafi (Bütünleme) Sınavı notu sınav başarı notunu yüzde kaç etkiler?",
+      "answer": "Telafi(bütünleme) sınavına giren öğrenciler için Telafi(bütünleme) sınavı bitirme(final) sınavı yerine geçer ve bitirme sınavı gibi toplam notun %70 ini etkiler."
+    },
+    {
+      "id": 159,
+      "question": "Bitirme sınavına giremezsem ilgili derslerden kalır mıyım?",
+      "answer": "Final sınavına giremeyen öğrenciler Telafi(bütünleme) sınavına herhangi bir başvuru yapmadan girebilir. Telafi sınavının ham başarı puanına etkisi % 70 tir."
+    },
+    {
+      "id": 160,
+      "question": "Vize sınavına girmediğim dersin finaline girebilir miyim?",
+      "answer": "Vize sınavına girmediğiniz dersin final sınavına  girebilirsiniz.\n Bir ders için Ham Başarı Puanı , ara sınavın %30 u, bitirme/telafi sınavlarının %70’i dikkate alınarak hesaplanır."
+    },
+    {
+      "id": 161,
+      "question": "Ara sınav (vize), bitirme (final) veya bütünleme (telafi) sınavına girmezsem ne olur?",
+      "answer": "Herhangi bir sebeple ara sınav, bitirme ve bütünleme(telafi) sınavlarına giremeyen veya sınavı geçersiz olan öğrenci bu derslerin sınavlarından sıfır (0) puan almış kabul edilir."
+    },
+    {
+      "id": 162,
+      "question": "Mezuniyete Üç Ders Sınavı başarı notu, nasıl hesaplanır. Ara sınav, bitirme ve bütünleme sınavı notları üç ders sınav notlarımı etkiler mi?",
+      "answer": "Mezuniyete Üç Ders Sınavı başarı notu, mutlak değerlendirme sistemine göre hesaplanır; değerlendirmede ara sınav, yarı yılsonu bitirme ve bütünleme sınavı notları dikkate alınmaz. Geçme notu Mutlak değerlendirme aralıklarına göre 50 dir. İstanbul Üniversitesi Ön lisans ve Lisans Eğitim ve Öğretim Yönetmeliği’ne göre belirlenen ve Mezuniyete Üç Ders sınavında değerlendirme için kullanılan mutlak değerlendirme sistemi harf notu puan aralıklarına \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 163,
+      "question": "Açık öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?",
+      "answer": "Başarı notunun belirlenmesi ve harf notları \nMADDE 23 – (1) Bitirme/bütünleme sınav notu değerlendirme alt sınırı esasları aşağıda \nbelirtilmiştir:_ \n(2) ( Değişik: RG-18/09/2022- 31957) Ham Başarı Notu (HBN), öğrencilerin yarıyıl/yıliçi etkinlikleri \nve yarıyıl/yılsonu sınavından aldığı puanın ağırlık katsayısına göre ortalamasının alınması ile \nhesaplanan puandır. Fakültemiz programlarında HBN, yarıyıl/yıl içi etkinleri için toplamda %30; \nyarıyıl/yılsonu sınavı için %70 oranında ağırlık katsayısı kullanılarak hesaplanır. \n(3) HBN’si 35’in altında kalan ve/veya bitirme/bütünleme sınavına hakkı olduğu hâlde girmeyen ya da \ndevamsızlık sebebi ile giremeyen öğrencilerin notları bağıl değerlendirme sistemindeki hesaplamaya \ndâhil edilmez. Bunlardan HBN’si 35’in altında kalan ve/veya bitirme/bütünleme sınavına girmeyen \nöğrenciler doğrudan FF harf notu alarak kalırlar. HBN’si 100 olan öğrenciler bağıl değerlendirme \nsistemine dâhil edilmezler ve doğrudan AA alırlar. \n(4) Bağıl değerlendirme sisteminde başarı puanlarının harf notlarına çevrilmesinde Senato tarafından \nbelirlenen esaslara göre tespit edilen formül kullanılır. \n(5) Bağıl değerlendirme aralıkları, değerlendirmeye katılan öğrenci sayısı ve bu öğrencilerin puanlarına \ngöre oluşan standart sapma değeri dikkate alınarak Senato tarafından belirlenen esaslara göre tespit \nedilir. \n(6) Bütünleme sınavındaki HBN ortalaması bitirme sınavındaki HBN ortalamasından küçük veya eşit \nise bütünleme sınavındaki harf notlarının aralıkları, bitirme sınavında oluşan aralıklar esas alınarak \nbelirlenir. Diğer durumlarda ise bütünleme sınavının değerlendirmesi bağımsız yapılır."
+    },
+    {
+      "id": 164,
+      "question": "Uzaktan öğretim öğrencisiyim herhangi bir dersten geçmem için en az kaç almalıyım?",
+      "answer": "Uzaktan öğretim programlarında öğrencilerin, yarıyıl/yıl içi\netkinlik notlarına bakılmaksızın bir dersten koşullu veya doğrudan geçebilmeleri için en az 40 (kırk)\npuan almaları gerekir. Bitirme/bütünleme sınavında bu değerlerin altında not alan veya bu sınavlara\ngirmeyen öğrenciler FF harf notu alarak başarısız sayılır."
+    },
+    {
+      "id": 165,
+      "question": "Ham Başarı Notu (HBN) nedir, nasıl hesaplanır?",
+      "answer": "Ham Başarı Notu (HBN), öğrencilerin yarıyıl/yıliçi etkinlikleri ve yarıyıl/yılsonu sınavından aldığı puanın ağırlık katsayısına göre ortalamasının alınması ile hesaplanan puandır. Fakültemiz programlarında HBN, yarıyıl/yıl içi etkinleri için toplamda %30; yarıyıl/yılsonu sınavı için %70 oranında ağırlık katsayısı kullanılarak hesaplanır"
+    },
+    {
+      "id": 166,
+      "question": "AUZEF'te Ham Başarı Notu (HBN) nedir, bir dersten koşullu ya da doğrudan geçmem için en az kaç almam gerekir?",
+      "answer": "Ham Başarı Notu (HBN), öğrencilerin yarıyıl/yıl içi etkinlikleri ve yarıyıl/yılsonu sınavından aldığı puanın ağırlık katsayısına göre ortalamasının alınması ile hesaplanan puandır. Fakültemiz programlarında HBN, Ara sınavın %30'u; Final/Telafi sınavının %70'i alınarak HBN hesaplanır. \nHBN’si 35’in altında kalan ve/veya Final/Telafi sınavına hakkı olduğu hâlde girmeyen ya da\ndevamsızlık sebebi ile giremeyen öğrencilerin notları bağıl değerlendirme sistemindeki hesaplamaya\ndâhil edilmez. Bunlardan HBN’ si 35’in altında kalan ve/veya bitirme/bütünleme sınavına girmeyen\nöğrenciler doğrudan FF harf notu alarak kalırlar. HBN’ si 100 olan öğrenciler bağıl değerlendirme\nsistemine dâhil edilmezler ve doğrudan AA alırlar."
+    },
+    {
+      "id": 167,
+      "question": "AUZEF'te bağıl değerlendirme var mıdır, nasıl hesaplanır?",
+      "answer": "AUZEF'te notlar bağıl değerlendirmeye göre hesaplanır. Bağıl değerlendirme sisteminde başarı puanlarının harf notlarına çevrilmesinde Senato tarafından belirlenen esaslara göre tespit edilen formül kullanılır. Bağıl değerlendirme aralıkları, değerlendirmeye katılan öğrenci sayısı ve bu öğrencilerin puanlarına göre oluşan standart sapma değeri dikkate alınarak Senato tarafından belirlenen esaslara göre tespit edilir. Bütünleme sınavındaki HBN ortalaması bitirme sınavındaki HBN ortalamasından küçük veya eşit ise bütünleme sınavındaki harf notlarının aralıkları, bitirme sınavında oluşan aralıklar esas alınarak belirlenir. Diğer durumlarda ise bütünleme sınavının değerlendirmesi bağımsız yapılır."
+    },
+    {
+      "id": 168,
+      "question": "AUZEF'te mazeret sınavı var mıdır, mazeret sınavına girebilir miyim?",
+      "answer": "Sınavlara katılmayan öğrenciler için mazeret sınavı veya başka bir tekrar sınavı yapılmaz. Final sınavına giremeyen ya da FF, DD, DC harf notlu dersi olan öğrenciler ilgili dersleri için telafi sınavına girebilmektedir."
+    },
+    {
+      "id": 169,
+      "question": "Daha önce almadığım dersler için mezuniyete üç ders sınavına başvurabilir miyim?",
+      "answer": "Daha önce alınmamış veya devamsızlıktan kalınan ders/dersler için Mezuniyete Üç Ders Sınavı hakkı yoktur ve sınav için başvuru yapamazsınız.\nDaha önce alınmamış bir ders için mezuniyete üç ders sınavına girilemez."
+    },
+    {
+      "id": 170,
+      "question": "Harf notumu nasıl öğrenebilirim?",
+      "answer": "Final (Bitirme) veya Telafi (Bütünleme) sınav sonuçları AKSİS' te ilan edildikten sonra tüm derslerin bağıl değerlendirmesi yapılarak harf notları ilan edilir. AKSİS Not Kartı ekranı ve Sınav Sonuçları ve Notlar kısmından veya Öğrenme Yönetim Sistemi üzerindeki Sınav Sonuçları ekranından görüntüleyebilirsiniz."
+    },
+    {
+      "id": 171,
+      "question": "Mezuniyete Üç Ders Sınavına kimler başvurabilir?",
+      "answer": "Mezuniyete üç ders sınavına, mezuniyet şartlarını sağlayan; ancak en fazla 3 dersten başarısız durumda olan öğrenciler başvurabilmektedir. Üç ders sınav başvuruları öncesinde web sayfamızda sınav duyuru şartları yayımlanmaktadır. Ayrıntılı bilgiye \"https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/mezuniyete-uc-ders-sinavi\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 172,
+      "question": "Mezuniyete Üç Ders Sınavı tarihleri ne zamandır?",
+      "answer": "Mezuniyete üç ders sınavı, akademik takvimde de belirtildiği gibi sadece bahar yılı sonlarında gerçekleştirilmektedir. Sınav tarihi \"https://auzef.istanbul.edu.tr/tr/content/akademik-takvim/sinav-tarihleri\" web sayfamızda yayınlanmakta olup, başvuru adımları ile ilgili tüm bilgilendirmeler duyuru olarak web sayfamızdan paylaşılmaktadır."
+    },
+    {
+      "id": 173,
+      "question": "Klasik sınav sonuçları neden geç ilan ediliyor?",
+      "answer": "Klasik sınavlardaki sınav kâğıtları ilgili dersin öğretim görevlisine gönderilir, öğretim görevlisi kâğıtları okur ve sonuçları Fakültemize gönderir. Bu işlemlerden sonra sonuçlar ilan edilir. Bu sebepten klasik sınavların not ilanında gecikmeler yaşanabilir."
+    },
+    {
+      "id": 174,
+      "question": "Klasik sınav sonuçlarıma nereden ulaşabilirim?",
+      "answer": "Klasik sınavlar sadece AKSİS otomasyon sisteminden ilan edilir. Bu ilana kadar auzefsinav.istanbul.edu.tr adresinde klasik sınav sonuçları 0 olarak görünmektedir. Bu sonuçlar dikkate alınmamalıdır."
+    },
+    {
+      "id": 175,
+      "question": "Açık öğretim programlarının canlı dersleri var mı?",
+      "answer": "Açık öğretim programlarında \"Canlı Ders\" uygulaması yoktur. Derslere ilişkin videolar haftalık konuların anlatıldığı Ders Videoları şeklinde yayınlanmaktadır."
+    },
+    {
+      "id": 176,
+      "question": "Canlı derslere katılımda devam zorunluluğu var mı?",
+      "answer": "Fakülte bünyesinde yer alan programlarda yürütülen dersler için (canlı dersler dahil) devam zorunluluğu yoktur."
+    },
+    {
+      "id": 177,
+      "question": "Canlı derse katılamadığım takdirde tekrarını nasıl izlerim?",
+      "answer": "Canlı ders videoları kaydedilmekte ve düzenleme işlemi sonrasında sisteme yüklenmektedir. Canlı derse katılım sağlama ve arşiv videolarına ulaşmak için AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" alanına giriş yapılmalıdır. Canlı derslere sadece uzaktan öğretim programı öğrencileri giriş sağlayabilmektedir. Uzaktan öğretim programlarına kayıt olmak için öğrencilerin ÖSYM sınavlarına girmiş ve programa yerleştirilerek kayıt yaptırmış olması gerekmektedir."
+    },
+    {
+      "id": 178,
+      "question": "Kesin kayıt işlemini tamamlamış bir öğrenci canlı derse nasıl girebilir?",
+      "answer": "Canlı derslere sadece uzaktan öğretim programı öğrencileri giriş sağlayabilmektedir. Uzaktan öğretim programlarına kayıt olmak için öğrencilerin ÖSYM sınavlarına girmiş ve programa yerleştirilerek kayıt yaptırmış olması gerekmektedir. Canlı Ders programına AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" alanından ulaşılır."
+    },
+    {
+      "id": 179,
+      "question": "AKSİS sistemine giriş yapabiliyorum; ancak AUZEF Öğretim Öğrenme Yönetim Sistemine giriş yapamıyorum ne yapmalıyım?",
+      "answer": "AKSİS kullanıcı adı ve şifreniz ile AKSİS sistemine giriş yapıyor ancak; AUZEF Öğrenme Yönetim Sistemine girişte sorun yaşıyorsanız, \"https://auzefcozum.istanbul.edu.tr/\" buradan talep oluşturunuz."
+    },
+    {
+      "id": 180,
+      "question": "Bir dersin kredi AKTS miktarını nasıl öğrenebiliirim?",
+      "answer": "Tüm AUZEF programlarının derslerine ait kredi miktarı ve AKTS yükü ilgili programın sayfalarında yayınlanmaktadır.\nKredi ve AKTS bilgilerinize aşağıdaki adımları izleyerek ulaşabilirsiniz;\n\n- İÜ AUZEF web sitesi olan auzef.istanbul.edu.tr adresine girilir.\n-Girilen sayfanın üst menü bandında bulunan ‘Programlar’ sekmesinden kayıt olunan programın ismine tıklanır.\n-Ekrana gelecek olan yeni sayfa öğrencinin kayıt olduğu programa ait ‘Bölüm Sayfası’ dır.\n- Bölüm sayfasının üst kısmından ‘Dersler’ sekmesine tıklanır. Açılan seçeneklerden ilgili dersin bulunduğu yıl seçilir.\n-Açılan sayfada ilgili derslerin kredi ve AKTS bilgileri yer alır. Aynı sayfa üzerindeki 'Derse' tıklanarak dersler hakkında detaylı bilgiye ulaşılabilir."
+    },
+    {
+      "id": 181,
+      "question": "Kayıtlı olduğum programın ders materyallerine nasıl erişebilirim?",
+      "answer": "AUZEF programlarına kayıtlı tüm öğrenciler  AKSİS den  \"AUZEF Öğrenme Yönetim Sistemi\" alanına tıklayarak ders materyallerine ulaşır. Ders materyallerine akademik takvimde ilan edilen eğitim öğretim başlangıç tarihlerinden itibaren  ulaşılır. Öğrenciler \"Derslerim\" alanından dersin üzerine tıklayarak dersin materyallerine ulaşır. Materyaller içinde Kitap (eKitap), Ünite, Konu anlatımı(video), Ünite sunumları, Sorularla Öğrenelim alanları bulunur."
+    },
+    {
+      "id": 182,
+      "question": "Ders notlarını bilgisayarıma nasıl yükleyebilirim?",
+      "answer": "AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" \"Derslerim\" \"Ders İçerikleri\" \"Derse Git\" alanlarını tıklayınız. Kitap( eKitap) görüntüle dedikten sonra sağ üstte yer alan \"Yazdır\" ikonuna tıklayarak, PDF formatında ders kitabınızı bilgisayarınıza indirebilirsiniz."
+    },
+    {
+      "id": 183,
+      "question": "Ders videolarını nasıl seyrederim?",
+      "answer": "AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" \"Derslerim\" \"Ders İçerikleri\" \"Derse Git\" alanlarını tıklayınız. Konu Anlatımı(Video) alanından ünite bazlı ders videolarınızı görüntüleyebilirsiniz."
+    },
+    {
+      "id": 184,
+      "question": "Derslere ilişkin örnek soruları nasıl görüntüleyebilir ve çözebilirim?",
+      "answer": "AUZEF programlarına kayıtlı tüm öğrenciler  AKSİS den  \"AUZEF Öğrenme Yönetim Sistemi\" alanına tıklayarak ders materyallerine ulaşır.\nDers materyallerine akademik takvimde ilan edilen eğitim öğretim başlangıç tarihlerinden itibaren  ulaşılır. \nÖğrenciler \"Derslerim\" \"Ders İçeriklerim\" \"Derse Git\" alanına tıklayarak dersin materyallerine ulaşır. \nMateryaller içinde Kitap (eKitap), Ünite, Konu anlatımı(video), Ünite sunumları, Sorularla Öğrenelim alanları bulunur.\nSorularla öğrenelim alanından öğrencilerimiz ünitelere göre dersin sorularına ulaşır."
+    },
+    {
+      "id": 185,
+      "question": "Derslere ilişkin uygulamaları (uygulama sorularını) nasıl tamamlarım?",
+      "answer": "AUZEF programlarına kayıtlı tüm öğrenciler  AKSİS den  \"AUZEF Öğrenme Yönetim Sistemi\" alanına tıklayarak ders materyallerine ulaşır.\nDers materyallerine akademik takvimde ilan edilen eğitim öğretim başlangıç tarihlerinden itibaren  ulaşılır. \nÖğrenciler \"Derslerim\" \"Ders İçeriklerim\" \"Derse Git\" alanına tıklayarak dersin materyallerine ulaşır. \nMateryaller içinde Kitap (eKitap), Ünite, Konu anlatımı(video), Ünite sunumları, Sorularla Öğrenelim alanları bulunur. \nSorularla öğrenelim alanından öğrencilerimiz ünitelere göre dersin sorularına ulaşır."
+    },
+    {
+      "id": 186,
+      "question": "Derslerimi nasıl görüntüleyebilirim?",
+      "answer": "Derslerin AUZEF Öğrenme Yönetim Sisteminde görülebilmesi için «Kesin Kayıt» ta olması gerekmektedir. Ödeme yapılmaması ya da dersler «Ders Danışman Onaylandı» veya «Danışman Onay Bekliyor» olduğunda ders seçimi tamamlanmamıştır ve öğrenciler bu durumda sisteminde dersi göremez ve dersin sınavına giremez. Bu öğrenciler derslerinin kesin kayıtta olması için \"https://auzefcozum.istanbul.edu.tr/\" buradan Fakülteyle iletişime geçmelidir."
+    },
+    {
+      "id": 187,
+      "question": "Derslerime senkronize işlemi yapılmasına rağmen hala sistemimde görünmüyor ne yapmalıyım?",
+      "answer": "Ders seçim işlemi yapılmış ve senkronize işlemi yapılmasına rağmen ders listesinde eksik bir ders var ise sebebi teknik bir problem olabilir, Çözüm Merkezi Öğrenci İşleri-Ders Seçimi-Ders Seçim İşlemleri ketegorisinden talep açmanız gerekmektedir"
+    },
+    {
+      "id": 188,
+      "question": "Ders kitaplarını ve sunumları çıktı olarak alabilir miyim?",
+      "answer": "Ders kitaplarını ve sunumları bilgisayara pdf olarak kaydetme ve çıktı almak için yazdır butonu kullanılmaktadır. Detaylara \"https://youtu.be/0eGEHCHjXLM\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 189,
+      "question": "Açık öğretim programlarında hangi materyaller bulunmaktadır?",
+      "answer": "Materyaller içinde Kitap (eKitap), Ünite, Konu anlatımı(video), Ünite sunumları, Sorularla Öğrenelim alanları bulunur. Sorularla öğrenelim alanından öğrencilerimiz ünitelere göre dersin sorularına ulaşır."
+    },
+    {
+      "id": 190,
+      "question": "Uzaktan öğretim programlarında hangi materyaller bulunmaktadır?",
+      "answer": "Uzaktan öğretim programları öğrencileri, AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" üzerinden ders materyallerine; Kitap (eKitap), Ünite, Konu anlatımı(video), Ünite sunumları, Sorularla Öğrenelim alanları ve sistemleri üzerinden arşivlenmiş ders videolarına ulaşabilirler. \nCanlı derslere katılım zorunlu değildir, öğrenciler canlı ders videolarına  arşivlendikten sonra sistem üzerinden ulaşabilir."
+    },
+    {
+      "id": 191,
+      "question": "Üstten aldığım derslerimden FF harf notlu dersim var üstten ders alabilir miyim?",
+      "answer": "Kayıt yaptırdığı öğretim yılının ikinci yarıyılından itibaren alması gereken tüm derslerinden başarılı olanlardan AGNO’su 2,50 ve üstünde olan öğrenciler geçtikleri yarıyılın derslerinin yanında ön şartlı veya bağlantılı şartlı olmayan üst yarıyılın ders/derslerini de alabilir. Bunun için öğrencinin gelmiş olduğu sınıfa kadar olan bütün dersleri ile varsa üstten aldığı dersleri de almış ve başarmış olması gerekir."
+    },
+    {
+      "id": 192,
+      "question": "Bölüm Sonu Sorularında (çalışma sorularında) hatalı cevap olduğunu düşünüyorum?",
+      "answer": "Hatalı olduğunuz düşündüğünüz bölüm sonu sorularına ait talebinizi aşağıda ki detayları belirterek ÇÖZÜM merkezinden  \"Ders Materyalleri - Ders Kitabı - Kitap Sunum Uyuşmazlığı\" kategorisini seçerek iletebilirsiniz. \n1) Dersin Adı\n2) Sorunun bulunduğu hafta ve soru numarası"
+    },
+    {
+      "id": 193,
+      "question": "AUZEF Mobil hangi işletim sistemlerinde kullanılmaktadır?",
+      "answer": "iPad veya iPhone cihazlara sahip olan öğrencilerimizin mobil işletim sistemi olarak iOS 7 ve üzeri versiyon kullanmaları gerekmektedir.Android işletim sistemine sahip mobil cihazları bulunan öğrencilerimizin Android 4 veya üzeri bir versiyon kullanmaları gerekmektedir."
+    },
+    {
+      "id": 194,
+      "question": "Markette aratıyorum ancak; AUZEF mobil uygulamasını bulamıyorum neden?",
+      "answer": "Öğrencilerimiz, Google Play veya App Store’da “AUZEF” kelimesi ile arama yaptıkları takdirde uygulamayı bulacaklardır."
+    },
+    {
+      "id": 195,
+      "question": "AUZEF Mobil uygulamasına nasıl giriş yapabilirim?",
+      "answer": "AUZEF Mobil uygulamasını mobil cihazınıza kurduktan sonra uygulamayı çalıştırın. Açılan ekrandan AKSİS kullanıcı adı ve şifrenizi yazarak giriş yapabilirsiniz."
+    },
+    {
+      "id": 196,
+      "question": "AUZEF Mobil uygulamasına kullanıcı adım ve şifremle neden giriş yapamıyorum?",
+      "answer": "Öncelikle internet bağlantınızın olduğundan emin olun. Bunun için cihazınızda tarayıcıyı açıp herhangi bir web sitesini açmaya çalışın. İnternet bağlantınızda sıkıntı yok ise uygulamayı tekrar açıp deneyin. Sorunun devam etmesi durumunda çözüm merkezi üzerinden talep oluşturarak sorunu bize iletmeniz gerekmektedir."
+    },
+    {
+      "id": 197,
+      "question": "AUZEF Mobil'de neden bazı kitaplarımı göremiyorum?",
+      "answer": "Bunun nedeni, kitabın henüz yayınlanmamış olmasıdır. Kitap yüklendiği zaman listenizde görüntülenecektir."
+    },
+    {
+      "id": 198,
+      "question": "AUZEF Mobil'de hangi döneme ait kitapları görüntüleyebilirim?",
+      "answer": "AUZEF Mobil’de, aktif dönem derslerinizin ders materyallerini görebilirsiniz."
+    },
+    {
+      "id": 199,
+      "question": "İnternet bağlantısı olmadan da kitaplarımı okuyabilir miyim?",
+      "answer": "İnternete bağlı iken ders kitabınızı indirirseniz internetsiz ortamda da okumaya devam edebilirsiniz."
+    },
+    {
+      "id": 200,
+      "question": "AUZEF Mobil uygulaması ücretli midir?",
+      "answer": "AUZEF Mobil uygulaması ücretsizdir."
+    },
+    {
+      "id": 201,
+      "question": "AUZEF Mobil uygulamasında derslerin videolarını izleyebilir miyim?",
+      "answer": "AUZEF Mobil uygulamasında derslere ait videoları izleyebilirsiniz."
+    },
+    {
+      "id": 202,
+      "question": "AUZEF Mobil uygulaması ile Öğrenme Yönetim Sistemindeki dersler kitapları ile aynı mıdır?",
+      "answer": "AUZEF Mobil’de yayınlanan ders kitapları ile Öğrenme Yönetim Sistemi’nde yer alan ders kitapları aynıdır."
+    },
+    {
+      "id": 203,
+      "question": "AUZEF Mobil uygulaması ile ilgili yaşadığım sorunları size nasıl iletebilirim?",
+      "answer": "Talep sayfasına sorunuzu anlatan bir mesaj bırakabilirsiniz. Mesajınızda mutlaka şu bilgilere yer veriniz.Kullandığınız cihazın modeli (iPhone 4S, Nexus 4 … gibi), görüntelemekte sorun yaşadığınız dersler varsa derslerin isimleri. Ayrıca sorun yaşadığınız anda telefon veya tabletinizden ekran görüntüsü alarak talebinize ekleyinizi. Vereceğiniz bu bilgiler sorunun daha hızlı çözülmesine yardımcı olacaktır."
+    },
+    {
+      "id": 204,
+      "question": "AUZEF Mobil uygulamasını kurarken uygulamanın istediği izinler ne anlama geliyor?",
+      "answer": "AUZEF Mobil kurulurken izinler istemektedir.Bu izinler aşağıdaki amaçlar doğrultusunda kullanılmaktadır.\n\nKonum Bilgisi: Kitabı nerede indirdiğinizin raporlamasını yapmak için kullanılmaktadır. Cihazınızda konum bilginizi kapatarak, bu iznin kullanılmasını engelleyebilirsiniz.\n\nFotoğraflar/Medya İçerikleri/Dosyalar: AUZEF Mobilde internet bağlantısı olmadan kitaplarınızı okuyabilmeniz için kitabı indirmiş olmanız gereklidir. Bu izin kitabı kendi cihazınıza indirmenizi sağlamak için kullanılmaktadır.\n\nCihaz Kimliği ve Çağrı Bilgileri: AUZEF Mobil, internete bağlı olup olmadığınızı öğrenebilmek için bu izne ihtiyaç duymaktadır. Özellikle kitap indirirken veya internete bağlı olarak kitabı okurken internet kopmalarında sizi bilgilendirmek için bu izine ihtiyaç duymaktadır. AUZEF Mobil hiç bir şekilde çağrı bilgilerinizi veya rehberinizi kullanmaz."
+    },
+    {
+      "id": 205,
+      "question": "AKSİS' te fotoğrafımı güncellemek istiyorum nasıl yapabilirim?",
+      "answer": "\"https://basvuru.istanbul.edu.tr/\" Buraya AKSİS kullanıcı adı ve şifreniz ile giriş yapınız. Sayfada sol sütunda yer alan \"Profil\" alanına tıklayınız, fotoğraf alanın altında yer alan \"Fotoğraf Değiştir\" e tıklayarak vesikalık formattaki fotoğrafınızı güncelleyebilirsiniz."
+    },
+    {
+      "id": 206,
+      "question": "Soyismim değişti sistemlerde nasıl güncelleyebilirim",
+      "answer": "\"https://auzefcozum.istanbul.edu.tr/\" Buradan durumunuzu belirterek talep oluşturunuz."
+    },
+    {
+      "id": 207,
+      "question": "İstanbul Üniversitesi Carrahpaşa  öğrencisiyim AKSİS'e giriş yapamıyorum sisteme nereden giriş yapabilirim?",
+      "answer": "\"http://aksis.istanbul.edu.tr/ \" Buradan giriş yapmanız gerekmektedir"
+    },
+    {
+      "id": 208,
+      "question": "DD, DC harf notlu derslerim var bunlardan telafiye girmek zorunda mıyım?",
+      "answer": "Öğrenciler koşullu başarılı (DD) ve (DC) harf notu aldığı derslerin sınavına notunu yükseltmek istiyorsa girebilir notunu yükseltmek istemeyen öğrenci optikte işaretleme yapmamalıdır. Öğrenci DD, DC harf notlu derslerinden telafi sınavına girip optiğe işaretleme yaparsa en son aldığı not geçerli olur.  DD ve DC derslerinizden telafi notu oluşması istenmiyorsa ilgili derse ait sütun optiklerde işaretlememelidir."
+    },
+    {
+      "id": 209,
+      "question": "Telafi (Bütünleme) sınavı için başvuru yapmam gerekiyor mu?",
+      "answer": "Telafi sınavı öğrencilerin bitime sınavı sonucunda FF, DD, DC harf notu aldığı dersler için düzenlenir. Telafi(Bütünleme)sınavı için öğrencilerin başvuru yapmasına gerek yoktur, başarısız(FF) ve koşullu başarılı(DD, DC) dersler için öğrenciler telafi(bütünleme) sınavına girebilir."
+    },
+    {
+      "id": 210,
+      "question": "YÖS sınavına kimler girebilir?",
+      "answer": "Yabancı Öğrenci Sınavı (YÖS) hakkındaki tüm bilgiler  yos.istanbul.edu.tr adresinden yayınlanmaktadır. \nLütfen İÜYÖS sayfasını ziyaret ediniz."
+    },
+    {
+      "id": 211,
+      "question": "YÖS sınavı sonucumu nasıl öğrenirim?",
+      "answer": "Yabancı Öğrenci Sınavı (YÖS) hakkındaki tüm bilgiler  yos.istanbul.edu.tr adresinden yayınlanmaktadır. \nLütfen İÜYÖS sayfasını ziyaret ediniz."
+    },
+    {
+      "id": 212,
+      "question": "Ara Sınav (Vize) sınavında hangi ünitelerden sorumlu oluruz?",
+      "answer": "Dijital kitabınız 8 bölüm ise vize sınavında 4; 10 bölüm ise vize sınavından 5; 12 bölüm ise vize sınavından 6; 14 bölüm ise vize sınavından 7 bölümden sorumlu olursunuz."
+    },
+    {
+      "id": 213,
+      "question": "Final ve Bütünleme (Telafi) sınavında hangi ünitelerden sorumlu oluruz?",
+      "answer": "Dijital kitabınız 8 bölüm ise Telafi(Bütünleme) sınavında 8; 10 bölüm ise Telafi(Bütünleme) sınavından 10; 12 bölüm ise Telafi(Bütünleme) sınavından 12; 14 bölüm ise Telafi(Bütünleme) sınavından 14 bölümden sorumlu olursunuz. Öğrenciler Telafi(Bütünleme) sınavlarında dersin tüm bölümlerinden sorumlu olmaktadır"
+    },
+    {
+      "id": 214,
+      "question": "Mezuniyete üç ders sınavında hangi ünitelerden sorumlu oluruz?",
+      "answer": "Dijital kitabınız 8 bölüm ise Mezuniyete üç ders sınavında  8; 10 bölüm ise Mezuniyete üç ders sınavında  10; 12 bölüm ise Mezuniyete üç ders sınavında  12; 14 bölüm ise Mezuniyete üç ders sınavında  14 bölümden sorumlu olursunuz. Öğrenciler Mezuniyete üç ders sınavında  dersin tüm bölümlerinden sorumlu olmaktadır"
+    },
+    {
+      "id": 215,
+      "question": "Müfredat listesine nereden ulaşabilirim?",
+      "answer": "Tüm AUZEF programlarının müfredatına ilgili programın sayfasından ulaşabilirsiniz. Müfredat listesine aşağıdaki adımları izleyerek ulaşabilirsiniz; \n- İÜ AUZEF web sitesi olan auzef.istanbul.edu.tr adresine girilir. \n-Girilen sayfanın üst menü bandında bulunan ‘Programlar’ sekmesinden öğrenim türünü gösteren sekmenin üzerine gelip kayıt olunan programın ismine tıklanır. \n-Ekrana gelecek olan yeni sayfa öğrencinin kayıt olduğu programa ait ‘Bölüm Sayfası’ dır. \n- Bölüm sayfasının üst kısmından ‘Dersler’ sekmesine tıklanır. \n-Açılan sayfada ilgili ders, dersin kredi ve AKTS bilgileri yer alır. Aynı sayfa üzerindeki 'Derse' tıklanarak dersler hakkında detaylı bilgiye ulaşılabilir."
+    },
+    {
+      "id": 216,
+      "question": "Türkçe Yeterlilik belgesi almam gerekiyor örnek sınav sorularına ulaşabilir miyim?",
+      "answer": "İSTANBUL ÜNİVERSİTESİ YABANCI DİLLER YÜKSEKOKULU tarafından Türkçe Yeterlilik sınavı yapılmakta olup \"http://cdn.istanbul.edu.tr/FileHandler2.ashx?f=web-sitesi-icin-ornek-sinav-yeni.pdf\" buradan ve \"https://yabancidiller.istanbul.edu.tr/tr/duyuru/turkce-yeterlilik-sinavi-ornegi-turkish-proficiency-exam-simple-770053004F00310033006F00700061006E0062007A0039007900700046006200610041004F003200370077003200\" buradan örnek sınav sorularına ulaşabilirsiniz."
+    },
+    {
+      "id": 217,
+      "question": "Başarı notunun belirlenmesinde ara sınavın (vize) etki oranı % kaçtır.",
+      "answer": "Başarı notunun belirlenmesinde ara sınavın (vize) etki oranı % 30 dur."
+    },
+    {
+      "id": 218,
+      "question": "Bitirme (Final) sınavına giremedim telafi sınavına girebilir miyim?",
+      "answer": "Bitirme(Final) sınavına herhangi bir sebepler giremeyen öğrenciler telafi sınavına girebilmektedir. Bitirme(Final) sınavına girememiş olmanız telafi sınavına giriş yapmanıza engel teşkil etmez."
+    },
+    {
+      "id": 219,
+      "question": "İstanbul Üniversitesi not dönüşüm tablosuna nereden ulaşabilirim?",
+      "answer": "İstanbul Üniversitesi yüzlük not dönüşüm tablosuna \"https://cdn.istanbul.edu.tr/FileHandler2.ashx?f=donusum-tablosu.pdf\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 220,
+      "question": "Lisede okurken staj yaptım, zorunlu stajdan muaf olabilir miyim?",
+      "answer": "Lise öğrenimi sırasında yapılan stajlar staj muafiyeti için geçerli değildir."
+    },
+    {
+      "id": 221,
+      "question": "Sınav sorusuna nasıl itiraz edebilirim?",
+      "answer": "Sınav sorularına itiraz, sınavların bitiminden itibaren; 2 (iki) iş günü içinde aksis.istanbul.edu.tr adresindeki AUZEF Öğrenme Yönetim Sistemi üzerinden yapılmaktadır. Bu sistemin haricinde bildirilen soru itirazları dikkate alınmamaktadır. \n \nSoru itiraz süreci sona erdikten sonra, itirazda bulunulan sorular, ilgili dersin öğretim elamanı tarafından değerlendirilmektedir."
+    },
+    {
+      "id": 222,
+      "question": "Bitirme (Final) sınavlarına nasıl giriş yaparım?",
+      "answer": "Öğrencilerimiz, sınav giriş belgelerini \"https://auzefsinav.istanbul.edu.tr/\" buradan AKSİS kullanıcı adı ve şifresi ile giriş yaparak alır. Sınav merkezlerine sınav giriş belgesi ve T.C. Kimlik Kartı ya da sınav giriş belgesinde belirtilen diğer muadil kimlik kartları ile girebilirler. Sınav giriş belgeleri sınavdan 1 hafta önce \"https://auzefsinav.istanbul.edu.tr/\" burada yayınlanır."
+    },
+    {
+      "id": 223,
+      "question": "Edu uzantılı öğrenci maili nasıl alınır?",
+      "answer": "Öğrenci e-Posta Başvurusu için \"https://bilgiislem.istanbul.edu.tr\" burada üst bantta yer alan, \"Hizmetler\" \"e-Posta Hizmetleri\" \"Öğrenci e-Posta \" alanından mail adresinizi alabilirsiniz. E-Posta Soru ve Sorunlarınız için; Öğrenci E-Posta: \"https://ogr.iu.edu.tr/\" https://ogr.iu.edu.tr/ adreslerinden “Talep/Destek” formunu doldurarak sorunlarınızı iletebilirsiniz."
+    },
+    {
+      "id": 224,
+      "question": "Bitirme (Final) sınavında hangi ünitelerden sorumlu oluruz?",
+      "answer": "Dijital kitabınız 8 bölüm ise Bitirme(Final) sınavında 8; 10 bölüm ise Bitirme(Final) sınavından 10; 12 bölüm ise Bitirme(Final) sınavından 12; 14 bölüm ise Bitirme(Final) sınavından 14 bölümden sorumlu olursunuz. Öğrenciler Bitirme(Final) sınavlarında dersin tüm bölümlerinden sorumlu olmaktadır"
+    },
+    {
+      "id": 225,
+      "question": "AUZEF Mobil uygulamasında hangi tür içerikler yayınlanıyor?",
+      "answer": "AUZEF Mobil’de bir derse ait ders kitabı, sunum dosyaları ve videolar yayınlanmaktadır."
+    },
+    {
+      "id": 226,
+      "question": "Ödeyeceğim harç miktarına nereden ulaşabilirim?",
+      "answer": "Materyal ücretlerine \"https://auzef.istanbul.edu.tr/tr/content/donem-baslangici/materyal-ucretleri\" https://auzef.istanbul.edu.tr/tr/content/donem-baslangici/materyal-ucretleri adresinden ulaşabilirsiniz."
+    },
+    {
+      "id": 227,
+      "question": "Çocuk Gelişimi açık öğretim ön lisans programında zorunlu staj var mı?",
+      "answer": "Çocuk Gelişimi Açıköğretim Ön Lisans programında zorunlu staj bulunmamaktadır. Ancak kendi ihtiyaç ve istekleri doğrultusunda Çocuk Gelişimi Stajını yapmak isteyen öğrencilerimiz staj takviminde belirtilen başvuru tarihleri arasında staj başvurusu  yapabileceklerdir."
+    },
+    {
+      "id": 228,
+      "question": "Sınav giriş belgemi nereden alabilirim?",
+      "answer": "Öğrencilerimiz, sınav giriş belgelerini \"https://auzefsinav.istanbul.edu.tr/\" buradan AKSİS kullanıcı adı ve şifresi ile giriş yaparak alır. Sınav giriş belgeleri sınavdan bir hafta önce \"https://auzefsinav.istanbul.edu.tr/\" buradan da yayınlanır."
+    },
+    {
+      "id": 229,
+      "question": "Bir yükseköğretim kurumundan (ön lisans/lisans) mezun olanların, ÖSYM ile yeniden yükseköğretime kayıt yaptırmaları halinde askerlikleri erteleniyor mu?",
+      "answer": "7179 sayılı Askeralma Kanunu’nun 20’nci madde 2’nci fıkrası a bendi gereğince; yükümlülerin bitirdiği okulun alt veya aynı seviyesinde bir okula yerleştirilmesi halinde öğrenciliğinden dolayı askerlikleri ertelenmemektedir. Yerleştirildiği okulun, öğrenim düzeyi bitirdiği okuldan daha yukarı seviyede ise askerliği azami yaş sınırı sonuna kadar ertelenmektedir.\nÖrnek 1: Aksaray Üniversitesi Meslek Yüksekokulu Bilgisayar Programcılığından 15.06.2017 tarihinde mezun olan yükümlünün, Anadolu Üniversitesi Meslek Yüksekokulu İşletme Bölümüne 15.09.2017 tarihinde kayıt yaptırması halinde öğrenciliğinden dolayı erteleme hakkı yoktur.\nÖrnek 2: Hacettepe Üniversitesi İşletme Fakültesi İşletme Bölümünden 16.06.2017 tarihinde mezun olan yükümlünün, Anadolu Üniversitesi İşletme Fakültesi iktisat bölümüne 15.09.2017 tarihinde kayıt yaptırması halinde öğrenciliğinden dolayı erteleme hakkı yoktur."
+    },
+    {
+      "id": 230,
+      "question": "Endüstri Mühendisliği programı öğrencisiyim zorunlu staj hakkında bilgi almak istiyorum.",
+      "answer": "ÜRETİM STAJI\nEndüstri Mühendisliği Uzaktan Öğretim Lisans Programı için, 3.sınıfın bahar döneminde (6. yarıyılda) ‘Üretim Stajı’ bulunmaktadır. Stajın süresi 20 iş günüdür ve değerlendirme başarılı ya da başarısız olarak yapılmaktadır.\n\nStajın Yapılacağı Alan ve Kurumlar\nÜretim stajının, üretim sektöründe faaliyet gösteren bir işletmede ya da üretim sektöründe olmasa da kısmen üretimin gerçekleştirildiği bir firmada yapılması gerekmektedir.\n\nENDÜSTRİ MÜHENDİSLİĞİ STAJI\nEndüstri Mühendisliği Uzaktan Öğretim Lisans Programı için, 4. sınıfın bahar döneminde (8. yarıyılda) ‘Endüstri Mühendisliği Stajı’ bulunmaktadır. Stajın süresi 20 iş günüdür ve değerlendirme başarılı ya da başarısız olarak yapılmaktadır.\n\nStajın Yapılacağı Alan ve Kurumlar\nEndüstri Mühendisliği Stajı tüm öğrencilerimizin gerçekleştirmesi zorunlu olan kapsamlı bir stajdır. Staj yapılan yerde “en az bir mühendisin çalışıyor olması” şartı bulunmaktadır."
+    },
+    {
+      "id": 231,
+      "question": "Telafi (Bütünleme) sınavında merkez değişikliği yapabilir miyim?",
+      "answer": "Sınav merkezi tercih sistemi her sınav dönemi öncesinde öğrencilerimizin tercihlerini güncelleyebilmeleri için açılmaktadır. Öğrenciler, sınav merkezi tercih işlemlerini her sınav öncesi yönetimce belirlenen ve AUZEF web sayfasında duyurulan tarihler arasında gerçekleştirmelidir. Sınav merkezi tercihi belirlenen tarih aralığında \"https://auzefsinav.istanbul.edu.tr\" buradan öğrenciler tarafından yapılacaktır. Sınav merkezi tercihi aşamasında engelli veya hükümlü olan öğrencilerin engel durumları ile ilgili bilgileri hatasız olarak bildirmeleri gerekmektedir."
+    },
+    {
+      "id": 232,
+      "question": "Staj başvurusunu ne zaman ve nereden yapabilirim?",
+      "answer": "Staj takvimi ve işlemleri için \"https://auzef.istanbul.edu.tr/\" buradan ilgili tarihlerde duyuru yapılmaktadır."
+    },
+    {
+      "id": 233,
+      "question": "Başarı notunun belirlenmesinde bitirme (final) sınavının etki oranı % kaçtır.",
+      "answer": "Başarı notunun belirlenmesinde bitirme(final) sınavının etki oranı % 70 tir."
+    },
+    {
+      "id": 234,
+      "question": "Uzaktan öğretim tezsiz yüksek lisans öğrencisiyim Ders materyali sistemine nereden giriş yapabilirim",
+      "answer": "Uzaktan öğretim tezsiz yüksek lisans programı öğrencileri  oys.istanbul.edu.tr adresinden sisteme giriş sağlamaktadır."
+    },
+    {
+      "id": 235,
+      "question": "Yatay geçiş yapacağım \"Yatay Geçişe Engel Olmadığına Dair Belgeyi\" nereden alabilirim?",
+      "answer": "Yatay Geçişe Engel Olmadığına Dair Belgeyi AKSİS belgeler alanından talep edebilirsiniz."
+    },
+    {
+      "id": 236,
+      "question": "Telafi sınavında DD DC harf notlu derslerimden sınava girdim düşük aldım hangi notum geçerli olur?",
+      "answer": "DD ve DC notu olan derslerden telafiye giren öğrenci FF alırsa sınav notu FF olarak kalır. En son aldığınız not geçerli olmaktadır."
+    },
+    {
+      "id": 237,
+      "question": "Zorunlu stajım var stajdan muaf olabilir miyim?",
+      "answer": "Zorunlu stajı bulunan programlarda okuyan öğrencilerden, ilgili alanlarda olmak koşulu ile çalışanlar ve daha önce staj yapmış olanlar staj muafiyetine başvurabilirler. Staj muafiyet işlemleri ve kılavuzu için \" https://cdn.istanbul.edu.tr/FileHandler2.ashx?f=staj-muafiyet-kilavuzu.pdf\" buraya tıklayınız. Zorunlu stajı bulunan programlar • Hemşirelik (Açık öğretim Lisans Tamamlama) • Endüstri Mühendisliği (Uzaktan Eğitim Lisans Tamamlama) • Coğrafi Bilgi Sistemleri (Uzaktan Eğitim Ön lisans) • Bankacılık ve Sigortacılık (Uzaktan Eğitim Ön lisans) • Dış Ticaret Programı (Uzaktan Eğitim Ön lisans) • İş Sağlığı ve Güvenliği (Açık öğretim Lisans) • Laborant ve Veteriner Sağlık (Açık öğretim Ön lisans) • Sosyal Hizmet (Açık öğretim Lisans Tamamlama) dır."
+    },
+    {
+      "id": 238,
+      "question": "Formasyon Nedir? AUZEF’te formasyon eğitimi bulunuyor mu?",
+      "answer": "Formasyon; eğitim fakültesi mezunu olmayan kişilerin öğretmen olabilmelerini sağlayan bir belgedir. İstanbul Üniversitesi AUZEF kapsamında formasyon eğitimi bulunmamaktadır.\nFormasyon eğitimi, Üniversitelerin Eğitim Fakültesi, Eğitim Bilimleri Fakültesi ve/veya ilgili Fakültelerinin Eğitim Bilimleri Bölümlerinin altında yapılandırılabilir. İstanbul Üniversitesinde Eğitim Fakültesi bulunmamaktadır."
+    },
+    {
+      "id": 239,
+      "question": "Kaç Dönem Kayıt Yenilemezsem Kaydım Silinir?",
+      "answer": "Açıköğretim Öğrencileri İçin;Üst üste dört (4) dönem katkı payı veya öğrenim ücretinin ödenmemesi ile kayıt yenilenmemesi nedeniyle YÖK'ün 2547 sayılı kanununun 44/C maddesi kapsamında öğrencilerin ilişikleri kesilir.Uzaktan Öğretim İçin;Üst üste sekiz (8) dönem katkı payı veya öğrenim ücretinin ödenmemesi ile kayıt yenilenmemesi nedeniyle YÖK'ün 2547 sayılı kanununun 44/C maddesi kapsamında yetkili kurullarının kararı ve Yükseköğretim Kurulunun onayı ile öğrencilerin ilişikleri kesilebilir."
+    },
+    {
+      "id": 240,
+      "question": "Onur / Yüksek Onur belgemi nasıl alabilirim?",
+      "answer": "AUZEF’ten mezun olan öğrencilerden AGNO’su 3.00–3.49 arasında olan öğrenciler Onur Belgesi; 3.50–4.00 arasında olan öğrenciler ise Yüksek Onur Belgelerini  AKSİS 'Belge Talepleri' alanından e-imzalı olarak alabilmektedir."
+    },
+    {
+      "id": 241,
+      "question": "Kayıt dondurma ile ilgili bilgi alabilir miyim?",
+      "answer": "Kayıt dondurma talepleri güz ve bahar olmak üzere, kayıt yenileme tarih aralıklarında AKSİS' ten alınır.Kayıt dondurma her defasında, bir veya iki yarıyıl/bir yıl olmak üzere öğrencinin toplamda normal öğrenim süresinin en çok yarısı kadar olabilir.  \nKayıt dondurulduğunda, öğrencinin öğrenim süresi ve ek süresi işlemez, öğrenci ilgili dönemler için izinli sayılır ve eğitim ve öğretim faaliyetleri ile sınavlara katılamaz.  \nKayıt dondurma süresi sona erdiğinde, öğrenci kaldığı yerden eğitim ve öğretimine devam eder. Kayıt dondurma işlemi, içinde bulunulan eğitim-öğretim yılında en az bir, en fazla iki yarıyıl için talep edilebilir. Örneğin 2022-2023 eğitim-öğretim yılının güz yarıyılında kayıt dondurmak için talep oluşturan öğrenciler sadece güz dönemi için 1 dönemlik ya da Güz + Bahar dönemi olarak 2 dönemlik kayıt dondurma talep edebilirler.  \nBahar döneminde talep oluşturacak öğrenciler sadece bahar dönemini dondurmak için talepte bulunabilirler."
+    },
+    {
+      "id": 242,
+      "question": "Nasıl kayıt dondurabilirim?",
+      "answer": "Fakültemizde kayıt dondurma başvuruları sadece kayıt yenileme tarih aralığında yapılabilmektedir. Kayıt dondurma talebinde bulunabilmek için herhangi bir neden belirtmeksizin AKSİS' e (aksis.istanbul.edu.tr) giriş yapılarak işleminizi başlatabilirsiniz. AKSİS \"AUZEF Öğrenme Yönetim Sistemi\" \"Başvurularım\" \"Kayıt Dondur/Sil Başvuruları\" alanına tıklanır. \"Yeni Başvuru\" dan uygun seçenekler tercih edilir. Başvuru nedeni alanı doldurulur. Doküman ekle bölümüne kayıt dondurma dilekçesi imzalı olarak yüklenir. Kaydet butonuna tıklanarak başvuru işlemi tamamlanır. Kayıt yenileme tarihleri dışında yapılan başvurular ve imzasız yüklenen dilekçeler reddedilecektir. Kayıt dondurma dilekçesine \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/dilekce-ornekleri---basvurular\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 243,
+      "question": "Kaydımı dondurmuştum, tekrar nasıl açtırabilirim?",
+      "answer": "Kayıt dondurma işlemi sadece talep edilen dönemler için uygulanır. Yeni dönemde kayıt açtırmak için öğrencilerin herhangi bir işlem yapması gerekmez. Güz ve bahar olmak üzere her iki dönem içinde kayıt dondurma talebinde bulunmuş öğrencilerin, bahar döneminde öğrenimlerine devam etmek istemeleri durumunda fakülteye ıslak imzalı dilekçe ile başvuru yapmaları gerekmektedir."
+    },
+    {
+      "id": 244,
+      "question": "Kaydımı nasıl sildirebilirim?",
+      "answer": "Kayıt sildirme başvurunuzu AKSİS üzerinden eğitim yılı içerisinde herhangi bir tarihte yapabilirsiniz. Kayıt sildirme talebinde bulunabilmek için AKSİS' e (aksis.istanbul.edu.tr) giriş yapılır. \"AUZEF Öğrenme Yönetim Sistemi\" \"Başvurularım\" \"Kayıt Dondur/Sil Başvuruları\" alanına tıklanır. \"Yeni Başvuru\"dan uygun seçenekler tercih edilir. Başvuru nedeni alanı doldurulur. Doküman ekle bölümüne kayıt sildirme dilekçesi imzalı olarak yüklenir. Kaydet butonuna tıklanarak başvuru işlemi tamamlanır. İmzasız yüklenen dilekçeler başvurunun reddedilmesine neden olur. Kayıt sildirme dilekçesine \"https://auzef.istanbul.edu.tr/tr/content/ogrenci-islemleri/dilekce-ornekleri---basvurular\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 245,
+      "question": "Kaydımı sildirdim; ancak kaydımı tekrar açtırmak istiyorum ne yapabilirim?",
+      "answer": "Kayıt sildirme başvurusu, herhangi bir sebeple fakültemizdeki öğrenimine son vermek isteyen öğrencilerimize yönelik hazırlanmıştır. Kayıt silme başvurusu geri döndürülemez bir işlem olduğu için başvuru yapmadan önce dikkatli karar verilmelidir."
+    },
+    {
+      "id": 246,
+      "question": "Kayıt sildirme başvurumun sonucunu nasıl öğrenebilirim?",
+      "answer": "Kayıt sildirme başvuruları öğrenci işleri tarafından incelendikten sonra, başvuru sonucu öğrencilerin dilekçelerinde belirtmiş olduğu GSM numarasına SMS olarak bildirilmektedir. Kayıt silme işlemi sonunda AKSİS' e ilgili öğrencinin statüsü \"AYRILDI\" olarak işlenir."
+    },
+    {
+      "id": 247,
+      "question": "Yaz okulunda en fazla kaç kredilik ders alabilirim?",
+      "answer": "Alınacak dersler bir yaz döneminde en fazla 1O krediyi (ulusal) geçemez. Bir öğrenci, eğitimi süresince yaz okulundan toplamda en fazla 20 kredilik (ulusal) ders alabilir."
+    },
+    {
+      "id": 248,
+      "question": "Yaz okulunda ders alma koşulları nelerdir?",
+      "answer": "Ders almayı talep eden öğrencilerin talepleri, ilgili birim yönetim kurulunda değerlendirilerek, uygun görülmesi halinde onaylanır.  \nAlınan derslerin ulusal ya da AKTS kredileri, ilgili birimdeki okutulan derslerle aynı ya da daha fazla olmalıdır. \nDers içerikleri en az %70 uyumlu olmalıdır. \nAlınacak dersler bir yaz döneminde en fazla 1O krediyi (ulusal) geçemez. Bir öğrenci, eğitimi süresince yaz okulundan toplamda en fazla 20 kredilik (ulusal) ders alabilir.  \nAlt yarıyıllardan veya bulunduğu yarıyıldan FF, FD dersi/dersleri olan öğrenciler başka üniversitelerin yaz okullarından bu dersi/dersleri alabilir.  \nAlt yarıyıllardan veya bulunduğu yarıyıldan ders programında olduğu halde hiç almadığı dersi/dersleri bulunan öğrenciler başka üniversitelerin yaz okullarından bu dersi/dersleri alabilir. \nAlt yarıyıllardan ya da bulunduğu yarıyıldan koşullu başarılı, DD-DC, harf notuna sahip öğrenciler başka üniversitelerin yaz okullarından notlarını yükseltmek amacıyla bu dersi/dersleri alabilir."
+    },
+    {
+      "id": 249,
+      "question": "Yaz okulunda DD-DC harf notlu derslerimin notunu yükseltebilir miyim?",
+      "answer": "Alt yarıyıllardan ya da bulunduğu yarıyıldan koşullu başarılı, DD-DC, harf notuna sahip öğrenciler başka üniversitelerin yaz okullarından notlarını yükseltmek amacıyla bu dersi/dersleri tekrar alabilir."
+    },
+    {
+      "id": 250,
+      "question": "AUZEF'te yaz okuluna kayıt olmak istiyorum.",
+      "answer": "İstanbul Üniversitesi'nde yaz okulu uygulaması bulunmamaktadır. Farklı üniversitelerin yaz okulundan ders alacak öğrencilerimiz, yaz okulu alacakları üniversitelerden aldıkları e-imzalı veya ıslak imzalı mühürlü ders içeriği belgesini AKSİS' e yüklemelidir. Yaz okulu ile ilgili kılavuz ve duyurulara  \"https://auzef.istanbul.edu.tr \" buradan ulaşabilirsiniz. Başvurularına, olumlu dönüş yapılan öğrenciler ders notlarını fakülteye ileterek ilgili derslerin notlarını AKSİS sistemine işletir. Ayrıntılı bilgiye  \"http://cdn.istanbul.edu.tr/statics/ulastirmalojistik.istanbul.edu.tr/wp-content/uploads/2016/06/Yaz-Okulu-Esaslar%C4%B1.pdf\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 251,
+      "question": "Yaz okulundan başarıyla geçtiğim notları AUZEF' e nasıl iletebilirim?",
+      "answer": "Yaz okulundan başarı ile derslerini vermiş olan öğrencilerin, ders notlarının sisteme işlenmesi için ilgili evraklarının(onaylı imzalı) dersi aldıkları üniversite ya da kendileri tarafından fakülteye posta kargo veya elden teslim edilmesi gerekmektedir."
+    },
+    {
+      "id": 252,
+      "question": "Mezuniyetim ne zaman sistemde görünür?",
+      "answer": "Mezuniyet için gerekli koşulları sağlayan öğrencilerin mezuniyet işlemleri koşulların sağlandığı son sınavın harf notları ilan edildikten sonraki 15 iş günü içerisinde yapılmaktadır."
+    },
+    {
+      "id": 253,
+      "question": "Akademik Takvime nasıl ulaşabilirim?",
+      "answer": "Akademik Takvim, öğrencilerimizin eğitim hayatını etkilemeyecek şekilde ülke genelinde sınav yapan kurumların sınav takvimleri dikkate alınarak hazırlanır. Yoğun sınav takvimlerinde merkezi sınavlar ile ilgili (DGS, KPSS vb.)  bir çakışma durumda tek oturumdaki saat değişikliği yaparak öğrencilerimizin mağduriyet yaşamamasına özen göstermekteyiz. Akademik takvimimize aşağıdaki linkten ulaşabilirsiniz. \"https://auzef.istanbul.edu.tr/tr/content/akademik-takvim/2023-2024\" https://auzef.istanbul.edu.tr/tr/content/akademik-takvim/2023-2024"
+    },
+    {
+      "id": 254,
+      "question": "Ders seçimi ne zaman yapılacak?",
+      "answer": "Yayınlanmış olan Akademik Takvim de belirtilen ders ekle sil tarihleri arasında ders seçim işlemleri Fakültemiz tarafından yapılacaktır. Ders seçme işlemi sonrası Müfredat ekibimiz tarafından kontroller sağlanılarak öğrencilerimizin materyallere hemen ulaşım sağlaması hedeflenmektedir. \"https://auzef.istanbul.edu.tr/tr/content/akademik-takvim/2023-2024\" https://auzef.istanbul.edu.tr/tr/content/akademik-takvim/2023-2024"
+    },
+    {
+      "id": 255,
+      "question": "Diplomamı ne zaman alabilirim?",
+      "answer": "AUZEF’te 2017 yılından itibaren E-Diploma uygulamasına geçilmiş olup ıslak imzalı matbu diploma verilmemektedir. E-Diplomalar mezuniyet işleminiz sisteme işlendiğinde eşanlı olarak imza sürecine girmektedir. Bu süreç tamamlandığında Aksis - Belgeler kısmında \"Görüntüle\" butonuyla aktif olacaktır."
+    },
+    {
+      "id": 256,
+      "question": "Ders durum bilgisine nasıl ulaşabilirim?",
+      "answer": "Ders durum bilgilerinizi Aksis-Öğrenme Yönetim Sistemine giriş yapıldıktan sonra Eğitim Öğretim İşlemleri'nin altında Müfredat Listesi bölümünden ulaşabilirsiniz Aynı zamanda  transkript belgenizden aldığınız dersler ile programınızdaki ebs.istanbul.edu.tr adresindeki program ders bilgilerinden de karşılaştırma yapabilirsiniz."
+    },
+    {
+      "id": 257,
+      "question": "Sınav yerlerimiz neden çok uzakta?",
+      "answer": "Sınav merkezi öğrenci yerleştirme işlemleri atanacak bölgenin öğrenci yoğunluğuna göre sistematik olarak yapılmaktadır. Bu sebepten oturumlar arasında farklı binalarda yada sizin kendi konumunuza göre uzak bir bina gelebilir. Yerleştirmeler bölge bazında yapılmaktadır. \n \nOturumların planlanmasında çok fazla etken belirleyici olmaktadır. Aldığınız derslerin dönemleri, ortak ders olması vb gibi bu sebepten planlama yapılırken bu kısıtlar üzerinden en uygun plan çıkartılmaktadır. Bazı durumlarda oturumlar arasında ders sayısında farklar çıkabilmektedir."
+    },
+    {
+      "id": 258,
+      "question": "Staj hakkında bilgi alabilir miyim?",
+      "answer": "Staj ile ilgili tüm bilgilere kılavuzlarımızdan ulaşabilirsiniz. Staj Kılavuzu ve Takvimi'ne \"https://auzef.istanbul.edu.tr/tr/duyuru/2023-2024-egitim-ogretim-yili-staj-kilavuzu-ve-staj-takvimi-yayinlanmistir-4600350057002D005F00490059006A0043003000480039007900700046006200610041004F003200370077003200\" buradan ulaşabilirsiniz. Staj Muafiyeti ya da Mazeret kılavuzlarına \"https://auzef.istanbul.edu.tr/tr/duyuru/2023-2024-egitim-ogretim-yili-bahar-yariyili-staj-muafiyeti-kilavuzu-ve-engelli-ogrenci-staj-mazeret-basvuru-kilavuzu-yayinlandi-5800350048006F00670072003000430051006800660039007900700046006200610041004F003200370077003200\" buradan ulaşabilirsiniz."
+    },
+    {
+      "id": 259,
+      "question": "Sınav sonucuna nasıl itiraz edebilirim?",
+      "answer": "Sonuç itirazları, sınava ait sonuçların açıklanmasının ardından 2 iş günü içerisinde aksis.istanbul.edu.tr adresindeki AUZEF Yeni Öğrenme Yönetim Sistemi üzerinden sırasıyla “Sınav İşlemleri - Sınav İtiraz İşlemleri - Sonuç İtiraz” menüleri kullanılarak yapılacaktır. Bu sistemin haricinde bildirilen soru itirazları dikkate alınmayacaktır."
+    },
+    {
+      "id": 260,
+      "question": "Hangi öğrenciler para iadesi başvurusunda bulunabilirler?",
+      "answer": "Engelli, Şehit/Gazi yakını olan öğrencilerle dönem dersi olmadığı halde ödeme yapan öğrenciler, eğitim hakkından yararlanmadan kaydını sildiren öğrenciler iade başvurusunda bulunabilmektedir. Başvurular ilgili birim tarafından kontrol edilerek işleme alınmaktadır. Detaylı ilgiler için linki inceleyiniz. \"Engelli, Şehit/Gazi yakını olan öğrencilerle dönem dersi olmadığı halde ödeme yapan öğrenciler, eğitim hakkından yararlanmadan kaydını sildiren öğrenciler iade başvurusunda bulunabilmektedir. Başvurular ilgili birim tarafından kontrol edilerek işleme alınmaktadır. Detaylı ilgiler için linki inceleyiniz. https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri\" https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri"
+    },
+    {
+      "id": 261,
+      "question": "Harç iadesi için ne yapmalıyım?",
+      "answer": "Aşağıdaki bağlantıda tarif edildiği şekilde iade başvurusu yaptığınız taktirde başvurunuz fakültemiz ilgili birimine ulaştıktan sonra ibraz etmiş olduğunuz belgeler incelenecektir.İbraz edilen belgelerin onaylı nüshaları Döner Sermaye İşletme Müdürlüğüne ve Sağlık Kültür Spor Daire Başkanlığına iletilmekte olup, bu kurumlar tarafından da ayrıca  incelenmekte olduğundan iade işlemleri uzun sürebilmektedir. Fakültemize göndermiş olduğunuz belgelerin eksik/hatalı/uygun bulunmaması durumunda sms ile bilgilendirme yapılmaktadır.\"https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri\" https://auzef.istanbul.edu.tr/tr/content/tanimlar-kosullar/ozel-gereksinimli-ogrenciler-ve-iade-islemleri"
+    },
+    {
+      "id": 262,
+      "question": "İade başvurumun sonucunu öğrenmek için ne yapmalıyım?",
+      "answer": "İade başvurunuzun sonucuyla alakalı bilgi almak için Çözüm Destek Merkezi üzerinden iletişime geçerek bilgi istemeniz gerekmektedir."
+    },
+    {
+      "id": 263,
+      "question": "Mobil uygulamada ders materyalini indiremiyorum. Ne yapmam gerekiyor?",
+      "answer": "Statü durumu \"Devamlı Öğrenci\" olan tüm öğrencilerimizin seçili derslerine ait materyalleri sistemlere yüklenmiştir. Mobil uygulama üzerinden ders materyali görüntüleyemiyorsanız öncelikle AKSİS Statü Durumu'nuzu kontrol ediniz. Statü durumunuz \"Devamlı Öğrenci\" ise mobil uygulamanın güncel sürümünü kontrol edip akabinde uygulamadan çıkış yaparak tekrar giriş yapınız."
+    },
+    {
+      "id": 264,
+      "question": "Soyadım değişti diplomamda değişiklik yapabilir miyim?",
+      "answer": "Diplomada kimlik bilgisi değişikliği yapılması mümkün değildir. Fakat ıslak imzalı bir dilekçeniz ve mahkeme kararıyla birlikte fakültemize başvuru yaptığınız takdirde diplomanızın arka yüzüne şerh düşme işlemi yapılabilecektir. Dilekçenizi fakültemize elden teslim edebilir veya kargoyla gönderebilirsiniz."
+    },
+    {
+      "id": 265,
+      "question": "Sınav soruları çok zordu",
+      "answer": "Sorular hocalarımızın sorumluluğundadır. Materyal olarak sistemde ne yüklendiyse (kitap, ünite özet, video, ünite sonu sorular vb.) hepsinden sorumluluğunuz bulunmaktadır. Hocalarımız ya da soru hazırlayan yetkililerimiz İstanbul Üniversitesi diplomasının ne kadar değerli olduğunun bilincindedir. Materyallerinizin tamamına çalışarak derslerinizde başarılı olacağınıza inancımız tamdır. Sınav sorularının müfredat dahilinde hazırlanması hocaların tasarrufunda olup kolay veya zor soru hazırlanması yönünde herhangi bir telkin veya müdahalede bulunulması mümkün değildir."
+    },
+    {
+      "id": 266,
+      "question": "AUZEF'e nasıl ulaşabilirim?",
+      "answer": "Adresimiz: Maslak Mah. Bilim Sk. Plaza No:5 Sun Plaza B Blok Maslak / Sarıyer / İSTANBUL AUZEF dijital bir fakültedir. Bu adres dışında herhangi bir şubemiz bulunmamaktadır. Çağrı Merkezi hafta içi mesai saatleri arasında hizmet vermektedir. 0(212) 440 00 44 Bunların dışında sosyal medya hesaplarımızdan da bizlere ulaşabilirsiniz. \"https://www.instagram.com/acikveuzaktan/\" https://www.instagram.com/acikveuzaktan/\"https://twitter.com/acikveuzaktan\" https://twitter.com/acikveuzaktan\"https://auzef.istanbul.edu.tr/\" https://auzef.istanbul.edu.tr/"
+    },
+    {
+      "id": 306,
+      "question": "Ders muafiyeti başvurusu nasıl yapılır?",
+      "answer": "Merhaba, ders muafiyeti yalnızca Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. Daha önce öğrenim gördüğünüz yükseköğretim programlarında başarılı olduğunuz diğer dersler için muafiyet talebinde bulunulamaz.\n\nDaha önce bir yükseköğretim programından mezun olduysanız bu ortak zorunlu derslerden muaf sayılırsınız. Hâlen başka bir yükseköğretim programında öğrenciyseniz ve bu derslerden başarılı olduysanız, ilan edilen tarihlerde muafiyet başvurusu yapmanız gerekmektedir.\n\nMuafiyet işlemleri ders seçimlerinden sonra auzef.istanbul.edu.tr adresinde yayımlanan kılavuza göre ve yalnızca AUZEF’e kayıt olunan ilk eğitim-öğretim döneminde gerçekleştirilmektedir. Sonraki dönemlerde muafiyet talebinde bulunulamaz."
+    },
+    {
+      "id": 307,
+      "question": "Kaçıncı sınıfta olduğumu nasıl öğrenebilirim?",
+      "answer": "Merhaba, aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden programınıza ait dönem bilgilerini, almanız gereken dersleri, aldığınız dersleri ve başarılı/başarısız olduğunuz dersleri görüntüleyebilirsiniz. Bu bilgiler üzerinden hangi dönemde olduğunuzu ve öğrenim durumunuzu takip edebilirsiniz."
+    },
+    {
+      "id": 308,
+      "question": "Aktif öğrenci olup olmadığımı nasıl kontrol edebilirim?",
+      "answer": "Merhaba, öğrencilik durumunuzu aksis.istanbul.edu.tr adresine giriş yaptıktan sonra statü bilgileriniz üzerinden görüntüleyebilirsiniz."
+    },
+    {
+      "id": 309,
+      "question": "Öğrenci Bilgi Sistemi'ne (OBS) giriş yapamıyorum, ne yapmalıyım?",
+      "answer": "Merhaba, OBS’ye aksis.istanbul.edu.tr adresi üzerinden giriş yapabilirsiniz. Giriş yapamıyorsanız anlık bir sistem veya bağlantı problemi yaşanıyor olabilir. Bir süre sonra tekrar denemenizi öneriyoruz."
+    },
+    {
+      "id": 310,
+      "question": "Kayıt tarihleri ne zamandır?",
+      "answer": "Merhaba, kayıt tarihleri başvuru türüne göre değişiklik göstermektedir. YKS, İkinci Üniversite, DGS veya diğer kayıt türlerinden hangisi kapsamında kayıt olmak istediğinizi belirtirseniz size uygun bilgiyi paylaşabiliriz. Güncel kayıt tarihleri ve kayıt süreçlerine ilişkin bilgilere web sayfamızdaki “Duyurular” bölümünden ulaşabilirsiniz: auzef.istanbul.edu.tr"
+    },
+    {
+      "id": 311,
+      "question": "Pasif öğrenci ne demektir?",
+      "answer": "Merhaba, “Pasif Öğrenci” statüsü ilgili dönemde kayıt yenileme işleminin yapılmadığını ifade eder. Pasif öğrenci statüsündeyken öğrencilik haklarından yararlanılamaz. Sonraki dönemlerde kayıt yenileme yaparak eğitiminize devam edebilirsiniz. Kayıt yenilenmeyen geçmiş dönemler için geriye dönük borçlandırma yapılmaz. Ancak 4 dönem üst üste kayıt yenilenmemesi durumunda öğrencinin kaydı silinir."
+    },
+    {
+      "id": 312,
+      "question": "Mezun olmak için kaç dersim kaldı?",
+      "answer": "Merhaba, mezuniyet için tamamlamanız gereken kredi/AKTS bilgilerini ve kalan derslerinizi aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden görüntüleyebilirsiniz."
+    },
+    {
+      "id": 313,
+      "question": "Telefon numaramı nasıl güncelleyebilirim?",
+      "answer": "Merhaba, AKSİS sisteminde kayıtlı telefon numaranızın güncellenmesi için Çözüm Merkezi üzerinden talep oluşturabilirsiniz. Talebiniz ilgili birim tarafından incelenerek gerekli güncelleme sağlanacaktır."
+    },
+    {
+      "id": 314,
+      "question": "Çıkmış sınav sorularına ve kitapçıklarına nereden ulaşabilirim?",
+      "answer": "Merhaba, sınav soru kitapçıkları soru itiraz süresi boyunca erişime açılmaktadır. İtiraz süresi sona erdikten sonra kitapçıklar sistemden kaldırılmaktadır. Bu nedenle yalnızca ilgili sınavın itiraz dönemi içerisinde görüntülenebilir."
+    },
+    {
+      "id": 315,
+      "question": "Sisteme giriş yapamıyorum, ne yapmalıyım?",
+      "answer": "Merhaba, AKSİS’e giriş yapamıyorsanız aksis.istanbul.edu.tr adresindeki “Şifremi Unuttum” seçeneğini kullanarak şifrenizi yenileyebilirsiniz. Sorun devam ederse farklı bir tarayıcı veya cihaz üzerinden tekrar denemenizi öneriyoruz."
+    },
+    {
+      "id": 316,
+      "question": "Çözüm Merkezi'ne giriş yapamıyorum, ne yapmalıyım?",
+      "answer": "Merhaba, Çözüm Merkezi’ne auzefcozum.istanbul.edu.tr adresi üzerinden AKSİS kullanıcı adı ve şifrenizle veya e-Devlet ile giriş yapabilirsiniz."
+    },
+    {
+      "id": 317,
+      "question": "Hangi lisans veya ön lisans bölümleri bulunmaktadır?",
+      "answer": "Merhaba, Fakültemizde yer alan güncel lisans ve önlisans programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz."
+    },
+    {
+      "id": 318,
+      "question": "Ön lisans mezunuyum, lisans tamamlama için hangi basamakları izlemeliyim?",
+      "answer": "Merhaba, lisans tamamlama süreci DGS kapsamında yürütülmektedir. Başvuru yapabileceğiniz lisans programları, mezun olduğunuz önlisans programına göre değişmektedir. Geçiş koşulları ve tercih edilebilecek programlar için ÖSYM tarafından yayımlanan güncel DGS kılavuzunu incelemeniz gerekmektedir."
+    },
+    {
+      "id": 319,
+      "question": "Af başvurusu nasıl yapılır?",
+      "answer": "Merhaba, kaydınız silindiyse öğrenci affı kapsamında yeniden başvuruda bulunabilirsiniz. Başvurunuzu basvuru.istanbul.edu.tr adresi üzerinden online olarak gerçekleştirebilirsiniz. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru işlemlerinden önce Öğrenci Affı Başvuru Kılavuzu’nu incelemenizi öneriyoruz."
+    },
+    {
+      "id": 320,
+      "question": "AUZEF'te hangi bölümler bulunmaktadır?",
+      "answer": "Merhaba, Fakültemizde yer alan güncel lisans ve önlisans programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz. Programların aktif/pasif durumları da ilgili sayfada yer almaktadır."
+    },
+    {
+      "id": 321,
+      "question": "Danışman hocama nasıl ulaşabilirim?",
+      "answer": "Merhaba, açıköğretim programlarında öğrencilere bireysel danışman ataması yapılmamaktadır. Akademik ve öğrencilik işlemlerinizle ilgili sorularınız için Çözüm Merkezi üzerinden talep oluşturabilirsiniz."
+    },
+    {
+      "id": 322,
+      "question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+      "answer": "Merhaba, Çözüm Merkezi üzerinden oluşturduğunuz talebin sistemde görünmesi kısa bir süre alabilir. Bir süre sonra “Taleplerim” bölümünü tekrar kontrol etmenizi öneriyoruz. Talebiniz hâlâ görünmüyorsa farklı bir tarayıcı veya cihaz üzerinden yeniden giriş yapabilirsiniz."
+    },
+    {
+      "id": 323,
+      "question": "Ödeme zamanı geçtikten sonra ödeme yapabilir miyim?",
+      "answer": "Merhaba, kayıt yenileme ve ücret ödeme işlemleri yalnızca ilan edilen tarihler arasında yapılabilmektedir. Ödeme süresini kaçırdıysanız ilgili dönem için kayıt yenileme işlemi yapılamaz. Sonraki dönem kayıt yenileme tarihlerini web sayfamızdaki duyurulardan takip edebilirsiniz."
+    },
+    {
+      "id": 324,
+      "question": "Bölümlerin yanında yazan 'pasif' ne anlama gelmektedir?",
+      "answer": "Merhaba, program adının yanında “Pasif” ifadesinin yer alması, ilgili programa yeni öğrenci alımının durdurulduğunu ifade eder. Programda hâlihazırda kayıtlı olan öğrenciler ise eğitimlerine devam edebilirler."
+    },
+    {
+      "id": 325,
+      "question": "Ders saydırma işlemi nasıl yapılır?",
+      "answer": "Merhaba, Fakültemizde ders saydırma/muafiyet işlemleri yalnızca Türk Dili I-II, Yabancı Dil I-II ve Atatürk İlkeleri ve İnkılap Tarihi I-II dersleri için uygulanmaktadır. Daha önce başka bir yükseköğretim programında başarılı olduğunuz diğer dersler için muafiyet talebinde bulunulamaz. Muafiyet işlemleri yalnızca AUZEF’e kayıt olunan ilk eğitim-öğretim döneminde yapılmaktadır."
+    },
+    {
+      "id": 326,
+      "question": "Bölüm değişikliği nasıl yapılır?",
+      "answer": "Merhaba, AUZEF bünyesinde doğrudan bölüm değişikliği yapılamamaktadır. Farklı bir programa geçmek istiyorsanız ilgili programın başvuru veya yatay geçiş koşullarını ayrıca incelemeniz gerekmektedir."
+    },
+    {
+      "id": 327,
+      "question": "Sınavda hesap makinesi kullanabilir miyim?",
+      "answer": "Merhaba, sınavlarda kullanılabilecek hesap makinelerine ilişkin güncel kurallara ve izin verilen özelliklere web sayfamızdan ulaşabilirsiniz: https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/sinavda-uygulanacak-kurallar"
+    },
+    {
+      "id": 328,
+      "question": "Çocuk Gelişimi bölümü kapatıldı mı?",
+      "answer": "Merhaba, Çocuk Gelişimi Programına yeni öğrenci alımı durdurulmuştur. Programda hâlihazırda kayıtlı olan öğrenciler ise eğitimlerine devam edebilirler."
+    },
+    {
+      "id": 329,
+      "question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?",
+      "answer": "Merhaba, Fakültemizde “Tek Ders Sınavı” yerine Mezuniyete Üç Ders Sınavı uygulanmaktadır. Sınav tarihi akademik takvimde, başvuru tarihleri ve başvuru koşulları ise ilgili sınav döneminde yayımlanan duyurularda ilan edilmektedir. Güncel bilgiler için auzef.istanbul.edu.tr adresindeki Akademik Takvim ve Duyurular bölümlerini takip edebilirsiniz."
+    },
+    {
+      "id": 330,
+      "question": "Çözüm Merkezi'nin geri dönüş süresi ne kadardır?",
+      "answer": "Merhaba, Çözüm Merkezi üzerinden oluşturduğunuz talepler genellikle 24 saat içerisinde yanıtlanmaktadır."
+    },
+    {
+      "id": 331,
+      "question": "Öğrenci numaramı nasıl öğrenebilirim?",
+      "answer": "Merhaba, öğrenci numaranızı aksis.istanbul.edu.tr adresine giriş yaptıktan sonra öğrenci bilgileriniz üzerinden görüntüleyebilirsiniz."
+    },
+    {
+      "id": 332,
+      "question": "Uzaktan eğitim programları nelerdir?",
+      "answer": "Merhaba, Fakültemizde yer alan güncel açıköğretim ve uzaktan öğretim programlarını auzef.istanbul.edu.tr/tr/content/programlar/ adresinden inceleyebilirsiniz."
+    },
+    {
+      "id": 333,
+      "question": "Öğrenci affı başvurusu nasıl yapılır?",
+      "answer": "Merhaba, öğrenci affı başvurunuzu basvuru.istanbul.edu.tr adresi üzerinden online olarak gerçekleştirebilirsiniz. Son başvuru tarihi 9 Aralık 2026’dır. Başvuru işlemlerinden önce Öğrenci Affı Başvuru Kılavuzu’nu incelemenizi öneriyoruz."
+    },
+    {
+      "id": 334,
+      "question": "Sınavda kullanılabilecek hesap makineleri hangileridir?",
+      "answer": "Merhaba, sınavlarda kullanılabilecek hesap makinelerine ilişkin güncel kurallara ve izin verilen özelliklere web sayfamızdan ulaşabilirsiniz: https://auzef.istanbul.edu.tr/tr/content/olcme-degerlendirme/sinavda-uygulanacak-kurallar"
+    },
+    {
+      "id": 335,
+      "question": "Çözüm Merkezi'ne talep oluşturamıyorum, ne yapmalıyım?",
+      "answer": "Merhaba, Çözüm Merkezi’nde talep oluştururken kategori seçimi yapılamıyorsa anlık sistem veya tarayıcı kaynaklı bir sorun yaşanıyor olabilir. Farklı bir tarayıcı veya cihaz üzerinden tekrar denemenizi öneriyoruz. Sorun devam ederse ekran görüntüsüyle birlikte tekrar bize iletebilirsiniz."
+    },
+    {
+      "id": 336,
+      "question": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?",
+      "answer": "Merhaba, Çocuk Gelişimi Lisans Programına yeni öğrenci alımı durdurulmuştur. Bu nedenle YKS kapsamında tercih yapılamamaktadır."
+    },
+    {
+      "id": 337,
+      "question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+      "answer": "Merhaba, başarılı olduğunuz derslerin AKTS bilgilerini ve toplam AKTS durumunuzu aos.istanbul.edu.tr adresindeki “Müfredat Bilgileri” bölümünden görüntüleyebilirsiniz."
+    },
+    {
+      "id": 338,
+      "question": "Öğrenci işlerine nasıl ulaşabilirim?",
+      "answer": "Merhaba, öğrenci işleriyle ilgili talepleriniz için AUZEF Çözüm Merkezi üzerinden iletişime geçebilirsiniz: auzefcozum.istanbul.edu.tr"
+    },
+    {
+      "id": 339,
+      "question": "İkinci üniversite kapsamında SGK haklarından yararlanabilir miyim?",
+      "answer": "Merhaba, İkinci Üniversite kapsamında SGK hakları ve bu kapsamdaki resmi öğrencilik işlemleriyle ilgili bilgi için İstanbul Üniversitesi Öğrenci İşleri Daire Başkanlığı ile iletişime geçebilirsiniz."
+    },
+    {
+      "id": 340,
+      "question": "Yaz okulu başvuru iptali nasıl yapılır?",
+      "answer": "Merhaba, yaz okulu başvurusunu ayrıca iptal etmenize gerek bulunmamaktadır. Gerekli evrakların sisteme yüklenmemesi durumunda başvurunuz zaten geçersiz sayılacaktır."
+    },
+    {
+      "id": 341,
+      "question": "Sınav sonuçları ne zaman açıklanır?",
+      "answer": "Merhaba, sınav sonuçları sınav tarihinden sonra ortalama 10 gün içerisinde açıklanmaktadır."
+    },
+    {
+      "id": 342,
+      "question": "Merkezi yatay geçiş başvurusu nasıl yapılır?",
+      "answer": "Merhaba, merkezi yatay geçiş (Ek Madde 1) başvuruları İstanbul Üniversitesi Öğrenci İşleri Daire Başkanlığı tarafından yürütülmektedir. Başvuru tarihleri, kontenjanlar, gerekli belgeler ve başvuru koşulları için Öğrenci İşleri Daire Başkanlığının güncel duyurularını takip etmeniz gerekmektedir."
+    },
+    {
+      "id": 343,
+      "question": "Öğrenci işlerine gönderdiğim dilekçenin sonucunu nasıl öğrenebilirim?",
+      "answer": "Merhaba, öğrenci işlerine gönderdiğiniz dilekçenin sonucunu öğrenmek için AUZEF Çözüm Merkezi üzerinden talep oluşturabilirsiniz: auzefcozum.istanbul.edu.tr"
+    },
+    {
+      "id": 344,
+      "question": "E-Devlet üzerinde üniversite kaydım neden görünmüyor?",
+      "answer": "Merhaba, e-Devlet üzerinde üniversite kaydınız görünmüyorsa AUZEF Çözüm Merkezi üzerinden talep oluşturarak durumunuzun kontrol edilmesini sağlayabilirsiniz: auzefcozum.istanbul.edu.tr"
+    },
+    {
+      "id": 345,
+      "question": "Bütünleme sınavında sınıf geçme puanı kaçtır?",
+      "answer": "Merhaba, bütünleme sınavında sabit bir geçme puanı bulunmamaktadır. Ham Başarı Notu (HBN), ara sınav notunun %30’u ile bütünleme sınavı notunun %70’i alınarak hesaplanır. HBN’si 35’in altında kalan öğrenciler FF harf notu alır. HBN’si 35 ve üzerinde olan öğrencilerin harf notu ise bağıl değerlendirme sistemine göre belirlenir."
+    },
+    {
+      "id": 346,
+      "question": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+      "answer": "Merhaba, Disiplin Cezası Durum Belgesi talebinizin sonucunu Çözüm Merkezi üzerinden takip edebilirsiniz. Talepler genellikle 24 saat içerisinde yanıtlanmaktadır."
+    },
+    {
+      "id": 347,
+      "question": "Staj defterindeki eksikleri düzeltmek için ne kadar süre var?",
+      "answer": "Merhaba, staj defterindeki eksiklerin düzeltilmesine ilişkin süreler yayımlanan staj kılavuzunda belirtilmektedir. Güncel kılavuzu web sayfamızdan inceleyebilirsiniz. Süreçte sorun yaşamanız hâlinde AUZEF Çözüm Merkezi üzerinden talep oluşturabilirsiniz."
+    },
+    {
+      "id": 348,
+      "question": "Oluşturduğum Talepleri nereden görebilirim?",
+      "answer": "Merhaba, oluşturduğunuz talepleri auzefcozum.istanbul.edu.tr  üzerinden kontrol edebilirsiniz."
+    },
+    {
+      "id": 349,
+      "question": "Harç ödemelerinin tarihleri ne zaman?",
+      "answer": "Merhaba, Güz Dönemi için 31 Ağustos- 20 Eylül arasında kayıt yenileme işlemlerini yapabilirsiniz"
+    },
+    {
+      "id": 350,
+      "question": "Mobile giriş yapamıyorum",
+      "answer": "Merhaba, Mobil bakımda çıkmaz ayın son perşembesi haber bekle"
+    }
+  ]
+}
