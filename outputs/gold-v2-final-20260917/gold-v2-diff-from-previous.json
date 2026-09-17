@@ -1,0 +1,1162 @@
+{
+  "changed_case_count": 68,
+  "changes": [
+    {
+      "case_id": 13,
+      "qna_ids": [
+        [],
+        [
+          396
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-01"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 18,
+      "qna_ids": [
+        [],
+        [
+          306
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-306"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 27,
+      "qna_ids": [
+        [],
+        [
+          307
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-307"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 34,
+      "qna_ids": [
+        [],
+        [
+          256
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-256"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 46,
+      "qna_ids": [
+        [],
+        [
+          88
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-88"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 62,
+      "qna_ids": [
+        [],
+        [
+          397
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-02"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 71,
+      "qna_ids": [
+        [],
+        [
+          398
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-03"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 77,
+      "qna_ids": [
+        [],
+        [
+          40
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-40"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 86,
+      "qna_ids": [
+        [],
+        [
+          405
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-10"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 102,
+      "qna_ids": [
+        [],
+        [
+          39
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-39"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 105,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 109,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 110,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 112,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 115,
+      "qna_ids": [
+        [],
+        [
+          215
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "QNA-215"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 119,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 120,
+      "qna_ids": [
+        [],
+        [
+          312
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-312"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 159,
+      "qna_ids": [
+        [],
+        [
+          399
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-04"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 171,
+      "qna_ids": [
+        [],
+        [
+          261
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-261"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 190,
+      "qna_ids": [
+        [],
+        [
+          21
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-21"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 191,
+      "qna_ids": [
+        [],
+        [
+          91
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-91"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 193,
+      "qna_ids": [
+        [],
+        [
+          91
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-91"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 194,
+      "qna_ids": [
+        [],
+        [
+          91
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-91"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 195,
+      "qna_ids": [
+        [],
+        [
+          410
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-11"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 202,
+      "qna_ids": [
+        [],
+        [
+          400
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-05"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 203,
+      "qna_ids": [
+        [],
+        [
+          400
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-05"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 205,
+      "qna_ids": [
+        [],
+        [
+          319
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-319"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 206,
+      "qna_ids": [
+        [],
+        [
+          319
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-319"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 212,
+      "qna_ids": [
+        [],
+        [
+          409
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-15"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 213,
+      "qna_ids": [
+        [],
+        [
+          409
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-15"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 214,
+      "qna_ids": [
+        [],
+        []
+      ],
+      "reason": "v3.1 teyit bekleyen içerik (HOLD)",
+      "refs": [],
+      "status": [
+        "NEEDS_KB",
+        "PENDING_CONTENT"
+      ]
+    },
+    {
+      "case_id": 222,
+      "qna_ids": [
+        [],
+        [
+          215
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "QNA-215"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 223,
+      "qna_ids": [
+        [],
+        [
+          215
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "QNA-215"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 225,
+      "qna_ids": [
+        [],
+        [
+          320
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-320"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 226,
+      "qna_ids": [
+        [],
+        [
+          320
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-320"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 252,
+      "qna_ids": [
+        [],
+        [
+          266
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-266"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 253,
+      "qna_ids": [
+        [],
+        [
+          266
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-266"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 258,
+      "qna_ids": [
+        [],
+        [
+          186
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-186"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 260,
+      "qna_ids": [
+        [],
+        [
+          322
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-322"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 278,
+      "qna_ids": [
+        [],
+        [
+          103
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-103"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 280,
+      "qna_ids": [
+        [],
+        [
+          325
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-325"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 292,
+      "qna_ids": [
+        [],
+        [
+          401
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-06"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 312,
+      "qna_ids": [
+        [],
+        [
+          402
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-07"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 332,
+      "qna_ids": [
+        [],
+        [
+          329
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "QNA-329"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 333,
+      "qna_ids": [
+        [],
+        [
+          406
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-12"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 335,
+      "qna_ids": [
+        [],
+        [
+          171
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-171"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 336,
+      "qna_ids": [
+        [],
+        [
+          171
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-171"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 340,
+      "qna_ids": [
+        [],
+        [
+          403
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-08"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 344,
+      "qna_ids": [
+        [],
+        [
+          322
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-322"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 350,
+      "qna_ids": [
+        [],
+        [
+          322
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-322"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 372,
+      "qna_ids": [
+        [],
+        [
+          94
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-94"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 373,
+      "qna_ids": [
+        [],
+        [
+          94
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-94"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 413,
+      "qna_ids": [
+        [],
+        [
+          336
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-336"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 417,
+      "qna_ids": [
+        [],
+        [
+          320
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-320"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 421,
+      "qna_ids": [
+        [],
+        [
+          337
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-337"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 425,
+      "qna_ids": [
+        [],
+        [
+          14
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-14"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 427,
+      "qna_ids": [
+        [],
+        [
+          337
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-337"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 429,
+      "qna_ids": [
+        [],
+        [
+          404
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-09"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 454,
+      "qna_ids": [
+        [],
+        [
+          314
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-314"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 455,
+      "qna_ids": [
+        [],
+        [
+          314
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-314"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 456,
+      "qna_ids": [
+        [],
+        [
+          151
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-151"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 459,
+      "qna_ids": [
+        [],
+        [
+          407
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-13"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 461,
+      "qna_ids": [
+        [],
+        [
+          150
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-150"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 462,
+      "qna_ids": [
+        [],
+        [
+          408
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-14"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 463,
+      "qna_ids": [
+        [],
+        [
+          408
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "NEW-14"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 482,
+      "qna_ids": [
+        [],
+        [
+          94
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-94"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 496,
+      "qna_ids": [
+        [],
+        [
+          166
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-166"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    },
+    {
+      "case_id": 500,
+      "qna_ids": [
+        [],
+        [
+          346
+        ]
+      ],
+      "reason": "v3.1 içerik kararı + migration sonrası gerçek QnA",
+      "refs": [
+        "EX-346"
+      ],
+      "status": [
+        "NEEDS_KB",
+        "READY"
+      ]
+    }
+  ],
+  "previous": "outputs/gold-v2-sources-20260917/gold-v2-draft.json",
+  "status_transitions": {
+    "NEEDS_KB→PENDING_CONTENT": 1,
+    "NEEDS_KB→READY": 67
+  }
+}

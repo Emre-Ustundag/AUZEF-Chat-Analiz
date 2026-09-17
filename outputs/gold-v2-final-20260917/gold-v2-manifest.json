@@ -1,0 +1,49 @@
+{
+  "alias_baseline_sha256": "4ad878add0c06d1badee7e08b7f5cf79ff269678eec88d5379062183acc58f46",
+  "builder_sha256": {
+    "scripts/build_gold_v2.py": "778e03f8edc809cdcf3e1148aeb2d6fd542fed26f561586bdf3ea02fa0c5864d",
+    "scripts/build_gold_v2_final.py": "248f39012989028700760e1c98a790aef0ebec817243d901e4ee4fad96b42cae",
+    "scripts/dry_run_kb_consolidation.py": "f3cdc6eaa3e63075e1285aa4d684d4507b276cf5318f8a0e31c59b5782a02747"
+  },
+  "canonical_baseline_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+  "chatbot_commit": {
+    "chatbot_repo_head": "e2985358604bd38b30bf91c84c9309f6c61cd551",
+    "from_migration_report": "e2985358604bd38b30bf91c84c9309f6c61cd551"
+  },
+  "counts": {
+    "CONTEXT_REQUIRED": 25,
+    "PENDING_CONTENT": 1,
+    "READY": 490
+  },
+  "created_at": "2026-09-17T18:30:00Z",
+  "dataset_version": "gold-v2-final",
+  "frozen": true,
+  "migration_report_sha256": "f74f2642e0e6503f93ad766421c343fc7d2e29d879b6ce4e2fc564531d50bd67",
+  "outputs_sha256": {
+    "GOLD-V2-REPORT.md": "dfcdcd98cca82f15eb5bffc71af7087ed30fe4e990c914bc0d98827f6200f329",
+    "gold-v2-all.jsonl": "32b05e290024b1a47326bb3ba9abe3c616dc04db6c632ca31de2d6d6c8d3cd88",
+    "gold-v2-context-required.jsonl": "82f1636d20706e6fce148c5bdd5cc116854ba4c67bdad0bcfea3f2a0866f562e",
+    "gold-v2-diff-from-previous.json": "a2e610109bbbb9180fc22eaab68e4c655e3c09aaa97b1f5d76a995dc17034203",
+    "gold-v2-pending.jsonl": "be5029777127c52109e48fb015e6aa95dcd5482800bc4688c9072b5c32db1fac",
+    "gold-v2-ready.jsonl": "acd18c2ce96e38463a9cd6d7db979220170ab8d69b13b0ca8dca0169756a0a0e",
+    "gold-v2-report.json": "7f7f4b9b8389272752131dc8124feaf319e39924a2c8eb29cc3f95fa1d224dc3"
+  },
+  "plan_sha256": "6d14c9f159a21328ebd7be1571a1d80747187a3534b66a164034316a878f630b",
+  "routing_guard_baseline_sha256": "663bf2caaad679b7ce9e1d23cb0b4f18af535f88934475a2c327551115cbe673",
+  "source_files_sha256": {
+    "outputs/gold-v2-sources-20260917/AUZEF-QnA-dogrulanmis-konsolidasyon-v3.1-final-20260917.xlsx": "76e2390d4bda36fc61612119d9dbc7c7790c197841b3ae4b3bbd18da26dba0f5",
+    "outputs/gold-v2-sources-20260917/alias-session-matches.jsonl": "6ff6caffe750033196885ca5d222cc5aa997a298c110ec0d25101d0771ee2670",
+    "outputs/gold-v2-sources-20260917/auzef-inceleme-167-174.raw.json": "33c5c4699b0ab10d67523de2feffb77b0586f0dc16e76d584fc30a97a7ac4c9e",
+    "outputs/gold-v2-sources-20260917/auzef-inceleme-174-174.resolved.json": "c3ebf80ef3b875bcef61d8bd521e258b26e063dce4cea67aae9657d38982dc6c",
+    "outputs/gold-v2-sources-20260917/gold-v2-draft.json": "80d73e4dc6d6d870f6e296494b6e8c94efeaacabd2bcb2c7b038ed78cd454cf0",
+    "outputs/gold-v2-sources-20260917/qna-catalog-20260915.json": "29456a3fcf5ab6f8347026c5206619d432d7bb252ba6e034fb3876e35c876cbf",
+    "outputs/gold-v2-sources-20260917/review-resolutions-v1.json": "3cb47c1930bc70a68bad70cf49066e4eb448bb7998fb9a7a82c66671e1ca001c",
+    "outputs/gold-v2-sources-20260917/validation-resolved.json": "57cacce4df4f91c5ad737812ca26e1f785b1e3d972544b0602fc0e414cb7eb9b",
+    "outputs/gold-v2-sources-20260917/yanit-gold-inceleme-174.xlsx": "c2c61a0d64ebb8d526dda0cd8fc0cbd631dac7304d8522b71bb6e33a8ae2a2f4"
+  },
+  "source_git": {
+    "commit": "3a2b1858e08a852c13cab98eebb03913d1a735de",
+    "tracked_changes": false
+  },
+  "total": 516
+}
