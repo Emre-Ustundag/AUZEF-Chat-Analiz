@@ -1,7 +1,7 @@
 {
   "builder_commit": {
-    "commit": "5025fcfa4a5d073924131045ce281f6ef3fd1625",
-    "tracked_changes": false
+    "commit": "16517062fcbf619b52cd214663e204f0fb62aa95",
+    "tracked_changes": true
   },
   "canonical_baseline_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
   "counts": {
@@ -21,11 +21,11 @@
   "gold_v2_source_commit": "3a2b1858e08a852c13cab98eebb03913d1a735de",
   "kb_migration_report_sha256": "f74f2642e0e6503f93ad766421c343fc7d2e29d879b6ce4e2fc564531d50bd67",
   "outputs_sha256": {
-    "SESSION-GOLD-REPORT.md": "3b0f46b0d827e1230ace3039d48c115bb3a78d71b53ca306732877ab3cdf96a9",
-    "context-resolutions.jsonl": "34614590956bced6746c182f42795adcf47732b1e3609ac1f27aa9041e57d7e5",
-    "session-gold-report.json": "969b9aec818902e0675b26f1dbaff578104d45dd97c47ac71c7f24347a2d47e9",
-    "session-gold-v2.jsonl": "c8a8554b922a2000d74116a7db66c5dd272078be33967b1e3466ed730cc9c617",
-    "session-targets.jsonl": "2f1d3e5cf12efc718188c87a627f482a2176c240a74ab91538748ed3db2a70ad",
+    "SESSION-GOLD-REPORT.md": "bce4904cb8731f5fd80fd48a098a2a0af37c556a95a4f707c18ee69a19cb617c",
+    "context-resolutions.jsonl": "c67cd6da67c21fbd51ba38a6deedf853fb71fb77cd0ac103073f1c2be9685e7e",
+    "session-gold-report.json": "1a370a95dcef9265c3bcf91b55a000372fbc0cc02843f9ded9ed4c6ef78a2c1d",
+    "session-gold-v2.jsonl": "9112395299c58bcc563b8be5144e5a0a5aad7b97981f8aaffaf79e3b8dd059d8",
+    "session-targets.jsonl": "926c8c7f45cbd00e92331ad0e4ca3eb7edf8cd61f51132ad292983f01965ae3c",
     "unresolved-context.jsonl": "690e2f593f28da932bda2c9d0dce3cad8350c86eb484bbccf2ae2f29698f1c34"
   },
   "segmentation_policy": "Ardışık iki mesaj arası 60 dakikadan uzunsa yeni segment başlar (boşlukların %1'inden azı bu eşiği aşıyor).",

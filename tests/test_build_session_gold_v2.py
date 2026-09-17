@@ -35,17 +35,18 @@ def test_duplicate_message_id_dropped_but_repeated_text_kept():
     cleaned, report = dedup_messages([session])
     assert [m["message_id"] for m in cleaned["s1"]] == [5, 6]
     assert report["dropped_duplicate_message_id"] == 1
-    assert report["kept_repeated_user_texts"] == 0
 
 
-def test_same_signature_with_other_message_id_is_kept_as_real_repeat():
+def test_export_duplicate_within_window_dropped_but_later_repeat_kept():
     session = {"session_id": "s1", "messages": [
         message(1, "2025-07-01 10:00:00", "tekrar", message_id=1),
-        message(2, "2025-07-01 10:00:00", "tekrar", message_id=2),
+        message(2, "2025-07-01 10:00:01", "tekrar", message_id=2),   # aynı saniyeler: export kopyası
+        message(3, "2025-07-01 10:05:00", "tekrar", message_id=3),   # dakikalar sonra: gerçek tekrar
     ]}
     cleaned, report = dedup_messages([session])
-    assert len(cleaned["s1"]) == 2
-    assert report["kept_repeated_user_texts"] == 1
+    assert [m["message_id"] for m in cleaned["s1"]] == [1, 3]
+    assert report["dropped_export_duplicates_within_window"] == 1
+    assert report["kept_real_repeats_outside_window"] == 1
 
 
 def test_segmentation_splits_only_on_long_gap():

@@ -95,8 +95,8 @@
     "standalone_sessions": 9,
     "target_match_method": {
       "None": 9,
-      "exact_text": 440,
-      "exact_text_repeated": 57,
+      "exact_text": 448,
+      "exact_text_repeated": 49,
       "gold_message_is_fragment_of_real_turn": 1
     },
     "targets": 507,
@@ -109,8 +109,9 @@
   "dataset_version": "session-gold-v2",
   "dedup": {
     "dropped_duplicate_message_id": 0,
-    "kept_repeated_user_texts": 1200,
-    "kept_same_signature_different_message_id": 1610,
+    "dropped_export_duplicates_within_window": 4679,
+    "export_duplicate_window_seconds": 2,
+    "kept_real_repeats_outside_window": 19199,
     "message_ids_seen_in_multiple_sessions": 0
   },
   "gold": {
@@ -123,29 +124,29 @@
     "manifest_sha256": "3afdb866c27c57bd484711aece60a1fd6907895818825c5fcc4a71662a727e17"
   },
   "segmentation": {
-    "conversational_messages": 25673,
-    "gap_count": 66877,
+    "conversational_messages": 24948,
+    "gap_count": 62198,
     "max_minutes": 25360.85,
-    "median_minutes": 0.06666666666666667,
-    "p90_minutes": 1.3166666666666667,
+    "median_minutes": 0.08333333333333333,
+    "p90_minutes": 1.85,
     "p95_minutes": 5.016666666666667,
-    "p99_minutes": 32.766666666666666,
+    "p99_minutes": 49.96666666666667,
     "rule": "Ardışık iki mesaj arası 60 dakikadan uzunsa yeni segment başlar (boşlukların %1'inden azı bu eşiği aşıyor).",
     "segments_total": 3940,
     "selected_threshold_minutes": 60,
     "sessions_split": 333,
     "source_sessions": 3491,
     "tail_fractions": {
-      "120": 0.007386694977346472,
-      "1440": 0.005233488344273816,
-      "15": 0.011752919538854913,
-      "240": 0.0061605634224023206,
-      "30": 0.01025763715477668,
-      "480": 0.005951223888631368,
-      "60": 0.009151128190558787,
-      "720": 0.005711978707178851
+      "120": 0.00794237756841056,
+      "1440": 0.005627190584906267,
+      "15": 0.01263706228496093,
+      "240": 0.0066240072028039484,
+      "30": 0.011029293546416283,
+      "480": 0.006398919579407698,
+      "60": 0.009839544679893245,
+      "720": 0.006141676581240554
     },
-    "ui_events_dropped": 44695
+    "ui_events_dropped": 40741
   },
   "sources": {
     "alias_matches_blake2b": "f9a0de93056c80826019a4e532c14fcd784fbbb9a8caa25b6c84d10ab9c4e7b2",

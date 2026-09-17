@@ -7,7 +7,7 @@
 - Bağlam vakası çözülen: 17/25
 - Vaka 214 hedef dışında: True
 - Segment kuralı: Ardışık iki mesaj arası 60 dakikadan uzunsa yeni segment başlar (boşlukların %1'inden azı bu eşiği aşıyor).
-- Boşluk dağılımı (dk): medyan 0.07 · p90 1.32 · p95 5.02 · p99 32.77 · max 25360.8
+- Boşluk dağılımı (dk): medyan 0.08 · p90 1.85 · p95 5.02 · p99 49.97 · max 25360.8
 
 ## Blokajlar
 

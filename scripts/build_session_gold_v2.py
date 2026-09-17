@@ -38,6 +38,9 @@ WS = re.compile(r"\s+")
 #: Segment eşiği bu adaylardan seçilir: boşlukların en fazla %1'inin aştığı en küçük değer.
 GAP_CANDIDATES_MINUTES = (15, 30, 60, 120, 240, 480, 720, 1440)
 GAP_TAIL_LIMIT = 0.01
+#: Aynı yön + aynı metin bu kadar saniye içinde yineleniyorsa dışa aktarım kopyasıdır
+#: (kaynakta aynı saniyede ardışık message_id'lerle 3-4 kez kayıtlı satırlar var).
+EXPORT_DUPLICATE_WINDOW_SECONDS = 2
 OUTPUT_FILES = (
     "session-gold-v2.jsonl",
     "context-resolutions.jsonl",
@@ -93,12 +96,12 @@ def dedup_messages(sessions: list[dict[str, Any]]) -> tuple[dict[str, list[dict[
     """Message ID öncelikli tekilleştirme; gerçek kullanıcı tekrarları korunur."""
     cleaned: dict[str, list[dict[str, Any]]] = {}
     dropped_by_message_id = 0
-    repeated_user_texts = 0
-    same_signature_kept = 0
+    dropped_export_duplicates = 0
+    kept_real_repeats = 0
     global_ids: Counter[int] = Counter()
     for session in sessions:
         seen_ids: set[int] = set()
-        signatures: set[tuple[str, str, str, str]] = set()
+        last_seen: dict[tuple[str, str], datetime | None] = {}
         messages = []
         for message in session["messages"]:
             message_id = message.get("message_id")
@@ -108,19 +111,23 @@ def dedup_messages(sessions: list[dict[str, Any]]) -> tuple[dict[str, list[dict[
                     dropped_by_message_id += 1
                     continue
                 seen_ids.add(message_id)
-            signature = (session["session_id"], message["direction"], message["time"], normalize(message["text"]))
-            if signature in signatures:
-                # Aynı imza ama farklı message_id: gerçekten iki kez gönderilmiş olabilir, silinmez.
-                same_signature_kept += 1
-                if message["direction"] == "Kullanıcı":
-                    repeated_user_texts += 1
-            signatures.add(signature)
+            key = (message["direction"], normalize(message["text"]))
+            current = parse_time(message["time"])
+            previous = last_seen.get(key, "missing")
+            if previous != "missing":
+                if previous and current and (current - previous).total_seconds() <= EXPORT_DUPLICATE_WINDOW_SECONDS:
+                    # Aynı saniyede yinelenen kayıt: insan tekrarı değil, dışa aktarım kopyası.
+                    dropped_export_duplicates += 1
+                    continue
+                kept_real_repeats += 1
+            last_seen[key] = current
             messages.append(message)
         cleaned[session["session_id"]] = messages
     return cleaned, {
         "dropped_duplicate_message_id": dropped_by_message_id,
-        "kept_same_signature_different_message_id": same_signature_kept,
-        "kept_repeated_user_texts": repeated_user_texts,
+        "dropped_export_duplicates_within_window": dropped_export_duplicates,
+        "export_duplicate_window_seconds": EXPORT_DUPLICATE_WINDOW_SECONDS,
+        "kept_real_repeats_outside_window": kept_real_repeats,
         "message_ids_seen_in_multiple_sessions": sum(1 for _, count in global_ids.items() if count > 1),
     }
 
