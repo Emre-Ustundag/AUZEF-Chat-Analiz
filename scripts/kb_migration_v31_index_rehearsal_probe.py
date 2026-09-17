@@ -59,6 +59,20 @@ def bind_test_target(name: str):
     return meili, qdrant
 
 
+REAL_TARGET = "__real__"
+
+
+def bind_read_target(name: str):
+    """Salt-okunur doğrulama modları için hedef: test önekli kaynak ya da
+    açıkça ``__real__`` (gerçek index/collection; bu modlar indekse yazmaz)."""
+    if name != REAL_TARGET:
+        return bind_test_target(name)
+    meili, qdrant = providers()
+    if meili.index.uid != REAL_MEILI_INDEX or qdrant.collection_name != REAL_QDRANT_COLLECTION:
+        raise RuntimeError("Gerçek hedef istendi ama provider'lar varsayılan kaynaklarda değil")
+    return meili, qdrant
+
+
 def meili_documents(index) -> list[dict[str, Any]]:
     documents, offset = [], 0
     while True:
@@ -239,13 +253,13 @@ def mode_consistency(payload: dict[str, Any], runner: dict[str, Any]) -> dict[st
     import numpy as np
 
     name = payload["name"]
-    meili, qdrant = bind_test_target(name)
+    meili, qdrant = bind_read_target(name)
     state = db_state(runner)
     if state["database"] != payload["expected_database"]:
         raise RuntimeError(f"Beklenmeyen DB: {state['database']}")
     expected_docs, expected_points = expected_index(state["view"])
     documents = meili_documents(meili.index)
-    points = qdrant_points(qdrant.client, name, with_vectors=True)
+    points = qdrant_points(qdrant.client, qdrant.collection_name, with_vectors=True)
     failures: list[dict[str, Any]] = []
 
     actual_docs = {int(d["id"]): normalize_doc(d) for d in documents}
@@ -339,13 +353,13 @@ NAMED_REGRESSIONS = (
 def mode_migration_assertions(payload: dict[str, Any], runner: dict[str, Any]) -> dict[str, Any]:
     phase = payload["phase"]  # pre | post
     name = payload["name"]
-    meili, qdrant = bind_test_target(name)
+    meili, qdrant = bind_read_target(name)
     state = db_state(runner)
     if state["database"] != payload["expected_database"]:
         raise RuntimeError(f"Beklenmeyen DB: {state['database']}")
     facts = migration_facts(payload, runner)
     documents = meili_documents(meili.index)
-    points = qdrant_points(qdrant.client, name, with_vectors=False)
+    points = qdrant_points(qdrant.client, qdrant.collection_name, with_vectors=False)
     docs_by_id = {int(d["id"]): d for d in documents}
     failures: list[dict[str, Any]] = []
     moves_report = []
@@ -454,7 +468,7 @@ def mode_smoke(payload: dict[str, Any], runner: dict[str, Any]) -> dict[str, Any
     from core.database import SessionLocal
 
     name = payload["name"]
-    bind_test_target(name)
+    bind_read_target(name)
     state = db_state(runner)
     if state["database"] != payload["expected_database"]:
         raise RuntimeError(f"Beklenmeyen DB: {state['database']}")
@@ -597,9 +611,10 @@ def mode_smoke(payload: dict[str, Any], runner: dict[str, Any]) -> dict[str, Any
         backup_aliases_319 = sorted((r["id"], r["query_text"]) for r in payload["backup_snapshot"]["aliases"]
                                     if int(r["qna_id"]) == 319 and int(r["id"]) not in planned_ids)
         live_aliases_319 = sorted((r["id"], r["query_text"]) for r in snapshot["aliases"] if int(r["qna_id"]) == 319)
-        meili, qdrant = bind_test_target(name)
+        meili, qdrant = bind_read_target(name)
         doc_319 = next((dict(d) for d in meili_documents(meili.index) if int(d["id"]) == 319), {})
-        points_319 = [p for p in qdrant_points(qdrant.client, name, with_vectors=False) if int(p.payload["qna_id"]) == 319]
+        points_319 = [p for p in qdrant_points(qdrant.client, qdrant.collection_name, with_vectors=False)
+                      if int(p.payload["qna_id"]) == 319]
         retained = []
         for case, alias_text in sorted((int(k), v) for k, v in payload["retained_319_aliases"].items()):
             retained.append({
@@ -708,6 +723,31 @@ def mode_cleanup(payload: dict[str, Any], runner: dict[str, Any]) -> dict[str, A
     return result
 
 
+def mode_export_baseline(payload: dict[str, Any], runner: dict[str, Any]) -> dict[str, Any]:
+    """Post-migration DB'nin deterministik QnA / alias / guard export'u (salt-okunur)."""
+    from sqlalchemy import text
+
+    state = db_state(runner)
+    if state["database"] != payload["expected_database"]:
+        raise RuntimeError(f"Beklenmeyen DB: {state['database']}")
+    with runner["admin_session"]() as session:
+        tags = {
+            int(row["qna_id"]): sorted(row["tags"] or [])
+            for row in session.execute(text(
+                "SELECT qt.qna_id, ARRAY_AGG(t.name) AS tags FROM qna_tags qt JOIN tags t ON t.id = qt.tag_id GROUP BY qt.qna_id"
+            )).mappings().all()
+        }
+        sequences = {
+            name: dict(session.execute(text(f"SELECT last_value, is_called FROM {name}")).mappings().one())
+            for name in ("qna_id_seq", "qna_queries_id_seq")
+        }
+        session.rollback()
+    snapshot = state["snapshot"]
+    qna = [{**row, "tags": tags.get(int(row["id"]), [])} for row in snapshot["qna"]]
+    return {"snapshot_digest": snapshot["digest"], "qna": qna, "aliases": snapshot["aliases"],
+            "guards": snapshot["guards"], "sequences": sequences}
+
+
 MODES = {
     "fingerprint": mode_fingerprint,
     "create-resources": mode_create_resources,
@@ -717,6 +757,7 @@ MODES = {
     "smoke": mode_smoke,
     "compare-states": mode_compare_states,
     "cleanup": mode_cleanup,
+    "export-baseline": mode_export_baseline,
 }
 
 
