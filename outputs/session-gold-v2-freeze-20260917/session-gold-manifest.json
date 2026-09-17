@@ -1,0 +1,82 @@
+{
+  "builder_commit": {
+    "commit": "1d15139e99b536c40f8bfbddab3bb14eec31f188",
+    "tracked_changes": true
+  },
+  "canonical_baseline_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+  "case_ids": {
+    "excluded_from_eval": [
+      106,
+      199,
+      237,
+      248,
+      416,
+      457,
+      514
+    ],
+    "multi_intent": [
+      71,
+      480
+    ],
+    "pending_content": [
+      214
+    ],
+    "source_missing_hold": [
+      319
+    ]
+  },
+  "counts": {
+    "context_resolved": 17,
+    "context_unresolved": 0,
+    "contextual_targets": 17,
+    "evaluation_ready_cases": 507,
+    "evaluation_sessions": 377,
+    "excluded_from_eval": 7,
+    "first_turn": 336,
+    "follow_up_context_available": 154,
+    "follow_up_context_required": 17,
+    "multi_intent": 2,
+    "pending_content": 1,
+    "source_missing_hold": 1,
+    "standalone_targets": 6,
+    "targets": 507
+  },
+  "created_at": "2026-09-17T21:20:00Z",
+  "dataset_version": "session-gold-v2",
+  "frozen": true,
+  "gold_layer": {
+    "counts": {
+      "CONTEXT_REQUIRED": 17,
+      "EXCLUDED_FROM_EVAL": 7,
+      "PENDING_CONTENT": 1,
+      "READY": 490,
+      "SOURCE_MISSING_HOLD": 1
+    },
+    "dir": "outputs/gold-v2-reviewed-final-20260917",
+    "gold_all_sha256": "2e31fec9ecdb14c1d429a0b75da7185c949512d437e59cc1779003f599638c9c",
+    "layer": "reviewed",
+    "manifest_sha256": "89a4e542b2a378fcb8b221ef05eb2d606c9482ec98cadeeb0c98e98c5b7f66b4",
+    "review_workbook_sha256": "963bcac99b5fb7c470e7fb423b24ee3bf4be4c3d90b3deb133fc718490713552"
+  },
+  "gold_v2_manifest_sha256": "89a4e542b2a378fcb8b221ef05eb2d606c9482ec98cadeeb0c98e98c5b7f66b4",
+  "gold_v2_source_commit": "3a2b1858e08a852c13cab98eebb03913d1a735de",
+  "kb_migration_report_sha256": "f74f2642e0e6503f93ad766421c343fc7d2e29d879b6ce4e2fc564531d50bd67",
+  "normalization_version": "tr-normalize-v2",
+  "outputs_sha256": {
+    "SESSION-GOLD-REPORT.md": "49c5a279fca2f2bfb83e37b0d5bac0e9eb9c50cc3fc75b8f465e824318e64206",
+    "context-resolutions.jsonl": "e11afdfc39e6901bfac72dcf9a6c76b44720deba14dd111588d5f1f2add7a690",
+    "excluded-from-eval.jsonl": "245f1837ec853689968241e26e4e356590c016191c9a36e03c50129690dbb513",
+    "multi-intent-targets.jsonl": "595b3886d2fc4cd353b99d64397e4e64d776b4e10b4e3e08cbbe96e99c46dd2e",
+    "session-gold-report.json": "6e9d153932094827e9eb3feb107341ba70e92597976ff4d91e21ceb008b07bec",
+    "session-gold-v2.jsonl": "7287cf0e666aea9c8fb64323fbdb301a9246c69f99c88f8571b245e983e21fc1",
+    "session-targets.jsonl": "1f905a28d9a08d6a4dc3c619bbc58ac9efa292085bb90bde97c69e46b052b372",
+    "source-missing-hold.jsonl": "6e0f485c797e72bca25fbd864da36184fbf1c90eead2b584832b7bb7ba500fdf",
+    "unresolved-context.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "segmentation_policy": "Ardışık iki mesaj arası 60 dakikadan uzunsa yeni segment başlar (boşlukların %1'inden azı bu eşiği aşıyor).",
+  "session_sources": {
+    "alias_matches_blake2b": "f9a0de93056c80826019a4e532c14fcd784fbbb9a8caa25b6c84d10ab9c4e7b2",
+    "raw_workbook_blake2b": "ed2ab424dcf536366f16bac4d4e88bb08a46f2caf78ece2576ce60bb43dc6ac8",
+    "sessions_extract_blake2b": "19850c3cb4b81069208376a530546d92e585cbd749ad82e0309e244263bff1a2"
+  }
+}

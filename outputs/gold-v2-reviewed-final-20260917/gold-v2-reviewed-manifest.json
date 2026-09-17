@@ -1,0 +1,50 @@
+{
+  "counts": {
+    "CONTEXT_REQUIRED": 17,
+    "EXCLUDED_FROM_EVAL": 7,
+    "PENDING_CONTENT": 1,
+    "READY": 490,
+    "SOURCE_MISSING_HOLD": 1
+  },
+  "created_at": "2026-09-17T21:20:00Z",
+  "decisions": {
+    "context": {
+      "106": "EXCLUDE_FROM_EVAL",
+      "199": "EXCLUDE_FROM_EVAL",
+      "237": "EXCLUDE_FROM_EVAL",
+      "248": "EXCLUDE_FROM_EVAL",
+      "319": "SOURCE_MISSING_HOLD",
+      "416": "EXCLUDE_FROM_EVAL",
+      "457": "EXCLUDE_FROM_EVAL",
+      "514": "EXCLUDE_FROM_EVAL"
+    },
+    "intent": {
+      "62": "KEEP_SINGLE_INTENT",
+      "71": "MARK_MULTI_INTENT",
+      "212": "KEEP_SINGLE_INTENT",
+      "318": "KEEP_SINGLE_INTENT",
+      "436": "KEEP_SINGLE_INTENT",
+      "456": "KEEP_SINGLE_INTENT",
+      "480": "MARK_MULTI_INTENT"
+    }
+  },
+  "kb_canonical_baseline_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+  "layer": "gold-v2-reviewed",
+  "multi_intent_cases": [
+    71,
+    480
+  ],
+  "outputs_sha256": {
+    "gold-v2-reviewed-all.jsonl": "2e31fec9ecdb14c1d429a0b75da7185c949512d437e59cc1779003f599638c9c",
+    "gold-v2-reviewed-excluded.jsonl": "a840e5ddeee533ea73d8ef424a9ca6d1c186ee4fd61a9508b97ec7cf6f2e7ced",
+    "gold-v2-reviewed-hold.jsonl": "379a1b1fcb108f4cf370ecaeabbec69a3a301d39a5b254ee59953f2ebf017958",
+    "gold-v2-reviewed-ready.jsonl": "9f02dde5af3df35462f2d66b34a321a09354da8f3fbced9c82f429e46860286a",
+    "review-decisions.jsonl": "b943ea23b7730be58d94c10c0410da0f23fbe35e6e40e4aa4b181f918eeab23b"
+  },
+  "review_workbook": {
+    "name": "session-gold-human-review-filled.xlsx",
+    "sha256": "963bcac99b5fb7c470e7fb423b24ee3bf4be4c3d90b3deb133fc718490713552"
+  },
+  "source_gold_all_sha256": "32b05e290024b1a47326bb3ba9abe3c616dc04db6c632ca31de2d6d6c8d3cd88",
+  "source_gold_manifest_sha256": "3afdb866c27c57bd484711aece60a1fd6907895818825c5fcc4a71662a727e17"
+}

@@ -16,7 +16,8 @@ from scripts.build_session_gold_v2 import (
     segment_session,
 )
 
-OUTPUT = Path("outputs/session-gold-v2-final-20260917")
+OUTPUT = Path("outputs/session-gold-v2-freeze-20260917")
+REVIEWED_GOLD = Path("outputs/gold-v2-reviewed-final-20260917")
 READY_SOURCES = (EXTRACT_DIR / "sessions-extract.jsonl").exists()
 
 
@@ -95,7 +96,7 @@ def test_context_cases_prefer_an_occurrence_with_real_history():
 class TestBuiltDataset:
     @pytest.fixture(scope="class")
     def built(self, tmp_path_factory):
-        return build(tmp_path_factory.mktemp("session-gold"))
+        return build(tmp_path_factory.mktemp("session-gold"), REVIEWED_GOLD)
 
     def test_no_future_turn_in_context(self, built):
         sessions = {s["evaluation_session_id"]: s for s in built["sessions"]}
@@ -112,15 +113,16 @@ class TestBuiltDataset:
 
     def test_every_ready_case_is_targeted_once(self, built):
         gold = {int(json.loads(l)["case_id"]): json.loads(l) for l in
-                Path("outputs/gold-v2-final-20260917/gold-v2-all.jsonl").read_text(encoding="utf-8").splitlines()}
+                (REVIEWED_GOLD / "gold-v2-reviewed-all.jsonl").read_text(encoding="utf-8").splitlines()}
         ready = {cid for cid, r in gold.items() if r["status"] == "READY"}
         targeted = [t["case_id"] for t in built["targets"] if t["case_id"] in ready]
         assert sorted(targeted) == sorted(ready)
         assert len(targeted) == len(set(targeted))
 
     def test_expected_qna_comes_from_frozen_gold(self, built):
+        # Hedefler artık insan kararlarının uygulandığı reviewed katmandan gelir.
         gold = {int(json.loads(l)["case_id"]): json.loads(l) for l in
-                Path("outputs/gold-v2-final-20260917/gold-v2-all.jsonl").read_text(encoding="utf-8").splitlines()}
+                (REVIEWED_GOLD / "gold-v2-reviewed-all.jsonl").read_text(encoding="utf-8").splitlines()}
         baseline = {int(r["id"]) for r in json.loads(Path(
             "outputs/kb-migration-v3.1-local-apply-20260917/baseline/qna-canonical.json").read_text(encoding="utf-8"))
             if r["status"] == 1}
@@ -153,14 +155,41 @@ class TestBuiltDataset:
 
     def test_rebuild_is_byte_identical(self, tmp_path):
         first, second = tmp_path / "a", tmp_path / "b"
-        build(first)
-        build(second)
+        build(first, REVIEWED_GOLD)
+        build(second, REVIEWED_GOLD)
         for name in ("session-gold-v2.jsonl", "session-targets.jsonl", "context-resolutions.jsonl",
                      "unresolved-context.jsonl", "session-gold-report.json"):
             assert (first / name).read_bytes() == (second / name).read_bytes(), name
 
     @pytest.mark.skipif(not OUTPUT.exists(), reason="Dondurulmuş çıktı yok")
     def test_frozen_outputs_match_rebuild(self, built, tmp_path):
-        build(tmp_path)
+        build(tmp_path, REVIEWED_GOLD)
         for name in ("session-gold-v2.jsonl", "session-targets.jsonl", "context-resolutions.jsonl"):
             assert (tmp_path / name).read_bytes() == (OUTPUT / name).read_bytes(), name
+
+
+@pytest.mark.parametrize(
+    ("upper", "lower"),
+    [
+        ("ÇÖZÜM MERKEZİ", "Çözüm merkezi"),
+        ("İSTANBUL", "istanbul"),
+        ("IŞIK", "ışık"),
+        ("ŞİŞLİ", "şişli"),
+        ("ĞÜÖÇ", "ğüöç"),
+        ("AUZEF Sınav", "auzef sınav"),
+        ("HARÇ ÖDEME GÜNÜ DOLDU MU", "Harç ödeme günü doldu mu"),
+    ],
+)
+def test_turkish_case_pairs_normalize_equal(upper, lower):
+    from scripts.build_session_gold_v2 import normalize as norm
+
+    assert norm(upper) == norm(lower)
+
+
+def test_normalization_keeps_ascii_and_distinct_texts_apart():
+    from scripts.build_session_gold_v2 import normalize as norm
+
+    assert norm("  Merhaba   dünya ") == "merhaba dünya"
+    assert norm("Ders muafiyeti") != norm("Ders kaydı")
+    assert norm("ı") != norm("i")
+    assert norm("İstanbul") == norm("istanbul") != norm("ıstanbul")

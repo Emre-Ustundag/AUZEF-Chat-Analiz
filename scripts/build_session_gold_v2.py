@@ -21,6 +21,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -34,6 +35,9 @@ GOLD_DIR = ROOT / "outputs" / "gold-v2-final-20260917"
 SOURCES = ROOT / "outputs" / "gold-v2-sources-20260917"
 EXTRACT_DIR = ROOT / "outputs" / "session-gold-v2-sources-20260917"
 PENDING_CASE = 214
+STATUS_EXCLUDED = "EXCLUDED_FROM_EVAL"
+STATUS_HOLD = "SOURCE_MISSING_HOLD"
+NON_TARGET_STATUSES = ("PENDING_CONTENT", STATUS_EXCLUDED, STATUS_HOLD)
 WS = re.compile(r"\s+")
 #: Segment eşiği bu adaylardan seçilir: boşlukların en fazla %1'inin aştığı en küçük değer.
 GAP_CANDIDATES_MINUTES = (15, 30, 60, 120, 240, 480, 720, 1440)
@@ -46,6 +50,9 @@ OUTPUT_FILES = (
     "context-resolutions.jsonl",
     "unresolved-context.jsonl",
     "session-targets.jsonl",
+    "excluded-from-eval.jsonl",
+    "source-missing-hold.jsonl",
+    "multi-intent-targets.jsonl",
     "session-gold-report.json",
     "SESSION-GOLD-REPORT.md",
 )
@@ -74,8 +81,23 @@ def parse_time(value: str) -> datetime | None:
         return None
 
 
+#: Türkçe büyük harfler casefold'dan ÖNCE eşlenir: 'İ'.casefold() 'i' + U+0307
+#: (birleşen nokta) üretiyor ve 'ÇÖZÜM MERKEZİ' ile 'Çözüm merkezi' eşleşmiyordu.
+TURKISH_UPPER = str.maketrans({"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç"})
+COMBINING_DOT_ABOVE = "\u0307"
+NORMALIZATION_VERSION = "tr-normalize-v2"
+
+
 def normalize(text: str) -> str:
-    return WS.sub(" ", (text or "")).strip().casefold()
+    """Eşleştirme için kanonik biçim (yalnız karşılaştırmada kullanılır).
+
+    Sıra: NFC → Türkçe büyük harf eşlemesi → casefold → NFC → artakalan
+    birleşen nokta temizliği → boşluk sadeleştirme.
+    """
+    value = unicodedata.normalize("NFC", text or "")
+    value = value.translate(TURKISH_UPPER).casefold()
+    value = unicodedata.normalize("NFC", value).replace(COMBINING_DOT_ABOVE, "")
+    return WS.sub(" ", value).strip()
 
 
 # --------------------------------------------------------------------------
@@ -246,9 +268,13 @@ def turn_record(message: dict[str, Any], turn_index: int) -> dict[str, Any]:
     }
 
 
-def build(output_dir: Path) -> dict[str, Any]:
-    gold = {int(r["case_id"]): r for r in read_jsonl(GOLD_DIR / "gold-v2-all.jsonl")}
-    gold_manifest = json.loads((GOLD_DIR / "gold-v2-manifest.json").read_text(encoding="utf-8"))
+def build(output_dir: Path, gold_dir: Path = GOLD_DIR) -> dict[str, Any]:
+    gold_dir = (ROOT / gold_dir).resolve() if not gold_dir.is_absolute() else gold_dir
+    reviewed = (gold_dir / "gold-v2-reviewed-all.jsonl").exists()
+    gold = {int(r["case_id"]): r for r in read_jsonl(
+        gold_dir / ("gold-v2-reviewed-all.jsonl" if reviewed else "gold-v2-all.jsonl"))}
+    gold_manifest = json.loads(
+        (gold_dir / ("gold-v2-reviewed-manifest.json" if reviewed else "gold-v2-manifest.json")).read_text(encoding="utf-8"))
     alias = {r["alias_id"]: r for r in read_jsonl(SOURCES / "alias-session-matches.jsonl")}
     sessions = read_jsonl(EXTRACT_DIR / "sessions-extract.jsonl")
     extract_report = json.loads((EXTRACT_DIR / "extract-report.json").read_text(encoding="utf-8"))
@@ -295,6 +321,8 @@ def build(output_dir: Path) -> dict[str, Any]:
     for case_id, assignment in assignments.items():
         if assignment["resolution"] != "LOCATED" or case_id == PENDING_CASE:
             continue
+        if assignment["status"] in NON_TARGET_STATUSES:
+            continue  # insan kararıyla test dışı (excluded) ya da kaynağı yok (hold)
         if assignment["status"] == "CONTEXT_REQUIRED" and assignment["prior_user_turns"] == 0:
             continue  # önünde gerçek kullanıcı turn'ü yok; uydurma yapılmaz
         targets_by_segment[(assignment["session_id"], assignment["segment_index"])].append(case_id)
@@ -311,7 +339,9 @@ def build(output_dir: Path) -> dict[str, Any]:
             assignment = assignments[case_id]
             record = gold[case_id]
             turn = turns[assignment["position"]]
-            turn.update(case_id=case_id, is_evaluation_target=True, expected_qna_ids=record["expected_qna_ids"])
+            turn.update(case_id=case_id, is_evaluation_target=True, expected_qna_ids=record["expected_qna_ids"],
+                        expected_intent_groups=[i["accepted_qna_ids"] for i in record["expected_intents"]],
+                        multi_intent=record["multi_intent"])
             prior = [t for t in turns[:assignment["position"]]]
             prior_user = [t for t in prior if t["role"] == "user"]
             turn_type = (
@@ -343,6 +373,7 @@ def build(output_dir: Path) -> dict[str, Any]:
                 "guard_refs": record["guard_refs"],
                 "as_of_date": record["as_of_date"],
                 "temporal_meta": record["temporal_meta"],
+                "expected_intent_groups": [i["accepted_qna_ids"] for i in record["expected_intents"]],
                 "provenance": assignments[case_id]["policy"],
                 "target_match_method": assignments[case_id].get("match_method"),
                 "multi_intent": record["multi_intent"],
@@ -370,6 +401,8 @@ def build(output_dir: Path) -> dict[str, Any]:
             "turn_index": 0, "role": "user", "text": record["user_message"], "timestamp": None,
             "message_id": None, "message_order": None, "user_turn_index": None,
             "case_id": case_id, "is_evaluation_target": True, "expected_qna_ids": record["expected_qna_ids"],
+            "expected_intent_groups": [i["accepted_qna_ids"] for i in record["expected_intents"]],
+            "multi_intent": record["multi_intent"],
         }
         session_id = f"standalone-case-{case_id}"
         evaluation_sessions.append({
@@ -389,6 +422,7 @@ def build(output_dir: Path) -> dict[str, Any]:
             "routing_guarded": record["routing_guarded"], "guard_refs": record["guard_refs"],
             "as_of_date": record["as_of_date"], "temporal_meta": record["temporal_meta"],
             "provenance": "no_source_session", "target_match_method": None, "multi_intent": record["multi_intent"],
+            "expected_intent_groups": [i["accepted_qna_ids"] for i in record["expected_intents"]],
         })
         standalone.append(case_id)
 
@@ -448,11 +482,14 @@ def build(output_dir: Path) -> dict[str, Any]:
             unresolved_rows.append(row)
 
     audit_result = audit(gold, assignments, placed, evaluation_sessions, target_rows, context_rows, standalone)
+    audit_result["normalization_version"] = NORMALIZATION_VERSION
     report = {
         "dataset_version": DATASET_VERSION,
-        "gold": {"manifest_sha256": sha256(GOLD_DIR / "gold-v2-manifest.json"),
-                 "gold_all_sha256": sha256(GOLD_DIR / "gold-v2-all.jsonl"),
-                 "counts": gold_manifest["counts"]},
+        "gold": {"layer": "reviewed" if reviewed else "frozen-v2", "dir": str(gold_dir.relative_to(ROOT)),
+                 "manifest_sha256": sha256(gold_dir / ("gold-v2-reviewed-manifest.json" if reviewed else "gold-v2-manifest.json")),
+                 "gold_all_sha256": sha256(gold_dir / ("gold-v2-reviewed-all.jsonl" if reviewed else "gold-v2-all.jsonl")),
+                 "counts": gold_manifest["counts"],
+                 "review_workbook_sha256": gold_manifest.get("review_workbook", {}).get("sha256")},
         "sources": {
             "raw_workbook": extract_report["source"],
             "sessions_extract": {"file": str((EXTRACT_DIR / "sessions-extract.jsonl").relative_to(ROOT)),
@@ -476,11 +513,28 @@ def build(output_dir: Path) -> dict[str, Any]:
         },
         "audit": audit_result,
     }
+    excluded_rows = [
+        {"case_id": cid, "status": r["status"], "user_message": r["user_message"],
+         "exclusion_reason": r.get("exclusion_reason"), "review": r.get("review"),
+         "previous_status": (r.get("review") or {}).get("previous_status")}
+        for cid, r in sorted(gold.items()) if r["status"] == STATUS_EXCLUDED
+    ]
+    hold_rows = [
+        {"case_id": cid, "status": r["status"], "user_message": r["user_message"],
+         "hold_type": r.get("hold_type", "CONTENT_PENDING" if r["status"] == "PENDING_CONTENT" else None),
+         "hold_reason": r.get("hold_reason") or r.get("notes"), "review": r.get("review"),
+         "blocks_freeze": False}
+        for cid, r in sorted(gold.items()) if r["status"] in (STATUS_HOLD, "PENDING_CONTENT")
+    ]
+    multi_rows = [t for t in target_rows if t["multi_intent"]]
     files = {
         "session-gold-v2.jsonl": jsonl(evaluation_sessions),
         "context-resolutions.jsonl": jsonl(context_rows),
         "unresolved-context.jsonl": jsonl(unresolved_rows),
         "session-targets.jsonl": jsonl(target_rows),
+        "excluded-from-eval.jsonl": jsonl(excluded_rows),
+        "source-missing-hold.jsonl": jsonl(hold_rows),
+        "multi-intent-targets.jsonl": jsonl(multi_rows),
         "session-gold-report.json": dump(report),
         "SESSION-GOLD-REPORT.md": render_markdown(report),
     }
@@ -537,6 +591,17 @@ def audit(gold, assignments, placed, sessions, targets, context_rows, standalone
 
     resolved = [r for r in context_rows if r["resolution_status"] == "RESOLVED_FROM_REAL_SESSION"]
     unresolved = [r for r in context_rows if r["resolution_status"] != "RESOLVED_FROM_REAL_SESSION"]
+    excluded = sorted(cid for cid, r in gold.items() if r["status"] == STATUS_EXCLUDED)
+    hold = sorted(cid for cid, r in gold.items() if r["status"] == STATUS_HOLD)
+    pending = sorted(cid for cid, r in gold.items() if r["status"] == "PENDING_CONTENT")
+    multi_intent_cases = sorted({t["case_id"] for t in targets if t["multi_intent"]})
+    for case_id in multi_intent_cases:
+        groups = next(t for t in targets if t["case_id"] == case_id)["expected_intent_groups"]
+        if len(groups) < 2 or any(len(g) != 1 for g in groups):
+            blockers.append({"check": "multi_intent_groups_malformed", "case": case_id, "groups": groups})
+    for case_id in excluded + hold + pending:
+        if case_id in target_cases:
+            blockers.append({"check": "non_eval_case_is_target", "case": case_id})
     multi_intent_review = sorted(
         {t["case_id"] for t in targets if gold[t["case_id"]]["split_audit"].get("split_label") == "Gerekli"}
         | {480}
@@ -555,12 +620,17 @@ def audit(gold, assignments, placed, sessions, targets, context_rows, standalone
         "ready_cases_targeted": len(ready & set(target_cases)),
         "context_cases": len(context_cases),
         "context_resolved": len(resolved),
+        "excluded_from_eval": excluded,
+        "source_missing_hold": hold,
+        "pending_content": pending,
+        "multi_intent_cases": multi_intent_cases,
+        "evaluation_ready_cases": sorted(target_cases),
         "context_unresolved": [{"case_id": r["case_id"], "resolution_status": r["resolution_status"],
                                 "match_status": r["source_evidence"]["match_status"],
                                 "source_session_turn_index": r["source_evidence"]["source_session_turn_index"]}
                                for r in unresolved],
         "context_requirement_questionable": sorted(r["case_id"] for r in context_rows if r["context_requirement_questionable"]),
-        "multi_intent_review_required": multi_intent_review,
+        "multi_intent_review_required_legacy_flag": multi_intent_review,
         "pending_case_excluded": PENDING_CASE not in target_cases,
         "blockers": blockers,
         "freeze": {
@@ -581,6 +651,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Turn tipleri: {a['turn_types']}",
         f"- Bağlam vakası çözülen: {a['context_resolved']}/{a['context_cases']}",
         f"- Vaka {PENDING_CASE} hedef dışında: {a['pending_case_excluded']}",
+        f"- Test dışı (insan kararı): {a['excluded_from_eval']} · kaynak yok (hold): {a['source_missing_hold']} · "
+        f"içerik bekleyen: {a['pending_content']}",
+        f"- Çoklu niyet hedefleri: {a['multi_intent_cases']}",
+        f"- Normalizasyon: {a['normalization_version']}",
         f"- Segment kuralı: {s['rule']}",
         f"- Boşluk dağılımı (dk): medyan {s['median_minutes']:.2f} · p90 {s['p90_minutes']:.2f} · p95 {s['p95_minutes']:.2f} · p99 {s['p99_minutes']:.2f} · max {s['max_minutes']:.1f}",
         "", "## Blokajlar", "",
@@ -589,7 +663,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         *([f"- Vaka {u['case_id']}: {u['resolution_status']} (eşleşme: {u['match_status']}, kaynak turn: {u['source_session_turn_index']})"
            for u in a["context_unresolved"]] or ["- Yok"]),
         "", "## İnceleme gerektiren multi-intent adayları", "",
-        f"- {a['multi_intent_review_required']}", "",
+        f"- Karar verilmiş çoklu niyet: {a['multi_intent_cases']} · geçmiş splitter etiketi taşıyanlar: "
+        f"{a['multi_intent_review_required_legacy_flag']}", "",
     ]
     return "\n".join(lines)
 
@@ -617,13 +692,23 @@ def write_manifest(output_dir: Path, report: dict[str, Any], created_at: str) ->
         "counts": {
             "evaluation_sessions": a["evaluation_sessions"],
             "targets": a["targets"],
+            "evaluation_ready_cases": len(a["evaluation_ready_cases"]),
             "first_turn": a["turn_types"].get("FIRST_TURN", 0),
             "follow_up_context_required": a["turn_types"].get("FOLLOW_UP_CONTEXT_REQUIRED", 0),
             "follow_up_context_available": a["turn_types"].get("FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED", 0),
+            "standalone_targets": a["standalone_sessions"],
+            "contextual_targets": a["turn_types"].get("FOLLOW_UP_CONTEXT_REQUIRED", 0),
             "context_resolved": a["context_resolved"],
             "context_unresolved": len(a["context_unresolved"]),
-            "pending": 1,
+            "excluded_from_eval": len(a["excluded_from_eval"]),
+            "source_missing_hold": len(a["source_missing_hold"]),
+            "pending_content": len(a["pending_content"]),
+            "multi_intent": len(a["multi_intent_cases"]),
         },
+        "case_ids": {"excluded_from_eval": a["excluded_from_eval"], "source_missing_hold": a["source_missing_hold"],
+                     "pending_content": a["pending_content"], "multi_intent": a["multi_intent_cases"]},
+        "normalization_version": a["normalization_version"],
+        "gold_layer": report["gold"],
         "segmentation_policy": report["segmentation"]["rule"],
         "outputs_sha256": {name: sha256(output_dir / name) for name in OUTPUT_FILES},
     }
@@ -634,6 +719,8 @@ def write_manifest(output_dir: Path, report: dict[str, Any], created_at: str) ->
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "outputs" / "session-gold-v2-final-20260917")
+    parser.add_argument("--gold-dir", type=Path, default=GOLD_DIR,
+                        help="Reviewed Gold katmanı (varsayılan: dondurulmuş Gold v2)")
     parser.add_argument("--created-at", required=True)
     parser.add_argument("--verify-rebuild", action="store_true")
     return parser.parse_args()
@@ -641,11 +728,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     options = parse_args()
-    result = build(options.output_dir)
+    result = build(options.output_dir, options.gold_dir)
     rebuild = None
     if options.verify_rebuild:
         with tempfile.TemporaryDirectory() as tmp:
-            build(Path(tmp))
+            build(Path(tmp), options.gold_dir)
             rebuild = {name: sha256(Path(tmp) / name) == sha256(options.output_dir / name) for name in OUTPUT_FILES}
     manifest = write_manifest(options.output_dir, result["report"], options.created_at)
     a = result["report"]["audit"]
