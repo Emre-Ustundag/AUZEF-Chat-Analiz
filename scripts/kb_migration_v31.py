@@ -26,6 +26,8 @@ from pathlib import Path
 from typing import Any
 
 RUNNER_PATH = Path(__file__).with_name("kb_migration_v31_runner.py")
+sys.path.insert(0, str(RUNNER_PATH.parent))
+from kb_migration_v31_runner import validate_index_target  # noqa: E402
 BACKUP_TABLES = ("qna", "qna_queries", "qna_routing_guards", "qna_tags")
 
 
@@ -46,6 +48,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--exec-env", action="append", default=[], metavar="KEY=VALUE",
                         help="Backend runner'ına geçirilecek ortam değişkeni (ör. rehearsal DATABASE_URL)")
     parser.add_argument("--pg-database", help="pg_dump hedef DB adı (varsayılan: db konteynerindeki POSTGRES_DB)")
+    parser.add_argument("--meili-index", help="Yalnız rehearsal: test önekli Meili index'i")
+    parser.add_argument("--qdrant-collection", help="Yalnız rehearsal: test önekli Qdrant collection'ı")
     return parser.parse_args(argv)
 
 
@@ -240,8 +244,14 @@ def mode_apply(options: argparse.Namespace) -> int:
     return index_sync(options, report["index_ids"], "index-sync-report.json")
 
 
+def index_target(options: argparse.Namespace) -> dict[str, str] | None:
+    if not options.meili_index and not options.qdrant_collection:
+        return None
+    return {"meili_index": options.meili_index, "qdrant_collection": options.qdrant_collection}
+
+
 def index_sync(options: argparse.Namespace, ids: list[int], filename: str) -> int:
-    code, message = run_runner(options, {"mode": "index-sync", "ids": ids})
+    code, message = run_runner(options, {"mode": "index-sync", "ids": ids, "index_target": index_target(options)})
     report = message.get("report", {"status": "NO_RESULT"})
     options.out_dir.mkdir(parents=True, exist_ok=True)
     write_json(options.out_dir / filename, report)
@@ -281,8 +291,15 @@ def main(argv: list[str] | None = None) -> int:
     options = parse_args(argv)
     # Başka bir DB'ye yönlendirilmiş rehearsal, paylaşılan Meili/Qdrant'a asla yazmamalı.
     redirected = any(item.split("=", 1)[0].endswith("DATABASE_URL") for item in options.exec_env)
-    require(not (redirected and (options.mode == "index-sync" or not options.skip_index) and options.mode in {"apply", "rollback", "index-sync"}),
-            "DATABASE_URL yönlendirilmişken indeks senkronu yapılamaz; --skip-index kullan")
+    target = index_target(options)
+    try:
+        validate_index_target(target)
+    except ValueError as exc:
+        raise SystemExit(f"HATA: {exc}") from exc
+    indexes = options.mode == "index-sync" or (options.mode in {"apply", "rollback"} and not options.skip_index)
+    require(not (redirected and indexes and target is None),
+            "DATABASE_URL yönlendirilmişken gerçek indekse senkron yapılamaz; --skip-index ya da test önekli "
+            "--meili-index/--qdrant-collection kullan")
     handlers = {
         "dry-run": mode_dry_run,
         "backup": mode_backup,

@@ -17,6 +17,7 @@ from scripts.kb_migration_v31_runner import (
     resolve_plan,
     restore_actions,
     snapshot_digest,
+    validate_index_target,
 )
 
 REAL_PLAN = Path("outputs/kb-consolidation-v3.1-final-dry-run-guard-20260917/kb-mutation-plan-v3.1-final.json")
@@ -292,3 +293,26 @@ def test_real_plan_unit_breakdown():
     assert "NEW-13" in guarded
     new13 = next(u for u in units if u["ref"] == "NEW-13")
     assert new13["guard"]["valid_until"] is None
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        {"meili_index": "auzef_qna_index", "qdrant_collection": "qna_migration_v31_test_1"},
+        {"meili_index": "qna_migration_v31_test_1", "qdrant_collection": "auzef_qna_vectors"},
+        {"meili_index": "qna_migration_v31_test_1", "qdrant_collection": None},
+    ],
+)
+def test_index_target_must_be_test_prefixed(target):
+    with pytest.raises(ValueError, match="önekli"):
+        validate_index_target(target)
+
+
+def test_cli_refuses_real_index_sync_for_redirected_database(tmp_path):
+    from scripts.kb_migration_v31 import main
+
+    base = ["--compose-root", str(tmp_path), "--out-dir", str(tmp_path), "--exec-env", "DATABASE_URL=postgresql://x/clone"]
+    with pytest.raises(SystemExit, match="gerçek indekse"):
+        main(["index-sync", *base, "--ids", "1"])
+    with pytest.raises(SystemExit, match="önekli"):
+        main(["index-sync", *base, "--ids", "1", "--meili-index", "auzef_qna_index", "--qdrant-collection", "qna_migration_v31_test_1"])

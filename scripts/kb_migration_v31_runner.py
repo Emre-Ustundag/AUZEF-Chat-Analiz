@@ -24,6 +24,7 @@ ACTOR = "kb-migration-v3.1"
 GUARD_REQUIRED_STATUS = "READY_WITH_GUARD"
 SELECTOR_ONLY_ALIAS_POLICY = "selector_only_no_permanent_bypass"
 UNIT_ORDER = ("guard_only", "update", "alias_move", "create", "promotion")
+TEST_RESOURCE_PREFIX = "qna_migration_v31_test_"
 
 
 class PlanError(ValueError):
@@ -65,6 +66,15 @@ def snapshot_digest(snapshot: dict[str, Any]) -> str:
         default=str,
     ).encode("utf-8")
     return hashlib.blake2b(payload, digest_size=32).hexdigest()
+
+
+def validate_index_target(target: dict[str, str] | None) -> None:
+    """Varsayılan dışı arama hedefi yalnız açıkça test önekli kaynaklar olabilir."""
+    if target is None:
+        return
+    names = [target.get("meili_index") or "", target.get("qdrant_collection") or ""]
+    if not all(name.startswith(TEST_RESOURCE_PREFIX) for name in names):
+        raise ValueError(f"İzole indeks hedefi '{TEST_RESOURCE_PREFIX}' önekli olmalı: {names}")
 
 
 def validate_plan_header(plan: dict[str, Any]) -> None:
@@ -953,6 +963,17 @@ def mode_index_sync(payload: dict[str, Any]) -> int:
     from services.providers import ALIAS_ID_OFFSET, MAX_ALIASES_PER_QNA, _usable_aliases
     from services.routing_guards import RoutingGuardPolicy
 
+    target = payload.get("index_target")
+    validate_index_target(target)
+    if target is not None:
+        # Router/pipeline aynı singleton'ları paylaşır; nesneler yerinde test
+        # kaynaklarına yönlendirilir. Test kaynağı yoksa oluşturulmaz, hata verilir.
+        MEILI_PROVIDER.client.get_index(target["meili_index"])
+        if not QDRANT_PROVIDER.client.collection_exists(target["qdrant_collection"]):
+            raise RuntimeError(f"Test collection yok: {target['qdrant_collection']}")
+        MEILI_PROVIDER.index = MEILI_PROVIDER.client.index(target["meili_index"])
+        QDRANT_PROVIDER.collection_name = target["qdrant_collection"]
+
     ids = sorted({int(qid) for qid in payload["ids"]})
     with admin_session() as session:
         rows = {
@@ -961,7 +982,10 @@ def mode_index_sync(payload: dict[str, Any]) -> int:
                 text("SELECT * FROM qna_search_view WHERE id = ANY(:ids)"), {"ids": ids}
             ).mappings().all()
         }
+        # Kararlar oturum açıkken hesaplanır: rollback/close sonrası ORM guard
+        # nesneleri detached olur ve alanları okunamaz.
         policy = RoutingGuardPolicy.load(session)
+        guard_decisions = {int(qid): policy.decision(qid) for qid in policy.guards}
         session.rollback()
     active = {qid: row for qid, row in rows.items() if row["status"] == 1}
     inactive = [qid for qid in ids if qid not in active]
@@ -1014,16 +1038,18 @@ def mode_index_sync(payload: dict[str, Any]) -> int:
         if document.get("question") != row["question"] or document.get("answer") != row["answer"] \
                 or sorted(document.get("queries") or []) != sorted(row.get("queries") or []):
             failures.append({"id": qid, "check": "meili_document"})
-        decision = policy.decision(qid)
-        if qid in policy.guards:
+        decision = guard_decisions.get(qid)
+        if decision is not None:
             hits = MEILI_PROVIDER.search(row["question"], limit=5) + QDRANT_PROVIDER.search(row["question"], limit=5)
-            leaked = [hit for hit in hits if hit.get("qna_id") == qid and policy.fallback_allows(hit)]
+            leaked = [hit for hit in hits if hit.get("qna_id") == qid and decision.fallback_allowed]
             if leaked or decision.fallback_allowed:
                 failures.append({"id": qid, "check": "guarded_fallback_leak"})
 
     emit("result", report={
         "mode": "index-sync",
         "status": "PASS" if not failures else "FAIL",
+        "meili_index": MEILI_PROVIDER.index.uid,
+        "qdrant_collection": QDRANT_PROVIDER.collection_name,
         "ids": ids,
         "active": len(active),
         "removed": inactive,
