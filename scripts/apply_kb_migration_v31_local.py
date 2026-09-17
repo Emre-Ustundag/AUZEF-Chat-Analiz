@@ -206,11 +206,18 @@ class LocalMigration:
         self.frontend_stopped = True
         state = self.run_cmd(["docker", "inspect", "-f", "{{.State.Running}}", "auzef_frontend"]).stdout.decode().strip()
         backend_host_ports = [line for line in published.splitlines()
-                              if not line.startswith("frontend") and "0.0.0.0" in line]
+                              if not line.startswith("frontend") and any(h in line for h in ("0.0.0.0", "::", "127.0.0.1"))]
+        # Asıl özellik: host'tan hiçbir istemci /api/qna'ya ulaşamıyor olmalı.
+        reachable = {}
+        for url in ("http://localhost/api/qna", "https://localhost/api/qna"):
+            probe = self.run_cmd(["curl", "-sk", "-o", "/dev/null", "-m", "5", "-w", "%{http_code}", url], check=False)
+            reachable[url] = {"exit": probe.returncode, "http_code": probe.stdout.decode().strip()}
         self.step("maintenance_window_on", {
             "method": "frontend (nginx ingress, tek host portu 80/443) durduruldu; admin panel ve /api erişilemez",
             "frontend_running": state, "other_host_published_services": backend_host_ports, "last_qna_edit": last_edit,
-        }, state == "false" and not backend_host_ports)
+            "api_reachability_after_stop": reachable,
+        }, state == "false" and not backend_host_ports
+            and all(r["exit"] != 0 and r["http_code"] in {"000", ""} for r in reachable.values()))
 
     def capture_pre(self) -> None:
         fingerprint = self.probe("fingerprint", expected_database=LIVE_DATABASE)
@@ -289,13 +296,19 @@ class LocalMigration:
 
     def apply(self) -> None:
         apply_dir = self.work / "apply"
+        sequences = {}
+        for name in ("qna_id_seq", "qna_queries_id_seq"):
+            sequences[name] = self.compose("exec", "-T", "db", "psql", "-U", "admin", "-d", LIVE_DATABASE, "-Atc",
+                                           f"SELECT last_value, is_called FROM {name}").stdout.decode().strip()
+        self.report["sequences_immediately_before_apply"] = sequences
         self.mutated = True  # apply çağrısıyla birlikte yazma başlayabilir
         code = self.cli("apply", apply_dir, "--plan", str(PLAN), "--backup-dir", str(self.backup_dir / "backup"),
                         "--confirm", self.o.confirm)
         report = self.read(apply_dir / "apply-report.json") if (apply_dir / "apply-report.json").exists() else {}
-        if report.get("status") == "ABORTED":
-            self.mutated = False
         journal_path = apply_dir / "journal.ndjson"
+        if report.get("status") == "ABORTED" or (not report and not (journal_path.exists() and journal_path.read_text().strip())):
+            # Önkoşul reddi ya da CLI kapısı: DB'ye yazılmadı, rollback gereksiz.
+            self.mutated = False
         journal = [json.loads(line) for line in journal_path.read_text(encoding="utf-8").splitlines()] if journal_path.exists() else []
         sync_path = apply_dir / "index-sync-report.json"
         sync = self.read(sync_path) if sync_path.exists() else {"status": "NO_RESULT"}
@@ -333,7 +346,8 @@ class LocalMigration:
         assertions = self.probe("migration-assertions", phase="post", name=REAL, expected_database=LIVE_DATABASE,
                                 plan=self.plan, backup_snapshot=backup, created_ids=self.report["created_ids"])
         self.step("index_migration_assertions", assertions, assertions["status"] == "PASS"
-                  and assertions["alias_moves_ok"] == 47 and len(assertions["created_searchable"]) == 15)
+                  and assertions["alias_moves_ok"] == 47 and len(assertions["created_searchable"]) == 15
+                  and all(item["ok"] for item in assertions["created_searchable"]))
         smoke = self.probe("smoke", name=REAL, expected_database=LIVE_DATABASE, plan=self.plan, backup_snapshot=backup,
                            created_ids=self.report["created_ids"], retained_319_aliases=self.retained_319_aliases())
         self.step("guard_runtime_smoke", smoke, smoke["status"] == "PASS" and smoke["counts"]["guarded_qna"] == 11
@@ -386,7 +400,8 @@ class LocalMigration:
                        "snapshot_file_blake2b": self.report["backup"]["manifest"].get("snapshot_file_blake2b"),
                        "full_admin_dump": self.report["backup"]["full_admin_dump"],
                        "full_admin_dump_blake2b": self.report["backup"]["full_admin_dump_blake2b"],
-                       "sequences_before": self.report["backup"]["sequences"]},
+                       "sequences_at_backup": self.report["backup"]["sequences"],
+                       "sequences_immediately_before_apply": self.report.get("sequences_immediately_before_apply")},
             "counts": {"pre": {k: self.report["pre_fingerprint"]["db"][k] for k in EXPECTED_PRE},
                        "post": {"active_qna": len(active), "aliases": len(data["aliases"]), "guards": len(data["guards"])}},
             "units": [{k: e.get(k) for k in ("unit", "kind", "ref", "qna_id", "created", "guard_ref", "status")} for e in journal],
