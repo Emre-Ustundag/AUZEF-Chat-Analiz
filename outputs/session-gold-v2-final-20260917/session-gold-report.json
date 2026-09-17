@@ -1,0 +1,164 @@
+{
+  "assignment_policy": {
+    "ambiguous_first_turn_preferred": "aynı metin birden çok oturumda; ilk turn olan gerçek geçiş seçilir",
+    "ambiguous_lowest_session_turn": "ilk turn yoksa (session_id, turn_index) sıralamasında ilk geçiş",
+    "no_source_session": "kaynak oturumda bulunamayan READY vaka bağlamsız tek turn olarak yerleştirilir",
+    "unique_occurrence": "tek kayıtlı geçiş doğrudan kullanılır"
+  },
+  "audit": {
+    "blockers": [],
+    "context_cases": 25,
+    "context_requirement_questionable": [],
+    "context_resolved": 17,
+    "context_unresolved": [
+      {
+        "case_id": 106,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      },
+      {
+        "case_id": 199,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      },
+      {
+        "case_id": 237,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      },
+      {
+        "case_id": 248,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      },
+      {
+        "case_id": 319,
+        "match_status": "not_found",
+        "resolution_status": "SOURCE_NOT_FOUND",
+        "source_session_turn_index": null
+      },
+      {
+        "case_id": 416,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      },
+      {
+        "case_id": 457,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 2
+      },
+      {
+        "case_id": 514,
+        "match_status": "unique_occurrence",
+        "resolution_status": "INSUFFICIENT_REAL_CONTEXT",
+        "source_session_turn_index": 1
+      }
+    ],
+    "evaluation_sessions": 377,
+    "freeze": {
+      "frozen": false,
+      "requires": [
+        "no_blockers",
+        "all_context_cases_resolved",
+        "all_ready_cases_targeted"
+      ]
+    },
+    "gold_message_fragment_cases": [
+      345
+    ],
+    "multi_intent_review_required": [
+      62,
+      71,
+      212,
+      318,
+      436,
+      456,
+      480
+    ],
+    "pending_case_excluded": true,
+    "provenance": {
+      "ambiguous_context_preferred": 8,
+      "ambiguous_first_turn_preferred": 144,
+      "ambiguous_lowest_session_turn": 17,
+      "no_source_session": 9,
+      "unique_occurrence": 329
+    },
+    "ready_cases": 490,
+    "ready_cases_targeted": 490,
+    "sessions_with_real_source": 368,
+    "standalone_sessions": 9,
+    "target_match_method": {
+      "None": 9,
+      "exact_text": 440,
+      "exact_text_repeated": 57,
+      "gold_message_is_fragment_of_real_turn": 1
+    },
+    "targets": 507,
+    "turn_types": {
+      "FIRST_TURN": 337,
+      "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED": 153,
+      "FOLLOW_UP_CONTEXT_REQUIRED": 17
+    }
+  },
+  "dataset_version": "session-gold-v2",
+  "dedup": {
+    "dropped_duplicate_message_id": 0,
+    "kept_repeated_user_texts": 1200,
+    "kept_same_signature_different_message_id": 1610,
+    "message_ids_seen_in_multiple_sessions": 0
+  },
+  "gold": {
+    "counts": {
+      "CONTEXT_REQUIRED": 25,
+      "PENDING_CONTENT": 1,
+      "READY": 490
+    },
+    "gold_all_sha256": "32b05e290024b1a47326bb3ba9abe3c616dc04db6c632ca31de2d6d6c8d3cd88",
+    "manifest_sha256": "3afdb866c27c57bd484711aece60a1fd6907895818825c5fcc4a71662a727e17"
+  },
+  "segmentation": {
+    "conversational_messages": 25673,
+    "gap_count": 66877,
+    "max_minutes": 25360.85,
+    "median_minutes": 0.06666666666666667,
+    "p90_minutes": 1.3166666666666667,
+    "p95_minutes": 5.016666666666667,
+    "p99_minutes": 32.766666666666666,
+    "rule": "Ardışık iki mesaj arası 60 dakikadan uzunsa yeni segment başlar (boşlukların %1'inden azı bu eşiği aşıyor).",
+    "segments_total": 3940,
+    "selected_threshold_minutes": 60,
+    "sessions_split": 333,
+    "source_sessions": 3491,
+    "tail_fractions": {
+      "120": 0.007386694977346472,
+      "1440": 0.005233488344273816,
+      "15": 0.011752919538854913,
+      "240": 0.0061605634224023206,
+      "30": 0.01025763715477668,
+      "480": 0.005951223888631368,
+      "60": 0.009151128190558787,
+      "720": 0.005711978707178851
+    },
+    "ui_events_dropped": 44695
+  },
+  "sources": {
+    "alias_matches_blake2b": "f9a0de93056c80826019a4e532c14fcd784fbbb9a8caa25b6c84d10ab9c4e7b2",
+    "raw_workbook": {
+      "blake2b": "ed2ab424dcf536366f16bac4d4e88bb08a46f2caf78ece2576ce60bb43dc6ac8",
+      "name": "chatbot.xlsx",
+      "rows_scanned": 6405948
+    },
+    "sessions_extract": {
+      "blake2b": "19850c3cb4b81069208376a530546d92e585cbd749ad82e0309e244263bff1a2",
+      "file": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl",
+      "messages": 70368,
+      "sessions": 3491
+    }
+  }
+}
