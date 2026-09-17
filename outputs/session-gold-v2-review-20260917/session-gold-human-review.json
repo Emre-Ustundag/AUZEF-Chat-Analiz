@@ -1,0 +1,1746 @@
+{
+  "created_at": "2026-09-17T20:05:00Z",
+  "excel": {
+    "anomaly_items": 1,
+    "context_items": 8,
+    "intent_items": 7,
+    "path": "outputs/session-gold-v2-review-20260917/session-gold-human-review.xlsx",
+    "sheets": [
+      "Başlangıç",
+      "1-Context Review",
+      "2-Intent Review",
+      "3-Data Anomaly",
+      "Kaynak Kanıt"
+    ]
+  },
+  "frozen_inputs_sha256_after": {
+    "outputs/gold-v2-final-20260917/gold-v2-all.jsonl": "32b05e290024b1a47326bb3ba9abe3c616dc04db6c632ca31de2d6d6c8d3cd88",
+    "outputs/gold-v2-final-20260917/gold-v2-context-required.jsonl": "82f1636d20706e6fce148c5bdd5cc116854ba4c67bdad0bcfea3f2a0866f562e",
+    "outputs/gold-v2-final-20260917/gold-v2-manifest.json": "3afdb866c27c57bd484711aece60a1fd6907895818825c5fcc4a71662a727e17",
+    "outputs/gold-v2-final-20260917/gold-v2-pending.jsonl": "be5029777127c52109e48fb015e6aa95dcd5482800bc4688c9072b5c32db1fac",
+    "outputs/gold-v2-final-20260917/gold-v2-ready.jsonl": "acd18c2ce96e38463a9cd6d7db979220170ab8d69b13b0ca8dca0169756a0a0e",
+    "outputs/session-gold-v2-final-20260917/session-gold-manifest.json": "3270153f3806bb68a7f0dc98c22268e5ad3010872a7dee79e6a4e2369022f722",
+    "outputs/session-gold-v2-final-20260917/session-gold-v2.jsonl": "9112395299c58bcc563b8be5144e5a0a5aad7b97981f8aaffaf79e3b8dd059d8",
+    "outputs/session-gold-v2-final-20260917/session-targets.jsonl": "926c8c7f45cbd00e92331ad0e4ca3eb7edf8cd61f51132ad292983f01965ae3c"
+  },
+  "frozen_inputs_sha256_before": {
+    "outputs/gold-v2-final-20260917/gold-v2-all.jsonl": "32b05e290024b1a47326bb3ba9abe3c616dc04db6c632ca31de2d6d6c8d3cd88",
+    "outputs/gold-v2-final-20260917/gold-v2-context-required.jsonl": "82f1636d20706e6fce148c5bdd5cc116854ba4c67bdad0bcfea3f2a0866f562e",
+    "outputs/gold-v2-final-20260917/gold-v2-manifest.json": "3afdb866c27c57bd484711aece60a1fd6907895818825c5fcc4a71662a727e17",
+    "outputs/gold-v2-final-20260917/gold-v2-pending.jsonl": "be5029777127c52109e48fb015e6aa95dcd5482800bc4688c9072b5c32db1fac",
+    "outputs/gold-v2-final-20260917/gold-v2-ready.jsonl": "acd18c2ce96e38463a9cd6d7db979220170ab8d69b13b0ca8dca0169756a0a0e",
+    "outputs/session-gold-v2-final-20260917/session-gold-manifest.json": "3270153f3806bb68a7f0dc98c22268e5ad3010872a7dee79e6a4e2369022f722",
+    "outputs/session-gold-v2-final-20260917/session-gold-v2.jsonl": "9112395299c58bcc563b8be5144e5a0a5aad7b97981f8aaffaf79e3b8dd059d8",
+    "outputs/session-gold-v2-final-20260917/session-targets.jsonl": "926c8c7f45cbd00e92331ad0e4ca3eb7edf8cd61f51132ad292983f01965ae3c"
+  },
+  "frozen_inputs_unchanged": true,
+  "items": [
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 62,
+      "current_expected_qna_ids": [
+        397
+      ],
+      "current_expected_qna_refs": [
+        "NEW-02"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "b20e6050-29f3-4012-b886-d0a8f3a0209c#s0",
+          "turn_type": "FIRST_TURN"
+        },
+        "gold_split_audit": {
+          "cleanup": "v31_single_target_decision",
+          "raw_intent_groups": 0,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "İkisi de sorunlu",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-315",
+                "score": 0.723,
+                "text": "Sınav sistemine giriş yapamıyorum"
+              },
+              {
+                "ref": "QNA-397",
+                "score": 0.679,
+                "text": "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+              }
+            ],
+            "text": "Sınav tercihi yapmak için neden giriş yapamıyorum?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-309",
+                "score": 0.539,
+                "text": "Dijital kimlik oluşturmam isteniyor ama oluşturamıyorum"
+              },
+              {
+                "ref": "QNA-397",
+                "score": 0.514,
+                "text": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim"
+              }
+            ],
+            "text": "Dijital kimlik oluşturmadan bilgilerimi girdiğim hâlde neden “kayıtlı kişi yok” uyarısı alıyorum?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "OBS giriş sorunundan ayrıldı.",
+      "gold_user_message": "Merhabalar, sınav tercihi yapmak için giriş yapamıyorum. Dijital kimlik oluşturmamış bilgileri girdim fakat böyle bi kayıtlı kisi yok diyor,harç paramıda ödedim",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        397
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 71,
+      "current_expected_qna_ids": [
+        398
+      ],
+      "current_expected_qna_refs": [
+        "NEW-03"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "f86a1107-b3ca-4961-b2f3-d9abec3da3ab#s0",
+          "turn_type": "FIRST_TURN"
+        },
+        "gold_split_audit": {
+          "cleanup": "v31_single_target_decision",
+          "raw_intent_groups": 0,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "İkisi de sorunlu",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-207",
+                "score": 0.468,
+                "text": "İstanbul Üniversitesi Carrahpaşa  öğrencisiyim AKSİS'e giriş yapamıyorum sisteme nereden giriş yapabilirim?"
+              },
+              {
+                "ref": "QNA-137",
+                "score": 0.421,
+                "text": "Azami öğrenim süresini aşmış bir öğrenci olarak indirimli ulaşım kartı avantajından faydalanabilir miyim?"
+              }
+            ],
+            "text": "Üniversitenin telefon uygulamasına, ikinci döneme ait harç ödemesini yapmış olmama rağmen öğrenci olarak görünmediğim için giriş yapamıyorum; bu sistemsel hatanın düzeltilmesine yardımcı olabilir misiniz?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-119",
+                "score": 0.638,
+                "text": "Örgün eğitimde zorunlu ortak derslerim için ders materyallerine nereden ulaşabilirim?"
+              },
+              {
+                "ref": "QNA-4",
+                "score": 0.637,
+                "text": "sınav yerleri nereden ulaşabilirim?"
+              }
+            ],
+            "text": "Tek ders için derslerime nereden ulaşarak çalışabilirim?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "OBS giriş sorunundan ayrıldı.",
+      "gold_user_message": "Merhaba üniversitenin telefon uygulamasına giriş yapamıyorum devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım tek ders için derslerime nereden ulaşıp çalışabilirim sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        398
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 106,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 1,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12889982,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-10-22 18:40:25"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12889986,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-10-22 18:40:32"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.23,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 4,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12889980,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2025-10-22 18:40:25"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12889982,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-10-22 18:40:25"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12889986,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-10-22 18:40:32"
+          }
+        ],
+        "review_note_source": null,
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "89d56aa3-1008-4b66-8d96-15caca5b275b",
+        "target_text": "Merhaba iş sağlığı güvenliği ikinci üniversite kaydını yaptığım Zaman 7 ders gözüküyordu",
+        "target_timestamp": "2025-10-22 18:41:24",
+        "target_turn_id": 12890016,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12890022,
+            "message_type": "text",
+            "role": "user",
+            "text": "Fakat şuan dört ders gözüküyor",
+            "timestamp": "2025-10-22 18:41:38"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12890024,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Derslerin AUZEF Öğrenme Yönetim Sisteminde görülebilmesi için «Kesin Kayıt» ta olması gerekmektedir. Ödeme yapılmaması ya da dersler «Ders Danışman Onaylandı» veya «Danışman Onay Bekliyor» olduğunda ders seçimi tamamlanmamıştır ve öğrenciler bu durumda sisteminde dersi göremez ve dersin sınavına giremez. Bu öğrenciler derslerinin kesin kayıtta olması için buradan Fakülteyle iletişime geçmelidir.",
+            "timestamp": "2025-10-22 18:41:41"
+          }
+        ],
+        "turns_before_target_in_segment": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": false,
+            "message_id": 12889989,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2025-10-22 18:40:34"
+          }
+        ],
+        "why_context_required": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur"
+      },
+      "gold_notes": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "gold_user_message": "Merhaba iş sağlığı güvenliği ikinci üniversite kaydını yaptığım Zaman 7 ders gözüküyordu",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 199,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 1,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592789,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-06-16 19:07:07"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592800,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2026-06-16 19:07:12"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.03,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 4,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592788,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2026-06-16 19:07:06"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592789,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-06-16 19:07:07"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592800,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2026-06-16 19:07:12"
+          }
+        ],
+        "review_note_source": "sessions-yil.jsonl:270686; SessionId f0efccbd-cfb8-48f7-9f77-3858c67b1274",
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "f0efccbd-cfb8-48f7-9f77-3858c67b1274",
+        "target_text": "Ben mezun olduktan sonra yeni dönem de 4 yıllık açıköğretim tamamlayabilirmiym",
+        "target_timestamp": "2026-06-16 19:07:41",
+        "target_turn_id": 17592862,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17592868,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Materyal ücreti güz ve bahar dönemi olmak üzere yılda iki kez ödenmektedir.",
+            "timestamp": "2026-06-16 19:07:43"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 17594224,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Fakültemiz ile ilgili tüm sorularınız için bu alanı kullanabilirsiniz. İyi günler dileriz.",
+            "timestamp": "2026-06-16 19:19:33"
+          }
+        ],
+        "turns_before_target_in_segment": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": false,
+            "message_id": 17592811,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2026-06-16 19:07:13"
+          }
+        ],
+        "why_context_required": "Öğrencinin mezun olacağı program düzeyi ve başvuru yolu (DGS, İkinci Üniversite veya YKS) belirtilmediği için uygun yanıt bağlam olmadan belirlenemiyor."
+      },
+      "gold_notes": "Öğrencinin mezun olacağı program düzeyi ve başvuru yolu (DGS, İkinci Üniversite veya YKS) belirtilmediği için uygun yanıt bağlam olmadan belirlenemiyor.",
+      "gold_user_message": "Ben mezun olduktan sonra yeni dönem de 4 yıllık açıköğretim tamamlayabilirmiym",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 212,
+      "current_expected_qna_ids": [
+        409
+      ],
+      "current_expected_qna_refs": [
+        "NEW-15"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "a2178651-0043-4c46-8515-40635ade8378#s0",
+          "turn_type": "FIRST_TURN"
+        },
+        "gold_split_audit": {
+          "cleanup": "v31_single_target_decision",
+          "raw_intent_groups": 0,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "Luna daha iyi",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-409",
+                "score": 0.672,
+                "text": "İyi günler benim lisans ön kayıdım oldu fakat harç parası yatirmadim şuan ona kayıt yaptırabilirmiyim güz dönemi gelince konteol edebilemisiniz"
+              },
+              {
+                "ref": "QNA-30",
+                "score": 0.531,
+                "text": "AUZEF' te öğrenciyken yeniden başka bir programa da kayıt yaptırabilir miyim?"
+              }
+            ],
+            "text": "Lisans ön kaydım oldu fakat harç parasını yatırmadım; şu an kayıt yaptırabilir miyim?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-28",
+                "score": 0.705,
+                "text": "Kesin kayıt durumumu nasıl kontrol edebilirim?"
+              },
+              {
+                "ref": "QNA-108",
+                "score": 0.589,
+                "text": "Ödememi gerçekleştirdim, sistemdeki durumunu nasıl kontrol edebilirim?"
+              }
+            ],
+            "text": "Güz dönemi gelince kayıt durumumu kontrol edebilir misiniz?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "Hangi kapsamda? Ücret ödemiş mi? Öğrenci mesajında var ama QNA de ezilmiş. Öğrencinin soru kalıbıyla cevap doğru. \"Ön kayıt yaptırdım ama parayı yatırmadım.\" derse kaydını henüz tamamlamamış olur ve eğerilgili sürelerde ödeme yapmazsa kayıt hakkını kaybeder. Şu aşamada 9 Aralık 2026 ya kadar af başvurusu yapabilir.",
+      "gold_user_message": "İyi günler benim lisans ön kayıdım oldu fakat harç parası yatirmadim şuan ona kayıt yaptırabilirmiyim güz dönemi gelince konteol edebilemisiniz",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        409
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 237,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 0,
+        "filtered_user_messages_before_target": [],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.12,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 1,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11919438,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2025-09-30 21:32:26"
+          }
+        ],
+        "review_note_source": null,
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "a59b6cca-e5b4-4923-af44-f2fc1ff6a181",
+        "target_text": "istanbul ünüvers",
+        "target_timestamp": "2025-09-30 21:32:31",
+        "target_turn_id": 11919445,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11919457,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2025-09-30 21:32:38"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11919551,
+            "message_type": "text",
+            "role": "user",
+            "text": "istanbul ünüveraitesi acil durum ve afet yönetimi bölümünden danışma hocası var mı",
+            "timestamp": "2025-09-30 21:33:27"
+          }
+        ],
+        "turns_before_target_in_segment": [],
+        "why_context_required": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur"
+      },
+      "gold_notes": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "gold_user_message": "istanbul ünüvers",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 248,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 1,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206041,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-07-21 15:48:58"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206044,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-07-21 15:49:01"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.05,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 4,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206040,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2025-07-21 15:48:57"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206041,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-07-21 15:48:58"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206044,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-07-21 15:49:01"
+          }
+        ],
+        "review_note_source": "sessions-yil.jsonl:4538; SessionId 21fd8ad2-6f5e-440a-9c63-4a5a83055bae",
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "21fd8ad2-6f5e-440a-9c63-4a5a83055bae",
+        "target_text": "Auzef Çözüm Talebi",
+        "target_timestamp": "2025-07-21 15:49:14",
+        "target_turn_id": 9206056,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206058,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Sizi ne yazık ki anlayamadım. Sorunuzu açık ve anlaşılır bir şekilde yazabilir misiniz?",
+            "timestamp": "2025-07-21 15:49:17"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 9206068,
+            "message_type": "text",
+            "role": "user",
+            "text": "Çözüm Taleplerim bölümünü oluşturamıyorum",
+            "timestamp": "2025-07-21 15:49:31"
+          }
+        ],
+        "turns_before_target_in_segment": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": false,
+            "message_id": 9206049,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2025-07-21 15:49:04"
+          }
+        ],
+        "why_context_required": "Sonraki mesaj ve sayfa geçmişi, Çözüm Taleplerim bölümünde yeni talep oluşturulamadığını ve 500 hatası alındığını gösteriyor; ilk ifade tek başına yetersiz."
+      },
+      "gold_notes": "Sonraki mesaj ve sayfa geçmişi, Çözüm Taleplerim bölümünde yeni talep oluşturulamadığını ve 500 hatası alındığını gösteriyor; ilk ifade tek başına yetersiz.",
+      "gold_user_message": "Auzef Çözüm Talebi",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 318,
+      "current_expected_qna_ids": [
+        327,
+        334
+      ],
+      "current_expected_qna_refs": [
+        "QNA-327",
+        "QNA-334"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "c84a9e17-1fb6-41a7-b6e3-21312c9ae797#s0",
+          "turn_type": "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED"
+        },
+        "gold_split_audit": {
+          "cleanup": "identical_accepted_sets_collapsed_to_single_intent",
+          "distinct_id_groups": 1,
+          "raw_intent_groups": 2,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "İkisi de kabul edilebilir",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-327",
+                "score": 0.55,
+                "text": "istatistik dersi sınavı için hangi özellikte hesap makinesi ile sınava girebilirim"
+              },
+              {
+                "ref": "QNA-327",
+                "score": 0.533,
+                "text": "istatistik dersi sınavı için hangi özellikte hesap makinesi olmalı"
+              }
+            ],
+            "text": "AUZEF kapsamında girilecek İstatistik dersi bütünleme sınavında basit veya bilimsel hesap makinesi kullanılabilir mi?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-327",
+                "score": 0.725,
+                "text": "sınavda kullanılmasına izin verilen hesap makinesi"
+              },
+              {
+                "ref": "QNA-334",
+                "score": 0.713,
+                "text": "Sınavda kullanılabilecek hesap makineleri hangileridir?"
+              }
+            ],
+            "text": "Sınavda kullanılmasına izin verilen hesap makinesi türleri var mı ve varsa hangileridir?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "",
+      "gold_user_message": "Merhaba,AUZEF kapsamında gireceğim İstatistik dersi bütünleme sınavında hesap makinesi kullanımıyla ilgili bilgi almak istiyorum.Basit/bilimsel hesap makinelerinin sınavda kullanılıp kullanılamayacağı ve varsa izin verilen hesap makinesi türleri hakkında tarafıma net bilgi veril",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        327,
+        334
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 319,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "no_occurrence",
+        "exact_match_found": false,
+        "fuzzy_session_candidates": [
+          {
+            "ref": "f5a63fc1-4b84-40f2-ae8e-5f3ed42f9cb2#3",
+            "score": 0.714,
+            "text": "Merhaba istatistik dersi kaç kredi"
+          },
+          {
+            "ref": "84eb1dd3-53d3-4471-befb-da0f47089710#4",
+            "score": 0.642,
+            "text": "İstatistik dersi"
+          },
+          {
+            "ref": "b40ff477-cff4-4b03-9306-fdfe49a03f90#1",
+            "score": 0.642,
+            "text": "İstatistik dersi"
+          }
+        ],
+        "match_status": "not_found",
+        "normalized_gold_message": "merhaba,auzef i̇statistik dersi bütü",
+        "occurrence_count": 0,
+        "review_note_source": null,
+        "review_reason": "SOURCE_NOT_FOUND",
+        "searched_sources": [
+          "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl",
+          "/home/feitcagri/Masaüstü/AUZEF-Chat-Analiz/outputs/analiz/sessions-yil.jsonl",
+          "outputs/gold-v2-sources-20260917/alias-session-matches.jsonl"
+        ],
+        "segmentation_threshold_minutes": 60,
+        "session_id": null,
+        "why_context_required": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+        "why_not_found": "Gold mesajı hiçbir oturumun kullanıcı turn'üyle birebir eşleşmiyor (alias eşleşmesi de 'not_found'); mesaj kırpılmış görünüyor."
+      },
+      "gold_notes": "Bağlam eksik | Eksik/bozuk mesaj — Testten çıkar veya kaynak bağlamla yeniden kur",
+      "gold_user_message": "Merhaba,AUZEF İstatistik dersi bütü",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 345,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_anomaly": {
+        "context_resolution_status": "RESOLVED_FROM_REAL_SESSION",
+        "evaluation_session_id": "78cc52a7-dd04-4a81-affc-fca28f93b01e#s0",
+        "gold_message": "Çözüm merkezi",
+        "gold_message_repr": "'Çözüm merkezi'",
+        "match_method": "gold_message_is_fragment_of_real_turn",
+        "normalized_gold_codepoints": [
+          "0x65",
+          "0x72",
+          "0x6b",
+          "0x65",
+          "0x7a",
+          "0x69"
+        ],
+        "normalized_real_codepoints": [
+          "0x72",
+          "0x6b",
+          "0x65",
+          "0x7a",
+          "0x69",
+          "0x307"
+        ],
+        "real_full_turn": {
+          "conversational": true,
+          "evidence_only_not_evaluator_context": false,
+          "message_id": 15821143,
+          "message_type": "text",
+          "role": "user",
+          "text": "ÇÖZÜM MERKEZİ",
+          "timestamp": "2026-03-01 14:57:01"
+        },
+        "real_text_repr": "'ÇÖZÜM MERKEZİ'",
+        "review_reason": "Gold mesajı ile gerçek turn birebir eşleşmiyor; eşleşme 'içerir' kuralına düştü",
+        "suggested_fix": "Normalizasyonda Türkçe büyük harf eşlemesi (İ→i, I→ı) casefold'dan önce uygulanırsa bu vaka birebir eşleşir; düzeltme session-gold'u yeniden üretmeyi gerektirir.",
+        "texts_differ_only_by_case": true,
+        "verified_cause": "Türkçe noktalı büyük İ casefold edilince 'i' + U+0307 (birleşen nokta) üretiyor; bu yüzden 'ÇÖZÜM MERKEZİ' ile 'Çözüm merkezi' eşit sayılmıyor. Daha önce raporlanan \" / \" birleştirme açıklaması bu vaka için geçerli DEĞİL."
+      },
+      "gold_notes": "‘Nasıl olacak’ ifadesi çok sayıda farklı talebin devamı olarak kullanılıyor; önceki konuşma olmadan niyet ve doğru QnA belirlenemez ve ifade exact alias yapılmamalıdır.",
+      "gold_user_message": "Çözüm merkezi",
+      "needs_context_decision": false,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "DATA_ANOMALY_MERGED_MESSAGE"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 416,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 1,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740911,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-09-28 11:43:12"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740912,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-09-28 11:43:16"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.05,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 4,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740910,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2025-09-28 11:43:11"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740911,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-09-28 11:43:12"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740912,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-09-28 11:43:16"
+          }
+        ],
+        "review_note_source": null,
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "7d846387-086a-4cfd-84c6-41809ce0352f",
+        "target_text": "şu an başvuru yapamıyor muyum bölüme",
+        "target_timestamp": "2025-09-28 11:43:30",
+        "target_turn_id": 11740927,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740931,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Sizi ne yazık ki anlayamadım. Sorunuzu açık ve anlaşılır bir şekilde yazabilir misiniz?",
+            "timestamp": "2025-09-28 11:43:33"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 11740943,
+            "message_type": "text",
+            "role": "user",
+            "text": "başvuru yapmak istiyorum bölüme fakat bölüm seçme kısmında yer almıyor",
+            "timestamp": "2025-09-28 11:43:55"
+          }
+        ],
+        "turns_before_target_in_segment": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": false,
+            "message_id": 11740916,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2025-09-28 11:43:17"
+          }
+        ],
+        "why_context_required": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur"
+      },
+      "gold_notes": "Bağlam eksik — Kaynak konuşma bağlamıyla yeniden kur",
+      "gold_user_message": "şu an başvuru yapamıyor muyum bölüme",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 436,
+      "current_expected_qna_ids": [
+        325
+      ],
+      "current_expected_qna_refs": [
+        "EX-325"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "2b49716f-5ed7-419a-97bc-53289381d83c#s0",
+          "turn_type": "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED"
+        },
+        "gold_split_audit": {
+          "cleanup": "identical_accepted_sets_collapsed_to_single_intent",
+          "distinct_id_groups": 1,
+          "raw_intent_groups": 2,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "Luna daha iyi",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-343",
+                "score": 0.44,
+                "text": "İstanbul Üniversitesi AUZEF öğrenci işlerine yazdığım dilekçenin olumlu olumsuz sonucunu nasıl öğrenebilirim"
+              },
+              {
+                "ref": "QNA-219",
+                "score": 0.415,
+                "text": "İstanbul Üniversitesi akademik not dönüşüm tablosuna erişmek için hangi web sitesini ziyaret etmeliyim?"
+              }
+            ],
+            "text": "İstanbul Üniversitesi AUZEF Yönetim Bilişim Sistemleri Bölümü’nde, daha önce İstanbul Topkapı Üniversitesi YBS Bölümü’nde tamamladığım bir yıllık eğitim nedeniyle öğrenimime 2. sınıftan devam edebilir miyim?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-306",
+                "score": 0.489,
+                "text": "Daha önceki üniversitemde geçtiğim dersler için ders muafiyeti talep ediyorum"
+              },
+              {
+                "ref": "QNA-169",
+                "score": 0.444,
+                "text": "Önceden almadığım dersler için Üç Ders Sınavına girebilir miyim?"
+              }
+            ],
+            "text": "Önceki üniversitemde tamamladığım dersler, sunduğum transkript ve ders içerikleri doğrultusunda muafiyet veya intibak kapsamında değerlendirilebilir mi?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "",
+      "gold_user_message": "İstanbul Üniversitesi Açık ve Uzaktan Eğitim Fakültesi (AUZEF) Yönetim Bilişim Sistemleri (YBS) Bölümü'ne ikinci üniversite seçeneği ile yeni kayıt yaptırdım. Daha önce İstanbul Topkapı Üniversitesi'nde YBS Bölümü'nde bir yıl öğrenim gördüm. Bu nedenle, akademik biriminizde öğrenimime 2. sınıftan devam etmeyi talep ediyorum. Daha önce tamamlamış olduğum dersleri gösteren transkriptim ve ders içeriklerim bu ekte sunulmuştur. Gereğini bilgilerinize arz ederim.",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        325
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 456,
+      "current_expected_qna_ids": [
+        151
+      ],
+      "current_expected_qna_refs": [
+        "EX-151"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "0c9c3163-95c6-475c-91fe-9e448e89c57d#s1",
+          "turn_type": "FIRST_TURN"
+        },
+        "gold_split_audit": {
+          "cleanup": "v31_single_target_decision",
+          "raw_intent_groups": 0,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "İkisi de kabul edilebilir",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-211",
+                "score": 0.737,
+                "text": "YÖS sınav sonuçları nereden açıklanıyor?"
+              },
+              {
+                "ref": "QNA-341",
+                "score": 0.732,
+                "text": "Sınav sonuçları ne zaman açıklanır?"
+              }
+            ],
+            "text": "Sınav sonuçları neden hesaplanmamış?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-312",
+                "score": 0.613,
+                "text": "Kaç dersten geçmem lazım"
+              },
+              {
+                "ref": "QNA-396",
+                "score": 0.602,
+                "text": "Otomatik ders muafiyetim neden gerçekleşmedi?"
+              }
+            ],
+            "text": "Kaç dersten geçtiğimi neden göremedim?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "İçerik sahibi onaylı/düzeltilmiş cevap esas alındı.",
+      "gold_user_message": "Sınav sonuçları neden hesaplanmamış kaç dersten geçmişim göremedim",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        151
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 457,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 3,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519600,
+            "message_type": "widget_closed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:25:45"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519629,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:25:56"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519724,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:26:32"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 15170924,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-23 20:14:09"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 15170930,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-23 20:14:10"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": null,
+        "occurrence_count": 1,
+        "previous_gap_minutes": 16895.67,
+        "previous_segment_last_turns": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14424823,
+            "message_type": "text",
+            "role": "user",
+            "text": "Sınav sonuçları neden hesaplanmamış kaç dersten geçmişim göremedim",
+            "timestamp": "2026-02-12 02:38:41"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14424825,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Sizi ne yazık ki anlayamadım. Sorunuzu açık ve anlaşılır bir şekilde yazabilir misiniz?",
+            "timestamp": "2026-02-12 02:38:43"
+          }
+        ],
+        "raw_messages_before_target_total": 30,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519600,
+            "message_type": "widget_closed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:25:45"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519629,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:25:56"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 14519724,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-16 00:26:32"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 15170924,
+            "message_type": "page_changed",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-23 20:14:09"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 15170930,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2026-02-23 20:14:10"
+          }
+        ],
+        "review_note_source": "sessions-yil.jsonl:170201; SessionId 0c9c3163-95c6-475c-91fe-9e448e89c57d",
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 3,
+        "segment_index": 2,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "0c9c3163-95c6-475c-91fe-9e448e89c57d",
+        "target_text": "Harç ödeme günü doldu mu",
+        "target_timestamp": "2026-02-23 20:14:23",
+        "target_turn_id": 15170952,
+        "turns_after_target_evidence_only": [],
+        "turns_before_target_in_segment": [],
+        "why_context_required": "Soru 23 Şubat 2026 tarihindeki harç ödeme süresini soruyor; doğru cevap dönem ve tarih bağlamına bağlıdır. Aynı session kimliğindeki eski sınav mesajı bu turnün bağlamı değildir."
+      },
+      "gold_notes": "Soru 23 Şubat 2026 tarihindeki harç ödeme süresini soruyor; doğru cevap dönem ve tarih bağlamına bağlıdır. Aynı session kimliğindeki eski sınav mesajı bu turnün bağlamı değildir.",
+      "gold_user_message": "Harç ödeme günü doldu mu",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 480,
+      "current_expected_qna_ids": [
+        125,
+        344
+      ],
+      "current_expected_qna_refs": [
+        "QNA-125",
+        "QNA-344"
+      ],
+      "current_status": "READY",
+      "evidence_intent": {
+        "current_target_in_session": {
+          "evaluation_session_id": "4a62b73a-7995-4729-aaa3-df0b96a4c4fd#s0",
+          "turn_type": "FIRST_TURN"
+        },
+        "gold_split_audit": {
+          "cleanup": "identical_accepted_sets_collapsed_to_single_intent",
+          "distinct_id_groups": 1,
+          "raw_intent_groups": 2,
+          "split_label": "Gerekli"
+        },
+        "human_review_decision": "Luna daha iyi",
+        "intent_pieces": [
+          {
+            "index": 1,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-150",
+                "score": 0.706,
+                "text": "Sınav sonuçlarıma nasıl ulaşabilirim?"
+              },
+              {
+                "ref": "QNA-83",
+                "score": 0.687,
+                "text": "Transkript belgemi nasıl alabilirim?"
+              }
+            ],
+            "text": "İstanbulkart nasıl alabilirim?"
+          },
+          {
+            "index": 2,
+            "kb_suggestions_heuristic_only": [
+              {
+                "ref": "QNA-344",
+                "score": 0.742,
+                "text": "Auzefte kaydım neden gorunmuyor"
+              },
+              {
+                "ref": "QNA-344",
+                "score": 0.643,
+                "text": "E-Devlet üzerinde üniversite kaydım neden görünmüyor?"
+              }
+            ],
+            "text": "YÖK’te kaydım neden görünmüyor?"
+          }
+        ],
+        "review_reason": "Splitter 'Gerekli' dedi; Gold tek hedefle donduruldu",
+        "second_piece_looks_like_elaboration": true,
+        "splitter_label": "Gerekli",
+        "splitter_note": "İki bağımsız bilgi ihtiyacı bulunuyor."
+      },
+      "gold_notes": "",
+      "gold_user_message": "İstanbulkart almak istiyorum ama yökte kaydim gorunmuyor",
+      "needs_context_decision": false,
+      "needs_intent_decision": true,
+      "prefilled_final_expected_qna_ids": [
+        125,
+        344
+      ],
+      "review_types": [
+        "MULTI_INTENT_REVIEW"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    },
+    {
+      "allowed_decisions": {
+        "context": [
+          "KEEP_CONTEXT_REQUIRED",
+          "RECLASSIFY_READY_STANDALONE",
+          "EXCLUDE_FROM_EVAL",
+          "SOURCE_MISSING_HOLD"
+        ],
+        "intent": [
+          "KEEP_SINGLE_INTENT",
+          "MARK_MULTI_INTENT",
+          "EXCLUDE_FROM_EVAL"
+        ]
+      },
+      "case_id": 514,
+      "current_expected_qna_ids": [],
+      "current_expected_qna_refs": [],
+      "current_status": "CONTEXT_REQUIRED",
+      "evidence_context": {
+        "assignment_policy": "unique_occurrence",
+        "conversational_before_target_in_session": 1,
+        "filtered_user_messages_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016555,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-10-02 23:10:18"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016557,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-10-02 23:10:21"
+          }
+        ],
+        "match_method": "exact_text",
+        "match_status": "unique_occurrence",
+        "next_gap_minutes": 0.45,
+        "occurrence_count": 1,
+        "previous_gap_minutes": null,
+        "previous_segment_last_turns": [],
+        "raw_messages_before_target_total": 4,
+        "raw_non_conversational_before_target": [
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016553,
+            "message_type": "single-choice",
+            "role": "assistant",
+            "text": "İyi günler ben AUZEF Sanal Asistanıyım. Sohbete başlamadan önce KVKK metnini size sunmam gerekiyor. KVKK metnine buradan ulaşabilirsiniz.",
+            "timestamp": "2025-10-02 23:10:17"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016555,
+            "message_type": "widget_opened",
+            "role": "user",
+            "text": "[BAGLANTI]",
+            "timestamp": "2025-10-02 23:10:18"
+          },
+          {
+            "conversational": false,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016557,
+            "message_type": "quick_reply",
+            "role": "user",
+            "text": "/affirm",
+            "timestamp": "2025-10-02 23:10:21"
+          }
+        ],
+        "review_note_source": "sessions-yil.jsonl:96938; SessionId 7799f6d6-0031-4ae0-a90c-fb1e03becad3",
+        "review_reason": "INSUFFICIENT_REAL_CONTEXT",
+        "segment_count_in_session": 1,
+        "segment_index": 0,
+        "segmentation_threshold_minutes": 60,
+        "session_id": "7799f6d6-0031-4ae0-a90c-fb1e03becad3",
+        "target_text": "Ben harçımı yatırmadım ne zaman kadar yatırabilirim",
+        "target_timestamp": "2025-10-02 23:10:45",
+        "target_turn_id": 12016586,
+        "turns_after_target_evidence_only": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12016608,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Sınavsız İkinci Üniversite programlarının harç ücreti ile ilgili ayrıntılı bilgiyi buradan inceleyebilirsiniz.",
+            "timestamp": "2025-10-02 23:11:12"
+          },
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": true,
+            "message_id": 12017346,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Fakültemiz ile ilgili tüm sorularınız için bu alanı kullanabilirsiniz. İyi günler dileriz.",
+            "timestamp": "2025-10-02 23:23:31"
+          }
+        ],
+        "turns_before_target_in_segment": [
+          {
+            "conversational": true,
+            "evidence_only_not_evaluator_context": false,
+            "message_id": 12016560,
+            "message_type": "text",
+            "role": "assistant",
+            "text": "Merhaba. Size hangi konuda yardımcı olmamızı istersiniz?",
+            "timestamp": "2025-10-02 23:10:22"
+          }
+        ],
+        "why_context_required": "Soru 2 Ekim 2025 tarihindeki harç son ödeme süresini soruyor; kayıt türü ve ilgili dönemin resmî ödeme takvimi olmadan doğru tarih belirlenemiyor."
+      },
+      "gold_notes": "Soru 2 Ekim 2025 tarihindeki harç son ödeme süresini soruyor; kayıt türü ve ilgili dönemin resmî ödeme takvimi olmadan doğru tarih belirlenemiyor.",
+      "gold_user_message": "Ben harçımı yatırmadım ne zaman kadar yatırabilirim",
+      "needs_context_decision": true,
+      "needs_intent_decision": false,
+      "prefilled_final_expected_qna_ids": [],
+      "review_types": [
+        "UNRESOLVED_CONTEXT"
+      ],
+      "source_refs": {
+        "gold": "outputs/gold-v2-final-20260917/gold-v2-all.jsonl",
+        "session_gold_report": "outputs/session-gold-v2-final-20260917/session-gold-report.json",
+        "sessions_extract": "outputs/session-gold-v2-sources-20260917/sessions-extract.jsonl"
+      }
+    }
+  ],
+  "review_universe": {
+    "anomaly_cases": [
+      345
+    ],
+    "context_cases": [
+      106,
+      199,
+      237,
+      248,
+      319,
+      416,
+      457,
+      514
+    ],
+    "intent_cases": [
+      62,
+      71,
+      212,
+      318,
+      436,
+      456,
+      480
+    ],
+    "multi_type_cases": [],
+    "total_items": 16
+  },
+  "segmentation_threshold_minutes": 60
+}
