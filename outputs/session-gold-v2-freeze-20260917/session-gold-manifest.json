@@ -1,7 +1,7 @@
 {
   "builder_commit": {
-    "commit": "26c4f10029b327cba62f3ef36f7264342ad03192",
-    "tracked_changes": true
+    "commit": "982954d2d50673a74573a0a3407673ce0f052b76",
+    "tracked_changes": false
   },
   "canonical_baseline_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
   "case_ids": {
@@ -41,7 +41,7 @@
     "standalone_targets": 6,
     "targets": 507
   },
-  "created_at": "2026-09-17T21:30:00Z",
+  "created_at": "2026-09-17T21:35:00Z",
   "dataset_version": "session-gold-v2",
   "frozen": true,
   "gold_layer": {
