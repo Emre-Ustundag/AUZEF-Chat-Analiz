@@ -1,0 +1,1015 @@
+{
+  "alias_moves": [
+    {
+      "alias_id": 2939,
+      "case": 425,
+      "from": 337,
+      "to": 14
+    },
+    {
+      "alias_id": 2702,
+      "case": 190,
+      "from": 318,
+      "to": 21
+    },
+    {
+      "alias_id": 2614,
+      "case": 102,
+      "from": 312,
+      "to": 39
+    },
+    {
+      "alias_id": 2589,
+      "case": 77,
+      "from": 309,
+      "to": 40
+    },
+    {
+      "alias_id": 2556,
+      "case": 46,
+      "from": 308,
+      "to": 88
+    },
+    {
+      "alias_id": 2703,
+      "case": 191,
+      "from": 318,
+      "to": 91
+    },
+    {
+      "alias_id": 2705,
+      "case": 193,
+      "from": 318,
+      "to": 91
+    },
+    {
+      "alias_id": 2706,
+      "case": 194,
+      "from": 318,
+      "to": 91
+    },
+    {
+      "alias_id": 2886,
+      "case": 372,
+      "from": 332,
+      "to": 94
+    },
+    {
+      "alias_id": 2887,
+      "case": 373,
+      "from": 332,
+      "to": 94
+    },
+    {
+      "alias_id": 2996,
+      "case": 482,
+      "from": 344,
+      "to": 94
+    },
+    {
+      "alias_id": 2792,
+      "case": 278,
+      "from": 325,
+      "to": 103
+    },
+    {
+      "alias_id": 2975,
+      "case": 461,
+      "from": 341,
+      "to": 150
+    },
+    {
+      "alias_id": 2970,
+      "case": 456,
+      "from": 341,
+      "to": 151
+    },
+    {
+      "alias_id": 3010,
+      "case": 496,
+      "from": 345,
+      "to": 166
+    },
+    {
+      "alias_id": 2849,
+      "case": 335,
+      "from": 329,
+      "to": 171
+    },
+    {
+      "alias_id": 2850,
+      "case": 336,
+      "from": 329,
+      "to": 171
+    },
+    {
+      "alias_id": 2770,
+      "case": 258,
+      "from": 322,
+      "to": 186
+    },
+    {
+      "alias_id": 2544,
+      "case": 34,
+      "from": 307,
+      "to": 256
+    },
+    {
+      "alias_id": 2683,
+      "case": 171,
+      "from": 316,
+      "to": 261
+    },
+    {
+      "alias_id": 2764,
+      "case": 252,
+      "from": 322,
+      "to": 266
+    },
+    {
+      "alias_id": 2765,
+      "case": 253,
+      "from": 322,
+      "to": 266
+    },
+    {
+      "alias_id": 2968,
+      "case": 454,
+      "from": 341,
+      "to": 314
+    },
+    {
+      "alias_id": 2969,
+      "case": 455,
+      "from": 341,
+      "to": 314
+    },
+    {
+      "alias_id": 2931,
+      "case": 417,
+      "from": 336,
+      "to": 320
+    },
+    {
+      "alias_id": 2858,
+      "case": 344,
+      "from": 330,
+      "to": 322
+    },
+    {
+      "alias_id": 2864,
+      "case": 350,
+      "from": 330,
+      "to": 322
+    },
+    {
+      "alias_id": 2627,
+      "case": 115,
+      "from": 312,
+      "to": 215
+    },
+    {
+      "alias_id": 2734,
+      "case": 222,
+      "from": 320,
+      "to": 215
+    },
+    {
+      "alias_id": 2735,
+      "case": 223,
+      "from": 320,
+      "to": 215
+    },
+    {
+      "alias_id": 2523,
+      "case": 13,
+      "from": 306,
+      "to": 396
+    },
+    {
+      "alias_id": 2573,
+      "case": 62,
+      "from": 309,
+      "to": 397
+    },
+    {
+      "alias_id": 2582,
+      "case": 71,
+      "from": 309,
+      "to": 398
+    },
+    {
+      "alias_id": 2671,
+      "case": 159,
+      "from": 315,
+      "to": 399
+    },
+    {
+      "alias_id": 2714,
+      "case": 202,
+      "from": 319,
+      "to": 400
+    },
+    {
+      "alias_id": 2715,
+      "case": 203,
+      "from": 319,
+      "to": 400
+    },
+    {
+      "alias_id": 2806,
+      "case": 292,
+      "from": 326,
+      "to": 401
+    },
+    {
+      "alias_id": 2826,
+      "case": 312,
+      "from": 327,
+      "to": 402
+    },
+    {
+      "alias_id": 2854,
+      "case": 340,
+      "from": 329,
+      "to": 403
+    },
+    {
+      "alias_id": 2943,
+      "case": 429,
+      "from": 337,
+      "to": 404
+    },
+    {
+      "alias_id": 2598,
+      "case": 86,
+      "from": 310,
+      "to": 405
+    },
+    {
+      "alias_id": 2847,
+      "case": 333,
+      "from": 329,
+      "to": 406
+    },
+    {
+      "alias_id": 2973,
+      "case": 459,
+      "from": 341,
+      "to": 407
+    },
+    {
+      "alias_id": 2976,
+      "case": 462,
+      "from": 341,
+      "to": 408
+    },
+    {
+      "alias_id": 2977,
+      "case": 463,
+      "from": 341,
+      "to": 408
+    },
+    {
+      "alias_id": 2724,
+      "case": 212,
+      "from": 319,
+      "to": 409
+    },
+    {
+      "alias_id": 2725,
+      "case": 213,
+      "from": 319,
+      "to": 409
+    }
+  ],
+  "backup": {
+    "dir": "/home/feitcagri/Masaüstü/AUZEF-KB-backups/kb-migration-v31-20260917T175926Z",
+    "full_admin_dump": "/home/feitcagri/Masaüstü/AUZEF-KB-backups/kb-migration-v31-20260917T175926Z/auzef_bot-full.dump",
+    "full_admin_dump_blake2b": "613c934fbf2887a938155a29d55100163331f263d2837594011ba1276f398fd2",
+    "sequences_at_backup": {
+      "qna_id_seq": "380|t",
+      "qna_queries_id_seq": "3030|t"
+    },
+    "sequences_immediately_before_apply": {
+      "qna_id_seq": "395|t",
+      "qna_queries_id_seq": "3030|t"
+    },
+    "snapshot_file_blake2b": "07d4f6f6ee4eb4e60085dd3561baeaad0dddb9bb173113190893144e2b19f4c2",
+    "table_dump": "admin-qna-tables.dump",
+    "table_dump_blake2b": "97b5469eb1cb217ddf148f7658f30a781a676628379199fc36e510145279078d"
+  },
+  "baseline_files": {
+    "qna-aliases.csv": "86e6296311488ce6ec2e992be6e04021f8fc8ad636f2492604a03966e8033e79",
+    "qna-aliases.json": "e8e6f4e4f01ed4de5e3a2d4bb269fdf1acf7a0dedf3e58fffbba7842df4a6bc1",
+    "qna-canonical-active.csv": "248f793fc44c7914dee703b22706bf4b2282ab07a767b95c6a40597cdb470649",
+    "qna-canonical.json": "254a6ae349321bbdca262bab03bfebbb0584d53dca314548853d8aa0447c7359",
+    "qna-routing-guards.json": "d13f34f39895da86a1861cff7f1b2989ae2c1f341b22c16ba654388e3ef68321"
+  },
+  "counts": {
+    "post": {
+      "active_qna": 326,
+      "aliases": 2695,
+      "guards": 11
+    },
+    "pre": {
+      "active_qna": 311,
+      "aliases": 2696,
+      "guards": 0
+    }
+  },
+  "created_qna_ids": {
+    "NEW-01": 396,
+    "NEW-02": 397,
+    "NEW-03": 398,
+    "NEW-04": 399,
+    "NEW-05": 400,
+    "NEW-06": 401,
+    "NEW-07": 402,
+    "NEW-08": 403,
+    "NEW-09": 404,
+    "NEW-10": 405,
+    "NEW-11": 410,
+    "NEW-12": 406,
+    "NEW-13": 407,
+    "NEW-14": 408,
+    "NEW-15": 409
+  },
+  "environment": "local development (docker compose auzefchatbot); NOT production",
+  "git": {
+    "analysis_branch": "feat/kb-migration-v31",
+    "analysis_commit": "76ce7734af5b064a833d7157cfe882bef316a534",
+    "chatbot_commit": "e2985358604bd38b30bf91c84c9309f6c61cd551"
+  },
+  "guard_verify": {
+    "ex319": {
+      "aliases_equal_backup_minus_planned_moves": true,
+      "expired_answer_is_319": false,
+      "expired_fallback_is_319": false,
+      "expired_selector_pool_has_319": false,
+      "guard_ref": "GUARD-EX-319",
+      "in_window_selector_answered": true,
+      "in_window_selector_pool_has_319": true,
+      "ok": true,
+      "planned_moves_out_of_319": [
+        202,
+        203,
+        212,
+        213
+      ],
+      "retained_cases_on_319": [
+        {
+          "alias": "Merhaba öğrenci affı ile ilgili bilgi almak istiyorum",
+          "case": 205,
+          "db": true,
+          "meili": true,
+          "qdrant": true
+        },
+        {
+          "alias": "Merhaba ben öğrenci affı ile ilgili bilgi almak istiyorum",
+          "case": 206,
+          "db": true,
+          "meili": true,
+          "qdrant": true
+        },
+        {
+          "alias": "2025 döneminde lisans kaydı yaptırdım harç yatrmamıştım ama aktif kaydım bulunuyor lisans kaydımı aktifleştirebilirmiyim",
+          "case": 214,
+          "db": true,
+          "meili": true,
+          "qdrant": true
+        }
+      ],
+      "row_identical_to_backup": true,
+      "valid_until": "2026-12-09"
+    },
+    "guards": [
+      {
+        "content_mode": "blocked_shared_qna_update",
+        "created_at": "2026-09-17T18:00:01.959707",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-EX-319",
+        "on_expiry": "block_target_and_fallback_to_current_source",
+        "qna_id": 319,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "Güncel Öğrenci Affı duyurusu ve kılavuzu",
+        "updated_at": "2026-09-17T18:00:01.959707",
+        "valid_from": null,
+        "valid_until": "2026-12-09"
+      },
+      {
+        "content_mode": "policy_snapshot",
+        "created_at": "2026-09-17T18:00:02.084967",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-EX-336",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 336,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "AUZEF Programlar ve güncel öğrenci alım duyuruları",
+        "updated_at": "2026-09-17T18:00:02.084967",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_availability",
+        "created_at": "2026-09-17T18:00:02.107844",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-02",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 397,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "AUZEF sınav merkezi tercih duyuruları",
+        "updated_at": "2026-09-17T18:00:02.107844",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "policy_sensitive",
+        "created_at": "2026-09-17T18:00:02.122316",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-05",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 400,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "Kayıt durumu ve öğrenci affı duyuruları",
+        "updated_at": "2026-09-17T18:00:02.122316",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_schedule",
+        "created_at": "2026-09-17T18:00:02.133459",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-07",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 402,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "Sınav giriş belgesi",
+        "updated_at": "2026-09-17T18:00:02.133459",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "policy_review",
+        "created_at": "2026-09-17T18:00:02.139236",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-08",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 403,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "Mezuniyete Üç Ders Sınavı mevzuatı ve yaz okulu kuralları",
+        "updated_at": "2026-09-17T18:00:02.139236",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_source_with_historical_benchmark",
+        "created_at": "2026-09-17T18:00:02.150228",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-10",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 405,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "İkinci Üniversite güncel kayıt duyurusu",
+        "updated_at": "2026-09-17T18:00:02.150228",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_result_status",
+        "created_at": "2026-09-17T18:00:02.157581",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-12",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 406,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "Mezuniyete Üç Ders Sınavı sonuç duyurusu",
+        "updated_at": "2026-09-17T18:00:02.157581",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "historical_term_snapshot",
+        "created_at": "2026-09-17T18:00:02.164899",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-13",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 407,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "AKSİS ve AUZEF Çözüm Merkezi",
+        "updated_at": "2026-09-17T18:00:02.164899",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_announcement",
+        "created_at": "2026-09-17T18:00:02.170501",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-14",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 408,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "AUZEF Duyurular",
+        "updated_at": "2026-09-17T18:00:02.170501",
+        "valid_from": null,
+        "valid_until": null
+      },
+      {
+        "content_mode": "dynamic_catalog",
+        "created_at": "2026-09-17T18:00:02.180752",
+        "exact_bypass_enabled": 0,
+        "guard_ref": "GUARD-NEW-11",
+        "on_expiry": "source_check_or_evergreen_answer",
+        "qna_id": 410,
+        "selector_mode": "semantic_selector_only",
+        "source_of_truth": "AUZEF Lisans Tamamlama Programları sayfası",
+        "updated_at": "2026-09-17T18:00:02.180752",
+        "valid_from": null,
+        "valid_until": null
+      }
+    ],
+    "smoke_counts": {
+      "guarded_qna": 11,
+      "guarded_queries": 21,
+      "normal": 3,
+      "temporal_queries": 6
+    },
+    "temporal_demonstrated": [
+      "NEW-10",
+      "NEW-12",
+      "NEW-13"
+    ]
+  },
+  "meili_fingerprint_post": {
+    "documents": 326,
+    "documents_digest": "9ec4f4d44d58322b7c03577959ff1459d1450e855b6ca68e542de1619a94e906",
+    "index": "auzef_qna_index",
+    "indexes": [
+      "auzef_qna_index"
+    ],
+    "settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f",
+    "updated_at": "2026-09-17 18:00:11.705465"
+  },
+  "meili_fingerprint_pre": {
+    "documents": 311,
+    "documents_digest": "fd87b04d563d97f2535ad0fd2e038de119723cdd4b199dc6dc7eb13fbb8a34c8",
+    "index": "auzef_qna_index",
+    "indexes": [
+      "auzef_qna_index"
+    ],
+    "settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f",
+    "updated_at": "2026-09-14 12:05:39.482120"
+  },
+  "new11": {
+    "alias": "Lisans tamamlama programları nelerdir",
+    "meili": [],
+    "meili_top": [
+      410,
+      92,
+      332
+    ],
+    "new_id": 410,
+    "ok": true,
+    "own_alias": [],
+    "qdrant": [],
+    "qdrant_top": [
+      410,
+      320,
+      320
+    ],
+    "source": 318
+  },
+  "plan": {
+    "blake2b": "0a900d1a8f9e5d938fdcdf2114e45bb2746dd4e69c00073c635d0316159a75ac",
+    "confirm": "0a900d1a8f9e5d93",
+    "path": "outputs/kb-consolidation-v3.1-final-dry-run-guard-20260917/kb-mutation-plan-v3.1-final.json"
+  },
+  "post_migration_digest": "8e26c7dd558bf0f605ed02dd790d7f023ca543312aabeb265650029c373d17cc",
+  "pre_migration_digest": "11bab1e7e40e9a299f0be55e896e6f94dc91db17897d8289437c702fc2532c23",
+  "qdrant_fingerprint_post": {
+    "collection": "auzef_qna_vectors",
+    "collections": [
+      "auzef_qna_vectors"
+    ],
+    "points": 3020,
+    "points_count": 3020,
+    "points_digest": "cbde140d5718cbf2e02e436180833e8aac4b5d650732ae0ac14487d92536548a",
+    "vector_config": "size=1024 distance=<Distance.COSINE: 'Cosine'> hnsw_config=None quantization_config=None on_disk=None memory=None datatype=None multivector_config=None"
+  },
+  "qdrant_fingerprint_pre": {
+    "collection": "auzef_qna_vectors",
+    "collections": [
+      "auzef_qna_vectors"
+    ],
+    "points": 3006,
+    "points_count": 3006,
+    "points_digest": "98404b8b81a62417afbe868f033559c0f601c3bd749f509ae1794eff1e7411ea",
+    "vector_config": "size=1024 distance=<Distance.COSINE: 'Cosine'> hnsw_config=None quantization_config=None on_disk=None memory=None datatype=None multivector_config=None"
+  },
+  "sequences_after": {
+    "qna_id_seq": {
+      "is_called": true,
+      "last_value": 410
+    },
+    "qna_queries_id_seq": {
+      "is_called": true,
+      "last_value": 3030
+    }
+  },
+  "skipped_content_updates": [
+    {
+      "ref": "EX-319",
+      "status": "BLOCKED_CASE_214"
+    }
+  ],
+  "timestamp": "2026-09-17T18:06:32.512968+00:00",
+  "units": [
+    {
+      "created": null,
+      "guard_ref": "GUARD-EX-319",
+      "kind": "guard_only",
+      "qna_id": 319,
+      "ref": "EX-319",
+      "status": "COMMITTED",
+      "unit": "guard_only:EX-319"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 14,
+      "ref": "EX-14",
+      "status": "COMMITTED",
+      "unit": "update:EX-14"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 21,
+      "ref": "EX-21",
+      "status": "COMMITTED",
+      "unit": "update:EX-21"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 39,
+      "ref": "EX-39",
+      "status": "COMMITTED",
+      "unit": "update:EX-39"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 40,
+      "ref": "EX-40",
+      "status": "COMMITTED",
+      "unit": "update:EX-40"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 88,
+      "ref": "EX-88",
+      "status": "COMMITTED",
+      "unit": "update:EX-88"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 91,
+      "ref": "EX-91",
+      "status": "COMMITTED",
+      "unit": "update:EX-91"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 94,
+      "ref": "EX-94",
+      "status": "COMMITTED",
+      "unit": "update:EX-94"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 103,
+      "ref": "EX-103",
+      "status": "COMMITTED",
+      "unit": "update:EX-103"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 150,
+      "ref": "EX-150",
+      "status": "COMMITTED",
+      "unit": "update:EX-150"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 151,
+      "ref": "EX-151",
+      "status": "COMMITTED",
+      "unit": "update:EX-151"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 166,
+      "ref": "EX-166",
+      "status": "COMMITTED",
+      "unit": "update:EX-166"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 171,
+      "ref": "EX-171",
+      "status": "COMMITTED",
+      "unit": "update:EX-171"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 186,
+      "ref": "EX-186",
+      "status": "COMMITTED",
+      "unit": "update:EX-186"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 256,
+      "ref": "EX-256",
+      "status": "COMMITTED",
+      "unit": "update:EX-256"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 261,
+      "ref": "EX-261",
+      "status": "COMMITTED",
+      "unit": "update:EX-261"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 266,
+      "ref": "EX-266",
+      "status": "COMMITTED",
+      "unit": "update:EX-266"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 306,
+      "ref": "EX-306",
+      "status": "COMMITTED",
+      "unit": "update:EX-306"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 307,
+      "ref": "EX-307",
+      "status": "COMMITTED",
+      "unit": "update:EX-307"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 312,
+      "ref": "EX-312",
+      "status": "COMMITTED",
+      "unit": "update:EX-312"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 314,
+      "ref": "EX-314",
+      "status": "COMMITTED",
+      "unit": "update:EX-314"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 320,
+      "ref": "EX-320",
+      "status": "COMMITTED",
+      "unit": "update:EX-320"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 322,
+      "ref": "EX-322",
+      "status": "COMMITTED",
+      "unit": "update:EX-322"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 325,
+      "ref": "EX-325",
+      "status": "COMMITTED",
+      "unit": "update:EX-325"
+    },
+    {
+      "created": null,
+      "guard_ref": "GUARD-EX-336",
+      "kind": "update",
+      "qna_id": 336,
+      "ref": "EX-336",
+      "status": "COMMITTED",
+      "unit": "update:EX-336"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 337,
+      "ref": "EX-337",
+      "status": "COMMITTED",
+      "unit": "update:EX-337"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "update",
+      "qna_id": 346,
+      "ref": "EX-346",
+      "status": "COMMITTED",
+      "unit": "update:EX-346"
+    },
+    {
+      "created": null,
+      "guard_ref": null,
+      "kind": "alias_move",
+      "qna_id": 215,
+      "ref": "QNA-215",
+      "status": "COMMITTED",
+      "unit": "alias_move:215"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 396,
+      "ref": "NEW-01",
+      "status": "COMMITTED",
+      "unit": "create:NEW-01"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-02",
+      "kind": "create",
+      "qna_id": 397,
+      "ref": "NEW-02",
+      "status": "COMMITTED",
+      "unit": "create:NEW-02"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 398,
+      "ref": "NEW-03",
+      "status": "COMMITTED",
+      "unit": "create:NEW-03"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 399,
+      "ref": "NEW-04",
+      "status": "COMMITTED",
+      "unit": "create:NEW-04"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-05",
+      "kind": "create",
+      "qna_id": 400,
+      "ref": "NEW-05",
+      "status": "COMMITTED",
+      "unit": "create:NEW-05"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 401,
+      "ref": "NEW-06",
+      "status": "COMMITTED",
+      "unit": "create:NEW-06"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-07",
+      "kind": "create",
+      "qna_id": 402,
+      "ref": "NEW-07",
+      "status": "COMMITTED",
+      "unit": "create:NEW-07"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-08",
+      "kind": "create",
+      "qna_id": 403,
+      "ref": "NEW-08",
+      "status": "COMMITTED",
+      "unit": "create:NEW-08"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 404,
+      "ref": "NEW-09",
+      "status": "COMMITTED",
+      "unit": "create:NEW-09"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-10",
+      "kind": "create",
+      "qna_id": 405,
+      "ref": "NEW-10",
+      "status": "COMMITTED",
+      "unit": "create:NEW-10"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-12",
+      "kind": "create",
+      "qna_id": 406,
+      "ref": "NEW-12",
+      "status": "COMMITTED",
+      "unit": "create:NEW-12"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-13",
+      "kind": "create",
+      "qna_id": 407,
+      "ref": "NEW-13",
+      "status": "COMMITTED",
+      "unit": "create:NEW-13"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-14",
+      "kind": "create",
+      "qna_id": 408,
+      "ref": "NEW-14",
+      "status": "COMMITTED",
+      "unit": "create:NEW-14"
+    },
+    {
+      "created": true,
+      "guard_ref": null,
+      "kind": "create",
+      "qna_id": 409,
+      "ref": "NEW-15",
+      "status": "COMMITTED",
+      "unit": "create:NEW-15"
+    },
+    {
+      "created": true,
+      "guard_ref": "GUARD-NEW-11",
+      "kind": "promotion",
+      "qna_id": 410,
+      "ref": "NEW-11",
+      "status": "COMMITTED",
+      "unit": "promotion:NEW-11"
+    }
+  ]
+}
