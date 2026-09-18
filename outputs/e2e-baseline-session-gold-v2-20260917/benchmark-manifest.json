@@ -1,0 +1,232 @@
+{
+  "analysis_git": {
+    "commit": "9f490d826de380d27cbe787fe4c2890e2ddcf21f",
+    "tracked_changes": false
+  },
+  "benchmark_version": "e2e-baseline-session-gold-v2",
+  "chatbot_git": {
+    "commit": "e2985358604bd38b30bf91c84c9309f6c61cd551",
+    "tracked_changes": false
+  },
+  "complete": true,
+  "completeness": {
+    "4o-mini": true,
+    "luna-high": true
+  },
+  "concurrency": "hedefler sıralı; pipeline içi split + spekülatif seçim paralel (üretimle aynı)",
+  "context_policy": {
+    "applies_to": [
+      "FOLLOW_UP_CONTEXT_REQUIRED"
+    ],
+    "max_chars": 1200,
+    "max_messages": 4,
+    "roles": {
+      "assistant": "bot",
+      "user": "user"
+    }
+  },
+  "declared_deviations": [
+    "Model kimliği üretimde sabit olduğu için süreç içinde aynı sınıfla (BenchProvider) değiştirildi.",
+    "Luna-high için min max_tokens 1280 ve reasoning={effort: high, exclude: true}; 4o-mini üretim değerlerinde.",
+    "Her iki modelde OpenRouter usage accounting (extra_body.usage.include) ve 120 s istek zaman aşımı eklendi.",
+    "Hedef düzeyinde API hatası retry'ı benchmark politikasıdır (üretim sessizce fallback'e düşer).",
+    "Bağlam yalnız FOLLOW_UP_CONTEXT_REQUIRED hedeflerine router penceresiyle verildi; üretimde bağlam varsayılan kapalı.",
+    "17 bağlam hedefinin dondurulmuş gold'da beklenen QnA'sı yok; bu hedefler koşturuldu ama puanlanmadı."
+  ],
+  "exact_match": "runtime'da exact alias kısa yolu yok; yalnız gözlem",
+  "gate_after": {
+    "checks": {
+      "excluded": true,
+      "frozen": true,
+      "hold": true,
+      "index_consistency": true,
+      "kb": true,
+      "multi_intent": true,
+      "pending": true,
+      "sessions": true,
+      "targets": true
+    },
+    "consistency_failures": [],
+    "db_snapshot_digest": "8e26c7dd558bf0f605ed02dd790d7f023ca543312aabeb265650029c373d17cc",
+    "kb_aliases_sha256": "4ad878add0c06d1badee7e08b7f5cf79ff269678eec88d5379062183acc58f46",
+    "kb_canonical_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+    "kb_guards_sha256": "663bf2caaad679b7ce9e1d23cb0b4f18af535f88934475a2c327551115cbe673",
+    "meili_documents_digest": "9ec4f4d44d58322b7c03577959ff1459d1450e855b6ca68e542de1619a94e906",
+    "meili_settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f",
+    "ok": true,
+    "qdrant_points_digest": "cbde140d5718cbf2e02e436180833e8aac4b5d650732ae0ac14487d92536548a",
+    "reviewed_gold_manifest_sha256": "89a4e542b2a378fcb8b221ef05eb2d606c9482ec98cadeeb0c98e98c5b7f66b4",
+    "session_gold_manifest_sha256": "26e871d52a2b917f90bfb398f1ac839f9f046fcc3d0f2a8a386074a25ff1af21"
+  },
+  "gate_before": {
+    "4o-mini": {
+      "checks": {
+        "excluded": true,
+        "frozen": true,
+        "hold": true,
+        "index_consistency": true,
+        "kb": true,
+        "multi_intent": true,
+        "pending": true,
+        "sessions": true,
+        "targets": true
+      },
+      "consistency_failures": [],
+      "db_snapshot_digest": "8e26c7dd558bf0f605ed02dd790d7f023ca543312aabeb265650029c373d17cc",
+      "kb_aliases_sha256": "4ad878add0c06d1badee7e08b7f5cf79ff269678eec88d5379062183acc58f46",
+      "kb_canonical_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+      "kb_guards_sha256": "663bf2caaad679b7ce9e1d23cb0b4f18af535f88934475a2c327551115cbe673",
+      "meili_documents_digest": "9ec4f4d44d58322b7c03577959ff1459d1450e855b6ca68e542de1619a94e906",
+      "meili_settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f",
+      "ok": true,
+      "qdrant_points_digest": "cbde140d5718cbf2e02e436180833e8aac4b5d650732ae0ac14487d92536548a",
+      "reviewed_gold_manifest_sha256": "89a4e542b2a378fcb8b221ef05eb2d606c9482ec98cadeeb0c98e98c5b7f66b4",
+      "session_gold_manifest_sha256": "26e871d52a2b917f90bfb398f1ac839f9f046fcc3d0f2a8a386074a25ff1af21"
+    },
+    "luna-high": {
+      "checks": {
+        "excluded": true,
+        "frozen": true,
+        "hold": true,
+        "index_consistency": true,
+        "kb": true,
+        "multi_intent": true,
+        "pending": true,
+        "sessions": true,
+        "targets": true
+      },
+      "consistency_failures": [],
+      "db_snapshot_digest": "8e26c7dd558bf0f605ed02dd790d7f023ca543312aabeb265650029c373d17cc",
+      "kb_aliases_sha256": "4ad878add0c06d1badee7e08b7f5cf79ff269678eec88d5379062183acc58f46",
+      "kb_canonical_sha256": "925dd5243b95763e4f1c2992b6a38548c0c59ae1448a17ac7843d91a8ca354ea",
+      "kb_guards_sha256": "663bf2caaad679b7ce9e1d23cb0b4f18af535f88934475a2c327551115cbe673",
+      "meili_documents_digest": "9ec4f4d44d58322b7c03577959ff1459d1450e855b6ca68e542de1619a94e906",
+      "meili_settings_digest": "6a3d1040b003888827a9261529bee8540220f7869a914583c16129e6f04d508f",
+      "ok": true,
+      "qdrant_points_digest": "cbde140d5718cbf2e02e436180833e8aac4b5d650732ae0ac14487d92536548a",
+      "reviewed_gold_manifest_sha256": "89a4e542b2a378fcb8b221ef05eb2d606c9482ec98cadeeb0c98e98c5b7f66b4",
+      "session_gold_manifest_sha256": "26e871d52a2b917f90bfb398f1ac839f9f046fcc3d0f2a8a386074a25ff1af21"
+    }
+  },
+  "generated_at": "2026-09-18T10:54:25.269709+00:00",
+  "input_order": "case_id artan",
+  "model_ids_returned": {
+    "4o-mini": [
+      "openai/gpt-4o-mini"
+    ],
+    "luna-high": [
+      "openai/gpt-5.6-luna"
+    ]
+  },
+  "models": {
+    "4o-mini": {
+      "label": "4o-mini",
+      "min_max_tokens": null,
+      "model_id": "openai/gpt-4o-mini",
+      "notes": "Üretimdeki OpenRouterProvider varsayılan modeli; üretim max_tokens (split 300 / select 5).",
+      "rate_limit_backoff_seconds": [
+        2,
+        4,
+        8,
+        16,
+        30,
+        60
+      ],
+      "reasoning": null,
+      "timeout_seconds": 120
+    },
+    "luna-high": {
+      "label": "luna-high",
+      "min_max_tokens": 1280,
+      "model_id": "openai/gpt-5.6-luna",
+      "notes": "Reasoning tokenları max_tokens bütçesini tükettiği için min 1280 zorunlu (beyan edilen sapma).",
+      "rate_limit_backoff_seconds": [
+        2,
+        4,
+        8,
+        16,
+        30,
+        60
+      ],
+      "reasoning": {
+        "effort": "high",
+        "exclude": true
+      },
+      "timeout_seconds": 120
+    }
+  },
+  "mutation_gate": {
+    "db_snapshot_digest": true,
+    "kb_aliases_sha256": true,
+    "kb_canonical_sha256": true,
+    "kb_guards_sha256": true,
+    "luna_before_db_snapshot_digest": true,
+    "luna_before_kb_aliases_sha256": true,
+    "luna_before_kb_canonical_sha256": true,
+    "luna_before_kb_guards_sha256": true,
+    "luna_before_meili_documents_digest": true,
+    "luna_before_meili_settings_digest": true,
+    "luna_before_qdrant_points_digest": true,
+    "luna_before_reviewed_gold_manifest_sha256": true,
+    "luna_before_session_gold_manifest_sha256": true,
+    "meili_documents_digest": true,
+    "meili_settings_digest": true,
+    "qdrant_points_digest": true,
+    "reviewed_gold_manifest_sha256": true,
+    "session_gold_manifest_sha256": true
+  },
+  "outputs_sha256": {
+    "4o-mini/checkpoint.json": "392097c366efe93f359127d2ebbf918330a2b2826b6f736d8d095c7df248d4f4",
+    "4o-mini/errors.jsonl": "b1f8e4266ce3631c0d2538757299ce0c2c512337aafa689cb30a1a57900079f7",
+    "4o-mini/metrics.json": "34fc8febc4e8e5484d9879d873467ec04cbb6dc170c1f1de525315c83c4e5a69",
+    "4o-mini/results.jsonl": "29db3c13604c3eb987953800fdec9f3fc23f4f964f0a7d1034152504836fba4a",
+    "BENCHMARK-REPORT.md": "d69d97344c83f103af45c178af87188bc23c9ac8783c4409eb7f4d7cfbe40215",
+    "comparison.json": "414ee2af89407d50964351d7de2d4927d91f51c1ef82f22dc8d68d5b340dbf5c",
+    "error-analysis.jsonl": "1f265e108cab1ba57468d13330d2bb1813484500eef3cdf08e9088011e9cb6c2",
+    "luna-high/checkpoint.json": "c0582ee99df853141ed6a8035d9d2119e373f901b1b004cad92600598cf9fc4a",
+    "luna-high/errors.jsonl": "dffca2f2b4fcb33ae4029a573236b32fb8b25bbdbc20efa2f1fef1d18597e3c5",
+    "luna-high/metrics.json": "b15f970a071c608b894b1095295b270dd49a28e1462e2625bfc3a0f74809acef",
+    "luna-high/results.jsonl": "2464da7b69582b14ab6f857624f6377ef10789d8ccfb0857928364b62bc0a672",
+    "paired-cases.jsonl": "49b77b97110a8e9e0bc749e77b5c1d9333f261bc59277c3cd00929e7fe488591"
+  },
+  "pipeline": {
+    "sha256": "a1de2c31217e16f0609bd83358a64e17e9a4377cfe7676cf0743d78f51a82186",
+    "source": "backend/services/answer_pipeline.py::answer_question"
+  },
+  "prompt_template": {
+    "sha256": "bf29f9f4c4c673cba1d4a6f301a77e5781ca266a7b6031e80beb20886abadfcc",
+    "source": "backend/services/llm_provider.py (_build_prompt, _build_split_prompt)"
+  },
+  "retrieval": {
+    "calendar": "tüm akademik takvim kayıtları havuzun başına",
+    "contextual_meili_limit": 3,
+    "contextual_qdrant_limit": 12,
+    "fallback_thresholds": {
+      "meili": 0.9,
+      "qdrant": 0.75
+    },
+    "meili_limit": 5,
+    "qdrant_limit": 24
+  },
+  "retry_policy": {
+    "backoff_seconds": [
+      10,
+      30
+    ],
+    "max_retries": 2,
+    "rate_limit_backoff_seconds": [
+      2,
+      4,
+      8,
+      16,
+      30,
+      60
+    ],
+    "scope": "çağrı düzeyi: gövdeye gömülü 429 (OpenRouter upstream rate-limit) deterministik bekleyişle yeniden denenir; hedef düzeyi: yine de API hatası kalırsa hedef baştan en fazla 2 kez koşar",
+    "sdk_max_retries": 2
+  },
+  "splitter": {
+    "fallback": "regex split on exception",
+    "max_tokens": 300
+  }
+}

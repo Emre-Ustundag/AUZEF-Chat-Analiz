@@ -1,0 +1,719 @@
+{
+  "metrics": {
+    "4o-mini": {
+      "api": {
+        "rate_limit_retries": 0,
+        "rate_limit_wait_seconds": 0.0,
+        "targets_with_retry": 0,
+        "total_retries": 0,
+        "unresolved_errors": 0
+      },
+      "by_turn_type": {
+        "FIRST_TURN": {
+          "correct": {
+            "n": 276,
+            "of": 336,
+            "rate": 0.8214
+          },
+          "exact": {
+            "n": 256,
+            "of": 336,
+            "rate": 0.7619
+          },
+          "scorable": 336,
+          "targets": 336
+        },
+        "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED": {
+          "correct": {
+            "n": 116,
+            "of": 154,
+            "rate": 0.7532
+          },
+          "exact": {
+            "n": 103,
+            "of": 154,
+            "rate": 0.6688
+          },
+          "scorable": 154,
+          "targets": 154
+        },
+        "FOLLOW_UP_CONTEXT_REQUIRED": {
+          "correct": {
+            "n": 0,
+            "of": 0,
+            "rate": null
+          },
+          "exact": {
+            "n": 0,
+            "of": 0,
+            "rate": null
+          },
+          "scorable": 0,
+          "targets": 17
+        }
+      },
+      "calendar": {
+        "final_answer_from_calendar": 14,
+        "gold_calendar_intents": 0,
+        "note": "Gold'da takvim niyeti tanımlı değil; LLM yolunda tüm takvim kayıtları havuzun başına eklenir (yapısal).",
+        "targets_with_calendar_candidates": 507,
+        "wrong_due_to_calendar": 10
+      },
+      "cost_usd": {
+        "reported_total": 0.317958,
+        "source": "OpenRouter usage.cost (usage accounting)",
+        "targets_with_cost": 507
+      },
+      "error_taxonomy": {
+        "CALENDAR_ROUTING_INTERFERENCE": 10,
+        "FALLBACK_ERROR": 4,
+        "RETRIEVAL_MISS": 2,
+        "SELECTOR_WRONG_CHOICE": 82
+      },
+      "exact_alias": {
+        "correct_when_exact_alias_is_gold": {
+          "n": 362,
+          "of": 431,
+          "rate": 0.8399
+        },
+        "exact_alias_owner_is_gold": 431,
+        "runtime_exact_path_used": 0,
+        "targets_with_exact_alias": 468
+      },
+      "fallback_used": 36,
+      "latency_seconds": {
+        "mean": 2.9006,
+        "p50": 2.0468,
+        "p95": 7.1229,
+        "p99": 9.3358,
+        "retrieval_mean": 0.3107,
+        "selector_mean": 2.5082,
+        "splitter_mean": 1.8471,
+        "total": 1470.61
+      },
+      "llm_path_targets": 471,
+      "model_ids_returned": [
+        "openai/gpt-4o-mini"
+      ],
+      "multi_intent": {
+        "480": {
+          "correct": false,
+          "group_hit": [
+            false,
+            true
+          ],
+          "in_any_pool": [
+            true,
+            true
+          ],
+          "selected": [
+            344
+          ],
+          "split_count": 2
+        },
+        "71": {
+          "correct": false,
+          "group_hit": [
+            true,
+            false
+          ],
+          "in_any_pool": [
+            true,
+            true
+          ],
+          "selected": [
+            315,
+            329,
+            350,
+            398
+          ],
+          "split_count": 4
+        }
+      },
+      "overall": {
+        "correct": {
+          "n": 392,
+          "of": 490,
+          "rate": 0.8
+        },
+        "exact": {
+          "n": 359,
+          "of": 490,
+          "rate": 0.7327
+        }
+      },
+      "retrieval": {
+        "both": 467,
+        "in_any_pool": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "in_first_pool": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "meili_top5": {
+          "n": 468,
+          "of": 488,
+          "rate": 0.959
+        },
+        "neither": 2,
+        "only_meili": 1,
+        "only_qdrant": 18,
+        "qdrant_top24": {
+          "n": 485,
+          "of": 488,
+          "rate": 0.9939
+        },
+        "recall@1": {
+          "n": 462,
+          "of": 488,
+          "rate": 0.9467
+        },
+        "recall@10": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "recall@3": {
+          "n": 479,
+          "of": 488,
+          "rate": 0.9816
+        },
+        "recall@5": {
+          "n": 481,
+          "of": 488,
+          "rate": 0.9857
+        }
+      },
+      "routing_guard": {
+        "correct": {
+          "n": 29,
+          "of": 32,
+          "rate": 0.9062
+        },
+        "fallback_leak": 0,
+        "gold_reachable_in_pool": {
+          "n": 32,
+          "of": 32,
+          "rate": 1.0
+        },
+        "guard_blocked_gold": 0,
+        "guarded_targets": 32
+      },
+      "scorable_targets": 490,
+      "secondary_causes": {
+        "EXTRA_ANSWER_COMPOSED": 33,
+        "SPLITTER_FALSE_SPLIT": 94
+      },
+      "selector": {
+        "conditional_accuracy": {
+          "n": 361,
+          "of": 453,
+          "rate": 0.7969
+        },
+        "declined_all_when_gold_in_pool": 0,
+        "overall_accuracy": {
+          "n": 392,
+          "of": 490,
+          "rate": 0.8
+        }
+      },
+      "source_distribution": {
+        "llm": 471,
+        "meilisearch": 33,
+        "none": 3
+      },
+      "splitter": {
+        "false_split": 94,
+        "missed_split": 0,
+        "multi_intent_split_correct": {
+          "n": 2,
+          "of": 2,
+          "rate": 1.0
+        },
+        "single_intent_kept_single": {
+          "n": 394,
+          "of": 488,
+          "rate": 0.8074
+        },
+        "split_count_distribution": {
+          "1": 406,
+          "2": 77,
+          "3": 19,
+          "4": 4,
+          "5": 1
+        }
+      },
+      "targets": 507,
+      "tokens": {
+        "completion": 8020,
+        "prompt": 2156629,
+        "reasoning": 0,
+        "total": 2164649
+      }
+    },
+    "luna-high": {
+      "api": {
+        "rate_limit_retries": 86,
+        "rate_limit_wait_seconds": 284.0,
+        "targets_with_retry": 0,
+        "total_retries": 0,
+        "unresolved_errors": 0
+      },
+      "by_turn_type": {
+        "FIRST_TURN": {
+          "correct": {
+            "n": 253,
+            "of": 336,
+            "rate": 0.753
+          },
+          "exact": {
+            "n": 247,
+            "of": 336,
+            "rate": 0.7351
+          },
+          "scorable": 336,
+          "targets": 336
+        },
+        "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED": {
+          "correct": {
+            "n": 120,
+            "of": 154,
+            "rate": 0.7792
+          },
+          "exact": {
+            "n": 115,
+            "of": 154,
+            "rate": 0.7468
+          },
+          "scorable": 154,
+          "targets": 154
+        },
+        "FOLLOW_UP_CONTEXT_REQUIRED": {
+          "correct": {
+            "n": 0,
+            "of": 0,
+            "rate": null
+          },
+          "exact": {
+            "n": 0,
+            "of": 0,
+            "rate": null
+          },
+          "scorable": 0,
+          "targets": 17
+        }
+      },
+      "calendar": {
+        "final_answer_from_calendar": 5,
+        "gold_calendar_intents": 0,
+        "note": "Gold'da takvim niyeti tanımlı değil; LLM yolunda tüm takvim kayıtları havuzun başına eklenir (yapısal).",
+        "targets_with_calendar_candidates": 507,
+        "wrong_due_to_calendar": 5
+      },
+      "cost_usd": {
+        "reported_total": 0.470449,
+        "source": "OpenRouter usage.cost (usage accounting)",
+        "targets_with_cost": 507
+      },
+      "error_taxonomy": {
+        "CALENDAR_ROUTING_INTERFERENCE": 5,
+        "FALLBACK_ERROR": 2,
+        "RETRIEVAL_MISS": 2,
+        "SELECTOR_WRONG_CHOICE": 107,
+        "SPLITTER_MISSED_SPLIT": 1
+      },
+      "exact_alias": {
+        "correct_when_exact_alias_is_gold": {
+          "n": 332,
+          "of": 431,
+          "rate": 0.7703
+        },
+        "exact_alias_owner_is_gold": 431,
+        "runtime_exact_path_used": 0,
+        "targets_with_exact_alias": 468
+      },
+      "fallback_used": 24,
+      "latency_seconds": {
+        "mean": 3.5391,
+        "p50": 2.6304,
+        "p95": 8.5518,
+        "p99": 16.846,
+        "retrieval_mean": 0.2579,
+        "selector_mean": 2.4354,
+        "splitter_mean": 2.4171,
+        "total": 1794.31
+      },
+      "llm_path_targets": 483,
+      "model_ids_returned": [
+        "openai/gpt-5.6-luna"
+      ],
+      "multi_intent": {
+        "480": {
+          "correct": false,
+          "group_hit": [
+            false,
+            true
+          ],
+          "in_any_pool": [
+            false,
+            true
+          ],
+          "selected": [
+            344
+          ],
+          "split_count": 1
+        },
+        "71": {
+          "correct": false,
+          "group_hit": [
+            false,
+            true
+          ],
+          "in_any_pool": [
+            true,
+            true
+          ],
+          "selected": [
+            181,
+            196,
+            315
+          ],
+          "split_count": 3
+        }
+      },
+      "overall": {
+        "correct": {
+          "n": 373,
+          "of": 490,
+          "rate": 0.7612
+        },
+        "exact": {
+          "n": 362,
+          "of": 490,
+          "rate": 0.7388
+        }
+      },
+      "retrieval": {
+        "both": 467,
+        "in_any_pool": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "in_first_pool": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "meili_top5": {
+          "n": 468,
+          "of": 488,
+          "rate": 0.959
+        },
+        "neither": 2,
+        "only_meili": 1,
+        "only_qdrant": 18,
+        "qdrant_top24": {
+          "n": 485,
+          "of": 488,
+          "rate": 0.9939
+        },
+        "recall@1": {
+          "n": 462,
+          "of": 488,
+          "rate": 0.9467
+        },
+        "recall@10": {
+          "n": 486,
+          "of": 488,
+          "rate": 0.9959
+        },
+        "recall@3": {
+          "n": 479,
+          "of": 488,
+          "rate": 0.9816
+        },
+        "recall@5": {
+          "n": 481,
+          "of": 488,
+          "rate": 0.9857
+        }
+      },
+      "routing_guard": {
+        "correct": {
+          "n": 22,
+          "of": 32,
+          "rate": 0.6875
+        },
+        "fallback_leak": 0,
+        "gold_reachable_in_pool": {
+          "n": 32,
+          "of": 32,
+          "rate": 1.0
+        },
+        "guard_blocked_gold": 0,
+        "guarded_targets": 32
+      },
+      "scorable_targets": 490,
+      "secondary_causes": {
+        "EXTRA_ANSWER_COMPOSED": 11,
+        "SPLITTER_FALSE_SPLIT": 16,
+        "SPLITTER_MISSED_SPLIT": 1
+      },
+      "selector": {
+        "conditional_accuracy": {
+          "n": 352,
+          "of": 464,
+          "rate": 0.7586
+        },
+        "declined_all_when_gold_in_pool": 0,
+        "overall_accuracy": {
+          "n": 373,
+          "of": 490,
+          "rate": 0.7612
+        }
+      },
+      "source_distribution": {
+        "llm": 483,
+        "meilisearch": 22,
+        "none": 2
+      },
+      "splitter": {
+        "false_split": 16,
+        "missed_split": 1,
+        "multi_intent_split_correct": {
+          "n": 1,
+          "of": 2,
+          "rate": 0.5
+        },
+        "single_intent_kept_single": {
+          "n": 472,
+          "of": 488,
+          "rate": 0.9672
+        },
+        "split_count_distribution": {
+          "1": 490,
+          "2": 16,
+          "3": 1
+        }
+      },
+      "targets": 507,
+      "tokens": {
+        "completion": 71250,
+        "prompt": 1557136,
+        "reasoning": 58586,
+        "total": 1628386
+      }
+    }
+  },
+  "paired": {
+    "bootstrap_4o_minus_luna": {
+      "ci95": [
+        0.002,
+        0.0755
+      ],
+      "iterations": 5000,
+      "mean_diff": 0.0388,
+      "method": "paired bootstrap",
+      "seed": 20260917
+    },
+    "cases": {
+      "both_wrong": [
+        1,
+        4,
+        16,
+        17,
+        36,
+        47,
+        56,
+        58,
+        63,
+        71,
+        74,
+        75,
+        78,
+        79,
+        80,
+        82,
+        83,
+        85,
+        87,
+        100,
+        101,
+        116,
+        168,
+        174,
+        175,
+        176,
+        177,
+        183,
+        185,
+        191,
+        204,
+        230,
+        239,
+        249,
+        251,
+        254,
+        259,
+        322,
+        325,
+        333,
+        335,
+        336,
+        349,
+        351,
+        373,
+        380,
+        382,
+        407,
+        410,
+        423,
+        428,
+        431,
+        436,
+        437,
+        444,
+        458,
+        465,
+        468,
+        471,
+        472,
+        480,
+        497,
+        505,
+        507
+      ],
+      "only_4o_mini": [
+        2,
+        12,
+        14,
+        23,
+        42,
+        50,
+        72,
+        73,
+        93,
+        94,
+        99,
+        103,
+        108,
+        109,
+        110,
+        118,
+        132,
+        158,
+        166,
+        172,
+        179,
+        180,
+        182,
+        189,
+        192,
+        194,
+        196,
+        201,
+        206,
+        207,
+        208,
+        217,
+        231,
+        252,
+        298,
+        320,
+        321,
+        330,
+        332,
+        337,
+        338,
+        344,
+        367,
+        368,
+        377,
+        408,
+        418,
+        420,
+        421,
+        422,
+        451,
+        506,
+        510
+      ],
+      "only_luna_high": [
+        9,
+        52,
+        55,
+        84,
+        88,
+        89,
+        104,
+        153,
+        190,
+        216,
+        225,
+        226,
+        250,
+        315,
+        327,
+        366,
+        372,
+        375,
+        404,
+        415,
+        417,
+        425,
+        440,
+        448,
+        449,
+        452,
+        454,
+        455,
+        470,
+        473,
+        474,
+        487,
+        503,
+        516
+      ]
+    },
+    "counts": {
+      "both_correct": 339,
+      "both_wrong": 64,
+      "only_4o_mini": 53,
+      "only_luna_high": 34
+    },
+    "exact_metric": {
+      "bootstrap_4o_minus_luna": {
+        "ci95": [
+          -0.0469,
+          0.0347
+        ],
+        "iterations": 5000,
+        "mean_diff": -0.0061,
+        "method": "paired bootstrap",
+        "seed": 20260917
+      },
+      "counts": {
+        "both_correct": 306,
+        "both_wrong": 75,
+        "only_4o_mini": 53,
+        "only_luna_high": 56
+      },
+      "mcnemar": {
+        "method": "exact binomial McNemar",
+        "n_discordant": 109,
+        "p_value": 0.848195
+      }
+    },
+    "mcnemar": {
+      "method": "exact binomial McNemar",
+      "n_discordant": 87,
+      "p_value": 0.053003
+    },
+    "paired_scorable_targets": 490
+  }
+}

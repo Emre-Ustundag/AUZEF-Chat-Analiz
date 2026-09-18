@@ -1,0 +1,255 @@
+{
+  "api": {
+    "rate_limit_retries": 0,
+    "rate_limit_wait_seconds": 0.0,
+    "targets_with_retry": 0,
+    "total_retries": 0,
+    "unresolved_errors": 0
+  },
+  "by_turn_type": {
+    "FIRST_TURN": {
+      "correct": {
+        "n": 276,
+        "of": 336,
+        "rate": 0.8214
+      },
+      "exact": {
+        "n": 256,
+        "of": 336,
+        "rate": 0.7619
+      },
+      "scorable": 336,
+      "targets": 336
+    },
+    "FOLLOW_UP_CONTEXT_AVAILABLE_BUT_NOT_REQUIRED": {
+      "correct": {
+        "n": 116,
+        "of": 154,
+        "rate": 0.7532
+      },
+      "exact": {
+        "n": 103,
+        "of": 154,
+        "rate": 0.6688
+      },
+      "scorable": 154,
+      "targets": 154
+    },
+    "FOLLOW_UP_CONTEXT_REQUIRED": {
+      "correct": {
+        "n": 0,
+        "of": 0,
+        "rate": null
+      },
+      "exact": {
+        "n": 0,
+        "of": 0,
+        "rate": null
+      },
+      "scorable": 0,
+      "targets": 17
+    }
+  },
+  "calendar": {
+    "final_answer_from_calendar": 14,
+    "gold_calendar_intents": 0,
+    "note": "Gold'da takvim niyeti tanımlı değil; LLM yolunda tüm takvim kayıtları havuzun başına eklenir (yapısal).",
+    "targets_with_calendar_candidates": 507,
+    "wrong_due_to_calendar": 10
+  },
+  "cost_usd": {
+    "reported_total": 0.317958,
+    "source": "OpenRouter usage.cost (usage accounting)",
+    "targets_with_cost": 507
+  },
+  "error_taxonomy": {
+    "CALENDAR_ROUTING_INTERFERENCE": 10,
+    "FALLBACK_ERROR": 4,
+    "RETRIEVAL_MISS": 2,
+    "SELECTOR_WRONG_CHOICE": 82
+  },
+  "exact_alias": {
+    "correct_when_exact_alias_is_gold": {
+      "n": 362,
+      "of": 431,
+      "rate": 0.8399
+    },
+    "exact_alias_owner_is_gold": 431,
+    "runtime_exact_path_used": 0,
+    "targets_with_exact_alias": 468
+  },
+  "fallback_used": 36,
+  "latency_seconds": {
+    "mean": 2.9006,
+    "p50": 2.0468,
+    "p95": 7.1229,
+    "p99": 9.3358,
+    "retrieval_mean": 0.3107,
+    "selector_mean": 2.5082,
+    "splitter_mean": 1.8471,
+    "total": 1470.61
+  },
+  "llm_path_targets": 471,
+  "model_ids_returned": [
+    "openai/gpt-4o-mini"
+  ],
+  "multi_intent": {
+    "480": {
+      "correct": false,
+      "group_hit": [
+        false,
+        true
+      ],
+      "in_any_pool": [
+        true,
+        true
+      ],
+      "selected": [
+        344
+      ],
+      "split_count": 2
+    },
+    "71": {
+      "correct": false,
+      "group_hit": [
+        true,
+        false
+      ],
+      "in_any_pool": [
+        true,
+        true
+      ],
+      "selected": [
+        315,
+        329,
+        350,
+        398
+      ],
+      "split_count": 4
+    }
+  },
+  "overall": {
+    "correct": {
+      "n": 392,
+      "of": 490,
+      "rate": 0.8
+    },
+    "exact": {
+      "n": 359,
+      "of": 490,
+      "rate": 0.7327
+    }
+  },
+  "retrieval": {
+    "both": 467,
+    "in_any_pool": {
+      "n": 486,
+      "of": 488,
+      "rate": 0.9959
+    },
+    "in_first_pool": {
+      "n": 486,
+      "of": 488,
+      "rate": 0.9959
+    },
+    "meili_top5": {
+      "n": 468,
+      "of": 488,
+      "rate": 0.959
+    },
+    "neither": 2,
+    "only_meili": 1,
+    "only_qdrant": 18,
+    "qdrant_top24": {
+      "n": 485,
+      "of": 488,
+      "rate": 0.9939
+    },
+    "recall@1": {
+      "n": 462,
+      "of": 488,
+      "rate": 0.9467
+    },
+    "recall@10": {
+      "n": 486,
+      "of": 488,
+      "rate": 0.9959
+    },
+    "recall@3": {
+      "n": 479,
+      "of": 488,
+      "rate": 0.9816
+    },
+    "recall@5": {
+      "n": 481,
+      "of": 488,
+      "rate": 0.9857
+    }
+  },
+  "routing_guard": {
+    "correct": {
+      "n": 29,
+      "of": 32,
+      "rate": 0.9062
+    },
+    "fallback_leak": 0,
+    "gold_reachable_in_pool": {
+      "n": 32,
+      "of": 32,
+      "rate": 1.0
+    },
+    "guard_blocked_gold": 0,
+    "guarded_targets": 32
+  },
+  "scorable_targets": 490,
+  "secondary_causes": {
+    "EXTRA_ANSWER_COMPOSED": 33,
+    "SPLITTER_FALSE_SPLIT": 94
+  },
+  "selector": {
+    "conditional_accuracy": {
+      "n": 361,
+      "of": 453,
+      "rate": 0.7969
+    },
+    "declined_all_when_gold_in_pool": 0,
+    "overall_accuracy": {
+      "n": 392,
+      "of": 490,
+      "rate": 0.8
+    }
+  },
+  "source_distribution": {
+    "llm": 471,
+    "meilisearch": 33,
+    "none": 3
+  },
+  "splitter": {
+    "false_split": 94,
+    "missed_split": 0,
+    "multi_intent_split_correct": {
+      "n": 2,
+      "of": 2,
+      "rate": 1.0
+    },
+    "single_intent_kept_single": {
+      "n": 394,
+      "of": 488,
+      "rate": 0.8074
+    },
+    "split_count_distribution": {
+      "1": 406,
+      "2": 77,
+      "3": 19,
+      "4": 4,
+      "5": 1
+    }
+  },
+  "targets": 507,
+  "tokens": {
+    "completion": 8020,
+    "prompt": 2156629,
+    "reasoning": 0,
+    "total": 2164649
+  }
+}
