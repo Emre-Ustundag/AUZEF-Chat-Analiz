@@ -1,0 +1,1192 @@
+{
+  "4o-mini": {
+    "declined": 5,
+    "exact": 26,
+    "relaxed": 29
+  },
+  "by_mode": {
+    "blocked_shared_qna_update": {
+      "4o_mini_exact": 11,
+      "luna_high_exact": 7,
+      "targets": 13
+    },
+    "dynamic_announcement": {
+      "4o_mini_exact": 2,
+      "luna_high_exact": 2,
+      "targets": 2
+    },
+    "dynamic_availability": {
+      "4o_mini_exact": 0,
+      "luna_high_exact": 0,
+      "targets": 1
+    },
+    "dynamic_catalog": {
+      "4o_mini_exact": 1,
+      "luna_high_exact": 1,
+      "targets": 1
+    },
+    "dynamic_result_status": {
+      "4o_mini_exact": 0,
+      "luna_high_exact": 0,
+      "targets": 1
+    },
+    "dynamic_schedule": {
+      "4o_mini_exact": 1,
+      "luna_high_exact": 1,
+      "targets": 1
+    },
+    "dynamic_source_with_historical_benchmark": {
+      "4o_mini_exact": 1,
+      "luna_high_exact": 1,
+      "targets": 1
+    },
+    "historical_term_snapshot": {
+      "4o_mini_exact": 1,
+      "luna_high_exact": 1,
+      "targets": 1
+    },
+    "policy_review": {
+      "4o_mini_exact": 0,
+      "luna_high_exact": 1,
+      "targets": 1
+    },
+    "policy_sensitive": {
+      "4o_mini_exact": 2,
+      "luna_high_exact": 2,
+      "targets": 2
+    },
+    "policy_snapshot": {
+      "4o_mini_exact": 7,
+      "luna_high_exact": 5,
+      "targets": 8
+    }
+  },
+  "cases": [
+    {
+      "4o_mini": {
+        "declined": true,
+        "exact": false,
+        "relaxed": true,
+        "selected": [
+          109,
+          397
+        ],
+        "split": 3
+      },
+      "case_id": 62,
+      "gold": [
+        397
+      ],
+      "gold_question": [
+        "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_availability"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": true,
+        "selected": [
+          49,
+          397
+        ],
+        "selected_questions": [
+          "Öğrenci kimlik kartımı nasıl alabilirim?",
+          "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+        ],
+        "split": 2
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          405
+        ],
+        "split": 1
+      },
+      "case_id": 86,
+      "gold": [
+        405
+      ],
+      "gold_question": [
+        "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_source_with_historical_benchmark"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          405
+        ],
+        "selected_questions": [
+          "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          410
+        ],
+        "split": 1
+      },
+      "case_id": 195,
+      "gold": [
+        410
+      ],
+      "gold_question": [
+        "Lisans tamamlama programları nelerdir?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_catalog"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          410
+        ],
+        "selected_questions": [
+          "Lisans tamamlama programları nelerdir?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 200,
+      "gold": [
+        319,
+        333
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?",
+        "Öğrenci affı başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          333
+        ],
+        "selected_questions": [
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 201,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          400
+        ],
+        "selected_questions": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          400
+        ],
+        "split": 2
+      },
+      "case_id": 202,
+      "gold": [
+        400
+      ],
+      "gold_question": [
+        "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_sensitive"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          400
+        ],
+        "selected_questions": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          400
+        ],
+        "split": 1
+      },
+      "case_id": 203,
+      "gold": [
+        400
+      ],
+      "gold_question": [
+        "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_sensitive"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          400
+        ],
+        "selected_questions": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": true,
+        "exact": false,
+        "relaxed": false,
+        "selected": [],
+        "split": 1
+      },
+      "case_id": 204,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": true,
+        "exact": false,
+        "relaxed": false,
+        "selected": [],
+        "selected_questions": [],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 205,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "selected_questions": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 206,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          333
+        ],
+        "selected_questions": [
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 207,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          400
+        ],
+        "selected_questions": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 208,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          400
+        ],
+        "selected_questions": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 210,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "selected_questions": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 211,
+      "gold": [
+        319,
+        333
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?",
+        "Öğrenci affı başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          333
+        ],
+        "selected_questions": [
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 215,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "selected_questions": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "split": 1
+      },
+      "case_id": 217,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          333
+        ],
+        "selected_questions": [
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          402
+        ],
+        "split": 1
+      },
+      "case_id": 312,
+      "gold": [
+        402
+      ],
+      "gold_question": [
+        "Derslerimin sınavları aynı oturumda mı yapılacak?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_schedule"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          402
+        ],
+        "selected_questions": [
+          "Derslerimin sınavları aynı oturumda mı yapılacak?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": true,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          329
+        ],
+        "split": 2
+      },
+      "case_id": 333,
+      "gold": [
+        406
+      ],
+      "gold_question": [
+        "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_result_status"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          329
+        ],
+        "selected_questions": [
+          "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": false,
+        "relaxed": true,
+        "selected": [
+          145,
+          403
+        ],
+        "split": 2
+      },
+      "case_id": 340,
+      "gold": [
+        403
+      ],
+      "gold_question": [
+        "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_review"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          403
+        ],
+        "selected_questions": [
+          "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          333
+        ],
+        "split": 1
+      },
+      "case_id": 379,
+      "gold": [
+        319,
+        333
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?",
+        "Öğrenci affı başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "selected_questions": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": false,
+        "relaxed": true,
+        "selected": [
+          244,
+          319
+        ],
+        "split": 2
+      },
+      "case_id": 381,
+      "gold": [
+        319
+      ],
+      "gold_question": [
+        "Af başvurusu nasıl yapılır?"
+      ],
+      "gold_rank": 9,
+      "guard_modes": [
+        "blocked_shared_qna_update"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          319
+        ],
+        "selected_questions": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 408,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          50
+        ],
+        "selected_questions": [
+          "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": true,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 3
+      },
+      "case_id": 409,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "selected_questions": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": true,
+        "exact": false,
+        "relaxed": false,
+        "selected": [],
+        "split": 1
+      },
+      "case_id": 410,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": true,
+        "exact": false,
+        "relaxed": false,
+        "selected": [],
+        "selected_questions": [],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 411,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "selected_questions": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 412,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "selected_questions": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 413,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "selected_questions": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 414,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "selected_questions": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          336
+        ],
+        "split": 1
+      },
+      "case_id": 418,
+      "gold": [
+        336
+      ],
+      "gold_question": [
+        "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "policy_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": false,
+        "relaxed": false,
+        "selected": [
+          328
+        ],
+        "selected_questions": [
+          "Çocuk Gelişimi bölümü kapatıldı mı?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          407
+        ],
+        "split": 1
+      },
+      "case_id": 459,
+      "gold": [
+        407
+      ],
+      "gold_question": [
+        "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "historical_term_snapshot"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          407
+        ],
+        "selected_questions": [
+          "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          408
+        ],
+        "split": 1
+      },
+      "case_id": 462,
+      "gold": [
+        408
+      ],
+      "gold_question": [
+        "Bahar dönemi sınav sonuçları açıklandı mı?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_announcement"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          408
+        ],
+        "selected_questions": [
+          "Bahar dönemi sınav sonuçları açıklandı mı?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    },
+    {
+      "4o_mini": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          408
+        ],
+        "split": 1
+      },
+      "case_id": 463,
+      "gold": [
+        408
+      ],
+      "gold_question": [
+        "Bahar dönemi sınav sonuçları açıklandı mı?"
+      ],
+      "gold_rank": 1,
+      "guard_modes": [
+        "dynamic_announcement"
+      ],
+      "luna_high": {
+        "declined": false,
+        "exact": true,
+        "relaxed": true,
+        "selected": [
+          408
+        ],
+        "selected_questions": [
+          "Bahar dönemi sınav sonuçları açıklandı mı?"
+        ],
+        "split": 1
+      },
+      "same_candidates": true
+    }
+  ],
+  "luna-high": {
+    "declined": 2,
+    "exact": 21,
+    "relaxed": 22
+  },
+  "same_candidates_all": true,
+  "targets": 32
+}

@@ -1,0 +1,211 @@
+{
+  "480": {
+    "4o-mini": {
+      "exact": false,
+      "fragments": [
+        {
+          "declined": true,
+          "fragment": "İstanbulkart almak istiyorum.",
+          "groups_in_pool": [
+            true,
+            true
+          ],
+          "selected": null
+        },
+        {
+          "declined": false,
+          "fragment": "Yökte kaydım görünmüyor.",
+          "groups_in_pool": [
+            false,
+            true
+          ],
+          "selected": 344
+        }
+      ],
+      "lost_groups": [
+        {
+          "gold_in_some_fragment_pool": true,
+          "group": [
+            125
+          ],
+          "loss_stage": "SELECTOR"
+        }
+      ],
+      "relaxed": false,
+      "selected": [
+        344
+      ],
+      "split_count": 2,
+      "sub_questions": [
+        "İstanbulkart almak istiyorum.",
+        "Yökte kaydım görünmüyor."
+      ]
+    },
+    "expected_intent_groups": [
+      [
+        125
+      ],
+      [
+        344
+      ]
+    ],
+    "luna-high": {
+      "exact": false,
+      "fragments": [
+        {
+          "declined": false,
+          "fragment": "İstanbulkart almak istiyorum ama yökte kaydim gorunmuyor",
+          "groups_in_pool": [
+            false,
+            true
+          ],
+          "selected": 344
+        }
+      ],
+      "lost_groups": [
+        {
+          "gold_in_some_fragment_pool": false,
+          "group": [
+            125
+          ],
+          "loss_stage": "SPLITTER"
+        }
+      ],
+      "relaxed": false,
+      "selected": [
+        344
+      ],
+      "split_count": 1,
+      "sub_questions": []
+    },
+    "user_message": "İstanbulkart almak istiyorum ama yökte kaydim gorunmuyor"
+  },
+  "71": {
+    "4o-mini": {
+      "exact": false,
+      "fragments": [
+        {
+          "declined": false,
+          "fragment": "Merhaba, üniversitenin telefon uygulamasına giriş yapamıyorum.",
+          "groups_in_pool": [
+            true,
+            false
+          ],
+          "selected": 350
+        },
+        {
+          "declined": false,
+          "fragment": "Devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım.",
+          "groups_in_pool": [
+            true,
+            false
+          ],
+          "selected": 398
+        },
+        {
+          "declined": false,
+          "fragment": "Tek ders için derslerime nereden ulaşıp çalışabilirim?",
+          "groups_in_pool": [
+            true,
+            true
+          ],
+          "selected": 329
+        },
+        {
+          "declined": false,
+          "fragment": "Sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz?",
+          "groups_in_pool": [
+            true,
+            false
+          ],
+          "selected": 315
+        }
+      ],
+      "lost_groups": [
+        {
+          "gold_in_some_fragment_pool": true,
+          "group": [
+            181
+          ],
+          "loss_stage": "SELECTOR"
+        }
+      ],
+      "relaxed": false,
+      "selected": [
+        315,
+        329,
+        350,
+        398
+      ],
+      "split_count": 4,
+      "sub_questions": [
+        "Merhaba, üniversitenin telefon uygulamasına giriş yapamıyorum.",
+        "Devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım.",
+        "Tek ders için derslerime nereden ulaşıp çalışabilirim?",
+        "Sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz?"
+      ]
+    },
+    "expected_intent_groups": [
+      [
+        398
+      ],
+      [
+        181
+      ]
+    ],
+    "luna-high": {
+      "exact": false,
+      "fragments": [
+        {
+          "declined": false,
+          "fragment": "Üniversitenin telefon uygulamasına neden giriş yapamıyorum ve neden öğrenci olarak görünmüyorum?",
+          "groups_in_pool": [
+            true,
+            false
+          ],
+          "selected": 196
+        },
+        {
+          "declined": false,
+          "fragment": "Tek ders için derslerime nereden ulaşabilir ve çalışabilirim?",
+          "groups_in_pool": [
+            true,
+            true
+          ],
+          "selected": 181
+        },
+        {
+          "declined": false,
+          "fragment": "Sistemsel bir hataysa düzeltilmesine yardımcı olabilir misiniz?",
+          "groups_in_pool": [
+            true,
+            false
+          ],
+          "selected": 315
+        }
+      ],
+      "lost_groups": [
+        {
+          "gold_in_some_fragment_pool": true,
+          "group": [
+            398
+          ],
+          "loss_stage": "SELECTOR"
+        }
+      ],
+      "relaxed": false,
+      "selected": [
+        181,
+        196,
+        315
+      ],
+      "split_count": 3,
+      "sub_questions": [
+        "Üniversitenin telefon uygulamasına neden giriş yapamıyorum ve neden öğrenci olarak görünmüyorum?",
+        "Tek ders için derslerime nereden ulaşabilir ve çalışabilirim?",
+        "Sistemsel bir hataysa düzeltilmesine yardımcı olabilir misiniz?"
+      ]
+    },
+    "user_message": "Merhaba üniversitenin telefon uygulamasına giriş yapamıyorum devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım tek ders için derslerime nereden ulaşıp çalışabilirim sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz"
+  }
+}

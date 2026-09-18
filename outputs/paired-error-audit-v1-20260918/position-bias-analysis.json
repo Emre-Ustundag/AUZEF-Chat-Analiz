@@ -1,0 +1,89 @@
+{
+  "4o-mini": {
+    "accuracy_by_gold_rank": {
+      "1": {
+        "n": 363,
+        "of": 462,
+        "rate": 0.7857
+      },
+      "2-3": {
+        "n": 3,
+        "of": 17,
+        "rate": 0.1765
+      },
+      "4-5": {
+        "n": 0,
+        "of": 2,
+        "rate": 0.0
+      },
+      "6+": {
+        "n": 2,
+        "of": 5,
+        "rate": 0.4
+      }
+    },
+    "wrong_cases": 74,
+    "wrong_selected_above_gold": 18,
+    "wrong_selected_below_gold": 56,
+    "wrong_selection_rank_distribution": {
+      "1": 16,
+      "2": 37,
+      "3": 9,
+      "4": 2,
+      "5": 1,
+      "6": 2,
+      "7": 1,
+      "8": 1,
+      "9": 1,
+      "12": 1,
+      "14": 1,
+      "17": 1,
+      "19": 1
+    }
+  },
+  "luna-high": {
+    "accuracy_by_gold_rank": {
+      "1": {
+        "n": 331,
+        "of": 462,
+        "rate": 0.7165
+      },
+      "2-3": {
+        "n": 14,
+        "of": 17,
+        "rate": 0.8235
+      },
+      "4-5": {
+        "n": 1,
+        "of": 2,
+        "rate": 0.5
+      },
+      "6+": {
+        "n": 3,
+        "of": 5,
+        "rate": 0.6
+      }
+    },
+    "wrong_cases": 110,
+    "wrong_selected_above_gold": 5,
+    "wrong_selected_below_gold": 105,
+    "wrong_selection_rank_distribution": {
+      "1": 4,
+      "2": 51,
+      "3": 13,
+      "4": 14,
+      "5": 2,
+      "6": 5,
+      "7": 2,
+      "8": 5,
+      "9": 2,
+      "10": 4,
+      "11": 1,
+      "12": 1,
+      "14": 1,
+      "15": 2,
+      "16": 1,
+      "19": 2
+    }
+  }
+}

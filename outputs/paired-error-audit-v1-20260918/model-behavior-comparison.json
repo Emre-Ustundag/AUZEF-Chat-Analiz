@@ -1,0 +1,96 @@
+{
+  "4o-mini": {
+    "calendar_selected_final": 14,
+    "calendar_selected_full_message": 10,
+    "exact_accuracy": {
+      "n": 359,
+      "of": 490
+    },
+    "false_split_rate": {
+      "n": 94,
+      "of": 488
+    },
+    "fine_cause_counts": {
+      "FALSE_SPLIT_SINGLE_INTENT": 30,
+      "FRAGMENT_LOST_CONTEXT": 7,
+      "KB_OVERLAP_AMBIGUITY": 13,
+      "NEEDS_HUMAN_REVIEW": 3,
+      "RETRIEVAL_TRUE_MISS": 2,
+      "SELECTOR_CALENDAR_DISTRACTION": 9,
+      "SELECTOR_FRAGMENT_CONTEXT_LOSS": 11,
+      "SELECTOR_NEAR_DUPLICATE_CONFUSION": 16,
+      "SELECTOR_NONE_WHEN_GOLD_PRESENT": 5,
+      "SELECTOR_WRONG_SEMANTIC_MATCH": 35
+    },
+    "full_message_selector_accuracy": {
+      "n": 368,
+      "note": "Aynı tam mesaj + aynı aday havuzu; bölücüden bağımsız",
+      "of": 486
+    },
+    "kb_overlap_ambiguity": 13,
+    "near_duplicate_confusion": 16,
+    "none_rate_full_message": {
+      "n": 34,
+      "of": 490
+    },
+    "none_when_gold_in_pool_full_message": 34,
+    "relaxed_accuracy": {
+      "n": 392,
+      "of": 490
+    },
+    "wrong_positive_full_message": 84
+  },
+  "full_message_paired": {
+    "both_correct": 315,
+    "both_wrong": 82,
+    "cases": 488,
+    "mcnemar": {
+      "method": "exact binomial McNemar",
+      "n_discordant": 91,
+      "p_value": 0.058574
+    },
+    "only_4o_mini": 55,
+    "only_luna_high": 36
+  },
+  "luna-high": {
+    "calendar_selected_final": 5,
+    "calendar_selected_full_message": 5,
+    "exact_accuracy": {
+      "n": 362,
+      "of": 490
+    },
+    "false_split_rate": {
+      "n": 16,
+      "of": 488
+    },
+    "fine_cause_counts": {
+      "FALSE_SPLIT_SINGLE_INTENT": 8,
+      "KB_OVERLAP_AMBIGUITY": 3,
+      "MISSED_MULTI_INTENT": 1,
+      "NEEDS_HUMAN_REVIEW": 3,
+      "RETRIEVAL_TRUE_MISS": 2,
+      "SELECTOR_CALENDAR_DISTRACTION": 5,
+      "SELECTOR_FRAGMENT_CONTEXT_LOSS": 1,
+      "SELECTOR_NEAR_DUPLICATE_CONFUSION": 27,
+      "SELECTOR_NONE_WHEN_GOLD_PRESENT": 2,
+      "SELECTOR_WRONG_SEMANTIC_MATCH": 76
+    },
+    "full_message_selector_accuracy": {
+      "n": 349,
+      "note": "Aynı tam mesaj + aynı aday havuzu; bölücüden bağımsız",
+      "of": 486
+    },
+    "kb_overlap_ambiguity": 3,
+    "near_duplicate_confusion": 27,
+    "none_rate_full_message": {
+      "n": 22,
+      "of": 490
+    },
+    "none_when_gold_in_pool_full_message": 22,
+    "relaxed_accuracy": {
+      "n": 373,
+      "of": 490
+    },
+    "wrong_positive_full_message": 115
+  }
+}

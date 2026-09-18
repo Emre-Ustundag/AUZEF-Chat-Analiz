@@ -1,0 +1,2228 @@
+{
+  "behavior": {
+    "4o-mini": {
+      "calendar_selected_final": 14,
+      "calendar_selected_full_message": 10,
+      "exact_accuracy": {
+        "n": 359,
+        "of": 490
+      },
+      "false_split_rate": {
+        "n": 94,
+        "of": 488
+      },
+      "fine_cause_counts": {
+        "FALSE_SPLIT_SINGLE_INTENT": 30,
+        "FRAGMENT_LOST_CONTEXT": 7,
+        "KB_OVERLAP_AMBIGUITY": 13,
+        "NEEDS_HUMAN_REVIEW": 3,
+        "RETRIEVAL_TRUE_MISS": 2,
+        "SELECTOR_CALENDAR_DISTRACTION": 9,
+        "SELECTOR_FRAGMENT_CONTEXT_LOSS": 11,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 16,
+        "SELECTOR_NONE_WHEN_GOLD_PRESENT": 5,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 35
+      },
+      "full_message_selector_accuracy": {
+        "n": 368,
+        "note": "Aynı tam mesaj + aynı aday havuzu; bölücüden bağımsız",
+        "of": 486
+      },
+      "kb_overlap_ambiguity": 13,
+      "near_duplicate_confusion": 16,
+      "none_rate_full_message": {
+        "n": 34,
+        "of": 490
+      },
+      "none_when_gold_in_pool_full_message": 34,
+      "relaxed_accuracy": {
+        "n": 392,
+        "of": 490
+      },
+      "wrong_positive_full_message": 84
+    },
+    "full_message_paired": {
+      "both_correct": 315,
+      "both_wrong": 82,
+      "cases": 488,
+      "mcnemar": {
+        "method": "exact binomial McNemar",
+        "n_discordant": 91,
+        "p_value": 0.058574
+      },
+      "only_4o_mini": 55,
+      "only_luna_high": 36
+    },
+    "luna-high": {
+      "calendar_selected_final": 5,
+      "calendar_selected_full_message": 5,
+      "exact_accuracy": {
+        "n": 362,
+        "of": 490
+      },
+      "false_split_rate": {
+        "n": 16,
+        "of": 488
+      },
+      "fine_cause_counts": {
+        "FALSE_SPLIT_SINGLE_INTENT": 8,
+        "KB_OVERLAP_AMBIGUITY": 3,
+        "MISSED_MULTI_INTENT": 1,
+        "NEEDS_HUMAN_REVIEW": 3,
+        "RETRIEVAL_TRUE_MISS": 2,
+        "SELECTOR_CALENDAR_DISTRACTION": 5,
+        "SELECTOR_FRAGMENT_CONTEXT_LOSS": 1,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 27,
+        "SELECTOR_NONE_WHEN_GOLD_PRESENT": 2,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 76
+      },
+      "full_message_selector_accuracy": {
+        "n": 349,
+        "note": "Aynı tam mesaj + aynı aday havuzu; bölücüden bağımsız",
+        "of": 486
+      },
+      "kb_overlap_ambiguity": 3,
+      "near_duplicate_confusion": 27,
+      "none_rate_full_message": {
+        "n": 22,
+        "of": 490
+      },
+      "none_when_gold_in_pool_full_message": 22,
+      "relaxed_accuracy": {
+        "n": 373,
+        "of": 490
+      },
+      "wrong_positive_full_message": 115
+    }
+  },
+  "calendar": {
+    "4o-mini": {
+      "CALENDAR_AMBIGUOUS_DATE_SIGNAL": 8,
+      "CALENDAR_NOT_PRIMARY_CAUSE": 4,
+      "CALENDAR_SELECTED_DESPITE_CLEAR_QNA": 2
+    },
+    "luna-high": {
+      "CALENDAR_AMBIGUOUS_DATE_SIGNAL": 4,
+      "CALENDAR_SELECTED_DESPITE_CLEAR_QNA": 1
+    }
+  },
+  "context": {
+    "context_available_failures": {
+      "4o-mini": 51,
+      "luna-high": 39
+    },
+    "context_required_unscored": 17
+  },
+  "decision_table": [
+    {
+      "4o_mini": 48,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 48,
+        "luna_high": 9
+      },
+      "luna_high": 9,
+      "potential_intervention": "Bölme kararı/eşiği; spekülatif sonucu tercih",
+      "problem": "Gereksiz bölme (fazladan cevap / bağlam kaybı)",
+      "shared_architecture": "Bölücü davranışı modele bağlı; birleştirme mimarisi ortak"
+    },
+    {
+      "4o_mini": 16,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 16,
+        "luna_high": 27
+      },
+      "luna_high": 27,
+      "potential_intervention": "KB ayrıştırma / aday açıklaması",
+      "problem": "Seçici yakın-kopya karışıklığı",
+      "shared_architecture": "Ortak (KB'de yakın QnA'lar)"
+    },
+    {
+      "4o_mini": 35,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 35,
+        "luna_high": 76
+      },
+      "luna_high": 76,
+      "potential_intervention": "Seçici prompt / model",
+      "problem": "Seçici anlamsal yanlış eşleşme",
+      "shared_architecture": "Modele bağlı"
+    },
+    {
+      "4o_mini": 13,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 13,
+        "luna_high": 3
+      },
+      "luna_high": 3,
+      "potential_intervention": "Gold/KB inceleme",
+      "problem": "KB örtüşmesi (mesaj seçilen QnA'nın alias'ı)",
+      "shared_architecture": "Ortak (KB/gold)"
+    },
+    {
+      "4o_mini": 5,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 5,
+        "luna_high": 2
+      },
+      "luna_high": 2,
+      "potential_intervention": "Seçici eşik/prompt",
+      "problem": "None kalibrasyonu (gold varken 'hiçbiri')",
+      "shared_architecture": "Modele bağlı"
+    },
+    {
+      "4o_mini": 9,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 9,
+        "luna_high": 5
+      },
+      "luna_high": 5,
+      "potential_intervention": "Takvim yönlendirmesi",
+      "problem": "Takvim dikkat dağıtıcı",
+      "shared_architecture": "Ortak mimari (takvim havuzun başında)"
+    },
+    {
+      "4o_mini": 2,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 2,
+        "luna_high": 2
+      },
+      "luna_high": 2,
+      "potential_intervention": "Retrieval",
+      "problem": "Retrieval kaçırma",
+      "shared_architecture": "Ortak mimari"
+    },
+    {
+      "4o_mini": 0,
+      "exact_accuracy_upper_bound_gain": {
+        "4o_mini": 0,
+        "luna_high": 1
+      },
+      "luna_high": 1,
+      "potential_intervention": "Bölücü",
+      "problem": "Çoklu niyet kaçırma",
+      "shared_architecture": "Modele bağlı"
+    },
+    {
+      "4o_mini": 1,
+      "exact_accuracy_upper_bound_gain": null,
+      "luna_high": 1,
+      "potential_intervention": "Aday sıralama/karıştırma",
+      "problem": "Pozisyon yanlılığı sinyali (yanlış seçim gold'un üstünde, gold sırası ≥4)",
+      "shared_architecture": "Aday sırası ortak"
+    },
+    {
+      "4o_mini": null,
+      "exact_accuracy_upper_bound_gain": null,
+      "luna_high": null,
+      "potential_intervention": "Bağlam hedeflerine gold",
+      "problem": "Bağlam (puanlanamadı)",
+      "shared_architecture": "Gold eksik (17 hedef)"
+    }
+  ],
+  "false_split": {
+    "4o-mini": {
+      "CONTEXT_LOSS_FALSE_SPLIT": 7,
+      "EXTRA_ANSWER_FALSE_SPLIT": 30,
+      "HARMLESS_FALSE_SPLIT": 46,
+      "WRONG_ANSWER_FALSE_SPLIT": 11,
+      "exact_broken": 48,
+      "mean_answer_length_ratio": 1.6,
+      "pieces_distribution": {
+        "2": 72,
+        "3": 18,
+        "4": 3,
+        "5": 1
+      },
+      "total": 94
+    },
+    "luna-high": {
+      "CONTEXT_LOSS_FALSE_SPLIT": 0,
+      "EXTRA_ANSWER_FALSE_SPLIT": 8,
+      "HARMLESS_FALSE_SPLIT": 7,
+      "WRONG_ANSWER_FALSE_SPLIT": 1,
+      "exact_broken": 9,
+      "mean_answer_length_ratio": 1.46,
+      "pieces_distribution": {
+        "2": 16
+      },
+      "total": 16
+    }
+  },
+  "guarded": {
+    "4o-mini": {
+      "declined": 5,
+      "exact": 26,
+      "relaxed": 29
+    },
+    "by_mode": {
+      "blocked_shared_qna_update": {
+        "4o_mini_exact": 11,
+        "luna_high_exact": 7,
+        "targets": 13
+      },
+      "dynamic_announcement": {
+        "4o_mini_exact": 2,
+        "luna_high_exact": 2,
+        "targets": 2
+      },
+      "dynamic_availability": {
+        "4o_mini_exact": 0,
+        "luna_high_exact": 0,
+        "targets": 1
+      },
+      "dynamic_catalog": {
+        "4o_mini_exact": 1,
+        "luna_high_exact": 1,
+        "targets": 1
+      },
+      "dynamic_result_status": {
+        "4o_mini_exact": 0,
+        "luna_high_exact": 0,
+        "targets": 1
+      },
+      "dynamic_schedule": {
+        "4o_mini_exact": 1,
+        "luna_high_exact": 1,
+        "targets": 1
+      },
+      "dynamic_source_with_historical_benchmark": {
+        "4o_mini_exact": 1,
+        "luna_high_exact": 1,
+        "targets": 1
+      },
+      "historical_term_snapshot": {
+        "4o_mini_exact": 1,
+        "luna_high_exact": 1,
+        "targets": 1
+      },
+      "policy_review": {
+        "4o_mini_exact": 0,
+        "luna_high_exact": 1,
+        "targets": 1
+      },
+      "policy_sensitive": {
+        "4o_mini_exact": 2,
+        "luna_high_exact": 2,
+        "targets": 2
+      },
+      "policy_snapshot": {
+        "4o_mini_exact": 7,
+        "luna_high_exact": 5,
+        "targets": 8
+      }
+    },
+    "cases": [
+      {
+        "4o_mini": {
+          "declined": true,
+          "exact": false,
+          "relaxed": true,
+          "selected": [
+            109,
+            397
+          ],
+          "split": 3
+        },
+        "case_id": 62,
+        "gold": [
+          397
+        ],
+        "gold_question": [
+          "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_availability"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": true,
+          "selected": [
+            49,
+            397
+          ],
+          "selected_questions": [
+            "Öğrenci kimlik kartımı nasıl alabilirim?",
+            "Sınav tercih sistemine giriş yapamıyorum, ne yapmalıyım?"
+          ],
+          "split": 2
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            405
+          ],
+          "split": 1
+        },
+        "case_id": 86,
+        "gold": [
+          405
+        ],
+        "gold_question": [
+          "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_source_with_historical_benchmark"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            405
+          ],
+          "selected_questions": [
+            "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            410
+          ],
+          "split": 1
+        },
+        "case_id": 195,
+        "gold": [
+          410
+        ],
+        "gold_question": [
+          "Lisans tamamlama programları nelerdir?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_catalog"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            410
+          ],
+          "selected_questions": [
+            "Lisans tamamlama programları nelerdir?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 200,
+        "gold": [
+          319,
+          333
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?",
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            333
+          ],
+          "selected_questions": [
+            "Öğrenci affı başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 201,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            400
+          ],
+          "selected_questions": [
+            "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            400
+          ],
+          "split": 2
+        },
+        "case_id": 202,
+        "gold": [
+          400
+        ],
+        "gold_question": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_sensitive"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            400
+          ],
+          "selected_questions": [
+            "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            400
+          ],
+          "split": 1
+        },
+        "case_id": 203,
+        "gold": [
+          400
+        ],
+        "gold_question": [
+          "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_sensitive"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            400
+          ],
+          "selected_questions": [
+            "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": true,
+          "exact": false,
+          "relaxed": false,
+          "selected": [],
+          "split": 1
+        },
+        "case_id": 204,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": true,
+          "exact": false,
+          "relaxed": false,
+          "selected": [],
+          "selected_questions": [],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 205,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "selected_questions": [
+            "Af başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 206,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            333
+          ],
+          "selected_questions": [
+            "Öğrenci affı başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 207,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            400
+          ],
+          "selected_questions": [
+            "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 208,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            400
+          ],
+          "selected_questions": [
+            "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 210,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "selected_questions": [
+            "Af başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 211,
+        "gold": [
+          319,
+          333
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?",
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            333
+          ],
+          "selected_questions": [
+            "Öğrenci affı başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 215,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "selected_questions": [
+            "Af başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "split": 1
+        },
+        "case_id": 217,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            333
+          ],
+          "selected_questions": [
+            "Öğrenci affı başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            402
+          ],
+          "split": 1
+        },
+        "case_id": 312,
+        "gold": [
+          402
+        ],
+        "gold_question": [
+          "Derslerimin sınavları aynı oturumda mı yapılacak?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_schedule"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            402
+          ],
+          "selected_questions": [
+            "Derslerimin sınavları aynı oturumda mı yapılacak?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": true,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            329
+          ],
+          "split": 2
+        },
+        "case_id": 333,
+        "gold": [
+          406
+        ],
+        "gold_question": [
+          "Mezuniyete Üç Ders Sınavı sonuçları ne zaman açıklanır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_result_status"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            329
+          ],
+          "selected_questions": [
+            "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": false,
+          "relaxed": true,
+          "selected": [
+            145,
+            403
+          ],
+          "split": 2
+        },
+        "case_id": 340,
+        "gold": [
+          403
+        ],
+        "gold_question": [
+          "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_review"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            403
+          ],
+          "selected_questions": [
+            "Tek FF dersim için üç ders sınavına veya yaz okuluna girebilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            333
+          ],
+          "split": 1
+        },
+        "case_id": 379,
+        "gold": [
+          319,
+          333
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?",
+          "Öğrenci affı başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "selected_questions": [
+            "Af başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": false,
+          "relaxed": true,
+          "selected": [
+            244,
+            319
+          ],
+          "split": 2
+        },
+        "case_id": 381,
+        "gold": [
+          319
+        ],
+        "gold_question": [
+          "Af başvurusu nasıl yapılır?"
+        ],
+        "gold_rank": 9,
+        "guard_modes": [
+          "blocked_shared_qna_update"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            319
+          ],
+          "selected_questions": [
+            "Af başvurusu nasıl yapılır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 408,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            50
+          ],
+          "selected_questions": [
+            "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": true,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 3
+        },
+        "case_id": 409,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "selected_questions": [
+            "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": true,
+          "exact": false,
+          "relaxed": false,
+          "selected": [],
+          "split": 1
+        },
+        "case_id": 410,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": true,
+          "exact": false,
+          "relaxed": false,
+          "selected": [],
+          "selected_questions": [],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 411,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "selected_questions": [
+            "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 412,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "selected_questions": [
+            "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 413,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "selected_questions": [
+            "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 414,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "selected_questions": [
+            "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            336
+          ],
+          "split": 1
+        },
+        "case_id": 418,
+        "gold": [
+          336
+        ],
+        "gold_question": [
+          "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "policy_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": false,
+          "relaxed": false,
+          "selected": [
+            328
+          ],
+          "selected_questions": [
+            "Çocuk Gelişimi bölümü kapatıldı mı?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            407
+          ],
+          "split": 1
+        },
+        "case_id": 459,
+        "gold": [
+          407
+        ],
+        "gold_question": [
+          "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "historical_term_snapshot"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            407
+          ],
+          "selected_questions": [
+            "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            408
+          ],
+          "split": 1
+        },
+        "case_id": 462,
+        "gold": [
+          408
+        ],
+        "gold_question": [
+          "Bahar dönemi sınav sonuçları açıklandı mı?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_announcement"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            408
+          ],
+          "selected_questions": [
+            "Bahar dönemi sınav sonuçları açıklandı mı?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      },
+      {
+        "4o_mini": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            408
+          ],
+          "split": 1
+        },
+        "case_id": 463,
+        "gold": [
+          408
+        ],
+        "gold_question": [
+          "Bahar dönemi sınav sonuçları açıklandı mı?"
+        ],
+        "gold_rank": 1,
+        "guard_modes": [
+          "dynamic_announcement"
+        ],
+        "luna_high": {
+          "declined": false,
+          "exact": true,
+          "relaxed": true,
+          "selected": [
+            408
+          ],
+          "selected_questions": [
+            "Bahar dönemi sınav sonuçları açıklandı mı?"
+          ],
+          "split": 1
+        },
+        "same_candidates": true
+      }
+    ],
+    "luna-high": {
+      "declined": 2,
+      "exact": 21,
+      "relaxed": 22
+    },
+    "same_candidates_all": true,
+    "targets": 32
+  },
+  "human_review": {
+    "case_ids": [
+      75,
+      153,
+      180,
+      184,
+      228,
+      366,
+      391,
+      407,
+      415,
+      423,
+      440,
+      449,
+      470,
+      472,
+      474,
+      503,
+      516
+    ],
+    "cases": 17
+  },
+  "kb_ambiguity": {
+    "message_is_alias_of_selected": 16,
+    "near_duplicate_rows": 43,
+    "recurring_gold_selected_pairs": [
+      {
+        "count": 9,
+        "gold_qna_id": 316,
+        "gold_question": "Çözüm Merkezi'ne giriş yapamıyorum, ne yapmalıyım?",
+        "selected_qna_id": 335,
+        "selected_question": "Çözüm Merkezi'ne talep oluşturamıyorum, ne yapmalıyım?"
+      },
+      {
+        "count": 7,
+        "gold_qna_id": 328,
+        "gold_question": "Çocuk Gelişimi bölümü kapatıldı mı?",
+        "selected_qna_id": 336,
+        "selected_question": "YKS ile Çocuk Gelişimi lisans bölümüne tercih yapabilir miyim?"
+      },
+      {
+        "count": 5,
+        "gold_qna_id": 310,
+        "gold_question": "Kayıt tarihleri ne zamandır?",
+        "selected_qna_id": 405,
+        "selected_question": "İkinci Üniversite sınavsız kayıt tarihleri ne zaman?"
+      },
+      {
+        "count": 5,
+        "gold_qna_id": 333,
+        "gold_question": "Öğrenci affı başvurusu nasıl yapılır?",
+        "selected_qna_id": 319,
+        "selected_question": "Af başvurusu nasıl yapılır?"
+      },
+      {
+        "count": 5,
+        "gold_qna_id": 129,
+        "gold_question": "Yatay geçiş işlemleri ile ilgili detaylı bilgiye nereden ulaşabiliriz?",
+        "selected_qna_id": 342,
+        "selected_question": "Merkezi yatay geçiş başvurusu nasıl yapılır?"
+      },
+      {
+        "count": 5,
+        "gold_qna_id": 347,
+        "gold_question": "Staj defterindeki eksikleri düzeltmek için ne kadar süre var?",
+        "selected_qna_id": 72,
+        "selected_question": "Endüstri Mühendisliği programı öğrencisiyim staj defterimi en son hangi tarihe kadar göndermem gerekiyor?"
+      },
+      {
+        "count": 4,
+        "gold_qna_id": 311,
+        "gold_question": "Pasif öğrenci ne demektir?",
+        "selected_qna_id": 246,
+        "selected_question": "Kayıt sildirme başvurumun sonucunu nasıl öğrenebilirim?"
+      },
+      {
+        "count": 4,
+        "gold_qna_id": 322,
+        "gold_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+        "selected_qna_id": 335,
+        "selected_question": "Çözüm Merkezi'ne talep oluşturamıyorum, ne yapmalıyım?"
+      },
+      {
+        "count": 3,
+        "gold_qna_id": 308,
+        "gold_question": "Aktif öğrenci olup olmadığımı nasıl kontrol edebilirim?",
+        "selected_qna_id": 311,
+        "selected_question": "Pasif öğrenci ne demektir?"
+      },
+      {
+        "count": 3,
+        "gold_qna_id": 311,
+        "gold_question": "Pasif öğrenci ne demektir?",
+        "selected_qna_id": 88,
+        "selected_question": "Kayıt yenileme nedir, nasıl yapılır?"
+      },
+      {
+        "count": 3,
+        "gold_qna_id": 319,
+        "gold_question": "Af başvurusu nasıl yapılır?",
+        "selected_qna_id": 400,
+        "selected_question": "Eğitime ara verdikten sonra öğrenimime nasıl devam edebilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 306,
+        "gold_question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "selected_qna_id": 51,
+        "selected_question": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı okurken aldığım derslerden muaf olur muyum?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 306,
+        "gold_question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "selected_qna_id": 343,
+        "selected_question": "Öğrenci işlerine gönderdiğim dilekçenin sonucunu nasıl öğrenebilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 306,
+        "gold_question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "selected_qna_id": 116,
+        "selected_question": "Muafiyetten kimler yararlanabilir?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 306,
+        "gold_question": "Ders muafiyeti başvurusu nasıl yapılır?",
+        "selected_qna_id": 325,
+        "selected_question": "Ders saydırma işlemi nasıl yapılır?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 308,
+        "gold_question": "Aktif öğrenci olup olmadığımı nasıl kontrol edebilirim?",
+        "selected_qna_id": 246,
+        "selected_question": "Kayıt sildirme başvurumun sonucunu nasıl öğrenebilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 308,
+        "gold_question": "Aktif öğrenci olup olmadığımı nasıl kontrol edebilirim?",
+        "selected_qna_id": 223,
+        "selected_question": "Edu uzantılı öğrenci maili nasıl alınır?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 309,
+        "gold_question": "Öğrenci Bilgi Sistemi'ne (OBS) giriş yapamıyorum, ne yapmalıyım?",
+        "selected_qna_id": 49,
+        "selected_question": "Öğrenci kimlik kartımı nasıl alabilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 312,
+        "gold_question": "Mezun olmak için kaç dersim kaldı?",
+        "selected_qna_id": 39,
+        "selected_question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 312,
+        "gold_question": "Mezun olmak için kaç dersim kaldı?",
+        "selected_qna_id": 50,
+        "selected_question": "Çocuk Gelişimi ön lisans programından mezun oldum, AUZEF' te Çocuk Gelişimi lisans programı için lisans tamamlama yapabilir miyim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 316,
+        "gold_question": "Çözüm Merkezi'ne giriş yapamıyorum, ne yapmalıyım?",
+        "selected_qna_id": 255,
+        "selected_question": "Diplomamı ne zaman alabilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 317,
+        "gold_question": "Hangi lisans veya ön lisans bölümleri bulunmaktadır?",
+        "selected_qna_id": 328,
+        "selected_question": "Çocuk Gelişimi bölümü kapatıldı mı?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 91,
+        "gold_question": "AUZEF ’e bağlı Sağlıkta Lisans Tamamlama programlarına nasıl yerleşebilirim?",
+        "selected_qna_id": 80,
+        "selected_question": "Hangi programlarda staj uygulaması bulunmaktadır?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 319,
+        "gold_question": "Af başvurusu nasıl yapılır?",
+        "selected_qna_id": 333,
+        "selected_question": "Öğrenci affı başvurusu nasıl yapılır?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 320,
+        "gold_question": "AUZEF'te hangi bölümler bulunmaktadır?",
+        "selected_qna_id": 92,
+        "selected_question": "AUZEF bünyesinde bulunan Sağlık Alanında Lisans Tamamlama (SLT) Programları nelerdir?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 321,
+        "gold_question": "Danışman hocama nasıl ulaşabilirim?",
+        "selected_qna_id": 212,
+        "selected_question": "Ara Sınav (Vize) sınavında hangi ünitelerden sorumlu oluruz?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 322,
+        "gold_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+        "selected_qna_id": 338,
+        "selected_question": "Öğrenci işlerine nasıl ulaşabilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 322,
+        "gold_question": "Çözüm Merkezi'ne nasıl talep oluşturabilirim?",
+        "selected_qna_id": 187,
+        "selected_question": "Derslerime senkronize işlemi yapılmasına rağmen hala sistemimde görünmüyor ne yapmalıyım?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 328,
+        "gold_question": "Çocuk Gelişimi bölümü kapatıldı mı?",
+        "selected_qna_id": 324,
+        "selected_question": "Bölümlerin yanında yazan 'pasif' ne anlama gelmektedir?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 329,
+        "gold_question": "Tek ders sınav başvurusu ne zaman ve sınav hangi tarihte yapılır?",
+        "selected_qna_id": 145,
+        "selected_question": "Mezuniyete Üç Ders sınavlarına nasıl katılabilirim ?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 330,
+        "gold_question": "Çözüm Merkezi'nin geri dönüş süresi ne kadardır?",
+        "selected_qna_id": 335,
+        "selected_question": "Çözüm Merkezi'ne talep oluşturamıyorum, ne yapmalıyım?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 331,
+        "gold_question": "Öğrenci numaramı nasıl öğrenebilirim?",
+        "selected_qna_id": 244,
+        "selected_question": "Kaydımı nasıl sildirebilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 337,
+        "gold_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+        "selected_qna_id": 39,
+        "selected_question": "Mezuniyet için gerekli olan AKTS miktarını nasıl hesaplayabilirim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 1,
+        "gold_question": "Bir dönemde en fazla kaç Kredi/AKTS ders alabilirim?",
+        "selected_qna_id": 337,
+        "selected_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 337,
+        "gold_question": "Başarılı olduğum derslerin AKTS/kredisi neden yükselmedi?",
+        "selected_qna_id": 404,
+        "selected_question": "e-Devlet transkriptimdeki bilgiler neden farklı görünüyor?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 339,
+        "gold_question": "İkinci üniversite kapsamında SGK haklarından yararlanabilir miyim?",
+        "selected_qna_id": 123,
+        "selected_question": "Sınavsız İkinci Üniversiteyle kayıt yaptırdığımda askerlik tecil işlemlerinden faydalanabilir miyim?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 341,
+        "gold_question": "Sınav sonuçları ne zaman açıklanır?",
+        "selected_qna_id": 407,
+        "selected_question": "2025-2026 Bahar dönemi notları sistemde görünmüyorsa ne yapılmalıdır?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 342,
+        "gold_question": "Merkezi yatay geçiş başvurusu nasıl yapılır?",
+        "selected_qna_id": 131,
+        "selected_question": "Yatay geçiş başvuruları hangi tarihlerde yapılmakta ve nerede ilan edilmektedir?"
+      },
+      {
+        "count": 2,
+        "gold_qna_id": 346,
+        "gold_question": "Disiplin cezası durum belgesi talebimin sonucunu nasıl öğrenebilirim?",
+        "selected_qna_id": 235,
+        "selected_question": "Yatay geçiş yapacağım \"Yatay Geçişe Engel Olmadığına Dair Belgeyi\" nereden alabilirim?"
+      }
+    ],
+    "rows": 170
+  },
+  "multi_intent": {
+    "480": {
+      "4o-mini": {
+        "exact": false,
+        "fragments": [
+          {
+            "declined": true,
+            "fragment": "İstanbulkart almak istiyorum.",
+            "groups_in_pool": [
+              true,
+              true
+            ],
+            "selected": null
+          },
+          {
+            "declined": false,
+            "fragment": "Yökte kaydım görünmüyor.",
+            "groups_in_pool": [
+              false,
+              true
+            ],
+            "selected": 344
+          }
+        ],
+        "lost_groups": [
+          {
+            "gold_in_some_fragment_pool": true,
+            "group": [
+              125
+            ],
+            "loss_stage": "SELECTOR"
+          }
+        ],
+        "relaxed": false,
+        "selected": [
+          344
+        ],
+        "split_count": 2,
+        "sub_questions": [
+          "İstanbulkart almak istiyorum.",
+          "Yökte kaydım görünmüyor."
+        ]
+      },
+      "expected_intent_groups": [
+        [
+          125
+        ],
+        [
+          344
+        ]
+      ],
+      "luna-high": {
+        "exact": false,
+        "fragments": [
+          {
+            "declined": false,
+            "fragment": "İstanbulkart almak istiyorum ama yökte kaydim gorunmuyor",
+            "groups_in_pool": [
+              false,
+              true
+            ],
+            "selected": 344
+          }
+        ],
+        "lost_groups": [
+          {
+            "gold_in_some_fragment_pool": false,
+            "group": [
+              125
+            ],
+            "loss_stage": "SPLITTER"
+          }
+        ],
+        "relaxed": false,
+        "selected": [
+          344
+        ],
+        "split_count": 1,
+        "sub_questions": []
+      },
+      "user_message": "İstanbulkart almak istiyorum ama yökte kaydim gorunmuyor"
+    },
+    "71": {
+      "4o-mini": {
+        "exact": false,
+        "fragments": [
+          {
+            "declined": false,
+            "fragment": "Merhaba, üniversitenin telefon uygulamasına giriş yapamıyorum.",
+            "groups_in_pool": [
+              true,
+              false
+            ],
+            "selected": 350
+          },
+          {
+            "declined": false,
+            "fragment": "Devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım.",
+            "groups_in_pool": [
+              true,
+              false
+            ],
+            "selected": 398
+          },
+          {
+            "declined": false,
+            "fragment": "Tek ders için derslerime nereden ulaşıp çalışabilirim?",
+            "groups_in_pool": [
+              true,
+              true
+            ],
+            "selected": 329
+          },
+          {
+            "declined": false,
+            "fragment": "Sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz?",
+            "groups_in_pool": [
+              true,
+              false
+            ],
+            "selected": 315
+          }
+        ],
+        "lost_groups": [
+          {
+            "gold_in_some_fragment_pool": true,
+            "group": [
+              181
+            ],
+            "loss_stage": "SELECTOR"
+          }
+        ],
+        "relaxed": false,
+        "selected": [
+          315,
+          329,
+          350,
+          398
+        ],
+        "split_count": 4,
+        "sub_questions": [
+          "Merhaba, üniversitenin telefon uygulamasına giriş yapamıyorum.",
+          "Devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım.",
+          "Tek ders için derslerime nereden ulaşıp çalışabilirim?",
+          "Sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz?"
+        ]
+      },
+      "expected_intent_groups": [
+        [
+          398
+        ],
+        [
+          181
+        ]
+      ],
+      "luna-high": {
+        "exact": false,
+        "fragments": [
+          {
+            "declined": false,
+            "fragment": "Üniversitenin telefon uygulamasına neden giriş yapamıyorum ve neden öğrenci olarak görünmüyorum?",
+            "groups_in_pool": [
+              true,
+              false
+            ],
+            "selected": 196
+          },
+          {
+            "declined": false,
+            "fragment": "Tek ders için derslerime nereden ulaşabilir ve çalışabilirim?",
+            "groups_in_pool": [
+              true,
+              true
+            ],
+            "selected": 181
+          },
+          {
+            "declined": false,
+            "fragment": "Sistemsel bir hataysa düzeltilmesine yardımcı olabilir misiniz?",
+            "groups_in_pool": [
+              true,
+              false
+            ],
+            "selected": 315
+          }
+        ],
+        "lost_groups": [
+          {
+            "gold_in_some_fragment_pool": true,
+            "group": [
+              398
+            ],
+            "loss_stage": "SELECTOR"
+          }
+        ],
+        "relaxed": false,
+        "selected": [
+          181,
+          196,
+          315
+        ],
+        "split_count": 3,
+        "sub_questions": [
+          "Üniversitenin telefon uygulamasına neden giriş yapamıyorum ve neden öğrenci olarak görünmüyorum?",
+          "Tek ders için derslerime nereden ulaşabilir ve çalışabilirim?",
+          "Sistemsel bir hataysa düzeltilmesine yardımcı olabilir misiniz?"
+        ]
+      },
+      "user_message": "Merhaba üniversitenin telefon uygulamasına giriş yapamıyorum devamlı öğrenci olarak görünmüyormuşum ama 2. döneme ait harç ödemesini yapmış bulunmaktayım tek ders için derslerime nereden ulaşıp çalışabilirim sistemsel bir hataysa düzeltmeye yardımcı olabilir misiniz"
+    }
+  },
+  "none_calibration": {
+    "4o-mini": {
+      "declined_full_message": 34,
+      "declined_then_fallback_used": 33,
+      "declined_then_final_exact_correct": 25,
+      "declined_with_gold_in_pool": 34,
+      "declined_without_gold_in_pool": 0
+    },
+    "luna-high": {
+      "declined_full_message": 22,
+      "declined_then_fallback_used": 22,
+      "declined_then_final_exact_correct": 17,
+      "declined_with_gold_in_pool": 22,
+      "declined_without_gold_in_pool": 0
+    }
+  },
+  "outputs_sha256": {
+    "PAIRED-ERROR-AUDIT.md": "67fd867f3fd077d79750733a73150b91d8070bdcc9dd3e7b8890c6e51599b899",
+    "calendar-analysis.jsonl": "80ccf8d68c0b3a90c08c21e330c7a45d509dd6d24ed6f63e1fcb5c625509a98a",
+    "false-split-analysis.jsonl": "3a65c6c1bdaba6863a516a849b92a5b3763c5073d01e6d4826bdd811b4effeb1",
+    "guarded-analysis.json": "d21b73cb238c4ad5d6f39c04fcb1618288b538090d5db0876d10cbad48d8f7a0",
+    "kb-ambiguity-analysis.jsonl": "8228eae23f074368b46ada5bc85ac271a37ec2301c808f76e28905a746a9091d",
+    "model-behavior-comparison.json": "dbb0cff7295f20c68af0f50c1df710153c312afdfa53ebeb37d0b8ad37659f16",
+    "multi-intent-analysis.json": "feac165771a86b08c5c564d51b83f605b3b8ef5409de704be071775839cf2be1",
+    "paired-error-cases.jsonl": "0fed06f67a2fc30f10821b6adbaa0304d07fa8d8b9655ad01fe65d41c2ccf8dd",
+    "position-bias-analysis.json": "3893b53e054b1c12dadae6608b6d64b33f5f84f39bb2582e889c45bcd9f002da",
+    "root-cause-summary.json": "0527712a04937ca01774b740580a700c9aa1d3b2a4b3565d01df37cfb0c990ba"
+  },
+  "position_bias": {
+    "4o-mini": {
+      "accuracy_by_gold_rank": {
+        "1": {
+          "n": 363,
+          "of": 462,
+          "rate": 0.7857
+        },
+        "2-3": {
+          "n": 3,
+          "of": 17,
+          "rate": 0.1765
+        },
+        "4-5": {
+          "n": 0,
+          "of": 2,
+          "rate": 0.0
+        },
+        "6+": {
+          "n": 2,
+          "of": 5,
+          "rate": 0.4
+        }
+      },
+      "wrong_cases": 74,
+      "wrong_selected_above_gold": 18,
+      "wrong_selected_below_gold": 56,
+      "wrong_selection_rank_distribution": {
+        "1": 16,
+        "2": 37,
+        "3": 9,
+        "4": 2,
+        "5": 1,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "12": 1,
+        "14": 1,
+        "17": 1,
+        "19": 1
+      }
+    },
+    "luna-high": {
+      "accuracy_by_gold_rank": {
+        "1": {
+          "n": 331,
+          "of": 462,
+          "rate": 0.7165
+        },
+        "2-3": {
+          "n": 14,
+          "of": 17,
+          "rate": 0.8235
+        },
+        "4-5": {
+          "n": 1,
+          "of": 2,
+          "rate": 0.5
+        },
+        "6+": {
+          "n": 3,
+          "of": 5,
+          "rate": 0.6
+        }
+      },
+      "wrong_cases": 110,
+      "wrong_selected_above_gold": 5,
+      "wrong_selected_below_gold": 105,
+      "wrong_selection_rank_distribution": {
+        "1": 4,
+        "2": 51,
+        "3": 13,
+        "4": 14,
+        "5": 2,
+        "6": 5,
+        "7": 2,
+        "8": 5,
+        "9": 2,
+        "10": 4,
+        "11": 1,
+        "12": 1,
+        "14": 1,
+        "15": 2,
+        "16": 1,
+        "19": 2
+      }
+    }
+  },
+  "root_causes": {
+    "both_wrong": {
+      "4o_mini_cause": {
+        "FALSE_SPLIT_SINGLE_INTENT": 6,
+        "FRAGMENT_LOST_CONTEXT": 2,
+        "KB_OVERLAP_AMBIGUITY": 4,
+        "NEEDS_HUMAN_REVIEW": 3,
+        "RETRIEVAL_TRUE_MISS": 2,
+        "SELECTOR_CALENDAR_DISTRACTION": 4,
+        "SELECTOR_FRAGMENT_CONTEXT_LOSS": 9,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 15,
+        "SELECTOR_NONE_WHEN_GOLD_PRESENT": 4,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 26
+      },
+      "luna_high_cause": {
+        "FALSE_SPLIT_SINGLE_INTENT": 4,
+        "KB_OVERLAP_AMBIGUITY": 3,
+        "MISSED_MULTI_INTENT": 1,
+        "NEEDS_HUMAN_REVIEW": 2,
+        "RETRIEVAL_TRUE_MISS": 2,
+        "SELECTOR_CALENDAR_DISTRACTION": 5,
+        "SELECTOR_FRAGMENT_CONTEXT_LOSS": 1,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 15,
+        "SELECTOR_NONE_WHEN_GOLD_PRESENT": 2,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 40
+      }
+    },
+    "model_diff_labels": {
+      "MODEL_DIFF_CALENDAR": 7,
+      "MODEL_DIFF_FRAGMENTATION": 29,
+      "MODEL_DIFF_NONE_CALIBRATION": 25,
+      "MODEL_DIFF_OTHER": 2,
+      "MODEL_DIFF_SAME_INPUT_DIFFERENT_SELECTION": 69,
+      "MODEL_DIFF_SPLITTER": 36,
+      "PURE_SELECTOR_MODEL_DIFFERENCE": 69
+    },
+    "only_4o_mini_correct": {
+      "luna_high_cause": {
+        "FALSE_SPLIT_SINGLE_INTENT": 4,
+        "NEEDS_HUMAN_REVIEW": 1,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 12,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 36
+      }
+    },
+    "only_luna_high_correct": {
+      "4o_mini_cause": {
+        "FALSE_SPLIT_SINGLE_INTENT": 24,
+        "FRAGMENT_LOST_CONTEXT": 5,
+        "KB_OVERLAP_AMBIGUITY": 9,
+        "SELECTOR_CALENDAR_DISTRACTION": 5,
+        "SELECTOR_FRAGMENT_CONTEXT_LOSS": 2,
+        "SELECTOR_NEAR_DUPLICATE_CONFUSION": 1,
+        "SELECTOR_NONE_WHEN_GOLD_PRESENT": 1,
+        "SELECTOR_WRONG_SEMANTIC_MATCH": 9
+      }
+    },
+    "pure_selector_model_difference": {
+      "case_ids": [
+        2,
+        9,
+        23,
+        42,
+        50,
+        52,
+        55,
+        84,
+        93,
+        94,
+        99,
+        103,
+        104,
+        108,
+        110,
+        118,
+        153,
+        158,
+        166,
+        172,
+        179,
+        182,
+        184,
+        189,
+        192,
+        194,
+        196,
+        201,
+        206,
+        207,
+        208,
+        216,
+        217,
+        225,
+        231,
+        250,
+        298,
+        320,
+        321,
+        330,
+        337,
+        338,
+        344,
+        366,
+        367,
+        377,
+        404,
+        408,
+        415,
+        418,
+        420,
+        421,
+        422,
+        425,
+        440,
+        448,
+        449,
+        451,
+        452,
+        454,
+        455,
+        470,
+        473,
+        474,
+        487,
+        503,
+        506,
+        510,
+        516
+      ],
+      "cases": 69,
+      "split": {
+        "4o_mini_correct": 44,
+        "luna_correct": 25
+      }
+    }
+  },
+  "sources": {
+    "benchmark-manifest.json": "3ed546ff58012a1a33853d93672c8f3bc0705612b6d38d760dd9dc66b964e9c0",
+    "comparison.json": "414ee2af89407d50964351d7de2d4927d91f51c1ef82f22dc8d68d5b340dbf5c",
+    "paired-cases.jsonl": "49b77b97110a8e9e0bc749e77b5c1d9333f261bc59277c3cd00929e7fe488591"
+  },
+  "universe": {
+    "both_wrong": 75,
+    "extra_answer_cases": 40,
+    "metric": "exact (birebir) — fazladan cevap hata sayılır",
+    "note": "Kullanıcı özetindeki 64 'ikisi de yanlış' gevşek metriğe aittir; birebir metrikte 75. Evren tutarlılık için birebir metrikle kuruldu; gevşek sonuç her vakada ayrı alan.",
+    "only_4o_mini_correct": 53,
+    "only_luna_high_correct": 56,
+    "relaxed_buckets_over_listed_cases": {
+      "both_correct": 70,
+      "both_wrong": 64,
+      "only_4o_mini": 53,
+      "only_luna_high": 34
+    },
+    "total": 184
+  }
+}
