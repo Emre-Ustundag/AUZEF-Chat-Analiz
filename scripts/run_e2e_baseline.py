@@ -359,10 +359,11 @@ def evaluate(target: dict[str, Any], result: dict[str, Any], guards: set[int], a
             primary = "ROUTING_GUARD_BLOCK"
         elif selected_calendar:
             primary = "CALENDAR_ROUTING_INTERFERENCE"
+        elif len(groups) > 1 and sub_count < len(groups):
+            # Bölünmeyen niyet için ayrı alt soru aranmadığından retrieval eksiği bunun sonucudur.
+            primary = "SPLITTER_MISSED_SPLIT"
         elif not all(any_pool):
             primary = "RETRIEVAL_MISS"
-        elif len(groups) > 1 and sub_count < len(groups):
-            primary = "SPLITTER_MISSED_SPLIT"
         elif record["fallback_used"]:
             primary = "FALLBACK_ERROR"
         elif all(selector_in_pool):
@@ -540,8 +541,18 @@ def report() -> int:
                        "luna_high_selected": evaluations[b_key][case_id]["selected_qna_ids"],
                        "4o_mini_cause": evaluations[a_key][case_id]["primary_cause"],
                        "luna_high_cause": evaluations[b_key][case_id]["primary_cause"]})
+    exact_buckets = defaultdict(list)
+    for case_id in common:
+        a, b = evaluations[a_key][case_id]["exact"], evaluations[b_key][case_id]["exact"]
+        exact_buckets["both_correct" if a and b else "only_4o_mini" if a else "only_luna_high" if b else "both_wrong"].append(case_id)
     comparison = {
         "paired_scorable_targets": len(common),
+        "exact_metric": {
+            "counts": {k: len(v) for k, v in sorted(exact_buckets.items())},
+            "mcnemar": mcnemar(len(exact_buckets["only_4o_mini"]), len(exact_buckets["only_luna_high"])),
+            "bootstrap_4o_minus_luna": bootstrap([evaluations[a_key][c]["exact"] for c in common],
+                                                 [evaluations[b_key][c]["exact"] for c in common]) if common else None,
+        },
         "counts": {k: len(v) for k, v in sorted(buckets.items())},
         "cases": {k: v for k, v in sorted(buckets.items()) if k != "both_correct"},
         "mcnemar": mcnemar(len(buckets["only_4o_mini"]), len(buckets["only_luna_high"])),
@@ -643,7 +654,11 @@ def render(model_metrics: dict[str, Any], comparison: dict[str, Any], manifest: 
     lines += [f"| {name} | {x} | {y} |" for name, x, y in rows]
     lines += ["", "## Eşli karşılaştırma", "", f"`{json.dumps(comparison['counts'], ensure_ascii=False)}`",
               f"McNemar: `{json.dumps(comparison['mcnemar'], ensure_ascii=False)}`",
-              f"Bootstrap (4o-mini − Luna): `{json.dumps(comparison['bootstrap_4o_minus_luna'], ensure_ascii=False)}`", "",
+              f"Bootstrap (4o-mini − Luna): `{json.dumps(comparison['bootstrap_4o_minus_luna'], ensure_ascii=False)}`",
+              f"Birebir metrik: `{json.dumps(comparison['exact_metric'], ensure_ascii=False)}`", "",
+              "Not: 'doğru' metriği, gereksiz bölmeyle birden çok cevap birleştiren koşuyu kayırır; "
+              "'birebir' metriği fazladan cevabı hata sayar.", "",
+              "Not: Benchmark mesajları KB alias'larından türetildiği için exact-alias ölçümleri iyimser yanlıdır.", "",
               "## Hata sınıfları", "",
               f"- 4o-mini: `{json.dumps(a['error_taxonomy'], ensure_ascii=False)}`",
               f"- Luna-high: `{json.dumps(b['error_taxonomy'], ensure_ascii=False)}`", "",

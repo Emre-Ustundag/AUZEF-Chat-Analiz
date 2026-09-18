@@ -104,3 +104,10 @@ def test_unscorable_context_target_is_not_scored():
 def test_mcnemar_is_symmetric_and_bounded():
     assert mcnemar(0, 0)["p_value"] == 1.0
     assert mcnemar(10, 2)["p_value"] == mcnemar(2, 10)["p_value"] < 0.05
+
+
+def test_missed_split_outranks_retrieval_miss_for_multi_intent():
+    events = [pool([344]), {"kind": "split_result", "sub_questions": ["m"]}, ask("worker", 344)]
+    record = evaluate(base_target([[125], [344]]), base_result(events), set(), {})
+    assert record["in_any_pool"] == [False, True]
+    assert record["primary_cause"] == "SPLITTER_MISSED_SPLIT"
