@@ -41,14 +41,18 @@ EXPECTED_GATE = {"frozen": True, "targets": 507, "evaluation_sessions": 377, "mu
 #: Router'daki bağlam penceresi (routers/chat.py varsayılanları): son 4 mesaj, 1200 karakter.
 CONTEXT_POLICY = {"max_messages": 4, "max_chars": 1200, "roles": {"user": "user", "assistant": "bot"},
                   "applies_to": ["FOLLOW_UP_CONTEXT_REQUIRED"]}
+RATE_LIMIT_BACKOFF = [2, 4, 8, 16, 30, 60]
 RETRY = {"max_retries": 2, "backoff_seconds": [10, 30], "sdk_max_retries": 2,
-         "scope": "hedef düzeyinde: herhangi bir LLM çağrısı API hatası verirse hedef baştan tekrar koşar"}
+         "rate_limit_backoff_seconds": RATE_LIMIT_BACKOFF,
+         "scope": ("çağrı düzeyi: gövdeye gömülü 429 (OpenRouter upstream rate-limit) deterministik bekleyişle "
+                   "yeniden denenir; hedef düzeyi: yine de API hatası kalırsa hedef baştan en fazla 2 kez koşar")}
 MODELS = {
     "4o-mini": {"label": "4o-mini", "model_id": "openai/gpt-4o-mini", "min_max_tokens": None, "reasoning": None,
-                "timeout_seconds": 120,
+                "timeout_seconds": 120, "rate_limit_backoff_seconds": RATE_LIMIT_BACKOFF,
                 "notes": "Üretimdeki OpenRouterProvider varsayılan modeli; üretim max_tokens (split 300 / select 5)."},
     "luna-high": {"label": "luna-high", "model_id": "openai/gpt-5.6-luna", "min_max_tokens": 1280,
                   "reasoning": {"effort": "high", "exclude": True}, "timeout_seconds": 120,
+                  "rate_limit_backoff_seconds": RATE_LIMIT_BACKOFF,
                   "notes": "Reasoning tokenları max_tokens bütçesini tükettiği için min 1280 zorunlu (beyan edilen sapma)."},
 }
 TAXONOMY = ("KB_GAP", "GOLD_ANNOTATION", "RETRIEVAL_MISS", "RETRIEVAL_RANKING", "CALENDAR_ROUTING_INTERFERENCE",
@@ -303,6 +307,8 @@ def evaluate(target: dict[str, Any], result: dict[str, Any], guards: set[int], a
         "prompt_tokens": sum(e.get("prompt_tokens") or 0 for e in llm_calls),
         "completion_tokens": sum(e.get("completion_tokens") or 0 for e in llm_calls),
         "reasoning_tokens": sum(e.get("reasoning_tokens") or 0 for e in llm_calls),
+        "rate_limit_retries": sum(e.get("rate_limit_retries") or 0 for e in llm_calls),
+        "rate_limit_wait": sum(e.get("rate_limit_wait") or 0.0 for e in llm_calls),
         "cost": sum(e.get("cost") or 0 for e in llm_calls) if any(e.get("cost") is not None for e in llm_calls) else None,
         "latency": {
             "retrieval": round(sum(e.get("latency", 0) for e in events if e["kind"] in ("qdrant", "meili")), 4),
@@ -462,6 +468,8 @@ def metrics(evaluated: list[dict[str, Any]], targets: dict[int, dict[str, Any]])
         "fallback_used": sum(1 for e in evaluated if e["fallback_used"]),
         "source_distribution": dict(sorted(Counter(e["source"] for e in evaluated).items())),
         "api": {"unresolved_errors": sum(e["api_error"] for e in evaluated),
+                "rate_limit_retries": sum(e.get("rate_limit_retries", 0) for e in evaluated),
+                "rate_limit_wait_seconds": round(sum(e.get("rate_limit_wait", 0.0) for e in evaluated), 1),
                 "targets_with_retry": sum(1 for e in evaluated if e["retries_used"]),
                 "total_retries": sum(e["retries_used"] for e in evaluated)},
         "model_ids_returned": sorted({m for e in evaluated for m in e["model_ids_returned"]}),

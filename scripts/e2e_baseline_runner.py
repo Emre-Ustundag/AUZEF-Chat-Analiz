@@ -63,18 +63,32 @@ def install(payload: dict[str, Any], recorder: Recorder):
             extra_body = {"usage": {"include": True}}
             if config.get("reasoning"):
                 extra_body["reasoning"] = config["reasoning"]
-            started = time.perf_counter()
             event: dict[str, Any] = {"kind": f"llm_{kind}", "prompt_sha": digest(system + "\n" + user),
-                                     "max_tokens": effective}
+                                     "max_tokens": effective, "rate_limit_retries": 0, "rate_limit_wait": 0.0}
+            backoff = config["rate_limit_backoff_seconds"]
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-                    max_tokens=effective,
-                    temperature=0,
-                    extra_body=extra_body,
-                    timeout=config["timeout_seconds"],
-                )
+                while True:
+                    started = time.perf_counter()
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                        max_tokens=effective,
+                        temperature=0,
+                        extra_body=extra_body,
+                        timeout=config["timeout_seconds"],
+                    )
+                    if getattr(response, "choices", None):
+                        break
+                    # OpenRouter upstream rate-limit'i HTTP 200 gövdesinde error.code=429 olarak döndürüyor;
+                    # SDK'nın gerçek HTTP 429'a yaptığı gibi deterministik bekleyişle yeniden denenir.
+                    body_error = (getattr(response, "model_extra", None) or {}).get("error") or {}
+                    if body_error.get("code") == 429 and event["rate_limit_retries"] < len(backoff):
+                        wait = backoff[event["rate_limit_retries"]]
+                        event["rate_limit_retries"] += 1
+                        event["rate_limit_wait"] += wait
+                        time.sleep(wait)
+                        continue
+                    raise RuntimeError(f"empty choices: {json.dumps(body_error, ensure_ascii=False)[:200]}")
                 usage = getattr(response, "usage", None)
                 event.update(
                     returned_model=getattr(response, "model", None),
